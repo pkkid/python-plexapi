@@ -1,0 +1,10 @@
+syntax: glob
+*.db
+*.log
+*.pyc
+*.sublime-*
+*__pycache__*
+dist
+build
+*.egg-info
+.idea/

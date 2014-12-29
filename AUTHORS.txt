@@ -1,0 +1,6 @@
+Primary Authors:
+  * Michael Shepanski
+
+Thanks to Contributors:
+  * Nate Mara (Timeline)
+  * Goni Zahavy (Sync, Media Parts)
