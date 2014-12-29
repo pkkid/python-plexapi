@@ -55,7 +55,7 @@ def example_006_follow_the_talent(plex):
 
 def example_007_list_files(plex):
     """ Example 7: List files for the latest episode of Friends. """
-    the_last_one = plex.library.get('Friends').episodes()[-1]
+    the_last_one = plex.library.section('TV Shows').get('Friends').episodes()[-1]
     for part in the_last_one.iter_parts():
         print part.file
 
