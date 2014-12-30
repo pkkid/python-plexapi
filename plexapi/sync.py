@@ -39,5 +39,5 @@ class SyncItem(object):
 
     def markAsDone(self, sync_id):
         server = self.server().connect()
-        uri = '/sync/{0}/{1}/files/{2}/downloaded'.format(self.device.uuid, server.machineIdentifier, sync_id)
+        uri = '/sync/{0}/{1}/files/{2}/downloaded'.format(self.device.clientIdentifier, server.machineIdentifier, sync_id)
         server.query(uri, method=requests.put)
