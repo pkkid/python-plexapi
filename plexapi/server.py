@@ -47,7 +47,7 @@ class PlexServer(object):
     def _connect(self):
         try:
             return self.query('/')
-        except Exception, err:
+        except Exception as err:
             log.error('%s:%s: %s', self.address, self.port, err)
             raise NotFound('No server found at: %s:%s' % (self.address, self.port))
 
@@ -97,6 +97,9 @@ class PlexServer(object):
         if videotype:
             return [item for item in items if item.type == videotype]
         return items
+
+    def sessions(self):
+        return video.list_items(self, '/status/sessions')
 
     def url(self, path):
         return 'http://%s:%s/%s' % (self.address, self.port, path.lstrip('/'))

@@ -16,9 +16,9 @@ from utils import fetch_server, iter_tests
 def example_001_list_all_unwatched_content(plex):
     """ Example 1: List all unwatched content in library """
     for section in plex.library.sections():
-        print 'Unwatched content in %s:' % section.title
+        print('Unwatched content in %s:' % section.title)
         for video in section.unwatched():
-            print '  %s' % video.title
+            print('  %s' % video.title)
 
 
 def example_002_mark_all_conan_episodes_watched(plex):
@@ -29,7 +29,7 @@ def example_002_mark_all_conan_episodes_watched(plex):
 def example_003_list_all_clients(plex):
     """ Example 3: List all Clients connected to the Server. """
     for client in plex.clients():
-        print client.name
+        print(client.name)
 
 
 def example_004_play_avatar_on_iphone(plex):
@@ -42,7 +42,7 @@ def example_004_play_avatar_on_iphone(plex):
 def example_005_search(plex):
     """ Example 5: List all content with the word 'Game' in the title. """
     for video in plex.search('Game'):
-        print '%s (%s)' % (video.title, video.TYPE)
+        print('%s (%s)' % (video.title, video.TYPE))
 
 
 def example_006_follow_the_talent(plex):
@@ -50,14 +50,14 @@ def example_006_follow_the_talent(plex):
     jurassic_park = plex.library.section('Movies').get('Jurassic Park')
     director = jurassic_park.directors[0]
     for movie in director.related():
-        print movie.title
+        print(movie.title)
 
 
 def example_007_list_files(plex):
     """ Example 7: List files for the latest episode of Friends. """
     the_last_one = plex.library.section('TV Shows').get('Friends').episodes()[-1]
     for part in the_last_one.iter_parts():
-        print part.file
+        print(part.file)
 
 
 if __name__ == '__main__':

@@ -21,13 +21,23 @@ class Client(object):
         self.address = data.attrib.get('address')
         self.port = data.attrib.get('port')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.title = data.attrib.get('title')
         self.version = data.attrib.get('version')
+        self.platform = data.attrib.get('platform')
         self.protocol = data.attrib.get('protocol')
         self.product = data.attrib.get('product')
         self.deviceClass = data.attrib.get('deviceClass')
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
+        self.state = data.attrib.get('state')
         self._sendCommandsTo = SERVER
+
+
+        # machineIdentifier = data.attrib.get('audioCodec') "f9b12e31-9604-485e-a2a1-8cfe7dd8de0d"
+        # platform="Chrome"
+        # product="Plex Web"
+        # state="paused"
+        # title="Plex Web (Chrome)
 
     def sendCommandsTo(self, value):
         self._sendCommandsTo = value
@@ -86,7 +96,7 @@ class Client(object):
             'machineIdentifier': self.server.machineIdentifier,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
             'key': video.key,
-            'offset': int(viewOffset),
+            'offset': 0,
         })
 
     def timeline(self):

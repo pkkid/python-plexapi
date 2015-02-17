@@ -1,7 +1,9 @@
 """
 PlexVideo
 """
+from plexapi.client import Client
 from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
+from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import NotFound, UnknownType
 from plexapi.utils import PlexPartialObject, NA
 from plexapi.utils import cast, toDatetime
@@ -20,6 +22,7 @@ class Video(PlexPartialObject):
     def _loadData(self, data):
         self.type = data.attrib.get('type', NA)
         self.key = data.attrib.get('key', NA)
+        self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.ratingKey = data.attrib.get('ratingKey', NA)
         self.title = data.attrib.get('title', NA)
         self.summary = data.attrib.get('summary', NA)
@@ -28,8 +31,9 @@ class Video(PlexPartialObject):
         self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
         self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
         self.lastViewedAt = toDatetime(data.attrib.get('lastViewedAt', NA))
-        self.index = data.attrib.get('index', NA)
-        self.parentIndex = data.attrib.get('parentIndex', NA)
+        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.user = self._find_user(data)       # for active sessions
+        self.player = self._find_player(data)   # for active sessions
         if self.isFullObject():
             # These are auto-populated when requested
             self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
@@ -39,6 +43,18 @@ class Video(PlexPartialObject):
             self.producers = [Producer(self.server, elem) for elem in data if elem.tag == Producer.TYPE]
             self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
             self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
+
+    def _find_user(self, data):
+        elem = data.find('User')
+        if elem is not None:
+            return MyPlexUser(elem, self.initpath)
+        return None
+
+    def _find_player(self, data):
+        elem = data.find('Player')
+        if elem is not None:
+            return Client(self.server, elem)
+        return None
 
     def iter_parts(self):
         for media in self.media:
@@ -76,6 +92,7 @@ class Movie(Video):
         self.viewCount = cast(int, data.attrib.get('viewCount', 0))
         self.viewOffset = cast(int, data.attrib.get('viewOffset', 0))
         self.year = cast(int, data.attrib.get('year', NA))
+        self.summary = data.attrib.get('summary', NA)
         self.tagline = data.attrib.get('tagline', NA)
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')

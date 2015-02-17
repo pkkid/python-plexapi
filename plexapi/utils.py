@@ -43,21 +43,6 @@ class PlexPartialObject(object):
         self._loadData(data[0])
 
 
-class Connection(object):
-    def __init__(self, addr, port):
-        self.addr = addr
-        self.port = int(port)
-
-    @classmethod
-    def from_xml(cls, data):
-        uri = data.attrib.get('uri')
-        addr, port = [elem.strip('/') for elem in uri.split(':')[1:]]
-        return Connection(addr, port)
-
-    def __repr__(self):
-        return '<Connection:{0}:{1}>'.format(self.addr, self.port)
-
-
 def cast(func, value):
     if value not in [None, NA]:
         if func == bool:

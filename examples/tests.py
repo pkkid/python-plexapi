@@ -21,7 +21,7 @@ MOVIE_TITLE = 'Jurassic Park'
 PLEX_CLIENT = "Michael's iPhone"
 
 
-def test_001_server(plex):
+def test_001_server(plex, user=None):
     log(2, 'Username: %s' % plex.myPlexUsername)
     log(2, 'Platform: %s' % plex.platform)
     log(2, 'Version: %s' % plex.version)
@@ -30,7 +30,7 @@ def test_001_server(plex):
     assert plex.version is not None, 'Unknown version.'
 
 
-def test_002_list_sections(plex):
+def test_002_list_sections(plex, user=None):
     sections = [s.title for s in plex.library.sections()]
     log(2, 'Sections: %s' % sections)
     assert SHOW_SECTION in sections, '%s not a library section.' % SHOW_SECTION
@@ -39,7 +39,7 @@ def test_002_list_sections(plex):
     plex.library.section(MOVIE_SECTION)
 
 
-def test_003_search_show(plex):
+def test_003_search_show(plex, user=None):
     result_server = plex.search(SHOW_TITLE)
     result_library = plex.library.search(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(SHOW_TITLE)
@@ -54,7 +54,7 @@ def test_003_search_show(plex):
     assert not result_movies, 'Movie search returned show title.'
     
 
-def test_004_search_movie(plex):
+def test_004_search_movie(plex, user=None):
     result_server = plex.search(MOVIE_TITLE)
     result_library = plex.library.search(MOVIE_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(MOVIE_TITLE)
@@ -69,7 +69,7 @@ def test_004_search_movie(plex):
     assert not result_shows, 'Show search returned show title.'
 
 
-def test_005_navigate_to_show(plex):
+def test_005_navigate_to_show(plex, user=None):
     result_library = plex.library.get(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     try:
@@ -84,7 +84,7 @@ def test_005_navigate_to_show(plex):
     assert not result_movies, 'Movie navigation returned show title.'
 
 
-def test_006_navigate_to_movie(plex):
+def test_006_navigate_to_movie(plex, user=None):
     result_library = plex.library.get(MOVIE_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     try:
@@ -99,7 +99,7 @@ def test_006_navigate_to_movie(plex):
     assert not result_shows, 'Show navigation returned show title.'
 
 
-def test_007_navigate_around_show(plex):
+def test_007_navigate_around_show(plex, user=None):
     show = plex.library.get(SHOW_TITLE)
     seasons = show.seasons()
     season = show.season(SHOW_SEASON)
@@ -117,7 +117,7 @@ def test_007_navigate_around_show(plex):
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
 
 
-def test_008_mark_movie_watched(plex):
+def test_008_mark_movie_watched(plex, user=None):
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     movie.markUnwatched()
     log(2, 'Marking movie watched: %s' % movie)
@@ -130,12 +130,12 @@ def test_008_mark_movie_watched(plex):
     assert movie.viewCount == 0, 'View count 1 after unwatched.'
 
 
-def test_009_refresh(plex):
+def test_009_refresh(plex, user=None):
     shows = plex.library.section(MOVIE_SECTION)
     shows.refresh()
 
 
-def test_010_playQueues(plex):
+def test_010_playQueues(plex, user=None):
     episode = plex.library.get(SHOW_TITLE).get(SHOW_EPISODE)
     playqueue = plex.createPlayQueue(episode)
     assert len(playqueue.items) == 1, 'No items in play queue.'
@@ -143,7 +143,7 @@ def test_010_playQueues(plex):
     assert playqueue.playQueueID, 'Play queue ID not set.'
 
 
-def test_011_play_media(plex):
+def test_011_play_media(plex, user=None):
     # Make sure the client is turned on!
     episode = plex.library.get(SHOW_TITLE).get(SHOW_EPISODE)
     client = plex.client(PLEX_CLIENT)
@@ -157,9 +157,9 @@ def test_011_play_media(plex):
     client.stop()
 
 
-def test_012_myplex_account(plex):
+def test_012_myplex_account(plex, user=None):
     account = plex.account()
-    print account.__dict__
+    print(account.__dict__)
 
 
 def test_013_list_media_files(plex):
@@ -201,6 +201,27 @@ def test_014_list_video_tags(plex):
     related = movie.directors[0].related()
     log(4, related[0:3])
     assert movie in related, 'Movie was not found in related directors search.'
+
+
+def test_015_list_devices(plex, user=None):
+    assert user, 'Must specify username, password & server to run this test.'
+    for device in user.devices():
+        log(2, device.name or device.product)
+
+
+# def test_013_sync_items(plex, user=None):
+#     user = MyPlexUser('user', 'pass')
+#     device = user.getDevice('device-uuid')
+#     # fetch the sync items via the device sync list
+#     for item in device.sync_items():
+#         # fetch the media object associated with the sync item
+#         for video in item.get_media():
+#             # fetch the media parts (actual video/audio streams) associated with the media
+#             for part in video.iter_parts():
+#                 print('Found media to download!')
+#                 # make the relevant sync id (media part) as downloaded
+#                 # this tells the server that this device has successfully downloaded this media part of this sync item
+#                 item.mark_as_done(part.sync_id)
 
 
 if __name__ == '__main__':

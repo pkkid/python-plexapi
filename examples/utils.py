@@ -14,31 +14,32 @@ def log(indent, message):
 
 def fetch_server(args):
     if args.server:
-        user = MyPlexUser(args.username, args.password)
-        return user.getServer(args.server).connect()
-    return server.PlexServer()
+        user = MyPlexUser.signin(args.username, args.password)
+        return user.getServer(args.server).connect(), user
+    return server.PlexServer(), None
 
 
 def iter_tests(module, args):
+    check_test = lambda name: name.startswith('test_') or name.startswith('example_')
+    check_name = lambda name: not args.name or args.name in name
     module = sys.modules[module]
     for func in sorted(module.__dict__.values()):
         if inspect.isfunction(func) and inspect.getmodule(func) == module:
-            name = func.__name__
-            if name.startswith('test_') or name.startswith('example_') and (not args.name or args.name in name):
+            if check_test(func.__name__) and check_name(func.__name__):
                 yield func
 
 
 def run_tests(module, args):
-    plex = fetch_server(args)
+    plex, user = fetch_server(args)
     tests = {'passed':0, 'failed':0}
     for test in iter_tests(module, args):
         startqueries = server.TOTAL_QUERIES
         starttime = time.time()
         log(0, test.__name__)
         try:
-            test(plex)
+            test(plex, user)
             tests['passed'] += 1
-        except Exception, err:
+        except Exception as err:
             log(2, 'FAIL!: %s' % err)
             tests['failed'] += 1
         runtime = time.time() - starttime

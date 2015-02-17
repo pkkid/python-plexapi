@@ -90,44 +90,44 @@ class LibrarySection(object):
         title = self.title.replace(' ','.')[0:20]
         return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
-    def _primaryList(self, key):
+    def _primary_list(self, key):
         return video.list_items(self.server, '/library/sections/%s/%s' % (self.key, key))
 
-    def _secondaryList(self, key, input=None):
+    def _secondary_list(self, key, input=None):
         choices = list_choices(self.server, '/library/sections/%s/%s' % (self.key, key))
         if not input:
             return choices.keys()
         return video.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
 
     def all(self):
-        return self._primaryList('all')
+        return self._primary_list('all')
 
     def newest(self):
-        return self._primaryList('newest')
+        return self._primary_list('newest')
 
     def onDeck(self):
-        return self._primaryList('onDeck')
+        return self._primary_list('onDeck')
 
     def recentlyAdded(self):
-        return self._primaryList('recentlyAdded')
+        return self._primary_list('recentlyAdded')
 
     def recentlyViewed(self):
-        return self._primaryList('recentlyViewed')
+        return self._primary_list('recentlyViewed')
 
     def unwatched(self):
-        return self._primaryList('unwatched')
+        return self._primary_list('unwatched')
 
     def contentRating(self, input=None):
-        return self._secondaryList('contentRating', input)
+        return self._secondary_list('contentRating', input)
         
     def firstCharacter(self, input=None):
-        return self._secondaryList('firstCharacter', input)
+        return self._secondary_list('firstCharacter', input)
 
     def genre(self, input=None):
-        return self._secondaryList('genre', input)
+        return self._secondary_list('genre', input)
 
     def year(self, input=None):
-        return self._secondaryList('year', input)
+        return self._secondary_list('year', input)
 
     def get(self, title):
         path = '/library/sections/%s/all' % self.key
@@ -162,22 +162,22 @@ class MovieSection(LibrarySection):
     TYPE = 'movie'
 
     def actor(self, input=None):
-        return self._secondaryList('actor', input)
+        return self._secondary_list('actor', input)
 
     def country(self, input=None):
-        return self._secondaryList('country', input)
+        return self._secondary_list('country', input)
     
     def decade(self, input=None):
-        return self._secondaryList('decade', input)
+        return self._secondary_list('decade', input)
 
     def director(self, input=None):
-        return self._secondaryList('director', input)
+        return self._secondary_list('director', input)
 
     def rating(self, input=None):
-        return self._secondaryList('rating', input)
+        return self._secondary_list('rating', input)
 
     def resolution(self, input=None):
-        return self._secondaryList('resolution', input)
+        return self._secondary_list('resolution', input)
 
     def search(self, title, filter='all', **tags):
         return super(MovieSection, self).search(title, filter=filter, vtype=video.Movie.TYPE, **tags)
@@ -187,7 +187,7 @@ class ShowSection(LibrarySection):
     TYPE = 'show'
     
     def recentlyViewedShows(self):
-        return self._primaryList('recentlyViewedShows')
+        return self._primary_list('recentlyViewedShows')
 
     def search(self, title, filter='all', **tags):
         return super(ShowSection, self).search(title, filter=filter, vtype=video.Show.TYPE, **tags)
