@@ -4,7 +4,7 @@ PlexAPI MyPlex
 import plexapi, requests
 from plexapi import TIMEOUT, log
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.utils import cast, toDatetime
+from plexapi.utils import addrToIP, cast, toDatetime
 from requests.status_codes import _codes as codes
 from threading import Thread
 from xml.etree import ElementTree
@@ -31,12 +31,11 @@ class MyPlexUser:
     def servers(self):
         return MyPlexServer.fetch_servers(self.authenticationToken)
 
-    def getServer(self, nameOrSourceTitle):
-        search = nameOrSourceTitle.lower()
-        for server in self.servers():
-            if server.name and search == server.name.lower(): return server
-            if server.sourceTitle and search == server.sourceTitle.lower(): return server
-        raise NotFound('Unable to find server: %s' % nameOrSourceTitle)
+    def getServer(self, search, port=32400):
+        """ Searches server.name, server.sourceTitle and server.host:server.port
+            from the list of available for this PlexUser.
+        """
+        return _findServer(self.servers(), search, port)
 
     @classmethod
     def signin(cls, username, password):
@@ -71,11 +70,11 @@ class MyPlexAccount:
     def servers(self):
         return MyPlexServer.fetch_servers(self.authToken)
 
-    def getServer(self, nameOrSourceTitle):
-        for server in self.servers():
-            if nameOrSourceTitle.lower() in [server.name.lower(), server.sourceTitle.lower()]:
-                return server
-        raise NotFound('Unable to find server: %s' % nameOrSourceTitle)
+    def getServer(self, search, port=32400):
+        """ Searches server.name, server.sourceTitle and server.host:server.port
+            from the list of available for this PlexAccount.
+        """
+        return _findServer(self.servers(), search, port)
 
 
 class MyPlexServer:
@@ -116,8 +115,10 @@ class MyPlexServer:
             threads[i].start()
         for thread in threads:
             thread.join()
-        results = filter(None, results)
-        if results: return results[0]
+        results = list(filter(None, results))
+        if results:
+            log.info('Connecting to server: %s', results[0])
+            return results[0]
         raise NotFound('Unable to connect to server: %s' % self.name)
 
     def _connect(self, address, results, i):
@@ -135,3 +136,18 @@ class MyPlexServer:
         response = requests.get(cls.SERVERS, headers=headers, timeout=TIMEOUT)
         data = ElementTree.fromstring(response.text.encode('utf8'))
         return [MyPlexServer(elem) for elem in data]
+
+
+def _findServer(servers, search, port=32400):
+    """ Searches server.name, server.sourceTitle and server.host:server.port """
+    search = search.lower()
+    ipaddr = addrToIP(search)
+    log.info('Looking for server: %s (host: %s:%s)', search, ipaddr, port)
+    for server in servers:
+        serverName = server.name.lower() if server.name else 'NA'
+        sourceTitle = server.sourceTitle.lower() if server.sourceTitle else 'NA'
+        if (search in [serverName, sourceTitle]) or (server.host == ipaddr and server.port == port):
+            log.info('Server found: %s', server)
+            return server
+    log.info('Unable to find server: %s (host: %s:%s)', search, ipaddr, port)
+    raise NotFound('Unable to find server: %s (host: %s:%s)' % (search, ipaddr, port))
