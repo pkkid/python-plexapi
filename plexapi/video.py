@@ -44,6 +44,10 @@ class Video(PlexPartialObject):
             self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
             self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
 
+    @property
+    def thumbUrl(self):
+        return self.server.url(self.thumb)
+
     def _find_user(self, data):
         elem = data.find('User')
         if elem is not None:
@@ -101,7 +105,7 @@ class Movie(Video):
 
 class Show(Video):
     TYPE = 'show'
-        
+
     def _loadData(self, data):
         super(Show, self)._loadData(data)
         self.studio = data.attrib.get('studio', NA)
@@ -190,6 +194,10 @@ class Episode(Video):
         self.year = cast(int, data.attrib.get('year', NA))
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+
+    @property
+    def thumbUrl(self):
+        return self.server.url(self.grandparentThumb)
 
     def season(self):
         return list_items(self.server, self.parentKey)[0]

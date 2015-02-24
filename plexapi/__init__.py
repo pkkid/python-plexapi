@@ -30,7 +30,7 @@ BASE_HEADERS = {
 # Logging Configuration
 log = logging.getLogger('plexapi')
 logfile = os.path.join('/tmp', 'plexapi.log')
-logformat = logging.Formatter('%(asctime)s %(module)-12s %(levelname)-6s %(message)s')
+logformat = logging.Formatter('%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
 filehandler = RotatingFileHandler(logfile, 'a', 512000, 3)
 filehandler.setFormatter(logformat)
 log.addHandler(filehandler)

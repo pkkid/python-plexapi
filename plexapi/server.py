@@ -81,9 +81,10 @@ class PlexServer(object):
         return headers
 
     def query(self, path, method=requests.get):
-        global TOTAL_QUERIES; TOTAL_QUERIES += 1
+        global TOTAL_QUERIES
+        TOTAL_QUERIES += 1
         url = self.url(path)
-        log.info('%s %s%s', method.__name__.upper(), url, '?X-Plex-Token=%s' % self.token if self.token else '')
+        log.info('%s %s', method.__name__.upper(), url)
         response = method(url, headers=self.headers(), timeout=TIMEOUT)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
@@ -102,4 +103,6 @@ class PlexServer(object):
         return video.list_items(self, '/status/sessions')
 
     def url(self, path):
-        return 'http://%s:%s/%s' % (self.address, self.port, path.lstrip('/'))
+        url = 'http://%s:%s/%s' % (self.address, self.port, path.lstrip('/'))
+        if self.token: url += '?X-Plex-Token=%s' % self.token
+        return url

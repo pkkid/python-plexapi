@@ -13,3 +13,6 @@ class UnknownType(Exception):
 
 class Unsupported(Exception):
     pass
+
+class Unauthorized(Exception):
+    pass

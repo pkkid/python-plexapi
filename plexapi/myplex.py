@@ -3,7 +3,7 @@ PlexAPI MyPlex
 """
 import plexapi, requests
 from plexapi import TIMEOUT, log
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.utils import addrToIP, cast, toDatetime
 from requests.status_codes import _codes as codes
 from threading import Thread
@@ -39,11 +39,15 @@ class MyPlexUser:
 
     @classmethod
     def signin(cls, username, password):
+        if 'X-Plex-Token' in plexapi.BASE_HEADERS:
+            del plexapi.BASE_HEADERS['X-Plex-Token']
         auth = (username, password)
         log.info('POST %s', cls.SIGNIN)
         response = requests.post(cls.SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
         if response.status_code != requests.codes.created:
             codename = codes.get(response.status_code)[0]
+            if response.status_code == 401:
+                raise Unauthorized('(%s) %s' % (response.status_code, codename))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = ElementTree.fromstring(response.text.encode('utf8'))
         return cls(data)

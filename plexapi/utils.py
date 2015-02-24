@@ -50,13 +50,9 @@ def addrToIP(addr):
         return addr
     except socket.error:
         pass
-    # Remove any leading http crap
-    if addr.startswith('http://'):
-        addr = addr[7:]
-    if addr.startswith('https://'):
-        addr = addr[8:]
     # Try getting the IP
     try:
+        addr = addr.replace('http://', '')
         return str(socket.gethostbyname(addr))
     except socket.error:
         return addr
