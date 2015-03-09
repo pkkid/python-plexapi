@@ -17,7 +17,7 @@ setup(
     description='Python bindings for the Plex API.',
     author='Michael Shepanski',
     author_email='mjs7231@gmail.com',
-    url='http://bitbucket.org/mjs7231/plexapi',
+    url='https://github.com/mjs7231/plexapi',
     packages=find_packages(),
     install_requires=['requests'],
     long_description=open('README.md').read(),

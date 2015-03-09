@@ -6,7 +6,7 @@ from logging.handlers import RotatingFileHandler
 from uuid import getnode
 
 PROJECT = 'PlexAPI'
-VERSION = '0.9.3'
+VERSION = '0.9.5'
 TIMEOUT = 5
 
 # Plex Header Configuation
