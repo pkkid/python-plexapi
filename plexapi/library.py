@@ -46,6 +46,9 @@ class Library(object):
     def get(self, title):
         return video.find_item(self.server, '/library/all', title)
 
+    def getByKey(self, key):
+        return video.find_key(self.server, key)
+
     def search(self, title, filter='all', vtype=None, **tags):
         """ Search all available content.
             title: Title to search (pass None to search all titles).
