@@ -2,9 +2,13 @@ syntax: glob
 *.db
 *.log
 *.pyc
+*.swp
 *.sublime-*
 *__pycache__*
 dist
 build
 *.egg-info
 .idea/
+lib/
+bin/
+include/

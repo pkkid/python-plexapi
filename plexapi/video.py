@@ -215,6 +215,16 @@ def build_item(server, elem, initpath):
     raise UnknownType('Unknown video type: %s' % vtype)
 
 
+def find_key(server, key):
+    path = '/library/metadata/{0}'.format(key)
+    try:
+        # Video seems to be the first sub element
+        elem = server.query(path)[0]
+        return build_item(server, elem, path)
+    except:
+        raise NotFound('Unable to find key: %s' % key)
+
+
 def find_item(server, path, title):
     for elem in server.query(path):
         if elem.attrib.get('title').lower() == title.lower():
