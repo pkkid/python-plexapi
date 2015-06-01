@@ -242,11 +242,9 @@ def list_items(server, path, videotype=None, watched=None):
         filter_watched = watched is False and 'viewCount' in elem.attrib
 
         if filter_watched:
-            print('watched. passing..')
             continue
 
         elif filter_unwatched:
-            print('unwatched. passing..')
             continue
 
         if not videotype or elem.attrib.get('type') == videotype:
