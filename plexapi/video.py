@@ -236,8 +236,6 @@ def list_items(server, path, videotype=None, watched=None):
     items = []
 
     for elem in server.query(path):
-        print(elem.attrib.get('ratingKey'), watched)
-
         filter_unwatched = watched is True and 'viewCount' not in elem.attrib
         filter_watched = watched is False and 'viewCount' in elem.attrib
 
