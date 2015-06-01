@@ -17,7 +17,7 @@ class StreamUrl:
     def __init__(self, server, key, max_bitrate=None, max_resolution=None,
                  offset=0, platform="Chrome"):
         """Represents a URL that allows the user to stream a video direclty
-        from plex.
+        from the plex server. Video is encoded as a h464/aac stream.
 
         server -- an instance of the plex server (required)
         key -- the numeric identifier of the requested video (required)
