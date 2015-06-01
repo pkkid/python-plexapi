@@ -79,6 +79,7 @@ available libraries.
     jurassic_park = plex.library.section('Movies').get('Jurassic Park')
     url = StreamUrl(server=plex, key=jurassic_park.key, max_bitrate=128,
                     max_resolution="1280x720", offset=0)
+    print(url)
 #### FAQs ####
 
 **Q. Why are you using camelCase and not following PEP8 guidelines?**
