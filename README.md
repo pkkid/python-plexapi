@@ -5,6 +5,7 @@ Python bindings for the Plex API.
 * Mark shows watched or unwatched.
 * Request rescan, analyze, empty trash.
 * Play media on connected clients.
+* Grab the URL to download or stream a video locally
 * Plex Sync Support.
 
 Planned features:
@@ -74,6 +75,10 @@ available libraries.
     for part in the_last_one.iter_parts():
         print(part.file)
 
+    # Example 8: Obtain the URL to download or stream a video 
+    jurassic_park = plex.library.section('Movies').get('Jurassic Park')
+    url = StreamUrl(server=plex, key=jurassic_park.key, max_bitrate=128,
+                    max_resolution="1280x720", offset=0)
 #### FAQs ####
 
 **Q. Why are you using camelCase and not following PEP8 guidelines?**
