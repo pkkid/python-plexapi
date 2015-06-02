@@ -139,6 +139,9 @@ class Show(Video):
     def get(self, title):
         return self.episode(title)
 
+    def refresh(self):
+        self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
+
 
 class Season(Video):
     TYPE = 'season'
