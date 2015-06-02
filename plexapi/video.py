@@ -128,13 +128,19 @@ class Show(Video):
         path = '/library/metadata/%s/children' % self.ratingKey
         return find_item(self.server, path, title)
 
-    def episodes(self):
+    def episodes(self, watched=None):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return list_items(self.server, leavesKey)
+        return list_items(self.server, leavesKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/allLeaves' % self.ratingKey
         return find_item(self.server, path, title)
+
+    def watched(self):
+        return self.episodes(watched=True)
+
+    def unwatched(self):
+        return self.episodes(watched=False)
 
     def get(self, title):
         return self.episode(title)
@@ -161,9 +167,9 @@ class Season(Video):
         self.leafCount = cast(int, data.attrib.get('leafCount', NA))
         self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
 
-    def episodes(self):
+    def episodes(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        return list_items(self.server, childrenKey)
+        return list_items(self.server, childrenKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
@@ -174,6 +180,12 @@ class Season(Video):
 
     def show(self):
         return list_items(self.server, self.parentKey)[0]
+
+    def watched(self):
+        return self.episodes(watched=True)
+
+    def unwatched(self):
+        return self.episodes(watched=False)
 
 
 class Episode(Video):
@@ -235,14 +247,16 @@ def find_item(server, path, title):
     raise NotFound('Unable to find title: %s' % title)
 
 
-def list_items(server, path, videotype=None):
+def list_items(server, path, videotype=None, watched=None):
     items = []
     for elem in server.query(path):
-        if not videotype or elem.attrib.get('type') == videotype:
-            try:
-                items.append(build_item(server, elem, path))
-            except UnknownType:
-                pass
+        if videotype and elem.attrib.get('type') != videotype: continue
+        if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
+        if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
+        try:
+            items.append(build_item(server, elem, path))
+        except UnknownType:
+            pass
     return items
 
 
