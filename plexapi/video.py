@@ -136,8 +136,17 @@ class Show(Video):
         path = '/library/metadata/%s/allLeaves' % self.ratingKey
         return find_item(self.server, path, title)
 
+    def watched(self):
+        return self.episodes(watched=True)
+
+    def unwatched(self):
+        return self.episodes(watched=False)
+
     def get(self, title):
         return self.episode(title)
+
+    def refresh(self):
+        self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
 class Season(Video):
@@ -171,6 +180,12 @@ class Season(Video):
 
     def show(self):
         return list_items(self.server, self.parentKey)[0]
+
+    def watched(self):
+        return self.episodes(watched=True)
+
+    def unwatched(self):
+        return self.episodes(watched=False)
 
 
 class Episode(Video):
@@ -236,21 +251,13 @@ def list_items(server, path, videotype=None, watched=None):
     items = []
 
     for elem in server.query(path):
-        filter_unwatched = watched is True and 'viewCount' not in elem.attrib
-        filter_watched = watched is False and 'viewCount' in elem.attrib
-
-        if filter_watched:
-            continue
-
-        elif filter_unwatched:
-            continue
-
-        if not videotype or elem.attrib.get('type') == videotype:
-            try:
-                items.append(build_item(server, elem, path))
-            except UnknownType:
-                pass
-
+        if videotype and elem.attrib.get('type') != videotype: continue
+        if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
+        if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
+        try:
+            items.append(build_item(server, elem, path))
+        except UnknownType:
+            pass
     return items
 
 
