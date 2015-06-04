@@ -52,7 +52,6 @@ for section in plex.library.sections():
     for video in section.unwatched():
         print('  %s' % video.title)
 ```
-
 ```python
 # Example 2: Mark all Conan episodes watched.
 plex.library.get('Conan (2010)').markWatched()
@@ -61,27 +60,32 @@ plex.library.get('Conan (2010)').markWatched()
 # Example 3: List all clients connected to the Server.
 for client in plex.clients():
     print(client.name)
-
+```
+```python
 # Example 4: Play the movie Avatar on another client.
 avatar = plex.library.section('Movies').get('Avatar')
 client = plex.client("Michael's iPhone")
 client.playMedia(avatar)
-
+```
+```python
 # Example 5: List all content with the word 'Game' in the title.
 for video in plex.search('Game'):
     print('%s (%s)' % (video.title, video.TYPE))
-
+```
+```python
 # Example 6: List all movies directed by the same person as Jurassic Park.
 jurassic_park = plex.library.section('Movies').get('Jurassic Park')
 director = jurassic_park.directors[0]
 for movie in director.related():
     print(movie.title)
-
+```
+```python
 # Example 7: List files for the latest episode of Friends.
 the_last_one = plex.library.get('Friends').episodes()[-1]
 for part in the_last_one.iter_parts():
     print(part.file)
-
+```
+```python
 # Example 8: Get a URL to stream a movie or show in another client
 jurassic_park = plex.library.section('Movies').get('Jurassic Park')
 print 'Run running the following command to play in VLC:'
