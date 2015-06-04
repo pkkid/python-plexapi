@@ -1,7 +1,7 @@
 """
 PlexAPI Examples
 
-As of Plex version 0.9.11 I noticed that you must be logged in 
+As of Plex version 0.9.11 I noticed that you must be logged in
 to browse even the plex server locatewd at localhost. You can
 run this example suite with the following command:
 
@@ -60,6 +60,13 @@ def example_007_list_files(plex):
         print(part.file)
 
 
+def example_008_get_stream_url(plex):
+    """ Example 8: Get a URL you can open in VLC, MPV, etc. """
+    jurassic_park = plex.library.section('Movies').get('Jurassic Park')
+    print 'Try running the following command:'
+    print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run PlexAPI examples.')
     parser.add_argument('-s', '--server', help='Name of the Plex server (requires user/pass).')
@@ -67,7 +74,6 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', help='Password for the Plex server.')
     parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all examples.')
     args = parser.parse_args()
-    plex = fetch_server(args)
+    plex, user = fetch_server(args)
     for example in iter_tests(__name__, args):
         example(plex)
-        

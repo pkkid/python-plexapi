@@ -1,6 +1,7 @@
 """
 PlexVideo
 """
+import re, urllib
 from plexapi.client import Client
 from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
@@ -67,6 +68,25 @@ class Video(PlexPartialObject):
 
     def analyze(self):
         self.server.query('/%s/analyze' % self.key)
+
+    def getStreamUrl(self, offset=0, maxVideoBitrate=None, videoResolution=None, **kwargs):
+        """ Fetch URL to stream video directly.
+            offset: Start time (in seconds) video will initiate from (ex: 300).
+            maxVideoBitrate: Max bitrate video and audio stream (ex: 64).
+            videoResolution: Max resolution of a video stream (ex: 1280x720).
+            params: Dict of additional parameters to include in URL.
+        """
+        params = {}
+        params['path'] = 'http://127.0.0.1:32400%s' % self.key
+        params['offset'] = offset
+        params['copyts'] = kwargs.get('copyts', 1)
+        params['mediaIndex'] = kwargs.get('mediaIndex', 0)
+        params['X-Plex-Platform'] = kwargs.get('platform', 'Chrome')
+        if maxVideoBitrate:
+            params['maxVideoBitrate'] = max(maxVideoBitrate, 64)
+        if videoResolution and re.match('^\d+x\d+$', videoResolution):
+            params['videoResolution'] = videoResolution
+        return self.server.url('/video/:/transcode/universal/start?%s' % urllib.urlencode(params))
 
     def markWatched(self):
         path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey

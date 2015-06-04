@@ -4,3 +4,4 @@ Primary Authors:
 Thanks to Contributors:
   * Nate Mara (Timeline)
   * Goni Zahavy (Sync, Media Parts)
+  * Simon W. Jackson (Stream URL)
