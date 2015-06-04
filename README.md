@@ -55,11 +55,11 @@ for section in plex.library.sections():
 # Example 2: Mark all Conan episodes watched.
 plex.library.get('Conan (2010)').markWatched()
 
-# Example 3: List all Clients connected to the Server.
+# Example 3: List all clients connected to the Server.
 for client in plex.clients():
     print(client.name)
 
-# Example 4: Play the Movie Avatar on my iPhone.
+# Example 4: Play the movie Avatar on another client.
 avatar = plex.library.section('Movies').get('Avatar')
 client = plex.client("Michael's iPhone")
 client.playMedia(avatar)
@@ -78,6 +78,11 @@ for movie in director.related():
 the_last_one = plex.library.get('Friends').episodes()[-1]
 for part in the_last_one.iter_parts():
     print(part.file)
+
+# Example 8: Get a URL to stream a movie or show in another client
+jurassic_park = plex.library.section('Movies').get('Jurassic Park')
+print 'Run running the following command to play in VLC:'
+print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
 ```
 
 #### FAQs ####
