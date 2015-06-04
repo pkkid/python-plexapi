@@ -51,10 +51,13 @@ for section in plex.library.sections():
     print('Unwatched content in %s:' % section.title)
     for video in section.unwatched():
         print('  %s' % video.title)
+```
 
+```python
 # Example 2: Mark all Conan episodes watched.
 plex.library.get('Conan (2010)').markWatched()
-
+```
+```python
 # Example 3: List all clients connected to the Server.
 for client in plex.clients():
     print(client.name)
