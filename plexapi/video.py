@@ -269,6 +269,7 @@ def find_item(server, path, title):
 
 def list_items(server, path, videotype=None, watched=None):
     items = []
+
     for elem in server.query(path):
         if videotype and elem.attrib.get('type') != videotype: continue
         if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
