@@ -5,7 +5,7 @@ import re, urllib
 from plexapi.client import Client
 from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
-from plexapi.exceptions import NotFound, UnknownType
+from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from plexapi.utils import PlexPartialObject, NA
 from plexapi.utils import cast, toDatetime
 
@@ -76,6 +76,8 @@ class Video(PlexPartialObject):
             videoResolution: Max resolution of a video stream (ex: 1280x720).
             params: Dict of additional parameters to include in URL.
         """
+        if self.TYPE not in [Movie.TYPE, Episode.TYPE]:
+            raise Unsupported('Cannot get stream URL for %s.' % self.TYPE)
         params = {}
         params['path'] = 'http://127.0.0.1:32400%s' % self.key
         params['offset'] = offset
