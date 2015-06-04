@@ -104,5 +104,7 @@ class PlexServer(object):
 
     def url(self, path):
         url = 'http://%s:%s/%s' % (self.address, self.port, path.lstrip('/'))
-        if self.token: url += '?X-Plex-Token=%s' % self.token
+        if self.token:
+            delim = '&' if '?' in url else '?'
+            url += '%sX-Plex-Token=%s' % (delim, self.token)
         return url

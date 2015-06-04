@@ -36,13 +36,14 @@ BASE_HEADERS = {
 
 # Logging Configuration
 log = logging.getLogger('plexapi')
-LOG_FILE = CONFIG.get('logging.path')
-if LOG_FILE:
-    LOG_BACKUPS = CONFIG.get('logging.backup_count', 3, int)
-    LOG_BYTES = CONFIG.get('logging.rotate_bytes', 512000, int)
-    LOG_FORMAT = CONFIG.get('logging.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
-    LOG_LEVEL = CONFIG.get('logging.level', 'INFO')
-    filehandler = RotatingFileHandler(os.path.expanduser(LOG_FILE), 'a', LOG_BYTES, LOG_BACKUPS)
-    filehandler.setFormatter(logging.Formatter(LOG_FORMAT))
-    log.addHandler(filehandler)
-    log.setLevel(LOG_LEVEL)
+logfile = CONFIG.get('logging.path')
+logformat = CONFIG.get('logging.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
+loglevel = CONFIG.get('logging.level', 'INFO')
+loghandler = logging.NullHandler()
+if logfile:
+    logbackups = CONFIG.get('logging.backup_count', 3, int)
+    logbytes = CONFIG.get('logging.rotate_bytes', 512000, int)
+    loghandler = RotatingFileHandler(os.path.expanduser(logfile), 'a', logbytes, logbackups)
+loghandler.setFormatter(logging.Formatter(logformat))
+log.addHandler(loghandler)
+log.setLevel(loglevel)
