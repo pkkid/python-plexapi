@@ -1,10 +1,11 @@
-## PlexAPI ##
+* ## PlexAPI ##
 Python bindings for the Plex API.
 
 * Navigate local or remote shared libraries.
 * Mark shows watched or unwatched.
 * Request rescan, analyze, empty trash.
 * Play media on connected clients.
+* Get the URL of an h264/aac video stream. (playable using a client like VLC, MPV, etc)
 * Plex Sync Support.
 
 Planned features:
