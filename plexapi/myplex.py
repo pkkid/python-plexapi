@@ -4,7 +4,7 @@ PlexAPI MyPlex
 import plexapi, requests
 from plexapi import TIMEOUT, log
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.utils import addrToIP, cast, toDatetime
+from plexapi.utils import cast, toDatetime
 from requests.status_codes import _codes as codes
 from threading import Thread
 from xml.etree import ElementTree
@@ -28,14 +28,14 @@ class MyPlexUser:
         self.queueEmail = data.attrib.get('queueEmail')
         self.queueUid = data.attrib.get('queueUid')
 
-    def servers(self):
-        return MyPlexServer.fetch_servers(self.authenticationToken)
+    def resources(self):
+        return MyPlexResource.fetch_resources(self.authenticationToken)
 
-    def getServer(self, search, port=32400):
+    def getResource(self, search, port=32400):
         """ Searches server.name, server.sourceTitle and server.host:server.port
             from the list of available for this PlexUser.
         """
-        return _findServer(self.servers(), search, port)
+        return _findResource(self.resources(), search, port)
 
     @classmethod
     def signin(cls, username, password):
@@ -71,87 +71,98 @@ class MyPlexAccount:
         self.subscriptionActive = data.attrib.get('subscriptionActive')
         self.subscriptionState = data.attrib.get('subscriptionState')
 
-    def servers(self):
-        return MyPlexServer.fetch_servers(self.authToken)
+    def resources(self):
+        return MyPlexResource.fetch_resources(self.authToken)
 
-    def getServer(self, search, port=32400):
+    def getResource(self, search, port=32400):
         """ Searches server.name, server.sourceTitle and server.host:server.port
             from the list of available for this PlexAccount.
         """
-        return _findServer(self.servers(), search, port)
+        return _findResource(self.resources(), search, port)
 
 
-class MyPlexServer:
-    SERVERS = 'https://plex.tv/pms/servers.xml?includeLite=1'
+class MyPlexResource:
+    RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
 
     def __init__(self, data):
-        self.accessToken = data.attrib.get('accessToken')
         self.name = data.attrib.get('name')
-        self.address = data.attrib.get('address')
-        self.port = cast(int, data.attrib.get('port'))
-        self.version = data.attrib.get('version')
-        self.scheme = data.attrib.get('scheme')
-        self.host = data.attrib.get('host')
-        self.localAddresses = data.attrib.get('localAddresses', '').split(',')
-        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.accessToken = data.attrib.get('accessToken')
+        self.product = data.attrib.get('product')
+        self.productVersion = data.attrib.get('productVersion')
+        self.platform = data.attrib.get('platform')
+        self.platformVersion = data.attrib.get('platformVersion')
+        self.device = data.attrib.get('device')
+        self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.createdAt = toDatetime(data.attrib.get('createdAt'))
-        self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
+        self.lastSeenAt = toDatetime(data.attrib.get('lastSeenAt'))
+        self.provides = data.attrib.get('provides')
         self.owned = cast(bool, data.attrib.get('owned'))
+        self.home = cast(bool, data.attrib.get('home'))
         self.synced = cast(bool, data.attrib.get('synced'))
-        self.sourceTitle = data.attrib.get('sourceTitle', '')
-        self.ownerId = cast(int, data.attrib.get('ownerId'))
-        self.home = data.attrib.get('home')
+        self.presence = cast(bool, data.attrib.get('presence'))
+        self.connections = [ResourceConnection(elem) for elem in data if elem.tag == 'Connection']
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))
 
     def connect(self):
-        # Try connecting to all known addresses in parellel to save time, but
+        # Only check non-local connections unless we own the resource
+        connections = sorted(self.connections, key=lambda c:c.local, reverse=True)
+        if not self.owned:
+            connections = [c for c in connections if c.local is False]
+        # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        addresses = [self.address]
-        if self.owned:
-            addresses = self.localAddresses + [self.address]
-        threads = [None] * len(addresses)
-        results = [None] * len(addresses)
-        for i in range(len(addresses)):
-            args = (addresses[i], results, i)
+        threads = [None] * len(connections)
+        results = [None] * len(connections)
+        for i in range(len(connections)):
+            args = (connections[i].uri, results, i)
             threads[i] = Thread(target=self._connect, args=args)
             threads[i].start()
         for thread in threads:
             thread.join()
-        results = list(filter(None, results))
-        if results:
-            log.info('Connecting to server: %s', results[0])
-            return results[0]
-        raise NotFound('Unable to connect to server: %s' % self.name)
+        results = [r for r in results if r]
+        if not results:
+            raise NotFound('Unable to connect to resource: %s' % self.name)
+        log.info('Connecting to server: %s', results[0])
+        return results[0]
 
-    def _connect(self, address, results, i):
-        from plexapi.server import PlexServer
+    def _connect(self, uri, results, i):
         try:
-            results[i] = PlexServer(address, self.port, self.accessToken)
+            from plexapi.server import PlexServer
+            results[i] = PlexServer(uri, self.accessToken)
         except NotFound:
             results[i] = None
 
     @classmethod
-    def fetch_servers(cls, token):
+    def fetch_resources(cls, token):
         headers = plexapi.BASE_HEADERS
         headers['X-Plex-Token'] = token
-        log.info('GET %s?X-Plex-Token=%s', cls.SERVERS, token)
-        response = requests.get(cls.SERVERS, headers=headers, timeout=TIMEOUT)
+        log.info('GET %s?X-Plex-Token=%s', cls.RESOURCES, token)
+        response = requests.get(cls.RESOURCES, headers=headers, timeout=TIMEOUT)
         data = ElementTree.fromstring(response.text.encode('utf8'))
-        return [MyPlexServer(elem) for elem in data]
+        return [MyPlexResource(elem) for elem in data]
 
 
-def _findServer(servers, search, port=32400):
-    """ Searches server.name, server.sourceTitle and server.host:server.port """
+class ResourceConnection:
+
+    def __init__(self, data):
+        self.protocol = data.attrib.get('protocol')
+        self.address = data.attrib.get('address')
+        self.port = cast(int, data.attrib.get('port'))
+        self.uri = data.attrib.get('uri')
+        self.local = cast(bool, data.attrib.get('local'))
+
+    def __repr__(self):
+        return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
+
+
+def _findResource(resources, search, port=32400):
+    """ Searches server.name """
     search = search.lower()
-    ipaddr = addrToIP(search)
-    log.info('Looking for server: %s (host: %s:%s)', search, ipaddr, port)
-    for server in servers:
-        serverName = server.name.lower() if server.name else 'NA'
-        sourceTitle = server.sourceTitle.lower() if server.sourceTitle else 'NA'
-        if (search in [serverName, sourceTitle]) or (server.host == ipaddr and server.port == port):
+    log.info('Looking for server: %s', search)
+    for server in resources:
+        if search == server.name.lower():
             log.info('Server found: %s', server)
             return server
-    log.info('Unable to find server: %s (host: %s:%s)', search, ipaddr, port)
-    raise NotFound('Unable to find server: %s (host: %s:%s)' % (search, ipaddr, port))
+    log.info('Unable to find server: %s', search)
+    raise NotFound('Unable to find server: %s' % search)

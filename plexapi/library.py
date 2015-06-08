@@ -6,7 +6,7 @@ from plexapi.exceptions import NotFound
 
 
 class Library(object):
-    
+
     def __init__(self, server, data):
         self.server = server
         self.identifier = data.attrib.get('identifier')
@@ -122,7 +122,7 @@ class LibrarySection(object):
 
     def contentRating(self, input=None):
         return self._secondary_list('contentRating', input)
-        
+
     def firstCharacter(self, input=None):
         return self._secondary_list('firstCharacter', input)
 
@@ -169,7 +169,7 @@ class MovieSection(LibrarySection):
 
     def country(self, input=None):
         return self._secondary_list('country', input)
-    
+
     def decade(self, input=None):
         return self._secondary_list('decade', input)
 
@@ -188,7 +188,7 @@ class MovieSection(LibrarySection):
 
 class ShowSection(LibrarySection):
     TYPE = 'show'
-    
+
     def recentlyViewedShows(self):
         return self._primary_list('recentlyViewedShows')
 

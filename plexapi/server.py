@@ -13,13 +13,13 @@ from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
 
 TOTAL_QUERIES = 0
+DEFAULT_BASEURI = 'http://localhost:32400'
 
 
 class PlexServer(object):
-    
-    def __init__(self, address='localhost', port=32400, token=None):
-        self.address = self._cleanAddress(address)
-        self.port = port
+
+    def __init__(self, baseuri=None, token=None):
+        self.baseuri = baseuri or DEFAULT_BASEURI
         self.token = token
         data = self._connect()
         self.friendlyName = data.attrib.get('friendlyName')
@@ -36,20 +36,14 @@ class PlexServer(object):
         self.version = data.attrib.get('version')
 
     def __repr__(self):
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.address, self.port)
-
-    def _cleanAddress(self, address):
-        address = address.lower().strip('/')
-        if address.startswith('http://'):
-            address = address[8:]
-        return address
+        return '<%s:%s>' % (self.__class__.__name__, self.baseuri)
 
     def _connect(self):
         try:
             return self.query('/')
         except Exception as err:
-            log.error('%s:%s: %s', self.address, self.port, err)
-            raise NotFound('No server found at: %s:%s' % (self.address, self.port))
+            log.error('%s: %s', self.baseuri, err)
+            raise NotFound('No server found at: %s' % self.baseuri)
 
     @property
     def library(self):
@@ -103,6 +97,7 @@ class PlexServer(object):
         return video.list_items(self, '/status/sessions')
 
     def url(self, path):
-        url = 'http://%s:%s/%s' % (self.address, self.port, path.lstrip('/'))
-        if self.token: url += '?X-Plex-Token=%s' % self.token
-        return url
+        if self.token:
+            delim = '&' if '?' in path else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self.baseuri, path, delim, self.token)
+        return '%s%s' % (self.baseuri, path)

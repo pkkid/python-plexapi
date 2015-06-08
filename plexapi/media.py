@@ -6,7 +6,7 @@ from plexapi.utils import cast
 
 class Media(object):
     TYPE = 'Media'
-    
+
     def __init__(self, server, data, initpath, video):
         self.server = server
         self.initpath = initpath
@@ -159,12 +159,12 @@ class VideoTag(object):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
 
     def related(self, vtype=None):
-        return self.server.library.search(None, **{self.FILTER:self})
+        return self.server.search(None, **{self.FILTER:self})
 
 
-class Country(VideoTag): TYPE='Country'; FILTER='country'
-class Director(VideoTag): TYPE = 'Director'; FILTER='director'
-class Genre(VideoTag): TYPE='Genre'; FILTER='genre'
-class Producer(VideoTag): TYPE = 'Producer'; FILTER='producer'
-class Actor(VideoTag): TYPE = 'Role'; FILTER='actor'
-class Writer(VideoTag): TYPE = 'Writer'; FILTER='writer'
+class Country(VideoTag): TYPE='Country'; FILTER='country'  # noqa
+class Director(VideoTag): TYPE = 'Director'; FILTER='director'  # noqa
+class Genre(VideoTag): TYPE='Genre'; FILTER='genre'  # noqa
+class Producer(VideoTag): TYPE = 'Producer'; FILTER='producer'  # noqa
+class Actor(VideoTag): TYPE = 'Role'; FILTER='actor'  # noqa
+class Writer(VideoTag): TYPE = 'Writer'; FILTER='writer'  # noqa

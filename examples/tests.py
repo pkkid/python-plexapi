@@ -1,7 +1,7 @@
 """
 Test Library Functions
 
-As of Plex version 0.9.11 I noticed that you must be logged in 
+As of Plex version 0.9.11 I noticed that you must be logged in
 to browse even the plex server locatewd at localhost. You can
 run this test suite with the following command:
 
@@ -52,7 +52,7 @@ def test_003_search_show(plex, user=None):
     assert result_server, 'Show not found.'
     assert result_server == result_library == result_shows, 'Show searches not consistent.'
     assert not result_movies, 'Movie search returned show title.'
-    
+
 
 def test_004_search_movie(plex, user=None):
     result_server = plex.search(MOVIE_TITLE)
@@ -124,7 +124,7 @@ def test_008_mark_movie_watched(plex, user=None):
     log(2, 'View count: %s' % movie.viewCount)
     movie.markWatched()
     log(2, 'View count: %s' % movie.viewCount)
-    assert movie.viewCount == 1, 'View count 0 after watched.' 
+    assert movie.viewCount == 1, 'View count 0 after watched.'
     movie.markUnwatched()
     log(2, 'View count: %s' % movie.viewCount)
     assert movie.viewCount == 0, 'View count 1 after unwatched.'
@@ -147,13 +147,19 @@ def test_011_play_media(plex, user=None):
     # Make sure the client is turned on!
     episode = plex.library.get(SHOW_TITLE).get(SHOW_EPISODE)
     client = plex.client(PLEX_CLIENT)
-    client.playMedia(episode); time.sleep(10)
-    client.pause(); time.sleep(3)
-    client.stepForward(); time.sleep(3)
-    client.play(); time.sleep(3)
-    client.stop(); time.sleep(3)
+    client.playMedia(episode)
+    time.sleep(10)
+    client.pause()
+    time.sleep(3)
+    client.stepForward()
+    time.sleep(3)
+    client.play()
+    time.sleep(3)
+    client.stop()
+    time.sleep(3)
     movie = plex.library.get(MOVIE_TITLE)
-    movie.play(client); time.sleep(10)
+    movie.play(client)
+    time.sleep(10)
     client.stop()
 
 
@@ -226,7 +232,7 @@ def test_015_list_devices(plex, user=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
-    parser.add_argument('-s', '--server', help='Name of the Plex server (requires user/pass).')
+    parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
     parser.add_argument('-u', '--username', help='Username for the Plex server.')
     parser.add_argument('-p', '--password', help='Password for the Plex server.')
     parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all tests.')

@@ -77,7 +77,7 @@ class Video(PlexPartialObject):
             params: Dict of additional parameters to include in URL.
         """
         params = {}
-        params['path'] = 'http://127.0.0.1:32400%s' % self.key
+        params['path'] = self.key
         params['offset'] = offset
         params['copyts'] = kwargs.get('copyts', 1)
         params['mediaIndex'] = kwargs.get('mediaIndex', 0)

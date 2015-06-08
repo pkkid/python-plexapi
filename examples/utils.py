@@ -13,9 +13,9 @@ def log(indent, message):
 
 
 def fetch_server(args):
-    if args.server:
+    if args.resource:
         user = MyPlexUser.signin(args.username, args.password)
-        return user.getServer(args.server).connect(), user
+        return user.getResource(args.resource).connect(), user
     return server.PlexServer(), None
 
 

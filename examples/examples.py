@@ -69,7 +69,7 @@ def example_008_get_stream_url(plex):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run PlexAPI examples.')
-    parser.add_argument('-s', '--server', help='Name of the Plex server (requires user/pass).')
+    parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
     parser.add_argument('-u', '--username', help='Username for the Plex server.')
     parser.add_argument('-p', '--password', help='Password for the Plex server.')
     parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all examples.')
