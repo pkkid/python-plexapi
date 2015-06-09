@@ -1,24 +1,18 @@
-* ## PlexAPI ##
+## PlexAPI ##
 Python bindings for the Plex API.
 
 * Navigate local or remote shared libraries.
 * Mark shows watched or unwatched.
 * Request rescan, analyze, empty trash.
 * Play media on connected clients.
-* Get the URL of an h264/aac video stream. (playable using a client like VLC, MPV, etc)
+* Get URL to stream stream h264/aac video (playable in VLC,MPV,etc).
 * Plex Sync Support.
 
-Planned features:
-
-* Create and maintain playlists.
-* List active sessions.
-* Play trailers and extras.
-* Provide useful utility scripts.
-* Better support for Music and Photos?
 
 #### Install ###
 
     pip install plexapi
+
 
 #### Getting a PlexServer Instance ####
 
@@ -101,3 +95,11 @@ print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
 A. This API reads XML documents provided by MyPlex and the Plex Server.
 We decided to conform to their style so that the API variable names directly
 match with the provided XML documents.
+
+
+**Q. Why don't you offer feature XYZ?**
+
+A. This library is meant to be a wrapper around the XML pages the Plex
+server provides. If we are not providing an API that is offerered in the
+XML pages, please let us know! -- Adding additional features beyond that
+should be done outside the scope of this library.
