@@ -35,7 +35,7 @@ def example_003_list_all_clients(plex):
 def example_004_play_avatar_on_iphone(plex):
     """ Example 4: Play the Movie Avatar on my iPhone. """
     avatar = plex.library.section('Movies').get('Avatar')
-    client = plex.client("Michael's iPhone")
+    client = plex.client("iphone-mike")
     client.playMedia(avatar)
 
 
