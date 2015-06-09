@@ -33,7 +33,9 @@ def example_003_list_all_clients(plex):
 
 
 def example_004_play_avatar_on_iphone(plex):
-    """ Example 4: Play the Movie Avatar on my iPhone. """
+    """ Example 4: Play the Movie Avatar on my iPhone.
+        Note: Client must be on same network as server.
+    """
     avatar = plex.library.section('Movies').get('Avatar')
     client = plex.client("iphone-mike")
     client.playMedia(avatar)

@@ -64,6 +64,7 @@ for client in plex.clients():
 ```
 ```python
 # Example 4: Play the movie Avatar on another client.
+# Note: Client must be on same network as server.
 avatar = plex.library.section('Movies').get('Avatar')
 client = plex.client("Michael's iPhone")
 client.playMedia(avatar)
