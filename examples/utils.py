@@ -6,10 +6,21 @@ import datetime, time
 from plexapi import server
 from plexapi.myplex import MyPlexUser
 
+COLORS = dict(
+    blue = '\033[94m',
+    green = '\033[92m',
+    red = '\033[91m',
+    yellow = '\033[93m',
+    end = '\033[0m',
+)
 
-def log(indent, message):
+
+def log(indent, message, color=None):
     dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-    print('%s: %s%s' % (dt, ' '*indent, message))
+    if color:
+        print('%s: %s%s%s%s' % (dt, ' '*indent, COLORS[color], message, COLORS['end']))
+    else:
+        print('%s: %s%s' % (dt, ' '*indent, message))
 
 
 def fetch_server(args):
@@ -38,9 +49,10 @@ def run_tests(module, args):
         log(0, test.__name__)
         try:
             test(plex, user)
+            log(2, 'PASS!', 'blue')
             tests['passed'] += 1
         except Exception as err:
-            log(2, 'FAIL!: %s' % err)
+            log(2, 'FAIL!: %s' % err, 'red')
             tests['failed'] += 1
         runtime = time.time() - starttime
         log(2, 'Runtime: %.3fs' % runtime)

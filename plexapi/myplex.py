@@ -83,6 +83,7 @@ class MyPlexAccount:
 
 class MyPlexResource:
     RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
+    SSLTESTS = [(True, 'uri'), (False, 'http_uri')]
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -105,22 +106,27 @@ class MyPlexResource:
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))
 
-    def connect(self):
+    def connect(self, ssl=None):
         # Only check non-local connections unless we own the resource
         connections = sorted(self.connections, key=lambda c:c.local, reverse=True)
         if not self.owned:
             connections = [c for c in connections if c.local is False]
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        threads = [None] * len(connections)
-        results = [None] * len(connections)
-        for i in range(len(connections)):
-            args = (connections[i].uri, results, i)
-            threads[i] = Thread(target=self._connect, args=args)
-            threads[i].start()
+        threads, results = [], []
+        for testssl, attr in self.SSLTESTS:
+            if ssl in [None, testssl]:
+                for i in range(len(connections)):
+                    uri = getattr(connections[i], attr)
+                    args = (uri, results, len(results))
+                    results.append(None)
+                    threads.append(Thread(target=self._connect, args=args))
+                    threads[-1].start()
         for thread in threads:
             thread.join()
-        results = [r for r in results if r]
+        for uri, result in results:
+            log.info('Testing connection: %s %s', uri, 'OK' if result else 'ERR')
+        results = [r[1] for r in results if r]
         if not results:
             raise NotFound('Unable to connect to resource: %s' % self.name)
         log.info('Connecting to server: %s', results[0])
@@ -129,9 +135,9 @@ class MyPlexResource:
     def _connect(self, uri, results, i):
         try:
             from plexapi.server import PlexServer
-            results[i] = PlexServer(uri, self.accessToken)
+            results[i] = (uri, PlexServer(uri, self.accessToken))
         except NotFound:
-            results[i] = None
+            results[i] = (uri, None)
 
     @classmethod
     def fetch_resources(cls, token):
@@ -151,6 +157,10 @@ class ResourceConnection:
         self.port = cast(int, data.attrib.get('port'))
         self.uri = data.attrib.get('uri')
         self.local = cast(bool, data.attrib.get('local'))
+
+    @property
+    def http_uri(self):
+        return 'http://%s:%s' % (self.address, self.port)
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
