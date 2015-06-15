@@ -128,7 +128,7 @@ class MyPlexResource:
         # or (uri, None) in the case a connection could not be established.
         for uri, result in results:
             log.info('Testing connection: %s %s', uri, 'OK' if result else 'ERR')
-        results = [r[1] for r in results if r]
+        results = filter(None, [r[1] for r in results if r])
         if not results:
             raise NotFound('Unable to connect to resource: %s' % self.name)
         log.info('Connecting to server: %s', results[0])
