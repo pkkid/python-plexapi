@@ -35,7 +35,7 @@ available libraries.
 ```python
 from plexapi.myplex import MyPlexUser
 user = MyPlexUser.signin('<USERNAME>', '<PASSWORD>')
-plex = user.getServer('<SERVERNAME>').connect()
+plex = user.getResource('<SERVERNAME>').connect()
 ```
 
 #### Usage Examples ####
