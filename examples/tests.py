@@ -41,16 +41,14 @@ def test_002_list_sections(plex, user=None):
 
 def test_003_search_show(plex, user=None):
     result_server = plex.search(SHOW_TITLE)
-    result_library = plex.library.search(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(SHOW_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).search(SHOW_TITLE)
     log(2, 'Searching for: %s' % SHOW_TITLE)
     log(4, 'Result Server: %s' % result_server)
-    log(4, 'Result Library: %s' % result_library)
     log(4, 'Result Shows: %s' % result_shows)
     log(4, 'Result Movies: %s' % result_movies)
     assert result_server, 'Show not found.'
-    assert result_server == result_library == result_shows, 'Show searches not consistent.'
+    assert result_server == result_shows, 'Show searches not consistent.'
     assert not result_movies, 'Movie search returned show title.'
 
 
@@ -70,17 +68,15 @@ def test_004_search_movie(plex, user=None):
 
 
 def test_005_navigate_to_show(plex, user=None):
-    result_library = plex.library.get(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     try:
         result_movies = plex.library.section(MOVIE_SECTION).get(SHOW_TITLE)
     except:
         result_movies = None
     log(2, 'Navigating to: %s' % SHOW_TITLE)
-    log(4, 'Result Library: %s' % result_library)
     log(4, 'Result Shows: %s' % result_shows)
     log(4, 'Result Movies: %s' % result_movies)
-    assert result_library == result_shows, 'Show navigation not consistent.'
+    assert result_shows, 'Show navigation not working.'
     assert not result_movies, 'Movie navigation returned show title.'
 
 
@@ -100,7 +96,7 @@ def test_006_navigate_to_movie(plex, user=None):
 
 
 def test_007_navigate_around_show(plex, user=None):
-    show = plex.library.get(SHOW_TITLE)
+    show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     seasons = show.seasons()
     season = show.season(SHOW_SEASON)
     episodes = show.episodes()
@@ -136,7 +132,7 @@ def test_009_refresh(plex, user=None):
 
 
 def test_010_playQueues(plex, user=None):
-    episode = plex.library.get(SHOW_TITLE).get(SHOW_EPISODE)
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
     playqueue = plex.createPlayQueue(episode)
     assert len(playqueue.items) == 1, 'No items in play queue.'
     assert playqueue.items[0].title == SHOW_EPISODE, 'Wrong show queued.'
@@ -145,7 +141,7 @@ def test_010_playQueues(plex, user=None):
 
 def test_011_play_media(plex, user=None):
     # Make sure the client is turned on!
-    episode = plex.library.get(SHOW_TITLE).get(SHOW_EPISODE)
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
     client = plex.client(PLEX_CLIENT)
     client.playMedia(episode)
     time.sleep(10)
@@ -168,10 +164,10 @@ def test_012_myplex_account(plex, user=None):
     print(account.__dict__)
 
 
-def test_013_list_media_files(plex):
+def test_013_list_media_files(plex, user=None):
     # Fetch file names from the tv show
     episode_files = []
-    episode = plex.library.get(SHOW_TITLE).episodes()[-1]
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()[-1]
     log(2, 'Episode Files: %s' % episode)
     for media in episode.media:
         for part in media.parts:
@@ -180,7 +176,7 @@ def test_013_list_media_files(plex):
     assert filter(None, episode_files), 'No show files have been listed.'
     # Fetch file names from the movie
     movie_files = []
-    movie = plex.library.get(MOVIE_TITLE)
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     log(2, 'Movie Files: %s' % movie)
     for media in movie.media:
         for part in media.parts:
@@ -189,8 +185,9 @@ def test_013_list_media_files(plex):
     assert filter(None, movie_files), 'No movie files have been listed.'
 
 
-def test_014_list_video_tags(plex):
-    movie = plex.library.get(MOVIE_TITLE)
+def test_014_list_video_tags(plex, user=None):
+    movies = plex.library.section(MOVIE_SECTION)
+    movie = movies.get(MOVIE_TITLE)
     log(2, 'Countries: %s' % movie.countries[0:3])
     log(2, 'Directors: %s' % movie.directors[0:3])
     log(2, 'Genres: %s' % movie.genres[0:3])
@@ -204,18 +201,18 @@ def test_014_list_video_tags(plex):
     assert filter(None, movie.actors), 'No actors listed for movie.'
     assert filter(None, movie.writers), 'No writers listed for movie.'
     log(2, 'List movies with same director: %s' % movie.directors[0])
-    related = movie.directors[0].related()
+    related = movies.search(None, director=movie.directors[0])
     log(4, related[0:3])
     assert movie in related, 'Movie was not found in related directors search.'
 
 
 def test_015_list_devices(plex, user=None):
-    assert user, 'Must specify username, password & resoource to run this test.'
+    assert user, 'Must specify username, password & resource to run this test.'
     for device in user.devices():
         log(2, device.name or device.product)
 
 
-# def test_013_sync_items(plex, user=None):
+# def test_016_sync_items(plex, user=None):
 #     user = MyPlexUser('user', 'pass')
 #     device = user.getDevice('device-uuid')
 #     # fetch the sync items via the device sync list

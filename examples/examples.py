@@ -22,14 +22,16 @@ def example_001_list_all_unwatched_content(plex):
 
 
 def example_002_mark_all_conan_episodes_watched(plex):
-    """ Example 2: Mark all Conan episodes watched. """
-    plex.library.get('Conan (2010)').markWatched()
+    """ Example 2: Mark all Friends episodes watched. """
+    plex.library.section('TV Shows').get('Friends').markWatched()
 
 
 def example_003_list_all_clients(plex):
     """ Example 3: List all Clients connected to the Server. """
     for client in plex.clients():
         print(client.name)
+    else:
+        print 'No clients'
 
 
 def example_004_play_avatar_on_iphone(plex):
@@ -49,9 +51,10 @@ def example_005_search(plex):
 
 def example_006_follow_the_talent(plex):
     """ Example 6: List all movies directed by the same person as Jurassic Park. """
-    jurassic_park = plex.library.section('Movies').get('Jurassic Park')
+    movies = plex.library.section('Movies')
+    jurassic_park = movies.get('Jurassic Park')
     director = jurassic_park.directors[0]
-    for movie in director.related():
+    for movie in movies.search(None, director=director):
         print(movie.title)
 
 

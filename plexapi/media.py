@@ -158,9 +158,6 @@ class VideoTag(object):
         tag = self.tag.replace(' ','.')[0:20]
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
 
-    def related(self, vtype=None):
-        return self.server.search(None, **{self.FILTER:self})
-
 
 class Country(VideoTag): TYPE='Country'; FILTER='country'  # noqa
 class Director(VideoTag): TYPE = 'Director'; FILTER='director'  # noqa

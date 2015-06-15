@@ -124,6 +124,8 @@ class MyPlexResource:
                     threads[-1].start()
         for thread in threads:
             thread.join()
+        # At this point we have a list of result tuples containing (uri, PlexServer)
+        # or (uri, None) in the case a connection could not be established.
         for uri, result in results:
             log.info('Testing connection: %s %s', uri, 'OK' if result else 'ERR')
         results = [r[1] for r in results if r]

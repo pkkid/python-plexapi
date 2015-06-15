@@ -2,7 +2,10 @@
 PlexConfig
 """
 from collections import defaultdict
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser  # Python2
+except ImportError:
+    from configparser import ConfigParser  # Python3
 
 
 class PlexConfig(ConfigParser):

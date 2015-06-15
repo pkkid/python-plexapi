@@ -31,8 +31,8 @@ class PlexServer(object):
         self.myPlexUsername = data.attrib.get('myPlexUsername')
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
-        self.transcoderActiveVideoSessions = int(data.attrib.get('transcoderActiveVideoSessions'))
-        self.updatedAt = int(data.attrib.get('updatedAt'))
+        self.transcoderActiveVideoSessions = int(data.attrib.get('transcoderActiveVideoSessions', 0))
+        self.updatedAt = int(data.attrib.get('updatedAt', 0))
         self.version = data.attrib.get('version')
 
     def __repr__(self):
