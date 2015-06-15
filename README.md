@@ -70,9 +70,10 @@ for video in plex.search('Game'):
 ```
 ```python
 # Example 6: List all movies directed by the same person as Jurassic Park.
-jurassic_park = plex.library.section('Movies').get('Jurassic Park')
+movies = plex.library.section('Movies')
+jurassic_park = movies.get('Jurassic Park')
 director = jurassic_park.directors[0]
-for movie in director.related():
+for movie in movies.search(None, director=director):
     print(movie.title)
 ```
 ```python
