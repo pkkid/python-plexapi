@@ -7,7 +7,7 @@ from plexapi.config import PlexConfig
 from uuid import getnode
 
 PROJECT = 'PlexAPI'
-VERSION = '0.9.6'
+VERSION = '1.0.0'
 
 # Load User Defined Config
 CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
