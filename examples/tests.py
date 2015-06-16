@@ -208,7 +208,7 @@ def test_014_list_video_tags(plex, user=None):
 
 def test_015_list_devices(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
-    for device in user.devices():
+    for device in user.resources():
         log(2, device.name or device.product)
 
 
