@@ -93,10 +93,8 @@ class Client(object):
         })
 
     def timeline(self):
-        url = self.url('timeline/poll')
         params = {'wait':1, 'commandID':4}
-        xml_text = requests.get(url, params=params, headers=BASE_HEADERS).text
-        return ElementTree.fromstring(xml_text)
+        return self.server.query('timeline/poll', params=params)
 
     def isPlayingMedia(self):
         timeline = self.timeline()

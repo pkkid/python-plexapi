@@ -74,12 +74,12 @@ class PlexServer(object):
             headers['X-Plex-Token'] = self.token
         return headers
 
-    def query(self, path, method=requests.get):
+    def query(self, path, method=requests.get, **kwargs):
         global TOTAL_QUERIES
         TOTAL_QUERIES += 1
         url = self.url(path)
         log.info('%s %s', method.__name__.upper(), url)
-        response = method(url, headers=self.headers(), timeout=TIMEOUT)
+        response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
