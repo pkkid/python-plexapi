@@ -1,8 +1,12 @@
 """
 PlexAPI Utils
 """
-import urllib
 from datetime import datetime
+
+try:
+    from urllib import quote  # Python2
+except ImportError:
+    from urllib.parse import quote  # Python3
 
 NA = '__NA__'  # Value not available
 
@@ -56,7 +60,7 @@ def joinArgs(args):
     arglist = []
     for key in sorted(args, key=lambda x:x.lower()):
         value = str(args[key])
-        arglist.append('%s=%s' % (key, urllib.quote(value)))
+        arglist.append('%s=%s' % (key, quote(value)))
     return '?%s' % '&'.join(arglist)
 
 

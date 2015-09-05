@@ -1,13 +1,18 @@
 """
 PlexVideo
 """
-import re, urllib
+import re
 from plexapi.client import Client
 from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from plexapi.utils import PlexPartialObject, NA
 from plexapi.utils import cast, toDatetime
+
+try:
+    from urllib import urlencode  # Python2
+except ImportError:
+    from urllib.parse import urlencode  # Python3
 
 
 class Video(PlexPartialObject):
@@ -88,7 +93,7 @@ class Video(PlexPartialObject):
             params['maxVideoBitrate'] = max(maxVideoBitrate, 64)
         if videoResolution and re.match('^\d+x\d+$', videoResolution):
             params['videoResolution'] = videoResolution
-        return self.server.url('/video/:/transcode/universal/start?%s' % urllib.urlencode(params))
+        return self.server.url('/video/:/transcode/universal/start?%s' % urlencode(params))
 
     def markWatched(self):
         path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey

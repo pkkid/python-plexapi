@@ -59,7 +59,7 @@ class Library(object):
         args = {}
         if title: args['title'] = title
         if vtype: args['type'] = video.search_type(vtype)
-        for tag, obj in tags.iteritems():
+        for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return video.list_items(self.server, query)
@@ -99,7 +99,7 @@ class LibrarySection(object):
     def _secondary_list(self, key, input=None):
         choices = list_choices(self.server, '/library/sections/%s/%s' % (self.key, key))
         if not input:
-            return choices.keys()
+            return list(choices.keys())
         return video.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
 
     def all(self):
@@ -146,7 +146,7 @@ class LibrarySection(object):
         args = {}
         if title: args['title'] = title
         if vtype: args['type'] = video.search_type(vtype)
-        for tag, obj in tags.iteritems():
+        for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
         return video.list_items(self.server, query)

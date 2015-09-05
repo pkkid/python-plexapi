@@ -26,7 +26,7 @@ class SyncItem(object):
         return '<{0}:{1}>'.format(self.__class__.__name__, self.id)
 
     def server(self):
-        server = filter(lambda x: x.machineIdentifier == self.machineIdentifier, self.servers)
+        server = list(filter(lambda x: x.machineIdentifier == self.machineIdentifier, self.servers))
         if 0 == len(server):
             raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
 
