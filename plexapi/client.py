@@ -4,10 +4,12 @@ See: https://code.google.com/p/plex-api/w/list
 """
 import requests
 from requests.status_codes import _codes as codes
+from plexapi import log
 from plexapi import TIMEOUT, log, utils, BASE_HEADERS
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 from xml.etree import ElementTree
 
+TOTAL_QUERIES = 0
 SERVER = 'server'
 CLIENT = 'client'
 
@@ -92,9 +94,25 @@ class Client(object):
             'offset': 0,
         })
 
+    def headers(self):
+        headers = BASE_HEADERS
+        return headers
+
+    def query(self, path, method=requests.get, **kwargs):
+        global TOTAL_QUERIES
+        TOTAL_QUERIES += 1
+        url = self.url(path)
+        log.info('%s %s', method.__name__.upper(), url)
+        response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
+        if response.status_code not in [200, 201]:
+            codename = codes.get(response.status_code)[0]
+            raise BadRequest('(%s) %s' % (response.status_code, codename))
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data else None
+
     def timeline(self):
         params = {'wait':1, 'commandID':4}
-        return self.server.query('timeline/poll', params=params)
+        return self.query('timeline/poll', params=params)
 
     def isPlayingMedia(self):
         timeline = self.timeline()
