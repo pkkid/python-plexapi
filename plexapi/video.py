@@ -84,11 +84,13 @@ class Video(PlexPartialObject):
         params['copyts'] = kwargs.get('copyts', 1)
         params['mediaIndex'] = kwargs.get('mediaIndex', 0)
         params['X-Plex-Platform'] = kwargs.get('platform', 'Chrome')
+        if 'protocol' in kwargs:
+            params['protocol'] = kwargs['protocol']
         if maxVideoBitrate:
             params['maxVideoBitrate'] = max(maxVideoBitrate, 64)
         if videoResolution and re.match('^\d+x\d+$', videoResolution):
             params['videoResolution'] = videoResolution
-        return self.server.url('/video/:/transcode/universal/start?%s' % urllib.urlencode(params))
+        return self.server.url('/video/:/transcode/universal/start.m3u8?%s' % urllib.urlencode(params))
 
     def markWatched(self):
         path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
