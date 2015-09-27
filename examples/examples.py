@@ -31,7 +31,7 @@ def example_003_list_all_clients(plex):
     for client in plex.clients():
         print(client.name)
     else:
-        print 'No clients'
+        print('No clients')
 
 
 def example_004_play_avatar_on_iphone(plex):
@@ -68,8 +68,8 @@ def example_007_list_files(plex):
 def example_008_get_stream_url(plex):
     """ Example 8: Get a URL you can open in VLC, MPV, etc. """
     jurassic_park = plex.library.section('Movies').get('Jurassic Park')
-    print 'Try running the following command:'
-    print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
+    print('Try running the following command:')
+    print('vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600'))
 
 
 if __name__ == '__main__':
