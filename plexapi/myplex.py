@@ -2,7 +2,7 @@
 PlexAPI MyPlex
 """
 import plexapi, requests
-from plexapi import TIMEOUT, log
+from plexapi import TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.utils import cast, toDatetime
 from requests.status_codes import _codes as codes
@@ -36,6 +36,9 @@ class MyPlexUser:
             from the list of available for this PlexUser.
         """
         return _findResource(self.resources(), search, port)
+
+    def devices(self):
+        return MyPlexDevice.fetch_resources(self.authenticationToken)
 
     @classmethod
     def signin(cls, username, password):
@@ -178,3 +181,95 @@ def _findResource(resources, search, port=32400):
             return server
     log.info('Unable to find server: %s', search)
     raise NotFound('Unable to find server: %s' % search)
+
+class MyPlexDevice:
+    DEVICES = 'https://plex.tv/devices.xml'
+
+    def __init__(self, data):
+        self.name = data.attrib.get('name')
+        self.publicAddress = data.attrib.get('publicAddress')
+        self.product = data.attrib.get('product')
+        self.productVersion = data.attrib.get('productVersion')
+        self.platform = data.attrib.get('platform')
+        self.platformVersion = data.attrib.get('platformVersion')
+        self.device = data.attrib.get('device')
+        self.model = data.attrib.get('model')
+        self.vendor = data.attrib.get('vendor')
+        self.provides = data.attrib.get('provides').split(',')
+        self.clientIdentifier = data.attrib.get('clientIdentifier')
+        self.version = data.attrib.get('version')
+        self.id = data.attrib.get('id')
+        self.token = data.attrib.get('token')
+        self.screenResolution = data.attrib.get('screenResolution')
+        self.screenDensity = data.attrib.get('screenDensity')
+        self.connectionsUris = [ connection.attrib.get('uri') for connection in data.iter('Connection') ]
+
+    def __repr__(self):
+        return '<%s:%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'), self.product.encode('utf8'))
+
+    @property
+    def isReachable(self):
+        return len(self.connectionsUris)
+
+    @property
+    def baseUrl(self):
+        if not self.isReachable:
+            raise Exception('This device is not reachable')
+        return self.connectionsUris[0]
+
+    @classmethod
+    def fetch_resources(cls, token):
+        headers = plexapi.BASE_HEADERS
+        headers['X-Plex-Token'] = token
+        log.info('GET %s?X-Plex-Token=%s', cls.DEVICES, token)
+        response = requests.get(cls.DEVICES, headers=headers, timeout=TIMEOUT)
+        data = ElementTree.fromstring(response.text.encode('utf8'))
+        return [MyPlexDevice(elem) for elem in data]
+
+    def sendCommand(self, command, args=None):
+        url = '%s%s' % (self.url(command), utils.joinArgs(args))
+        log.info('GET %s', url)
+        headers = plexapi.BASE_HEADERS
+        headers['X-Plex-Target-Client-Identifier'] = self.clientIdentifier
+        response = requests.get(url, headers=headers, timeout=TIMEOUT)
+        if response.status_code != requests.codes.ok:
+            codename = codes.get(response.status_code)[0]
+            raise BadRequest('(%s) %s' % (response.status_code, codename))
+        data = response.text.encode('utf8')
+
+        if data:
+            try:
+                return ElementTree.fromstring(data)
+            except:
+                pass
+
+        return None
+
+    def url(self, path):
+        return '%s/player/%s' % (self.baseUrl, path.lstrip('/'))
+
+    # Navigation Commands
+    def moveUp(self, args=None): self.sendCommand('navigation/moveUp', args)  # noqa
+    def moveDown(self, args=None): self.sendCommand('navigation/moveDown', args)  # noqa
+    def moveLeft(self, args=None): self.sendCommand('navigation/moveLeft', args)  # noqa
+    def moveRight(self, args=None): self.sendCommand('navigation/moveRight', args)  # noqa
+    def pageUp(self, args=None): self.sendCommand('navigation/pageUp', args)  # noqa
+    def pageDown(self, args=None): self.sendCommand('navigation/pageDown', args)  # noqa
+    def nextLetter(self, args=None): self.sendCommand('navigation/nextLetter', args)  # noqa
+    def previousLetter(self, args=None): self.sendCommand('navigation/previousLetter', args)  # noqa
+    def select(self, args=None): self.sendCommand('navigation/select', args)  # noqa
+    def back(self, args=None): self.sendCommand('navigation/back', args)  # noqa
+    def contextMenu(self, args=None): self.sendCommand('navigation/contextMenu', args)  # noqa
+    def toggleOSD(self, args=None): self.sendCommand('navigation/toggleOSD', args)  # noqa
+
+    # Playback Commands
+    def play(self, args=None): self.sendCommand('playback/play', args)  # noqa
+    def pause(self, args=None): self.sendCommand('playback/pause', args)  # noqa
+    def stop(self, args=None): self.sendCommand('playback/stop', args)  # noqa
+    def stepForward(self, args=None): self.sendCommand('playback/stepForward', args)  # noqa
+    def bigStepForward(self, args=None): self.sendCommand('playback/bigStepForward', args)  # noqa
+    def stepBack(self, args=None): self.sendCommand('playback/stepBack', args)  # noqa
+    def bigStepBack(self, args=None): self.sendCommand('playback/bigStepBack', args)  # noqa
+    def skipNext(self, args=None): self.sendCommand('playback/skipNext', args)  # noqa
+    def skipPrevious(self, args=None): self.sendCommand('playback/skipPrevious', args)  # noqa
+
