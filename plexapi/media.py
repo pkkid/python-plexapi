@@ -55,7 +55,7 @@ class MediaPart(object):
 
     def selected_stream(self, stream_type):
         streams = filter(lambda x: stream_type == x.type, self.streams)
-        selected = filter(lambda x: x.selected is True, streams)
+        selected = list(filter(lambda x: x.selected is True, streams))
         if len(selected) == 0:
             return None
 
