@@ -2,6 +2,7 @@
 PlexVideo
 """
 import re
+from requests import put
 from plexapi.client import Client
 from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
@@ -111,7 +112,7 @@ class Video(PlexPartialObject):
         client.playMedia(self)
 
     def refresh(self):
-        self.server.query('/%s/refresh' % self.key)
+        self.server.query('/%s/refresh' % self.key, method=put)
 
 
 class Movie(Video):
