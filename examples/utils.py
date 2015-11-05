@@ -34,7 +34,7 @@ def iter_tests(module, args):
     check_test = lambda name: name.startswith('test_') or name.startswith('example_')
     check_name = lambda name: not args.name or args.name in name
     module = sys.modules[module]
-    for func in sorted(module.__dict__.values()):
+    for _, func in sorted(module.__dict__.items()):  # .values():
         if inspect.isfunction(func) and inspect.getmodule(func) == module:
             if check_test(func.__name__) and check_name(func.__name__):
                 yield func

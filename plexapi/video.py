@@ -138,6 +138,7 @@ class Movie(Video):
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey', NA)
+        self.is_watched = bool(self.viewCount > 0)  # custom attr
 
 
 class Show(Video):
@@ -246,6 +247,7 @@ class Episode(Video):
         self.year = cast(int, data.attrib.get('year', NA))
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.is_watched = bool(self.viewCount > 0)  # custom attr
 
     @property
     def thumbUrl(self):

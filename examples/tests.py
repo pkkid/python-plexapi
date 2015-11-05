@@ -227,6 +227,14 @@ def test_015_list_devices(plex, user=None):
 #                 item.mark_as_done(part.sync_id)
 
 
+def test_017_is_watched(plex, user=None):
+    show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
+    episode = show.get(SHOW_EPISODE)
+    log(2, '%s is_watched: %s' % (episode.title, episode.is_watched))
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    log(2, '%s is_watched: %s' % (movie.title, movie.is_watched))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
     parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
