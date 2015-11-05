@@ -10,7 +10,7 @@ from threading import Thread
 from xml.etree import ElementTree
 
 
-class MyPlexUser:
+class MyPlexUser(object):
     """ Logs into my.plexapp.com to fetch account and token information. This
         useful to get a token if not on the local network.
     """
@@ -56,7 +56,7 @@ class MyPlexUser:
         return cls(data)
 
 
-class MyPlexAccount:
+class MyPlexAccount(object):
     """ Represents myPlex account if you already have a connection to a server. """
 
     def __init__(self, server, data):
@@ -84,7 +84,7 @@ class MyPlexAccount:
         return _findResource(self.resources(), search, port)
 
 
-class MyPlexResource:
+class MyPlexResource(object):
     RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
     SSLTESTS = [(True, 'uri'), (False, 'http_uri')]
 
@@ -154,7 +154,7 @@ class MyPlexResource:
         return [MyPlexResource(elem) for elem in data]
 
 
-class ResourceConnection:
+class ResourceConnection(object):
 
     def __init__(self, data):
         self.protocol = data.attrib.get('protocol')
@@ -182,7 +182,8 @@ def _findResource(resources, search, port=32400):
     log.info('Unable to find server: %s', search)
     raise NotFound('Unable to find server: %s' % search)
 
-class MyPlexDevice:
+
+class MyPlexDevice(object):
     DEVICES = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
@@ -202,7 +203,7 @@ class MyPlexDevice:
         self.token = data.attrib.get('token')
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
-        self.connectionsUris = [ connection.attrib.get('uri') for connection in data.iter('Connection') ]
+        self.connectionsUris = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
     def __repr__(self):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'), self.product.encode('utf8'))
@@ -236,13 +237,11 @@ class MyPlexDevice:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
-
         if data:
             try:
                 return ElementTree.fromstring(data)
             except:
                 pass
-
         return None
 
     def url(self, path):
@@ -272,4 +271,3 @@ class MyPlexDevice:
     def bigStepBack(self, args=None): self.sendCommand('playback/bigStepBack', args)  # noqa
     def skipNext(self, args=None): self.sendCommand('playback/skipNext', args)  # noqa
     def skipPrevious(self, args=None): self.sendCommand('playback/skipPrevious', args)  # noqa
-
