@@ -3,7 +3,7 @@ PlexVideo
 """
 import re, urllib
 from plexapi.client import Client
-from plexapi.media import Media, Country, Director, Genre, Producer, Actor, Writer
+from plexapi.media import Media, TranscodeSession, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from plexapi.utils import PlexPartialObject, NA
@@ -35,6 +35,7 @@ class Video(PlexPartialObject):
         self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
+        self.transcodeSession = self._find_transcodeSession(data)
         if self.isFullObject():
             # These are auto-populated when requested
             self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
@@ -59,6 +60,12 @@ class Video(PlexPartialObject):
         elem = data.find('Player')
         if elem is not None:
             return Client(self.server, elem)
+        return None
+
+    def _find_transcodeSession(self, data):
+        elem = data.find('TranscodeSession')
+        if elem is not None:
+            return TranscodeSession(self.server, elem)
         return None
 
     def iter_parts(self):

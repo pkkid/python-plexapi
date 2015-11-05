@@ -145,6 +145,29 @@ class StreamSubtitle(MediaPartStream):
         self.format = data.attrib.get('format')
 
 
+class TranscodeSession(object):
+    TYPE = 'TranscodeSession'
+
+    def __init__(self, server, data):
+        self.server = server
+        self.key = data.attrib.get('key')
+        self.throttled = cast(int, data.attrib.get('throttled'))
+        self.progress = cast(float, data.attrib.get('progress'))
+        self.speed = cast(int, data.attrib.get('speed'))
+        self.duration = cast(int, data.attrib.get('duration'))
+        self.remaining = cast(int, data.attrib.get('remaining'))
+        self.context = data.attrib.get('context')
+        self.videoDecision = data.attrib.get('videoDecision')
+        self.audioDecision = data.attrib.get('audioDecision')
+        self.protocol = data.attrib.get('protocol')
+        self.container = data.attrib.get('container')
+        self.videoCodec = data.attrib.get('videoCodec')
+        self.audioCodec = data.attrib.get('audioCodec')
+        self.audioChannels = cast(int, data.attrib.get('audioChannels'))
+        self.width = cast(int, data.attrib.get('width'))
+        self.height = cast(int, data.attrib.get('height'))
+
+
 class VideoTag(object):
     TYPE = None
 
