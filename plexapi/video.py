@@ -259,6 +259,11 @@ class Episode(Video):
     def show(self):
         return list_items(self.server, self.grandparentKey)[0]
 
+    @property
+    def is_watched(self):
+        """Return whether the episode is marked as watched."""
+        return self.viewCount > 0
+
 
 def build_item(server, elem, initpath):
     VIDEOCLS = {Movie.TYPE:Movie, Show.TYPE:Show, Season.TYPE:Season, Episode.TYPE:Episode}
