@@ -1,7 +1,7 @@
 """
 PlexServer
 """
-import requests, urllib
+import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, video
@@ -11,6 +11,12 @@ from plexapi.library import Library
 from plexapi.myplex import MyPlexAccount
 from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
+
+
+try:
+    from urllib import quote  # Python2
+except ImportError:
+    from urllib.parse import quote  # Python3
 
 TOTAL_QUERIES = 0
 DEFAULT_BASEURI = 'http://localhost:32400'
@@ -87,7 +93,7 @@ class PlexServer(object):
         return ElementTree.fromstring(data) if data else None
 
     def search(self, query, videotype=None):
-        query = urllib.quote(query)
+        query = quote(query)
         items = video.list_items(self, '/search?query=%s' % query)
         if videotype:
             return [item for item in items if item.type == videotype]
