@@ -20,7 +20,7 @@ class Video(PlexPartialObject):
     TYPE = None
 
     def __eq__(self, other):
-        return self.type == other.type and self.key == other.key
+        return other is not None and self.type == other.type and self.key == other.key
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
