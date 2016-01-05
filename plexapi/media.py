@@ -110,7 +110,10 @@ class StreamVideo(MediaPartStream):
         self.frame_rate_mode = data.attrib.get('frameRateMode')
         self.has_scalling_matrix = cast(bool, data.attrib.get('hasScallingMatrix'))
         self.height = cast(int, data.attrib.get('height'))
-        self.level = cast(int, data.attrib.get('level'))
+
+        try: self.level = cast(int, data.attrib.get('level'))
+        except ValueError: self.level = float('nan')
+
         self.profile = data.attrib.get('profile')
         self.ref_frames = cast(int, data.attrib.get('refFrames'))
         self.scan_type = data.attrib.get('scanType')
