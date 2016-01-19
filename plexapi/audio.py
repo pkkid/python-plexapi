@@ -186,12 +186,12 @@ class Track(Audio):
 
 
 def build_item(server, elem, initpath):
-    VIDEOCLS = {Movie.TYPE:Movie, Show.TYPE:Show, Season.TYPE:Season, Episode.TYPE:Episode}
-    vtype = elem.attrib.get('type')
-    if vtype in VIDEOCLS:
-        cls = VIDEOCLS[vtype]
+    AUDIOCLS = {Artist.TYPE:Artist, Album.TYPE:Album, Track.TYPE:Track}
+    atype = elem.attrib.get('type')
+    if atype in AUDIOCLS:
+        cls = AUDIOCLS[atype]
         return cls(server, elem, initpath)
-    raise UnknownType('Unknown video type: %s' % vtype)
+    raise UnknownType('Unknown audio type: %s' % atype)
 
 
 def find_key(server, key):
