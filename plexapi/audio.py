@@ -36,7 +36,7 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
         self.transcodeSession = self._find_transcodeSession(data)
-        if self.isFullObject():
+        if False:# TODO: add this back with values that make sense ## self.isFullObject():
             # These are auto-populated when requested
             self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
             self.countries = [Country(self.server, elem) for elem in data if elem.tag == Country.TYPE]
