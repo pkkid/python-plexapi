@@ -1,7 +1,7 @@
 """
 PlexLibrary
 """
-from plexapi import video, utils
+from plexapi import video, audio, utils
 from plexapi.exceptions import NotFound
 
 
