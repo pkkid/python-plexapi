@@ -65,6 +65,22 @@ class Library(object):
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return video.list_items(self.server, query)
 
+    def searchAudio(self, title, filter='all', atype=None, **tags):
+        """ Search all available audio content.
+            title: Title to search (pass None to search all titles).
+            filter: One of {'all', 'onDeck', 'recentlyAdded'}.
+            atype: One of {'artist', 'album', 'track'}.
+            tags: One of {country, director, genre, producer, actor, writer}.
+        """
+        args = {}
+        if title: args['title'] = title
+        if atype: args['type'] = audio.search_type(atype)
+        for tag, obj in tags.items():
+            args[tag] = obj.id
+        query = '/library/%s%s' % (filter, utils.joinArgs(args))
+        return audio.list_items(self.server, query)
+
+
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
 
