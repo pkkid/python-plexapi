@@ -62,7 +62,7 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
         params['X-Plex-Platform'] = kwargs.get('platform', 'Chrome')
         if 'protocol' in kwargs:
             params['protocol'] = kwargs['protocol']
-        return self.server.url('/video/:/transcode/universal/start.m3u8?%s' % urlencode(params))
+        return self.server.url('/audio/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
 
 class Artist(Audio):
