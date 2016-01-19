@@ -19,7 +19,8 @@ class Library(object):
 
     def sections(self):
         items = []
-        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection}
+        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection,
+                         MusicSection.TYPE:MusicSection}
         path = '/library/sections'
         for elem in self.server.query(path):
             stype = elem.attrib['type']
@@ -197,6 +198,22 @@ class ShowSection(LibrarySection):
 
     def searchEpisodes(self, title, filter='all', **tags):
         return super(ShowSection, self).search(title, filter=filter, vtype=video.Episode.TYPE, **tags)
+
+
+class MusicSection(LibrarySection):
+    TYPE = 'artist'
+
+    def recentlyViewedShows(self):
+        return self._primary_list('recentlyViewedShows')
+
+    def search(self, title, filter='all', **tags):
+        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Artist.TYPE, **tags)
+
+    def searchAlbums(self, title, filter='all', **tags):
+        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Album.TYPE, **tags)
+
+    def searchTracks(self, title, filter='all', **tags):
+        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Track.TYPE, **tags)
 
 
 def list_choices(server, path):
