@@ -92,11 +92,11 @@ class PlexServer(object):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def search(self, query, videotype=None):
+    def search(self, query, mediatype=None):
         query = quote(query)
         items = video.list_items(self, '/search?query=%s' % query)
-        if videotype:
-            return [item for item in items if item.type == videotype]
+        if mediatype:
+            return [item for item in items if item.type == mediatype]
         return items
 
     def sessions(self):
