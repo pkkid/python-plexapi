@@ -220,17 +220,33 @@ class ShowSection(LibrarySection):
 class MusicSection(LibrarySection):
     TYPE = 'artist'
 
+    def search(self, title, filter='all', atype=None, **tags):
+        """ Search section content.
+            title: Title to search (pass None to search all titles).
+            filter: One of {'all', 'newest', 'onDeck', 'recentlyAdded', 'recentlyViewed', 'unwatched'}.
+            videotype: One of {'artist', 'album', 'track'}.
+            tags: One of {country, director, genre, producer, actor, writer}.
+        """
+        args = {}
+        if title: args['title'] = title
+        if atype: args['type'] = audio.search_type(atype)
+        for tag, obj in tags.items():
+            args[tag] = obj.id
+        query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
+        return audio.list_items(self.server, query)
+
+
     def recentlyViewedShows(self):
         return self._primary_list('recentlyViewedShows')
 
-    def search(self, title, filter='all', **tags):
-        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Artist.TYPE, **tags)
+    def searchArtists(self, title, filter='all', **tags):
+        return self.search(title, filter=filter, atype=audio.Artist.TYPE, **tags)
 
     def searchAlbums(self, title, filter='all', **tags):
-        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Album.TYPE, **tags)
+        return self.search(title, filter=filter, atype=audio.Album.TYPE, **tags)
 
     def searchTracks(self, title, filter='all', **tags):
-        return super(MusicSection, self).search(title, filter=filter, vtype=audio.Track.TYPE, **tags)
+        return self.search(title, filter=filter, atype=audio.Track.TYPE, **tags)
 
 
 def list_choices(server, path):
