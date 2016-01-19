@@ -20,6 +20,32 @@ except ImportError:
 
 class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class does
 
+    def _loadData(self, data):
+        self.type = data.attrib.get('type', NA)
+        self.key = data.attrib.get('key', NA)
+        self.librarySectionID = data.attrib.get('librarySectionID', NA)
+        self.ratingKey = data.attrib.get('ratingKey', NA)
+        self.title = data.attrib.get('title', NA)
+        self.summary = data.attrib.get('summary', NA)
+        self.art = data.attrib.get('art', NA)
+        self.thumb = data.attrib.get('thumb', NA)
+        self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
+        self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
+        #self.lastViewedAt = toDatetime(data.attrib.get('lastViewedAt', NA))
+        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.user = self._find_user(data)       # for active sessions
+        self.player = self._find_player(data)   # for active sessions
+        self.transcodeSession = self._find_transcodeSession(data)
+        if self.isFullObject():
+            # These are auto-populated when requested
+            self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
+            self.countries = [Country(self.server, elem) for elem in data if elem.tag == Country.TYPE]
+            self.directors = [Director(self.server, elem) for elem in data if elem.tag == Director.TYPE]
+            self.genres = [Genre(self.server, elem) for elem in data if elem.tag == Genre.TYPE]
+            self.producers = [Producer(self.server, elem) for elem in data if elem.tag == Producer.TYPE]
+            self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
+            self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
+
 
     def getStreamUrl(self, offset=0, **kwargs):
         """ Fetch URL to stream audio directly.
@@ -44,6 +70,7 @@ class Artist(Audio):
 
     def _loadData(self, data):
         super(Artist, self)._loadData(data)
+        #TODO: get proper metadata for artists, not this blue copy
         self.studio = data.attrib.get('studio', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.rating = data.attrib.get('rating', NA)
@@ -90,6 +117,7 @@ class Album(Audio):
 
     def _loadData(self, data):
         super(Album, self)._loadData(data)
+        #TODO: get proper metadata for artists, not this blue copy
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.librarySectionTitle = data.attrib.get('librarySectionTitle', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
@@ -128,24 +156,21 @@ class Track(Audio):
     TYPE = 'track'
 
     def _loadData(self, data):
-        super(Episode, self)._loadData(data)
+        super(Track, self)._loadData(data)
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.librarySectionTitle = data.attrib.get('librarySectionTitle', NA)
         self.grandparentKey = data.attrib.get('grandparentKey', NA)
         self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
+        self.grandparentArt = data.attrib.get('grandparentArt', NA)
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentThumb = data.attrib.get('parentThumb', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.index = data.attrib.get('index', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.viewCount = cast(int, data.attrib.get('viewCount', 0))
-        self.viewOffset = cast(int, data.attrib.get('viewOffset', 0))
-        self.year = cast(int, data.attrib.get('year', NA))
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.is_watched = bool(self.viewCount > 0)  # custom attr
 
     @property
     def thumbUrl(self):
