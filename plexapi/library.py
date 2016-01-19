@@ -50,7 +50,7 @@ class Library(object):
     def getByKey(self, key):
         return video.find_key(self.server, key)
 
-    def search(self, title, filter='all', vtype=None, **tags):
+    def searchVideo(self, title, filter='all', vtype=None, **tags):
         """ Search all available content.
             title: Title to search (pass None to search all titles).
             filter: One of {'all', 'onDeck', 'recentlyAdded'}.
@@ -64,6 +64,8 @@ class Library(object):
             args[tag] = obj.id
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return video.list_items(self.server, query)
+
+    search = searchVideo # TODO: make .search() a method to merge results of .searchVideo() and .searchAudio()
 
     def searchAudio(self, title, filter='all', atype=None, **tags):
         """ Search all available audio content.
@@ -79,7 +81,6 @@ class Library(object):
             args[tag] = obj.id
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return audio.list_items(self.server, query)
-
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
