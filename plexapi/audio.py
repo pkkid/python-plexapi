@@ -4,7 +4,7 @@ PlexAudio
 import re
 from requests import put
 from plexapi.client import Client
-from plexapi.media import Media #, TranscodeSession, Country, Director, Genre, Producer, Actor, Writer
+from plexapi.media import Media, Genre, Producer, Country #, TranscodeSession
 from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from plexapi.utils import PlexPartialObject, NA
@@ -36,15 +36,14 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
         self.transcodeSession = self._find_transcodeSession(data)
-        if False:# TODO: add this back with values that make sense ## self.isFullObject():
+        if self.isFullObject():
             # These are auto-populated when requested
             self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
-            self.countries = [Country(self.server, elem) for elem in data if elem.tag == Country.TYPE]
-            self.directors = [Director(self.server, elem) for elem in data if elem.tag == Director.TYPE]
             self.genres = [Genre(self.server, elem) for elem in data if elem.tag == Genre.TYPE]
             self.producers = [Producer(self.server, elem) for elem in data if elem.tag == Producer.TYPE]
-            self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
-            self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
+            # will we ever see other elements?
+            #self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
+            #self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
 
 
     def getStreamUrl(self, offset=0, **kwargs):
