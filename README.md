@@ -104,3 +104,5 @@ A. This library is meant to be a wrapper around the XML pages the Plex
 server provides. If we are not providing an API that is offerered in the
 XML pages, please let us know! -- Adding additional features beyond that
 should be done outside the scope of this library.
+
+[![Analytics](https://ga-beacon.appspot.com/UA-87461-7/python-plexapi/home)](https://github.com/igrigorik/ga-beacon)
