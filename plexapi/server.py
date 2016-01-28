@@ -4,7 +4,7 @@ PlexServer
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
-from plexapi import log, video
+from plexapi import log, video, audio
 from plexapi.client import Client
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
@@ -95,6 +95,13 @@ class PlexServer(object):
     def search(self, query, mediatype=None):
         query = quote(query)
         items = video.list_items(self, '/search?query=%s' % query)
+        if mediatype:
+            return [item for item in items if item.type == mediatype]
+        return items
+
+    def searchAudio(self, query, mediatype=None):
+        query = quote(query)
+        items = audio.list_items(self, '/search?query=%s' % query)
         if mediatype:
             return [item for item in items if item.type == mediatype]
         return items
