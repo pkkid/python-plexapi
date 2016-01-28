@@ -81,6 +81,7 @@ class Artist(Audio):
         self.leafCount = cast(int, data.attrib.get('leafCount', NA))
         self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
         self.childCount = cast(int, data.attrib.get('childCount', NA))
+        self.titleSort = data.attrib.get('titleSort', NA)
 
     def albums(self):
         path = '/library/metadata/%s/children' % self.ratingKey
