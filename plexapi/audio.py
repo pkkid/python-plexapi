@@ -63,6 +63,18 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
             params['protocol'] = kwargs['protocol']
         return self.server.url('/audio/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
+    # TODO: figure out if we really need to override these methods, or if there is a  bug in the default
+    # implementation
+    def isFullObject(self):
+        return self.initpath == '/library/metadata/{0!s}'.format(self.ratingKey)
+
+    def isPartialObject(self):
+        return self.initpath != '/library/metadata/{0!s}'.format(self.ratingKey)
+
+    def reload(self):
+        self.initpath = '/library/metadata/{0!s}'.format(self.ratingKey)
+        data = self.server.query(self.initpath)
+        self._loadData(data[0])
 
 class Artist(Audio):
     TYPE = 'artist'
