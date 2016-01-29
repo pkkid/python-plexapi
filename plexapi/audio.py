@@ -142,6 +142,7 @@ class Album(Audio):
         self.parentTheme = data.attrib.get('parentTheme', NA)
         self.leafCount = cast(int, data.attrib.get('leafCount', NA))
         self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.year = cast(int, data.attrib.get('year', NA))
 
     def tracks(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
