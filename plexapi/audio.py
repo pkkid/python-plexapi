@@ -177,6 +177,7 @@ class Track(Audio):
         self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
         self.grandparentArt = data.attrib.get('grandparentArt', NA)
         self.parentKey = data.attrib.get('parentKey', NA)
+        self.parentTitle = data.attrib.get('parentTitle', NA)
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentThumb = data.attrib.get('parentThumb', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
