@@ -4,7 +4,7 @@ PlexServer
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
-from plexapi import log, video, audio
+from plexapi import log, video, audio, playlist
 from plexapi.client import Client
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
@@ -120,3 +120,7 @@ class PlexServer(object):
             delim = '&' if '?' in path else '?'
             return '%s%s%sX-Plex-Token=%s' % (self.baseuri, path, delim, self.token)
         return '%s%s' % (self.baseuri, path)
+
+    def playlists(self, playlisttype=None):
+        'Get playlists. `playlisttype` may be "audio", "video" or None (for both types)'
+        return playlist.list_items(self, '/playlists')
