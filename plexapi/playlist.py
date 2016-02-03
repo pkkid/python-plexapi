@@ -9,7 +9,7 @@ from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from plexapi.utils import PlexPartialObject, NA
 from plexapi.utils import cast, toDatetime
 
-from plexapi.video import Video # TODO: remove this when the Audio class can stand on its own legs
+from plexapi.video import Video # TODO: remove this when the Playlist class can stand on its own legs
 
 try:
     from urllib import urlencode  # Python2
@@ -84,3 +84,15 @@ class Playlist(Video): # TODO: inherit from PlexPartialObject, like the Video cl
         data = self.server.query(self.initpath)
         self._loadData(data[0])
 
+def list_items(server, path, playlisttype=None, watched=None):
+    # playlisttype may be 'audio', 'video' or None (for both)
+    items = []
+    for elem in server.query(path):
+        if playlisttype and elem.attrib.get('type') != playlisttype: continue
+        if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
+        if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
+        try:
+            items.append(Playlist(server, elem, path))
+        except UnknownType:
+            pass
+    return items
