@@ -3,6 +3,7 @@ PlexLibrary
 """
 from plexapi import video, utils
 from plexapi.exceptions import NotFound
+from plexapi.media import *
 
 
 class Library(object):
@@ -96,8 +97,14 @@ class LibrarySection(object):
     def _primary_list(self, key):
         return video.list_items(self.server, '/library/sections/%s/%s' % (self.key, key))
 
-    def _secondary_list(self, key, input=None):
+    def _secondary_dict(self, key, input=None):
         choices = list_choices(self.server, '/library/sections/%s/%s' % (self.key, key))
+        if not input:
+            return choices
+        return {input, choices.get(input)}
+
+    def _secondary_list(self, key, input=None):
+        choices = self._secondary_dict(key)
         if not input:
             return list(choices.keys())
         return video.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
@@ -181,6 +188,36 @@ class MovieSection(LibrarySection):
 
     def resolution(self, input=None):
         return self._secondary_list('resolution', input)
+
+    def genre(self, input=None):
+        return self._secondary_list('genre', input)
+
+    def writer(self, input=None):
+        return self._secondary_list('writer', input)
+
+    def get_actor(self, input=None):
+        return list(Actor(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('actor', input).iteritems())
+
+    def get_country(self, input=None):
+        return list(Country(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('country', input).iteritems())
+
+    def get_producer(self, input=None):
+        return list(Producer(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('producer', input).iteritems())
+
+    def get_director(self, input=None):
+        return list(Director(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('director', input).iteritems())
+
+    def get_writer(self, input=None):
+        return list(Director(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('writer', input).iteritems())
+
+    def get_genre(self, input=None):
+        return list(Director(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('genre', input).iteritems())
 
     def genre(self, input=None):
         return self._secondary_list('genre', input)

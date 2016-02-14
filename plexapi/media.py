@@ -172,10 +172,15 @@ class VideoTag(object):
     TYPE = None
 
     def __init__(self, server, data):
-        self.server = server
-        self.id = cast(int, data.attrib.get('id'))
-        self.tag = data.attrib.get('tag')
-        self.role = data.attrib.get('role')
+        if isinstance(data, dict):
+            self.id = data.get('id')
+            self.tag = data.get('tag')
+            self.role = data.get('role')
+        else:
+            self.server = server
+            self.id = cast(int, data.attrib.get('id'))
+            self.tag = data.attrib.get('tag')
+            self.role = data.attrib.get('role')
 
     def __repr__(self):
         tag = self.tag.replace(' ','.')[0:20]
