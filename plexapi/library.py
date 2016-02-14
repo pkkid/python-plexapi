@@ -182,6 +182,12 @@ class MovieSection(LibrarySection):
     def resolution(self, input=None):
         return self._secondary_list('resolution', input)
 
+    def genre(self, input=None):
+        return self._secondary_list('genre', input)
+
+    def writer(self, input=None):
+        return self._secondary_list('writer', input)
+
     def search(self, title, filter='all', **tags):
         return super(MovieSection, self).search(title, filter=filter, vtype=video.Movie.TYPE, **tags)
 
