@@ -3,6 +3,8 @@ PlexAPI Client
 See: https://code.google.com/p/plex-api/w/list
 """
 import requests
+import json
+import urllib
 from requests.status_codes import _codes as codes
 from plexapi import TIMEOUT, log, utils, BASE_HEADERS
 from plexapi.exceptions import BadRequest
@@ -31,6 +33,9 @@ class Client(object):
         self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
         self.state = data.attrib.get('state')
         self._sendCommandsTo = SERVER
+        self.id = 1
+        self.rpc_version = "2.0"
+        self.headers = {'content-type': 'application/json'}
 
     def sendCommandsTo(self, value):
         self._sendCommandsTo = value
@@ -40,6 +45,15 @@ class Client(object):
         if sendTo == CLIENT:
             return self.sendClientCommand(command, args)
         return self.sendServerCommand(command, args)
+
+    def sendRpcClientCommand(self, method, params=None):
+        payload = {"jsonrpc": self.rpc_version, "method": method, "id": self.id}
+        if params:
+            payload["params"] = params
+
+        response = requests.get(self.json_rpc_url(payload), headers=self.headers)
+        self.id += 1
+        return json.loads(response.text)
 
     def sendClientCommand(self, command, args=None):
         url = '%s%s' % (self.url(command), utils.joinArgs(args))
@@ -57,6 +71,10 @@ class Client(object):
 
     def url(self, path):
         return 'http://%s:%s/player/%s' % (self.address, self.port, path.lstrip('/'))
+
+    def json_rpc_url(self, payload):
+        url_param = urllib.urlencode({'request': json.dumps(payload)})
+        return 'http://%s:%s/jsonrpc?%s' % (self.address, self.port, url_param)
 
     # Navigation Commands
     def moveUp(self): self.sendCommand('navigation/moveUp')  # noqa
@@ -102,3 +120,22 @@ class Client(object):
             if media_type.get('state') == 'playing':
                 return True
         return False
+
+    def playerId(self):
+        data = self.sendRpcClientCommand("Player.GetActivePlayers")
+        if data['result']:
+            return data['result'][0]["playerid"]
+        else:
+            return None
+
+    def subtitle(self, value):
+        """
+        :param value: next, on, off
+        """
+        self.sendRpcClientCommand("Player.SetSubtitle", {"playerid": self.playerId(), "subtitle": value})
+
+    def switch_language(self):
+        self.sendRpcClientCommand("Player.SetAudioStream", {"playerid": self.playerId(), "stream": "next"})
+
+    def show_info(self):
+        self.sendRpcClientCommand("Input.Info")
