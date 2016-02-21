@@ -139,3 +139,18 @@ class Client(object):
 
     def show_info(self):
         self.sendRpcClientCommand("Input.Info")
+
+    def navigate(self, media):
+        server_id = media.server.machineIdentifier
+        server_and_port = media.server.baseuri.split(':')
+        address = server_and_port[1].split('/')[-1]
+        port = server_and_port[-1]
+        url = self.url("/mirror/details"
+                       "?type=video"
+                       "&key=" + media.key +
+                       "&machineIdentifier=" + server_id +
+                       "&protocol=http"
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&commandID=2")
+        requests.get(url, timeout=TIMEOUT)
