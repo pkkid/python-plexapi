@@ -133,11 +133,24 @@ class LibrarySection(object):
     def firstCharacter(self, input=None):
         return self._secondary_list('firstCharacter', input)
 
+    def actor(self, input=None):
+        return self._secondary_list('actor', input)
+
     def genre(self, input=None):
         return self._secondary_list('genre', input)
 
     def year(self, input=None):
         return self._secondary_list('year', input)
+
+    def decade(self, input=None):
+        return self._secondary_list('decade', input)
+
+    def rating(self, input=None):
+        return self._secondary_list('rating', input)
+
+    def get_actor(self, input=None):
+        return list(Actor(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('actor', input).iteritems())
 
     def get_genre(self, input=None):
         return list(Director(self.server, {'id': key, 'tag': name})
@@ -150,6 +163,14 @@ class LibrarySection(object):
     def get_year(self, input=None):
         return list(Year(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('year', input).iteritems())
+
+    def get_decade(self, input=None):
+        return list(Decade(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('decade', input).iteritems())
+
+    def get_rating(self, input=None):
+        return list(Rating(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('rating', input).iteritems())
 
     def get(self, title):
         path = '/library/sections/%s/all' % self.key
@@ -183,20 +204,8 @@ class LibrarySection(object):
 class MovieSection(LibrarySection):
     TYPE = 'movie'
 
-    def actor(self, input=None):
-        return self._secondary_list('actor', input)
-
     def country(self, input=None):
         return self._secondary_list('country', input)
-
-    def decade(self, input=None):
-        return self._secondary_list('decade', input)
-
-    def director(self, input=None):
-        return self._secondary_list('director', input)
-
-    def rating(self, input=None):
-        return self._secondary_list('rating', input)
 
     def resolution(self, input=None):
         return self._secondary_list('resolution', input)
@@ -204,9 +213,8 @@ class MovieSection(LibrarySection):
     def writer(self, input=None):
         return self._secondary_list('writer', input)
 
-    def get_actor(self, input=None):
-        return list(Actor(self.server, {'id': key, 'tag': name})
-                    for name, key in self._secondary_dict('actor', input).iteritems())
+    def director(self, input=None):
+        return self._secondary_list('director', input)
 
     def get_country(self, input=None):
         return list(Country(self.server, {'id': key, 'tag': name})
@@ -216,14 +224,6 @@ class MovieSection(LibrarySection):
         return list(Producer(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('producer', input).iteritems())
 
-    def get_director(self, input=None):
-        return list(Director(self.server, {'id': key, 'tag': name})
-                    for name, key in self._secondary_dict('director', input).iteritems())
-
-    def get_rating(self, input=None):
-        return list(Rating(self.server, {'id': key, 'tag': name})
-                    for name, key in self._secondary_dict('rating', input).iteritems())
-
     def get_resolution(self, input=None):
         return list(Resolution(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('resolution', input).iteritems())
@@ -232,9 +232,9 @@ class MovieSection(LibrarySection):
         return list(Director(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('writer', input).iteritems())
 
-    def get_decade(self, input=None):
-        return list(Decade(self.server, {'id': key, 'tag': name})
-                    for name, key in self._secondary_dict('decade', input).iteritems())
+    def get_director(self, input=None):
+        return list(Director(self.server, {'id': key, 'tag': name})
+                    for name, key in self._secondary_dict('director', input).iteritems())
 
     def search(self, title, filter='all', **tags):
         return super(MovieSection, self).search(title, filter=filter, vtype=video.Movie.TYPE, **tags)
