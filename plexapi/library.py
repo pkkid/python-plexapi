@@ -156,7 +156,7 @@ class LibrarySection(object):
         return list(Director(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('genre', input).iteritems())
 
-    def get_content_rating(self, input=None):
+    def get_contentRating(self, input=None):
         return list(ContentRating(self.server, {'id': key, 'tag': name})
                     for name, key in self._secondary_dict('contentRating', input).iteritems())
 
