@@ -50,6 +50,17 @@ def test_003_search_show(plex, user=None):
     assert result_server, 'Show not found.'
     assert result_server == result_shows, 'Show searches not consistent.'
     assert not result_movies, 'Movie search returned show title.'
+    
+
+def test_003b_search_show(plex, user=None):
+    show_title = "Marvel's Daredevil"  # Test ' in show title
+    result_server = plex.search(show_title)
+    result_shows = plex.library.section(SHOW_SECTION).search(show_title)
+    log(2, 'Searching for: %s' % SHOW_TITLE)
+    log(4, 'Result Server: %s' % result_server)
+    log(4, 'Result Shows: %s' % result_shows)
+    assert result_server, 'Show not found.'
+    assert result_server == result_shows, 'Show searches not consistent.'
 
 
 def test_004_search_movie(plex, user=None):
@@ -65,6 +76,19 @@ def test_004_search_movie(plex, user=None):
     assert result_server, 'Movie not found.'
     assert result_server == result_library == result_movies, 'Movie searches not consistent.'
     assert not result_shows, 'Show search returned show title.'
+    
+
+def test_004b_search_movie(plex, user=None):
+    movie_title = 'Dude Where\'s'
+    result_server = plex.search(movie_title)
+    result_library = plex.library.search(movie_title)
+    result_movies = plex.library.section(MOVIE_SECTION).search(movie_title)
+    log(2, 'Searching for: %s' % movie_title)
+    log(4, 'Result Server: %s' % result_server)
+    log(4, 'Result Library: %s' % result_library)
+    log(4, 'Result Movies: %s' % result_movies)
+    assert result_server, 'Movie not found.'
+    assert result_server == result_library == result_movies, 'Movie searches not consistent.'
 
 
 def test_005_navigate_to_show(plex, user=None):
@@ -161,7 +185,9 @@ def test_011_play_media(plex, user=None):
 
 def test_012_myplex_account(plex, user=None):
     account = plex.account()
-    print(account.__dict__)
+    log(2, 'username: %s' % account.username)
+    log(2, 'subscriptionActive: %s' % account.subscriptionActive)
+    log(2, 'subscriptionState: %s' % account.subscriptionState)
 
 
 def test_013_list_media_files(plex, user=None):
@@ -208,8 +234,7 @@ def test_014_list_video_tags(plex, user=None):
 
 def test_015_list_devices(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
-    for device in user.resources():
-        log(2, device.name or device.product)
+    log(2, ', '.join([r.name or r.product for r in user.resources()]))
 
 
 # def test_016_sync_items(plex, user=None):
@@ -233,6 +258,16 @@ def test_017_is_watched(plex, user=None):
     log(2, '%s is_watched: %s' % (episode.title, episode.is_watched))
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     log(2, '%s is_watched: %s' % (movie.title, movie.is_watched))
+
+
+def test_018_fetch_details_not_in_search_result(plex, user=None):
+    # Search results only contain 3 actors per movie. This text checks there
+    # are more than 3 results in the actor list (meaning it fetched the detailed
+    # information behind the scenes).
+    result = plex.search(MOVIE_TITLE)[0]
+    actors = result.actors
+    assert len(actors) >= 4, 'Unable to fetch detailed movie information'
+    log(2, '%s actors found.' % len(actors))
 
 
 if __name__ == '__main__':

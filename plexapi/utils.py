@@ -2,14 +2,22 @@
 PlexAPI Utils
 """
 from datetime import datetime
-
 try:
     from urllib import quote  # Python2
 except ImportError:
     from urllib.parse import quote  # Python3
 
-NA = '__NA__'  # Value not available
-
+# This used to be a simple variable equal to '__NA__'. However, there has been need to
+# compare NA against None in some use cases. This object allows the internals of PlexAPI 
+# to distinguish between unfetched values and fetched, but non-existent values.
+# (NA == None results to True; NA is None results to False)
+class __NA__(object):
+    def __bool__(self): return False  # Python3; flake8: noqa
+    def __eq__(self, other): return isinstance(other, __NA__) or other in [None, '__NA__']  # flake8: noqa
+    def __nonzero__(self): return False  # Python2; flake8: noqa
+    def __repr__(self): return '__NA__'  # flake8: noqa
+NA = __NA__()
+    
 
 class PlexPartialObject(object):
     """ Not all objects in the Plex listings return the complete list of
