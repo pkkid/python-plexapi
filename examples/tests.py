@@ -271,10 +271,16 @@ def test_018_fetch_details_not_in_search_result(plex, user=None):
 
 
 if __name__ == '__main__':
+    # There are three ways to authenticate:
+    #  1. If the server is running on localhost, just run without any auth.
+    #  2. Pass in --username, --password, and --resource.
+    #  3. Pass in --baseuri, --token
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
     parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
+    parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all tests.')
     parser.add_argument('-u', '--username', help='Username for the Plex server.')
     parser.add_argument('-p', '--password', help='Password for the Plex server.')
-    parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all tests.')
+    parser.add_argument('-b', '--baseuri', help='Baseuri needed for auth token authentication')
+    parser.add_argument('-t', '--token', help='Auth token (instead of user/pass)')
     args = parser.parse_args()
     run_tests(__name__, args)

@@ -16,9 +16,9 @@ Python bindings for the Plex API.
 
 #### Getting a PlexServer Instance ####
 
-There are two types of authentication.  If running the PlexAPI on the same
+There are three types of authentication. If running the PlexAPI on the same
 network as the Plex Server (and you are not using Plex Users), you can
-authenticate without a username and password.  Getting a PlexServer
+authenticate without a username and password. Getting a PlexServer
 instance is as easy as the following:
 
 ```python
@@ -26,8 +26,19 @@ from plexapi.server import PlexServer
 plex = PlexServer()   # Defaults to localhost:32400
 ```
 
-If you are running on a separate network or using Plex Users you need to log
-into MyPlex to get a PlexServer instance.  An example of this is below. NOTE:
+If you want to avoid logging into MyPlex and you already know your auth token
+string, you can use the PlexServer object directly as above, but passing in
+the baseuri and auth token directly.
+
+```python
+from plexapi.server import MyPlexUser
+baseuri = 'http://plexserver:32400'
+token = '2ffLuB84dqLswk9skLos'
+plex = PlexServer(baseuri, token)
+```
+
+If you are running on a separate network or using Plex Users you can log
+into MyPlex to get a PlexServer instance. An example of this is below. NOTE:
 Servername below is the name of the server (not the hostname and port).  If
 logged into Plex Web you can see the server name in the top left above your
 available libraries.
@@ -35,8 +46,9 @@ available libraries.
 ```python
 from plexapi.myplex import MyPlexUser
 user = MyPlexUser.signin('<USERNAME>', '<PASSWORD>')
-plex = user.getResource('<SERVERNAME>').connect()
+plex = user.getResource('<SERVERNAME>').connect()  # returns a PlexServer instance
 ```
+
 
 #### Usage Examples ####
 
