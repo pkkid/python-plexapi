@@ -7,7 +7,7 @@ Python bindings for the Plex API.
 * Play media on connected clients.
 * Get URL to stream stream h264/aac video (playable in VLC,MPV,etc).
 * Plex Sync Support.
-
+* Plex Audio Support.
 
 #### Install ###
 

@@ -5,3 +5,4 @@ Thanks to Contributors:
   * Nate Mara (Timeline)
   * Goni Zahavy (Sync, Media Parts)
   * Simon W. Jackson (Stream URL)
+  * Håvard Gulldahl (Plex Audio)
