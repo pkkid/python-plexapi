@@ -98,6 +98,12 @@ def test_004c_original_title_of_foreign_movie(plex, user=None):
     log(2, 'Title: %s' % result[0].title)
     log(2, 'Original Title: %s' % result[0].originalTitle)
     assert(result[0].originalTitle != NA)
+    
+
+def test_004d_refresh_video(plex, user=None):
+    movie_title = 'Bedside Detective'
+    result = plex.search(movie_title)
+    result[0].refresh()
 
 
 def test_005_navigate_to_show(plex, user=None):

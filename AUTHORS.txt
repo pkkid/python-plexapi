@@ -1,7 +1,5 @@
-Primary Authors:
-  * Michael Shepanski
-
-Thanks to Contributors:
+Authors and Contributors:
+  * Michael Shepanski (Primary Author)
   * Nate Mara (Timeline)
   * Goni Zahavy (Sync, Media Parts)
   * Simon W. Jackson (Stream URL)

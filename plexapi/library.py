@@ -19,8 +19,11 @@ class Library(object):
 
     def sections(self):
         items = []
-        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection,
-                         MusicSection.TYPE:MusicSection}
+        SECTION_TYPES = {
+            MovieSection.TYPE: MovieSection,
+            ShowSection.TYPE: ShowSection,
+            MusicSection.TYPE: MusicSection,
+        }
         path = '/library/sections'
         for elem in self.server.query(path):
             stype = elem.attrib['type']
@@ -65,8 +68,6 @@ class Library(object):
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return video.list_items(self.server, query)
 
-    search = searchVideo # TODO: make .search() a method to merge results of .searchVideo() and .searchAudio()
-
     def searchAudio(self, title, filter='all', atype=None, **tags):
         """ Search all available audio content.
             title: Title to search (pass None to search all titles).
@@ -81,6 +82,8 @@ class Library(object):
             args[tag] = obj.id
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return audio.list_items(self.server, query)
+        
+    search = searchVideo  # TODO: make .search() a method to merge results of .searchVideo() and .searchAudio()
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
@@ -234,7 +237,6 @@ class MusicSection(LibrarySection):
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
         return audio.list_items(self.server, query)
-
 
     def recentlyViewedShows(self):
         return self._primary_list('recentlyViewedShows')

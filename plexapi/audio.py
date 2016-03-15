@@ -1,16 +1,11 @@
 """
 PlexAudio
 """
-import re
-from requests import put
-from plexapi.client import Client
-from plexapi.media import Media, Genre, Producer, Country #, TranscodeSession
-from plexapi.myplex import MyPlexUser
+from plexapi.media import Media, Genre, Producer
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
-from plexapi.utils import PlexPartialObject, NA
+from plexapi.utils import NA
 from plexapi.utils import cast, toDatetime
-
-from plexapi.video import Video # TODO: remove this when the Audio class can stand on its own legs
+from plexapi.video import Video  # TODO: remove this when Audio class can stand on its own legs
 
 try:
     from urllib import urlencode  # Python2
@@ -18,7 +13,7 @@ except ImportError:
     from urllib.parse import urlencode  # Python3
 
 
-class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class does
+class Audio(Video):  # TODO: inherit from PlexPartialObject, like the Video class does
 
     def _loadData(self, data):
         self.type = data.attrib.get('type', NA)
@@ -31,7 +26,6 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
         self.thumb = data.attrib.get('thumb', NA)
         self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
         self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
-        #self.lastViewedAt = toDatetime(data.attrib.get('lastViewedAt', NA))
         self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
@@ -41,10 +35,6 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
             self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
             self.genres = [Genre(self.server, elem) for elem in data if elem.tag == Genre.TYPE]
             self.producers = [Producer(self.server, elem) for elem in data if elem.tag == Producer.TYPE]
-            # will we ever see other elements?
-            #self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
-            #self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
-
 
     def getStreamUrl(self, offset=0, **kwargs):
         """ Fetch URL to stream audio directly.
@@ -63,8 +53,8 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
             params['protocol'] = kwargs['protocol']
         return self.server.url('/audio/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
-    # TODO: figure out if we really need to override these methods, or if there is a  bug in the default
-    # implementation
+    # TODO: figure out if we really need to override these methods, or if
+    # there is a  bug in the default implementation
     def isFullObject(self):
         return self.initpath == '/library/metadata/{0!s}'.format(self.ratingKey)
 
@@ -76,12 +66,13 @@ class Audio(Video): # TODO: inherit from PlexPartialObject, like the Video class
         data = self.server.query(self.initpath)
         self._loadData(data[0])
 
+
 class Artist(Audio):
     TYPE = 'artist'
 
     def _loadData(self, data):
         super(Artist, self)._loadData(data)
-        #TODO: get proper metadata for artists, not this blue copy
+        # TODO: get proper metadata for artists, not this blue copy
         self.studio = data.attrib.get('studio', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.rating = data.attrib.get('rating', NA)
@@ -129,7 +120,7 @@ class Album(Audio):
 
     def _loadData(self, data):
         super(Album, self)._loadData(data)
-        #TODO: get proper metadata for artists, not this blue copy
+        # TODO: get proper metadata for artists, not this blue copy
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.librarySectionTitle = data.attrib.get('librarySectionTitle', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
@@ -196,7 +187,6 @@ class Track(Audio):
     def artist(self):
         raise NotImplemented
         #return list_items(self.server, self.grandparentKey)[0]
-
 
 
 def build_item(server, elem, initpath):

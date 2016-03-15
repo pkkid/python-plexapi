@@ -27,7 +27,7 @@ class PlexServer(object):
     def __init__(self, baseuri=None, token=None, session=None):
         self.baseuri = baseuri or DEFAULT_BASEURI
         self.token = token
-        self.session = session # set this as a requests.session to use that session
+        self.session = session  # set this as a requests.session to use that session
         data = self._connect()
         self.friendlyName = data.attrib.get('friendlyName')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
