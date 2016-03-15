@@ -172,10 +172,15 @@ class VideoTag(object):
     TYPE = None
 
     def __init__(self, server, data):
-        self.server = server
-        self.id = cast(int, data.attrib.get('id'))
-        self.tag = data.attrib.get('tag')
-        self.role = data.attrib.get('role')
+        if isinstance(data, dict):
+            self.id = data.get('id')
+            self.tag = data.get('tag')
+            self.role = data.get('role')
+        else:
+            self.server = server
+            self.id = cast(int, data.attrib.get('id'))
+            self.tag = data.attrib.get('tag')
+            self.role = data.attrib.get('role')
 
     def __repr__(self):
         tag = self.tag.replace(' ','.')[0:20]
@@ -188,3 +193,9 @@ class Genre(VideoTag): TYPE='Genre'; FILTER='genre'  # noqa
 class Producer(VideoTag): TYPE = 'Producer'; FILTER='producer'  # noqa
 class Actor(VideoTag): TYPE = 'Role'; FILTER='actor'  # noqa
 class Writer(VideoTag): TYPE = 'Writer'; FILTER='writer'  # noqa
+class Decade(VideoTag): TYPE = 'Decade'; FILTER='decade'  # noqa
+class Year(VideoTag): TYPE = 'Year'; FILTER='year'  # noqa
+class ContentRating(VideoTag): TYPE = 'ContentRating'; FILTER='contentRating'  # noqa
+class Resolution(VideoTag): TYPE = 'Resolution'; FILTER='resolution'  # noqa
+class Rating(VideoTag): TYPE = 'Rating'; FILTER='rating'  # noqa
+
