@@ -2,6 +2,8 @@
 PlexAPI Utils
 """
 from datetime import datetime
+from threading import Thread
+from Queue import Queue
 try:
     from urllib import quote  # Python2
 except ImportError:
@@ -30,6 +32,13 @@ class PlexPartialObject(object):
         self.server = server
         self.initpath = initpath
         self._loadData(data)
+        
+    def __eq__(self, other):
+        return other is not None and self.type == other.type and self.key == other.key
+
+    def __repr__(self):
+        title = self.title.replace(' ','.')[0:20]
+        return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
     def __getattr__(self, attr):
         if self.isPartialObject():
@@ -75,6 +84,22 @@ def joinArgs(args):
         value = str(args[key])
         arglist.append('%s=%s' % (key, quote(value)))
     return '?%s' % '&'.join(arglist)
+
+
+def threaded(funcs, *args, **kwargs):
+    def _run(func, _args, _kwargs, results):
+        results.put(func(*_args, **_kwargs))
+    threads = []
+    results = Queue(len(funcs) + 1)
+    for func in funcs:
+        targs = [func, args, kwargs, results]
+        threads.append(Thread(target=_run, args=targs))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    results.put(None)
+    return results
 
 
 def toDatetime(value, format=None):

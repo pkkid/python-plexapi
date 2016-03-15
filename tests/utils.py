@@ -1,7 +1,7 @@
 """
 Test Library Functions
 """
-import inspect, sys
+import inspect, sys, traceback
 import datetime, time
 from plexapi import server
 from plexapi.myplex import MyPlexUser
@@ -61,12 +61,15 @@ def run_tests(module, args):
             log(2, 'PASS! (runtime: %.3fs; queries: %s)' % (runtime, queries), 'blue')
             tests['passed'] += 1
         except Exception as err:
-            log(2, 'FAIL!: %s' % err, 'red')
+            errstr = str(err)
+            errstr += '\n%s' % traceback.format_exc() if args.verbose else errstr
+            log(2, 'FAIL!: %s' % errstr, 'red')
             tests['failed'] += 1
         log(0, '')
     log(0, 'Tests Run:    %s' % sum(tests.values()))
     log(0, 'Tests Passed: %s' % tests['passed'])
-    log(0, 'Tests Failed: %s' % tests['failed'])
+    if tests['failed']:
+        log(0, 'Tests Failed: %s' % tests['failed'], 'red')
     if not tests['failed']:
         log(0, '')
         log(0, 'EVERYTHING OK!! :)')

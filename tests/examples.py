@@ -92,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('--baseuri', help='Baseuri needed for auth token authentication')
     parser.add_argument('--token', help='Auth token (instead of user/pass)')
     parser.add_argument('--example', help='Only run the specified example.')
+    parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Print verbose logging.')
     args = parser.parse_args()
     plex, user = fetch_server(args)
     for example in iter_tests(args.example):

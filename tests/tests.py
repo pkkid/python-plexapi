@@ -19,8 +19,16 @@ SHOW_SEASON = 'Season 1'
 SHOW_EPISODE = 'Winter Is Coming'
 MOVIE_SECTION = 'Movies'
 MOVIE_TITLE = 'Jurassic Park'
+AUDIO_SECTION = 'Music'
+AUDIO_ARTIST = 'Beastie Boys'
+AUDIO_ALBUM = 'Licensed To Ill'
+AUDIO_TRACK = 'Brass Monkey'
 PLEX_CLIENT = 'iphone-mike'
 
+
+#-----------------------
+# Core
+#-----------------------
 
 @register('core,server')
 def test_server(plex, user=None):
@@ -41,6 +49,10 @@ def test_list_sections(plex, user=None):
     plex.library.section(SHOW_SECTION)
     plex.library.section(MOVIE_SECTION)
 
+
+#-----------------------
+# Search
+#-----------------------
 
 @register('search,show')
 def test_search_show(plex, user=None):
@@ -82,7 +94,24 @@ def test_search_movie(plex, user=None):
     assert result_server, 'Movie not found.'
     assert result_server == result_library == result_movies, 'Movie searches not consistent.'
     assert not result_shows, 'Show search returned show title.'
+    
 
+@register('search,audio')
+def test_search_audio(plex, user=None):
+    result_server = plex.search(AUDIO_ARTIST)
+    result_library = plex.library.search(AUDIO_ARTIST)
+    result_music = plex.library.section(AUDIO_SECTION).search(AUDIO_ARTIST)
+    log(2, 'Searching for: %s' % AUDIO_ARTIST)
+    log(4, 'Result Server: %s' % result_server)
+    log(4, 'Result Library: %s' % result_library)
+    log(4, 'Result Music: %s' % result_music)
+    assert result_server, 'Artist not found.'
+    assert result_server == result_library == result_music, 'Audio searches not consistent.'
+
+
+#-----------------------
+# Library Navigation
+#-----------------------
 
 @register('navigate,movie,show')
 def test_navigate_to_movie(plex, user=None):
@@ -133,7 +162,34 @@ def test_navigate_around_show(plex, user=None):
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
 
 
-@register('movie,action')
+@register('navigate,audio')
+def test_navigate_around_artist(plex, user=None):
+    section = plex.library.section(AUDIO_SECTION)
+    print(section)
+    artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
+    print(artist)
+    
+    # seasons = show.seasons()
+    # season = show.season(SHOW_SEASON)
+    # episodes = show.episodes()
+    # episode = show.episode(SHOW_EPISODE)
+    # log(2, 'Navigating around show: %s' % show)
+    # log(4, 'Seasons: %s...' % seasons[:3])
+    # log(4, 'Season: %s' % season)
+    # log(4, 'Episodes: %s...' % episodes[:3])
+    # log(4, 'Episode: %s' % episode)
+    # assert SHOW_SEASON in [s.title for s in seasons], 'Unable to get season: %s' % SHOW_SEASON
+    # assert SHOW_EPISODE in [e.title for e in episodes], 'Unable to get episode: %s' % SHOW_EPISODE
+    # assert season.show() == show, 'season.show() doesnt match expected show.'
+    # assert episode.show() == show, 'episode.show() doesnt match expected show.'
+    # assert episode.season() == season, 'episode.season() doesnt match expected season.'
+
+
+#-----------------------
+# Library Actions
+#-----------------------
+
+@register('action,movie')
 def test_mark_movie_watched(plex, user=None):
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     movie.markUnwatched()
@@ -158,6 +214,10 @@ def test_refresh_video(plex, user=None):
     result = plex.search(MOVIE_TITLE)
     result[0].refresh()
 
+
+#-----------------------
+# Metadata
+#-----------------------
 
 @register('meta,movie')
 def test_original_title(plex, user=None):
@@ -232,6 +292,10 @@ def test_fetch_details_not_in_search_result(plex, user=None):
     log(2, '%s actors found.' % len(actors))
 
 
+#-----------------------
+# Play Queue
+#-----------------------
+
 @register('queue')
 def test_play_queues(plex, user=None):
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
@@ -240,6 +304,10 @@ def test_play_queues(plex, user=None):
     assert playqueue.items[0].title == SHOW_EPISODE, 'Wrong show queued.'
     assert playqueue.playQueueID, 'Play queue ID not set.'
 
+
+#-----------------------
+# Client
+#-----------------------
 
 @register('client')
 def test_list_devices(plex, user=None):
@@ -267,7 +335,7 @@ def test_client_play_media(plex, user=None):
     client.stop()
 
 
-# def test_016_sync_items(plex, user=None):
+# def test_sync_items(plex, user=None):
 #     user = MyPlexUser('user', 'pass')
 #     device = user.getDevice('device-uuid')
 #     # fetch the sync items via the device sync list
@@ -294,5 +362,6 @@ if __name__ == '__main__':
     parser.add_argument('--baseuri', help='Baseuri needed for auth token authentication')
     parser.add_argument('--token', help='Auth token (instead of user/pass)')
     parser.add_argument('--query', help='Only run the specified tests.')
+    parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Print verbose logging.')
     args = parser.parse_args()
     run_tests(__name__, args)

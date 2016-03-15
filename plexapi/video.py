@@ -19,13 +19,6 @@ except ImportError:
 class Video(PlexPartialObject):
     TYPE = None
 
-    def __eq__(self, other):
-        return other is not None and self.type == other.type and self.key == other.key
-
-    def __repr__(self):
-        title = self.title.replace(' ','.')[0:20]
-        return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
-
     def _loadData(self, data):
         self.type = data.attrib.get('type', NA)
         self.key = data.attrib.get('key', NA)

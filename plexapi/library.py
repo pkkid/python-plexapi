@@ -3,6 +3,8 @@ PlexLibrary
 """
 from plexapi import video, audio, utils
 from plexapi.exceptions import NotFound
+from threading import Thread
+from Queue import Queue
 
 
 class Library(object):
@@ -52,38 +54,31 @@ class Library(object):
 
     def getByKey(self, key):
         return video.find_key(self.server, key)
-
-    def searchVideo(self, title, filter='all', vtype=None, **tags):
-        """ Search all available content.
-            title: Title to search (pass None to search all titles).
-            filter: One of {'all', 'onDeck', 'recentlyAdded'}.
-            videotype: One of {'movie', 'show', 'season', 'episode'}.
-            tags: One of {country, director, genre, producer, actor, writer}.
-        """
-        args = {}
-        if title: args['title'] = title
-        if vtype: args['type'] = video.search_type(vtype)
-        for tag, obj in tags.items():
-            args[tag] = obj.id
-        query = '/library/%s%s' % (filter, utils.joinArgs(args))
-        return video.list_items(self.server, query)
-
-    def searchAudio(self, title, filter='all', atype=None, **tags):
-        """ Search all available audio content.
-            title: Title to search (pass None to search all titles).
-            filter: One of {'all', 'onDeck', 'recentlyAdded'}.
-            atype: One of {'artist', 'album', 'track'}.
-            tags: One of {country, director, genre, producer, actor, writer}.
-        """
-        args = {}
-        if title: args['title'] = title
-        if atype: args['type'] = audio.search_type(atype)
-        for tag, obj in tags.items():
-            args[tag] = obj.id
-        query = '/library/%s%s' % (filter, utils.joinArgs(args))
-        return audio.list_items(self.server, query)
         
-    search = searchVideo  # TODO: make .search() a method to merge results of .searchVideo() and .searchAudio()
+    def search(self, title, prefilter='all', mtype=None, **tags):
+        # TODO: Handle tags much better.
+        _audio = lambda: self._search(audio, title, prefilter, mtype, **tags)
+        _video = lambda: self._search(video, title, prefilter, mtype, **tags)
+        results = []
+        qresults = utils.threaded([_audio, _video])
+        for item in iter(qresults.get_nowait, None):
+            results += item
+        return results
+        
+    def _search(self, module, title, prefilter='all', mtype=None, **tags):
+        """ Search audio content.
+            title: Title to search (pass None to search all titles).
+            prefilter: One of {'all', 'onDeck', 'recentlyAdded'}.
+            mtype: One of {'artist', 'album', 'track', 'movie', 'show', 'season', 'episode'}.
+            tags: One of {country, director, genre, producer, actor, writer}.
+        """
+        args = {}
+        if title: args['title'] = title
+        if mtype: args['type'] = module.search_type(mtype)
+        for tag, obj in tags.items():
+            args[tag] = obj.id
+        query = '/library/%s%s' % (prefilter, utils.joinArgs(args))
+        return module.list_items(self.server, query)
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
