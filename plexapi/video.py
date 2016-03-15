@@ -32,6 +32,7 @@ class Video(PlexPartialObject):
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.ratingKey = data.attrib.get('ratingKey', NA)
         self.title = data.attrib.get('title', NA)
+        self.originalTitle = data.attrib.get('originalTitle', NA)
         self.summary = data.attrib.get('summary', NA)
         self.art = data.attrib.get('art', NA)
         self.thumb = data.attrib.get('thumb', NA)
