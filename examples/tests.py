@@ -11,6 +11,7 @@ import argparse, sys, time
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 from utils import log, run_tests
+from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
 SHOW_TITLE = 'Game of Thrones'
@@ -79,7 +80,7 @@ def test_004_search_movie(plex, user=None):
     
 
 def test_004b_search_movie(plex, user=None):
-    movie_title = 'Dude Where\'s'
+    movie_title = 'Bedside Detective'
     result_server = plex.search(movie_title)
     result_library = plex.library.search(movie_title)
     result_movies = plex.library.section(MOVIE_SECTION).search(movie_title)
@@ -89,6 +90,14 @@ def test_004b_search_movie(plex, user=None):
     log(4, 'Result Movies: %s' % result_movies)
     assert result_server, 'Movie not found.'
     assert result_server == result_library == result_movies, 'Movie searches not consistent.'
+    
+
+def test_004c_original_title_of_foreign_movie(plex, user=None):
+    movie_title = 'Bedside Detective'
+    result = plex.search(movie_title)
+    log(2, 'Title: %s' % result[0].title)
+    log(2, 'Original Title: %s' % result[0].originalTitle)
+    assert(result[0].originalTitle != NA)
 
 
 def test_005_navigate_to_show(plex, user=None):
