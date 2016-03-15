@@ -120,7 +120,7 @@ class Video(PlexPartialObject):
         client.playMedia(self)
 
     def refresh(self):
-        self.server.query('/%s/refresh' % self.key, method=put)
+        self.server.query('%s/refresh' % self.key, method=put)
 
 
 class Movie(Video):
