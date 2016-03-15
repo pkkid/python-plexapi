@@ -58,8 +58,13 @@ class PlexPartialObject(object):
 def cast(func, value):
     if value not in [None, NA]:
         if func == bool:
-            value = int(value)
-        value = func(value)
+            return bool(int(value))
+        elif func in [int, float]:
+            try:
+                return func(value)
+            except ValueError:
+                return float('nan')
+        return func(value)
     return value
 
 
