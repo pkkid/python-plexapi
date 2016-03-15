@@ -1,7 +1,7 @@
 """
 PlexLibrary
 """
-from plexapi import video, utils
+from plexapi import video, audio, utils
 from plexapi.exceptions import NotFound
 
 
@@ -19,7 +19,8 @@ class Library(object):
 
     def sections(self):
         items = []
-        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection}
+        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection,
+                         MusicSection.TYPE:MusicSection}
         path = '/library/sections'
         for elem in self.server.query(path):
             stype = elem.attrib['type']
@@ -49,7 +50,7 @@ class Library(object):
     def getByKey(self, key):
         return video.find_key(self.server, key)
 
-    def search(self, title, filter='all', vtype=None, **tags):
+    def searchVideo(self, title, filter='all', vtype=None, **tags):
         """ Search all available content.
             title: Title to search (pass None to search all titles).
             filter: One of {'all', 'onDeck', 'recentlyAdded'}.
@@ -63,6 +64,23 @@ class Library(object):
             args[tag] = obj.id
         query = '/library/%s%s' % (filter, utils.joinArgs(args))
         return video.list_items(self.server, query)
+
+    search = searchVideo # TODO: make .search() a method to merge results of .searchVideo() and .searchAudio()
+
+    def searchAudio(self, title, filter='all', atype=None, **tags):
+        """ Search all available audio content.
+            title: Title to search (pass None to search all titles).
+            filter: One of {'all', 'onDeck', 'recentlyAdded'}.
+            atype: One of {'artist', 'album', 'track'}.
+            tags: One of {country, director, genre, producer, actor, writer}.
+        """
+        args = {}
+        if title: args['title'] = title
+        if atype: args['type'] = audio.search_type(atype)
+        for tag, obj in tags.items():
+            args[tag] = obj.id
+        query = '/library/%s%s' % (filter, utils.joinArgs(args))
+        return audio.list_items(self.server, query)
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
@@ -197,6 +215,38 @@ class ShowSection(LibrarySection):
 
     def searchEpisodes(self, title, filter='all', **tags):
         return super(ShowSection, self).search(title, filter=filter, vtype=video.Episode.TYPE, **tags)
+
+
+class MusicSection(LibrarySection):
+    TYPE = 'artist'
+
+    def search(self, title, filter='all', atype=None, **tags):
+        """ Search section content.
+            title: Title to search (pass None to search all titles).
+            filter: One of {'all', 'newest', 'onDeck', 'recentlyAdded', 'recentlyViewed', 'unwatched'}.
+            videotype: One of {'artist', 'album', 'track'}.
+            tags: One of {country, director, genre, producer, actor, writer}.
+        """
+        args = {}
+        if title: args['title'] = title
+        if atype: args['type'] = audio.search_type(atype)
+        for tag, obj in tags.items():
+            args[tag] = obj.id
+        query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
+        return audio.list_items(self.server, query)
+
+
+    def recentlyViewedShows(self):
+        return self._primary_list('recentlyViewedShows')
+
+    def searchArtists(self, title, filter='all', **tags):
+        return self.search(title, filter=filter, atype=audio.Artist.TYPE, **tags)
+
+    def searchAlbums(self, title, filter='all', **tags):
+        return self.search(title, filter=filter, atype=audio.Album.TYPE, **tags)
+
+    def searchTracks(self, title, filter='all', **tags):
+        return self.search(title, filter=filter, atype=audio.Track.TYPE, **tags)
 
 
 def list_choices(server, path):
