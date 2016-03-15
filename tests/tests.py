@@ -10,7 +10,7 @@ run this test suite with the following command:
 import argparse, sys, time
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
-from utils import log, run_tests
+from utils import log, register, run_tests
 from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
@@ -19,10 +19,11 @@ SHOW_SEASON = 'Season 1'
 SHOW_EPISODE = 'Winter Is Coming'
 MOVIE_SECTION = 'Movies'
 MOVIE_TITLE = 'Jurassic Park'
-PLEX_CLIENT = "Michael's iPhone"
+PLEX_CLIENT = 'iphone-mike'
 
 
-def test_001_server(plex, user=None):
+@register('core,server')
+def test_server(plex, user=None):
     log(2, 'Username: %s' % plex.myPlexUsername)
     log(2, 'Platform: %s' % plex.platform)
     log(2, 'Version: %s' % plex.version)
@@ -31,7 +32,8 @@ def test_001_server(plex, user=None):
     assert plex.version is not None, 'Unknown version.'
 
 
-def test_002_list_sections(plex, user=None):
+@register('core')
+def test_list_sections(plex, user=None):
     sections = [s.title for s in plex.library.sections()]
     log(2, 'Sections: %s' % sections)
     assert SHOW_SECTION in sections, '%s not a library section.' % SHOW_SECTION
@@ -40,7 +42,8 @@ def test_002_list_sections(plex, user=None):
     plex.library.section(MOVIE_SECTION)
 
 
-def test_003_search_show(plex, user=None):
+@register('search,show')
+def test_search_show(plex, user=None):
     result_server = plex.search(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(SHOW_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).search(SHOW_TITLE)
@@ -53,7 +56,8 @@ def test_003_search_show(plex, user=None):
     assert not result_movies, 'Movie search returned show title.'
     
 
-def test_003b_search_show(plex, user=None):
+@register('search,show')
+def test_search_with_apostrophe(plex, user=None):
     show_title = "Marvel's Daredevil"  # Test ' in show title
     result_server = plex.search(show_title)
     result_shows = plex.library.section(SHOW_SECTION).search(show_title)
@@ -64,7 +68,8 @@ def test_003b_search_show(plex, user=None):
     assert result_server == result_shows, 'Show searches not consistent.'
 
 
-def test_004_search_movie(plex, user=None):
+@register('search,movie')
+def test_search_movie(plex, user=None):
     result_server = plex.search(MOVIE_TITLE)
     result_library = plex.library.search(MOVIE_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(MOVIE_TITLE)
@@ -77,49 +82,10 @@ def test_004_search_movie(plex, user=None):
     assert result_server, 'Movie not found.'
     assert result_server == result_library == result_movies, 'Movie searches not consistent.'
     assert not result_shows, 'Show search returned show title.'
-    
-
-def test_004b_search_movie(plex, user=None):
-    movie_title = 'Bedside Detective'
-    result_server = plex.search(movie_title)
-    result_library = plex.library.search(movie_title)
-    result_movies = plex.library.section(MOVIE_SECTION).search(movie_title)
-    log(2, 'Searching for: %s' % movie_title)
-    log(4, 'Result Server: %s' % result_server)
-    log(4, 'Result Library: %s' % result_library)
-    log(4, 'Result Movies: %s' % result_movies)
-    assert result_server, 'Movie not found.'
-    assert result_server == result_library == result_movies, 'Movie searches not consistent.'
-    
-
-def test_004c_original_title_of_foreign_movie(plex, user=None):
-    movie_title = 'Bedside Detective'
-    result = plex.search(movie_title)
-    log(2, 'Title: %s' % result[0].title)
-    log(2, 'Original Title: %s' % result[0].originalTitle)
-    assert(result[0].originalTitle != NA)
-    
-
-def test_004d_refresh_video(plex, user=None):
-    movie_title = 'Bedside Detective'
-    result = plex.search(movie_title)
-    result[0].refresh()
 
 
-def test_005_navigate_to_show(plex, user=None):
-    result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
-    try:
-        result_movies = plex.library.section(MOVIE_SECTION).get(SHOW_TITLE)
-    except:
-        result_movies = None
-    log(2, 'Navigating to: %s' % SHOW_TITLE)
-    log(4, 'Result Shows: %s' % result_shows)
-    log(4, 'Result Movies: %s' % result_movies)
-    assert result_shows, 'Show navigation not working.'
-    assert not result_movies, 'Movie navigation returned show title.'
-
-
-def test_006_navigate_to_movie(plex, user=None):
+@register('navigate,movie,show')
+def test_navigate_to_movie(plex, user=None):
     result_library = plex.library.get(MOVIE_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     try:
@@ -134,7 +100,22 @@ def test_006_navigate_to_movie(plex, user=None):
     assert not result_shows, 'Show navigation returned show title.'
 
 
-def test_007_navigate_around_show(plex, user=None):
+@register('navigate,movie,show')
+def test_navigate_to_show(plex, user=None):
+    result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
+    try:
+        result_movies = plex.library.section(MOVIE_SECTION).get(SHOW_TITLE)
+    except:
+        result_movies = None
+    log(2, 'Navigating to: %s' % SHOW_TITLE)
+    log(4, 'Result Shows: %s' % result_shows)
+    log(4, 'Result Movies: %s' % result_movies)
+    assert result_shows, 'Show navigation not working.'
+    assert not result_movies, 'Movie navigation returned show title.'
+
+
+@register('navigate,show')
+def test_navigate_around_show(plex, user=None):
     show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     seasons = show.seasons()
     season = show.season(SHOW_SEASON)
@@ -152,7 +133,8 @@ def test_007_navigate_around_show(plex, user=None):
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
 
 
-def test_008_mark_movie_watched(plex, user=None):
+@register('movie,action')
+def test_mark_movie_watched(plex, user=None):
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     movie.markUnwatched()
     log(2, 'Marking movie watched: %s' % movie)
@@ -165,47 +147,29 @@ def test_008_mark_movie_watched(plex, user=None):
     assert movie.viewCount == 0, 'View count 1 after unwatched.'
 
 
-def test_009_refresh(plex, user=None):
+@register('action')
+def test_refresh_section(plex, user=None):
     shows = plex.library.section(MOVIE_SECTION)
     shows.refresh()
+    
+
+@register('action,movie')
+def test_refresh_video(plex, user=None):
+    result = plex.search(MOVIE_TITLE)
+    result[0].refresh()
 
 
-def test_010_playQueues(plex, user=None):
-    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
-    playqueue = plex.createPlayQueue(episode)
-    assert len(playqueue.items) == 1, 'No items in play queue.'
-    assert playqueue.items[0].title == SHOW_EPISODE, 'Wrong show queued.'
-    assert playqueue.playQueueID, 'Play queue ID not set.'
+@register('meta,movie')
+def test_original_title(plex, user=None):
+    movie_title = 'Bedside Detective'
+    result = plex.search(movie_title)
+    log(2, 'Title: %s' % result[0].title)
+    log(2, 'Original Title: %s' % result[0].originalTitle)
+    assert(result[0].originalTitle != NA)
 
 
-def test_011_play_media(plex, user=None):
-    # Make sure the client is turned on!
-    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
-    client = plex.client(PLEX_CLIENT)
-    client.playMedia(episode)
-    time.sleep(10)
-    client.pause()
-    time.sleep(3)
-    client.stepForward()
-    time.sleep(3)
-    client.play()
-    time.sleep(3)
-    client.stop()
-    time.sleep(3)
-    movie = plex.library.get(MOVIE_TITLE)
-    movie.play(client)
-    time.sleep(10)
-    client.stop()
-
-
-def test_012_myplex_account(plex, user=None):
-    account = plex.account()
-    log(2, 'username: %s' % account.username)
-    log(2, 'subscriptionActive: %s' % account.subscriptionActive)
-    log(2, 'subscriptionState: %s' % account.subscriptionState)
-
-
-def test_013_list_media_files(plex, user=None):
+@register('meta,movie,show')
+def test_list_media_files(plex, user=None):
     # Fetch file names from the tv show
     episode_files = []
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()[-1]
@@ -226,7 +190,8 @@ def test_013_list_media_files(plex, user=None):
     assert filter(None, movie_files), 'No movie files have been listed.'
 
 
-def test_014_list_video_tags(plex, user=None):
+@register('meta,movie')
+def test_list_video_tags(plex, user=None):
     movies = plex.library.section(MOVIE_SECTION)
     movie = movies.get(MOVIE_TITLE)
     log(2, 'Countries: %s' % movie.countries[0:3])
@@ -247,9 +212,59 @@ def test_014_list_video_tags(plex, user=None):
     assert movie in related, 'Movie was not found in related directors search.'
 
 
-def test_015_list_devices(plex, user=None):
+@register('meta,show')
+def test_is_watched(plex, user=None):
+    show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
+    episode = show.get(SHOW_EPISODE)
+    log(2, '%s is_watched: %s' % (episode.title, episode.is_watched))
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    log(2, '%s is_watched: %s' % (movie.title, movie.is_watched))
+
+
+@register('meta,movie')
+def test_fetch_details_not_in_search_result(plex, user=None):
+    # Search results only contain 3 actors per movie. This text checks there
+    # are more than 3 results in the actor list (meaning it fetched the detailed
+    # information behind the scenes).
+    result = plex.search(MOVIE_TITLE)[0]
+    actors = result.actors
+    assert len(actors) >= 4, 'Unable to fetch detailed movie information'
+    log(2, '%s actors found.' % len(actors))
+
+
+@register('queue')
+def test_play_queues(plex, user=None):
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
+    playqueue = plex.createPlayQueue(episode)
+    assert len(playqueue.items) == 1, 'No items in play queue.'
+    assert playqueue.items[0].title == SHOW_EPISODE, 'Wrong show queued.'
+    assert playqueue.playQueueID, 'Play queue ID not set.'
+
+
+@register('client')
+def test_list_devices(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
     log(2, ', '.join([r.name or r.product for r in user.resources()]))
+
+
+@register('client')
+def test_client_play_media(plex, user=None):
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
+    client = plex.client(PLEX_CLIENT)
+    client.playMedia(episode)
+    time.sleep(10)
+    client.pause()
+    time.sleep(3)
+    client.stepForward()
+    time.sleep(3)
+    client.play()
+    time.sleep(3)
+    client.stop()
+    time.sleep(3)
+    movie = plex.library.get(MOVIE_TITLE)
+    movie.play(client)
+    time.sleep(10)
+    client.stop()
 
 
 # def test_016_sync_items(plex, user=None):
@@ -267,35 +282,17 @@ def test_015_list_devices(plex, user=None):
 #                 item.mark_as_done(part.sync_id)
 
 
-def test_017_is_watched(plex, user=None):
-    show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
-    episode = show.get(SHOW_EPISODE)
-    log(2, '%s is_watched: %s' % (episode.title, episode.is_watched))
-    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-    log(2, '%s is_watched: %s' % (movie.title, movie.is_watched))
-
-
-def test_018_fetch_details_not_in_search_result(plex, user=None):
-    # Search results only contain 3 actors per movie. This text checks there
-    # are more than 3 results in the actor list (meaning it fetched the detailed
-    # information behind the scenes).
-    result = plex.search(MOVIE_TITLE)[0]
-    actors = result.actors
-    assert len(actors) >= 4, 'Unable to fetch detailed movie information'
-    log(2, '%s actors found.' % len(actors))
-
-
 if __name__ == '__main__':
     # There are three ways to authenticate:
     #  1. If the server is running on localhost, just run without any auth.
     #  2. Pass in --username, --password, and --resource.
     #  3. Pass in --baseuri, --token
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
-    parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
-    parser.add_argument('-n', '--name', help='Only run tests containing this string. Leave blank to run all tests.')
-    parser.add_argument('-u', '--username', help='Username for the Plex server.')
-    parser.add_argument('-p', '--password', help='Password for the Plex server.')
-    parser.add_argument('-b', '--baseuri', help='Baseuri needed for auth token authentication')
-    parser.add_argument('-t', '--token', help='Auth token (instead of user/pass)')
+    parser.add_argument('--username', help='Username for the Plex server.')
+    parser.add_argument('--password', help='Password for the Plex server.')
+    parser.add_argument('--resource', help='Name of the Plex resource (requires user/pass).')
+    parser.add_argument('--baseuri', help='Baseuri needed for auth token authentication')
+    parser.add_argument('--token', help='Auth token (instead of user/pass)')
+    parser.add_argument('--query', help='Only run the specified tests.')
     args = parser.parse_args()
     run_tests(__name__, args)

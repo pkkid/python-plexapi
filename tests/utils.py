@@ -6,21 +6,24 @@ import datetime, time
 from plexapi import server
 from plexapi.myplex import MyPlexUser
 
-COLORS = dict(
-    blue = '\033[94m',
-    green = '\033[92m',
-    red = '\033[91m',
-    yellow = '\033[93m',
-    end = '\033[0m',
-)
+COLORS = {'blue':'\033[94m', 'green':'\033[92m', 'red':'\033[91m', 'yellow':'\033[93m', 'end':'\033[0m'}
+
+
+registered = []
+def register(tags=''):
+    def wrap2(func):
+        registered.append({'name':func.__name__, 'tags':tags.split(','), 'func':func})
+        def wrap1(*args, **kwargs):  # flake8:noqa
+            func(*args, **kwargs)
+        return wrap1
+    return wrap2
 
 
 def log(indent, message, color=None):
     dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
     if color:
-        print('%s: %s%s%s%s' % (dt, ' '*indent, COLORS[color], message, COLORS['end']))
-    else:
-        print('%s: %s%s' % (dt, ' '*indent, message))
+        return sys.stdout.write('%s: %s%s%s%s\n' % (dt, ' '*indent, COLORS[color], message, COLORS['end']))
+    return sys.stdout.write('%s: %s%s\n' % (dt, ' '*indent, message))
 
 
 def fetch_server(args):
@@ -32,25 +35,27 @@ def fetch_server(args):
     return server.PlexServer(), None
 
 
-def iter_tests(module, args):
-    check_test = lambda name: name.startswith('test_') or name.startswith('example_')
-    check_name = lambda name: not args.name or args.name in name
-    module = sys.modules[module]
-    for _, func in sorted(module.__dict__.items()):  # .values():
-        if inspect.isfunction(func) and inspect.getmodule(func) == module:
-            if check_test(func.__name__) and check_name(func.__name__):
-                yield func
+def iter_tests(query):
+    tags = query[5:].split(',') if query and query.startswith('tags:') else ''
+    for test in registered:
+        if not query:
+            yield test
+        elif tags:
+            matching_tags = [t for t in tags if t in test['tags']]
+            if matching_tags: yield test
+        elif query in test['name']:
+            yield test
 
 
 def run_tests(module, args):
     plex, user = fetch_server(args)
     tests = {'passed':0, 'failed':0}
-    for test in iter_tests(module, args):
+    for test in iter_tests(args.query):
         startqueries = server.TOTAL_QUERIES
         starttime = time.time()
-        log(0, test.__name__)
+        log(0, '%s (%s)' % (test['name'], ','.join(test['tags'])))
         try:
-            test(plex, user)
+            test['func'](plex, user)
             runtime = time.time() - starttime
             queries = server.TOTAL_QUERIES - startqueries
             log(2, 'PASS! (runtime: %.3fs; queries: %s)' % (runtime, queries), 'blue')
