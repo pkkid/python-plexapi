@@ -27,7 +27,7 @@ class PlexServer(object):
     def __init__(self, baseuri=None, token=None, session=None):
         self.baseuri = baseuri or DEFAULT_BASEURI
         self.token = token
-        self.session = session  # set this as a requests.session to use that session
+        self.session = session or requests.Session()
         data = self._connect()
         self.friendlyName = data.attrib.get('friendlyName')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
@@ -85,11 +85,7 @@ class PlexServer(object):
         global TOTAL_QUERIES
         TOTAL_QUERIES += 1
         url = self.url(path)
-        if method is None:
-            if self.session is not None:
-                method = self.session.get
-            else:
-                method = requests.get
+        method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
         response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
