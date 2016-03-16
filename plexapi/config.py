@@ -30,3 +30,16 @@ class PlexConfig(ConfigParser):
                 if name != '__name__':
                     config[section.lower()][name.lower()] = value
         return dict(config)
+
+
+def reset_base_headers():
+    import plexapi
+    return {
+        'X-Plex-Platform': plexapi.X_PLEX_PLATFORM,
+        'X-Plex-Platform-Version': plexapi.X_PLEX_PLATFORM_VERSION,
+        'X-Plex-Provides': plexapi.X_PLEX_PROVIDES,
+        'X-Plex-Product': plexapi.X_PLEX_PRODUCT,
+        'X-Plex-Version': plexapi.X_PLEX_VERSION,
+        'X-Plex-Device': plexapi.X_PLEX_DEVICE,
+        'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,
+    }

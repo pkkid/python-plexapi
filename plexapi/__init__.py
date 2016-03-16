@@ -1,9 +1,10 @@
 """
 PlexAPI
 """
-import logging, os, platform
+import logging, os
 from logging.handlers import RotatingFileHandler
-from plexapi.config import PlexConfig
+from platform import platform, uname
+from plexapi.config import PlexConfig, reset_base_headers
 from uuid import getnode
 
 PROJECT = 'PlexAPI'
@@ -17,22 +18,14 @@ CONFIG = PlexConfig(CONFIG_PATH)
 TIMEOUT = CONFIG.get('plexapi.timeout', 5, int)
 
 # Plex Header Configuation
-X_PLEX_PROVIDES = 'player,controller'                                                   # one or more of [player, controller, server]
-X_PLEX_PLATFORM = CONFIG.get('headers.platorm', platform.uname()[0])                    # Platform name, eg iOS, MacOSX, Android, LG, etc
-X_PLEX_PLATFORM_VERSION = CONFIG.get('headers.platform_version', platform.uname()[2])   # Operating system version, eg 4.3.1, 10.6.7, 3.2
-X_PLEX_PRODUCT = CONFIG.get('headers.product', PROJECT)                                 # Plex application name, eg Laika, Plex Media Server, Media Link
-X_PLEX_VERSION = CONFIG.get('headers.version', VERSION)                                 # Plex application version number
-X_PLEX_DEVICE = CONFIG.get('headers.platform', platform.platform())                     # Device name and model number, eg iPhone3,2, Motorola XOOM, LG5200TV
-X_PLEX_IDENTIFIER = CONFIG.get('headers.identifier', str(hex(getnode())))               # UUID, serial number, or other number unique per device
-BASE_HEADERS = {
-    'X-Plex-Platform': X_PLEX_PLATFORM,
-    'X-Plex-Platform-Version': X_PLEX_PLATFORM_VERSION,
-    'X-Plex-Provides': X_PLEX_PROVIDES,
-    'X-Plex-Product': X_PLEX_PRODUCT,
-    'X-Plex-Version': X_PLEX_VERSION,
-    'X-Plex-Device': X_PLEX_DEVICE,
-    'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER,
-}
+X_PLEX_PROVIDES = 'player,controller'                                          # one or more of [player, controller, server]
+X_PLEX_PLATFORM = CONFIG.get('headers.platorm', uname()[0])                    # Platform name, eg iOS, MacOSX, Android, LG, etc
+X_PLEX_PLATFORM_VERSION = CONFIG.get('headers.platform_version', uname()[2])   # Operating system version, eg 4.3.1, 10.6.7, 3.2
+X_PLEX_PRODUCT = CONFIG.get('headers.product', PROJECT)                        # Plex application name, eg Laika, Plex Media Server, Media Link
+X_PLEX_VERSION = CONFIG.get('headers.version', VERSION)                        # Plex application version number
+X_PLEX_DEVICE = CONFIG.get('headers.platform', platform())                     # Device name and model number, eg iPhone3,2, Motorola XOOM, LG5200TV
+X_PLEX_IDENTIFIER = CONFIG.get('headers.identifier', str(hex(getnode())))      # UUID, serial number, or other number unique per device
+BASE_HEADERS = reset_base_headers()
 
 # Logging Configuration
 log = logging.getLogger('plexapi')
