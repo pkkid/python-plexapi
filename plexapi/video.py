@@ -5,13 +5,9 @@ import re
 from requests import put
 from plexapi import media, utils
 from plexapi.client import Client
+from plexapi.compat import urlencode
 from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import Unsupported
-try:
-    from urllib import urlencode  # Python2
-except ImportError:
-    from urllib.parse import urlencode  # Python3
-
 NA = utils.NA
 
 

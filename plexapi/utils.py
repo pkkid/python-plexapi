@@ -2,13 +2,8 @@
 PlexAPI Utils
 """
 from datetime import datetime
-from threading import Thread
-from Queue import Queue
+from plexapi.compat import quote
 from plexapi.exceptions import UnknownType
-try:
-    from urllib import quote  # Python2
-except ImportError:
-    from urllib.parse import quote  # Python3
 
 
 # Registry of library types we may come across when parsing XML. This allows us to
@@ -81,6 +76,19 @@ def build_item(server, elem, initpath):
     raise UnknownType('Unknown library type: %s' % libtype)
 
 
+def cast(func, value):
+    if value not in [None, NA]:
+        if func == bool:
+            return bool(int(value))
+        elif func in [int, float]:
+            try:
+                return func(value)
+            except ValueError:
+                return float('nan')
+        return func(value)
+    return value
+
+
 def find_key(server, key):
     path = '/library/metadata/{0}'.format(key)
     try:
@@ -98,6 +106,15 @@ def find_item(server, path, title):
     raise NotFound('Unable to find item: %s' % title)
 
 
+def joinArgs(args):
+    if not args: return ''
+    arglist = []
+    for key in sorted(args, key=lambda x:x.lower()):
+        value = str(args[key])
+        arglist.append('%s=%s' % (key, quote(value)))
+    return '?%s' % '&'.join(arglist)
+
+
 def list_items(server, path, libtype=None, watched=None):
     items = []
     for elem in server.query(path):
@@ -112,52 +129,14 @@ def list_items(server, path, libtype=None, watched=None):
     
 
 def search_type(libtype):
-    if libtype == LIBRARY_TYPES['movie'].TYPE: return 1
-    elif libtype == LIBRARY_TYPES['show'].TYPE: return 2
-    elif libtype == LIBRARY_TYPES['season'].TYPE: return 3
-    elif libtype == LIBRARY_TYPES['episode'].TYPE: return 4
-    elif libtype == LIBRARY_TYPES['artist'].TYPE: return 8
-    elif libtype == LIBRARY_TYPES['album'].TYPE: return 9
-    elif libtype == LIBRARY_TYPES['track'].TYPE: return 10
+    if libtype == 'movie': return 1
+    elif libtype == 'show': return 2
+    elif libtype == 'season': return 3
+    elif libtype == 'episode': return 4
+    elif libtype == 'artist': return 8
+    elif libtype == 'album': return 9
+    elif libtype == 'track': return 10
     raise NotFound('Unknown libtype: %s' % libtype)
-
-
-def cast(func, value):
-    if value not in [None, NA]:
-        if func == bool:
-            return bool(int(value))
-        elif func in [int, float]:
-            try:
-                return func(value)
-            except ValueError:
-                return float('nan')
-        return func(value)
-    return value
-
-
-def joinArgs(args):
-    if not args: return ''
-    arglist = []
-    for key in sorted(args, key=lambda x:x.lower()):
-        value = str(args[key])
-        arglist.append('%s=%s' % (key, quote(value)))
-    return '?%s' % '&'.join(arglist)
-
-
-def threaded(funcs, *args, **kwargs):
-    def _run(func, _args, _kwargs, results):
-        results.put(func(*_args, **_kwargs))
-    threads = []
-    results = Queue(len(funcs) + 1)
-    for func in funcs:
-        targs = [func, args, kwargs, results]
-        threads.append(Thread(target=_run, args=targs))
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    results.put(None)
-    return results
 
 
 def toDatetime(value, format=None):

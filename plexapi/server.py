@@ -5,17 +5,14 @@ import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
+from plexapi import audio, video  # flake8:noqa; required
+from plexapi.compat import quote
 from plexapi.client import Client
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.myplex import MyPlexAccount
 from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
-
-try:
-    from urllib import quote  # Python2
-except ImportError:
-    from urllib.parse import quote  # Python3
 
 TOTAL_QUERIES = 0
 DEFAULT_BASEURI = 'http://localhost:32400'

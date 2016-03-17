@@ -134,16 +134,16 @@ class LibrarySection(object):
         path = '/library/sections/%s/all' % self.key
         return utils.find_item(self.server, path, title)
 
-    def search(self, title, filter='all', vtype=None, **tags):
+    def search(self, title, filter='all', libtype=None, **tags):
         """ Search section content.
             title: Title to search (pass None to search all titles).
-            filter: One of {'all', 'newest', 'onDeck', 'recentlyAdded', 'recentlyViewed', 'unwatched'}.
-            videotype: One of {'movie', 'show', 'season', 'episode'}.
+            filter: One of {all, newest, onDeck, recentlyAdded, recentlyViewed, unwatched}.
+            libtype: One of {movie, show, season, episode, artist, album, track}.
             tags: One of {country, director, genre, producer, actor, writer}.
         """
         args = {}
         if title: args['title'] = title
-        if vtype: args['type'] = utils.search_type(vtype)
+        if libtype: args['type'] = utils.search_type(libtype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
@@ -181,7 +181,7 @@ class MovieSection(LibrarySection):
         return self._secondary_list('resolution', input)
 
     def search(self, title, filter='all', **tags):
-        return super(MovieSection, self).search(title, filter=filter, vtype='movie', **tags)
+        return super(MovieSection, self).search(title, filter=filter, libtype='movie', **tags)
 
 
 class ShowSection(LibrarySection):
@@ -191,10 +191,10 @@ class ShowSection(LibrarySection):
         return self._primary_list('recentlyViewedShows')
 
     def search(self, title, filter='all', **tags):
-        return super(ShowSection, self).search(title, filter=filter, vtype='show', **tags)
+        return super(ShowSection, self).search(title, filter=filter, libtype='show', **tags)
 
     def searchEpisodes(self, title, filter='all', **tags):
-        return super(ShowSection, self).search(title, filter=filter, vtype='episode', **tags)
+        return super(ShowSection, self).search(title, filter=filter, libtype='episode', **tags)
 
 
 class MusicSection(LibrarySection):

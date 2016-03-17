@@ -2,18 +2,15 @@
 PlexAudio
 """
 from plexapi import utils
+from plexapi.compat import urlencode
 from plexapi.media import Media, Genre, Producer
 from plexapi.exceptions import Unsupported
-from plexapi.utils import NA
-from plexapi.utils import cast, toDatetime, register_libtype
-from plexapi.video import Video  # TODO: remove this when Audio class can stand on its own legs
-try:
-    from urllib import urlencode  # Python2
-except ImportError:
-    from urllib.parse import urlencode  # Python3
+from plexapi.video import Video
+NA = utils.NA
 
 
-class Audio(Video):  # TODO: inherit from PlexPartialObject, like the Video class does
+# TODO: inherit from PlexPartialObject, like the Video class does
+class Audio(Video):
 
     def _loadData(self, data):
         self.type = data.attrib.get('type', NA)
@@ -24,9 +21,9 @@ class Audio(Video):  # TODO: inherit from PlexPartialObject, like the Video clas
         self.summary = data.attrib.get('summary', NA)
         self.art = data.attrib.get('art', NA)
         self.thumb = data.attrib.get('thumb', NA)
-        self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
-        self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
-        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
         self.transcodeSession = self._find_transcodeSession(data)
@@ -67,7 +64,7 @@ class Audio(Video):  # TODO: inherit from PlexPartialObject, like the Video clas
         self._loadData(data[0])
 
 
-@register_libtype
+@utils.register_libtype
 class Artist(Audio):
     TYPE = 'artist'
 
@@ -77,14 +74,14 @@ class Artist(Audio):
         self.studio = data.attrib.get('studio', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.year = cast(int, data.attrib.get('year', NA))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
         self.banner = data.attrib.get('banner', NA)
         self.theme = data.attrib.get('theme', NA)
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.leafCount = cast(int, data.attrib.get('leafCount', NA))
-        self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
-        self.childCount = cast(int, data.attrib.get('childCount', NA))
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.childCount = utils.cast(int, data.attrib.get('childCount', NA))
         self.titleSort = data.attrib.get('titleSort', NA)
 
     def albums(self):
@@ -116,7 +113,7 @@ class Artist(Audio):
         self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
-@register_libtype
+@utils.register_libtype
 class Album(Audio):
     TYPE = 'album'
 
@@ -133,9 +130,9 @@ class Album(Audio):
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentThumb = data.attrib.get('parentThumb', NA)
         self.parentTheme = data.attrib.get('parentTheme', NA)
-        self.leafCount = cast(int, data.attrib.get('leafCount', NA))
-        self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
-        self.year = cast(int, data.attrib.get('year', NA))
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
 
     def tracks(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
@@ -158,7 +155,7 @@ class Album(Audio):
         return self.tracks(watched=False)
 
 
-@register_libtype
+@utils.register_libtype
 class Track(Audio):
     TYPE = 'track'
 
@@ -177,8 +174,8 @@ class Track(Audio):
         self.contentRating = data.attrib.get('contentRating', NA)
         self.index = data.attrib.get('index', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
 
     @property
     def thumbUrl(self):

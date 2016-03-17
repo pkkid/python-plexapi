@@ -2,17 +2,16 @@
 PlexAPI Sync
 """
 import requests
+from plexapi import utils
 from plexapi.exceptions import NotFound
-from plexapi.video import list_items
-from plexapi.utils import cast
 
 
 class SyncItem(object):
     def __init__(self, device, data, servers=None):
         self.device = device
         self.servers = servers
-        self.id = cast(int, data.attrib.get('id'))
-        self.version = cast(int, data.attrib.get('version'))
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.version = utils.cast(int, data.attrib.get('version'))
         self.rootTitle = data.attrib.get('rootTitle')
         self.title = data.attrib.get('title')
         self.metadataType = data.attrib.get('metadataType')
@@ -34,7 +33,7 @@ class SyncItem(object):
 
     def getMedia(self):
         server = self.server().connect()
-        items = list_items(server, '/sync/items/{0}'.format(self.id))
+        items = utils.list_items(server, '/sync/items/{0}'.format(self.id))
         return items
 
     def markAsDone(self, sync_id):
