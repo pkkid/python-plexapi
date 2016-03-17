@@ -19,12 +19,12 @@ def register_libtype(cls):
 # compare NA against None in some use cases. This object allows the internals of PlexAPI 
 # to distinguish between unfetched values and fetched, but non-existent values.
 # (NA == None results to True; NA is None results to False)
-class __NA__(object):
-    def __bool__(self): return False  # Python3; flake8: noqa
+class _NA(object):
+    def __bool__(self): return False  # flake8: noqa; py3
     def __eq__(self, other): return isinstance(other, __NA__) or other in [None, '__NA__']  # flake8: noqa
-    def __nonzero__(self): return False  # Python2; flake8: noqa
+    def __nonzero__(self): return False  # flake8: noqa; py2
     def __repr__(self): return '__NA__'  # flake8: noqa
-NA = __NA__()
+NA = _NA()
 
 
 # Not all objects in the Plex listings return the complete list of elements for the object.
