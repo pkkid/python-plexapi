@@ -1,10 +1,8 @@
 """
 PlexLibrary
 """
-from plexapi import video, audio, utils
+from plexapi import utils
 from plexapi.exceptions import NotFound
-from threading import Thread
-from Queue import Queue
 
 
 class Library(object):
@@ -41,44 +39,28 @@ class Library(object):
         raise NotFound('Invalid library section: %s' % title)
 
     def all(self):
-        return video.list_items(self.server, '/library/all')
+        return utils.list_items(self.server, '/library/all')
 
     def onDeck(self):
-        return video.list_items(self.server, '/library/onDeck')
+        return utils.list_items(self.server, '/library/onDeck')
 
     def recentlyAdded(self):
-        return video.list_items(self.server, '/library/recentlyAdded')
+        return utils.list_items(self.server, '/library/recentlyAdded')
 
     def get(self, title):
-        return video.find_item(self.server, '/library/all', title)
+        return utils.find_item(self.server, '/library/all', title)
 
     def getByKey(self, key):
-        return video.find_key(self.server, key)
+        return utils.find_key(self.server, key)
         
-    def search(self, title, prefilter='all', mtype=None, **tags):
-        # TODO: Handle tags much better.
-        _audio = lambda: self._search(audio, title, prefilter, mtype, **tags)
-        _video = lambda: self._search(video, title, prefilter, mtype, **tags)
-        results = []
-        qresults = utils.threaded([_audio, _video])
-        for item in iter(qresults.get_nowait, None):
-            results += item
-        return results
-        
-    def _search(self, module, title, prefilter='all', mtype=None, **tags):
-        """ Search audio content.
-            title: Title to search (pass None to search all titles).
-            prefilter: One of {'all', 'onDeck', 'recentlyAdded'}.
-            mtype: One of {'artist', 'album', 'track', 'movie', 'show', 'season', 'episode'}.
-            tags: One of {country, director, genre, producer, actor, writer}.
-        """
+    def search(self, title, prefilter='all', libtype=None, **tags):
         args = {}
         if title: args['title'] = title
-        if mtype: args['type'] = module.search_type(mtype)
+        if libtype: args['type'] = utils.search_type(libtype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/%s%s' % (prefilter, utils.joinArgs(args))
-        return module.list_items(self.server, query)
+        return utils.list_items(self.server, query)
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
@@ -110,13 +92,13 @@ class LibrarySection(object):
         return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
     def _primary_list(self, key):
-        return video.list_items(self.server, '/library/sections/%s/%s' % (self.key, key))
+        return utils.list_items(self.server, '/library/sections/%s/%s' % (self.key, key))
 
     def _secondary_list(self, key, input=None):
         choices = list_choices(self.server, '/library/sections/%s/%s' % (self.key, key))
         if not input:
             return list(choices.keys())
-        return video.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
+        return utils.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
 
     def all(self):
         return self._primary_list('all')
@@ -150,7 +132,7 @@ class LibrarySection(object):
 
     def get(self, title):
         path = '/library/sections/%s/all' % self.key
-        return video.find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def search(self, title, filter='all', vtype=None, **tags):
         """ Search section content.
@@ -161,11 +143,11 @@ class LibrarySection(object):
         """
         args = {}
         if title: args['title'] = title
-        if vtype: args['type'] = video.search_type(vtype)
+        if vtype: args['type'] = utils.search_type(vtype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
-        return video.list_items(self.server, query)
+        return utils.list_items(self.server, query)
 
     def analyze(self):
         self.server.query('/library/sections/%s/analyze' % self.key)
@@ -199,7 +181,7 @@ class MovieSection(LibrarySection):
         return self._secondary_list('resolution', input)
 
     def search(self, title, filter='all', **tags):
-        return super(MovieSection, self).search(title, filter=filter, vtype=video.Movie.TYPE, **tags)
+        return super(MovieSection, self).search(title, filter=filter, vtype='movie', **tags)
 
 
 class ShowSection(LibrarySection):
@@ -209,10 +191,10 @@ class ShowSection(LibrarySection):
         return self._primary_list('recentlyViewedShows')
 
     def search(self, title, filter='all', **tags):
-        return super(ShowSection, self).search(title, filter=filter, vtype=video.Show.TYPE, **tags)
+        return super(ShowSection, self).search(title, filter=filter, vtype='show', **tags)
 
     def searchEpisodes(self, title, filter='all', **tags):
-        return super(ShowSection, self).search(title, filter=filter, vtype=video.Episode.TYPE, **tags)
+        return super(ShowSection, self).search(title, filter=filter, vtype='episode', **tags)
 
 
 class MusicSection(LibrarySection):
@@ -227,23 +209,23 @@ class MusicSection(LibrarySection):
         """
         args = {}
         if title: args['title'] = title
-        if atype: args['type'] = audio.search_type(atype)
+        if atype: args['type'] = utils.search_type(atype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
-        return audio.list_items(self.server, query)
+        return utils.list_items(self.server, query)
 
     def recentlyViewedShows(self):
         return self._primary_list('recentlyViewedShows')
 
     def searchArtists(self, title, filter='all', **tags):
-        return self.search(title, filter=filter, atype=audio.Artist.TYPE, **tags)
+        return self.search(title, filter=filter, atype='artist', **tags)
 
     def searchAlbums(self, title, filter='all', **tags):
-        return self.search(title, filter=filter, atype=audio.Album.TYPE, **tags)
+        return self.search(title, filter=filter, atype='album', **tags)
 
     def searchTracks(self, title, filter='all', **tags):
-        return self.search(title, filter=filter, atype=audio.Track.TYPE, **tags)
+        return self.search(title, filter=filter, atype='track', **tags)
 
 
 def list_choices(server, path):

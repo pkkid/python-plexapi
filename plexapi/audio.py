@@ -1,12 +1,12 @@
 """
 PlexAudio
 """
+from plexapi import utils
 from plexapi.media import Media, Genre, Producer
-from plexapi.exceptions import NotFound, UnknownType, Unsupported
+from plexapi.exceptions import Unsupported
 from plexapi.utils import NA
-from plexapi.utils import cast, toDatetime
+from plexapi.utils import cast, toDatetime, register_libtype
 from plexapi.video import Video  # TODO: remove this when Audio class can stand on its own legs
-
 try:
     from urllib import urlencode  # Python2
 except ImportError:
@@ -67,6 +67,7 @@ class Audio(Video):  # TODO: inherit from PlexPartialObject, like the Video clas
         self._loadData(data[0])
 
 
+@register_libtype
 class Artist(Audio):
     TYPE = 'artist'
 
@@ -88,19 +89,19 @@ class Artist(Audio):
 
     def albums(self):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return list_items(self.server, path, Album.TYPE)
+        return utils.list_items(self.server, path, Album.TYPE)
 
     def album(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def tracks(self, watched=None):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return list_items(self.server, leavesKey, watched=watched)
+        return utils.list_items(self.server, leavesKey, watched=watched)
 
     def track(self, title):
         path = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def watched(self):
         return self.episodes(watched=True)
@@ -115,6 +116,7 @@ class Artist(Audio):
         self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
+@register_libtype
 class Album(Audio):
     TYPE = 'album'
 
@@ -137,17 +139,17 @@ class Album(Audio):
 
     def tracks(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        return list_items(self.server, childrenKey, watched=watched)
+        return utils.list_items(self.server, childrenKey, watched=watched)
 
     def track(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def get(self, title):
         return self.track(title)
 
     def artist(self):
-        return list_items(self.server, self.parentKey)[0]
+        return utils.list_items(self.server, self.parentKey)[0]
 
     def watched(self):
         return self.tracks(watched=True)
@@ -156,6 +158,7 @@ class Album(Audio):
         return self.tracks(watched=False)
 
 
+@register_libtype
 class Track(Audio):
     TYPE = 'track'
 
@@ -182,54 +185,8 @@ class Track(Audio):
         return self.server.url(self.grandparentThumb)
 
     def album(self):
-        return list_items(self.server, self.parentKey)[0]
+        return utils.list_items(self.server, self.parentKey)[0]
 
     def artist(self):
         raise NotImplemented
         #return list_items(self.server, self.grandparentKey)[0]
-
-
-def build_item(server, elem, initpath):
-    AUDIOCLS = {Artist.TYPE:Artist, Album.TYPE:Album, Track.TYPE:Track}
-    atype = elem.attrib.get('type')
-    if atype in AUDIOCLS:
-        cls = AUDIOCLS[atype]
-        return cls(server, elem, initpath)
-    raise UnknownType('Unknown audio type: %s' % atype)
-
-
-def find_key(server, key):
-    path = '/library/metadata/{0}'.format(key)
-    try:
-        # Video seems to be the first sub element
-        elem = server.query(path)[0]
-        return build_item(server, elem, path)
-    except:
-        raise NotFound('Unable to find key: %s' % key)
-
-
-def find_item(server, path, title):
-    for elem in server.query(path):
-        if elem.attrib.get('title').lower() == title.lower():
-            return build_item(server, elem, path)
-    raise NotFound('Unable to find title: %s' % title)
-
-
-def list_items(server, path, audiotype=None, watched=None):
-    items = []
-    for elem in server.query(path):
-        if audiotype and elem.attrib.get('type') != audiotype: continue
-        if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
-        if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
-        try:
-            items.append(build_item(server, elem, path))
-        except UnknownType:
-            pass
-    return items
-
-
-def search_type(audiotype):
-    if audiotype == Artist.TYPE: return 8
-    elif audiotype == Album.TYPE: return 9
-    elif audiotype == Track.TYPE: return 10
-    raise NotFound('Unknown audiotype: %s' % audiotype)

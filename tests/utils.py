@@ -62,7 +62,7 @@ def run_tests(module, args):
             tests['passed'] += 1
         except Exception as err:
             errstr = str(err)
-            errstr += '\n%s' % traceback.format_exc() if args.verbose else errstr
+            errstr += '\n%s' % traceback.format_exc() if args.verbose else ''
             log(2, 'FAIL!: %s' % errstr, 'red')
             tests['failed'] += 1
         log(0, '')

@@ -164,10 +164,9 @@ def test_navigate_around_show(plex, user=None):
 
 @register('navigate,audio')
 def test_navigate_around_artist(plex, user=None):
-    section = plex.library.section(AUDIO_SECTION)
-    print(section)
-    artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
-    print(artist)
+    #section = plex.library.section(AUDIO_SECTION)
+    #artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
+    assert False, 'Test not implemented!'
     
     # seasons = show.seasons()
     # season = show.season(SHOW_SEASON)

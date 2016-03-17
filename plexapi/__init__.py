@@ -7,14 +7,14 @@ from platform import platform, uname
 from plexapi.config import PlexConfig, reset_base_headers
 from uuid import getnode
 
-PROJECT = 'PlexAPI'
-VERSION = '1.1.0'
 
 # Load User Defined Config
 CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
 CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
+PROJECT = 'PlexAPI'
+VERSION = '1.1.0'
 TIMEOUT = CONFIG.get('plexapi.timeout', 5, int)
 
 # Plex Header Configuation

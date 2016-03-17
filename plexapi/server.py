@@ -4,14 +4,13 @@ PlexServer
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
-from plexapi import log, audio, video, utils
+from plexapi import log, utils
 from plexapi.client import Client
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.myplex import MyPlexAccount
 from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
-
 
 try:
     from urllib import quote  # Python2
@@ -95,24 +94,13 @@ class PlexServer(object):
         return ElementTree.fromstring(data) if data else None
         
     def search(self, query, mediatype=None):
-        # Searching at this level is meant to be quick and dirty, if you're looking
-        # for more in-depth search filters look at plex.library.search().
-        _audio = lambda: self._search(audio, query, mediatype)
-        _video = lambda: self._search(video, query, mediatype)
-        results = []
-        qresults = utils.threaded([_audio, _video])
-        for item in iter(qresults.get_nowait, None):
-            results += item
-        return results
-        
-    def _search(self, module, query, mediatype=None):
-        items = module.list_items(self, '/search?query=%s' % quote(query))
+        items = utils.list_items(self, '/search?query=%s' % quote(query))
         if mediatype:
             return [item for item in items if item.type == mediatype]
         return items
 
     def sessions(self):
-        return video.list_items(self, '/status/sessions')
+        return utils.list_items(self, '/status/sessions')
 
     def url(self, path):
         if self.token:

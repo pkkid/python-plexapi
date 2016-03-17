@@ -2,7 +2,6 @@
 PlexAPI Play PlayQueues
 """
 import plexapi, requests
-from plexapi import video
 from plexapi import utils
 
 
@@ -19,7 +18,7 @@ class PlayQueue(object):
         self.playQueueSelectedItemOffset = data.attrib.get('playQueueSelectedItemOffset')
         self.playQueueTotalCount = data.attrib.get('playQueueTotalCount')
         self.playQueueVersion = data.attrib.get('playQueueVersion')
-        self.items = [video.build_item(server, elem, initpath) for elem in data]
+        self.items = [utils.build_item(server, elem, initpath) for elem in data]
 
     @classmethod
     def create(cls, server, video, shuffle=0, continuous=0):

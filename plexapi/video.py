@@ -3,20 +3,19 @@ PlexVideo
 """
 import re
 from requests import put
+from plexapi import media, utils
 from plexapi.client import Client
-from plexapi.media import Media, TranscodeSession, Country, Director, Genre, Producer, Actor, Writer
 from plexapi.myplex import MyPlexUser
-from plexapi.exceptions import NotFound, UnknownType, Unsupported
-from plexapi.utils import PlexPartialObject, NA
-from plexapi.utils import cast, toDatetime
-
+from plexapi.exceptions import Unsupported
 try:
     from urllib import urlencode  # Python2
 except ImportError:
     from urllib.parse import urlencode  # Python3
 
+NA = utils.NA
 
-class Video(PlexPartialObject):
+
+class Video(utils.PlexPartialObject):
     TYPE = None
 
     def _loadData(self, data):
@@ -29,22 +28,22 @@ class Video(PlexPartialObject):
         self.summary = data.attrib.get('summary', NA)
         self.art = data.attrib.get('art', NA)
         self.thumb = data.attrib.get('thumb', NA)
-        self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
-        self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
-        self.lastViewedAt = toDatetime(data.attrib.get('lastViewedAt', NA))
-        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._find_user(data)       # for active sessions
         self.player = self._find_player(data)   # for active sessions
         self.transcodeSession = self._find_transcodeSession(data)
         if self.isFullObject():
             # These are auto-populated when requested
-            self.media = [Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == Media.TYPE]
-            self.countries = [Country(self.server, elem) for elem in data if elem.tag == Country.TYPE]
-            self.directors = [Director(self.server, elem) for elem in data if elem.tag == Director.TYPE]
-            self.genres = [Genre(self.server, elem) for elem in data if elem.tag == Genre.TYPE]
-            self.producers = [Producer(self.server, elem) for elem in data if elem.tag == Producer.TYPE]
-            self.actors = [Actor(self.server, elem) for elem in data if elem.tag == Actor.TYPE]
-            self.writers = [Writer(self.server, elem) for elem in data if elem.tag == Writer.TYPE]
+            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
+            self.countries = [media.Country(self.server, elem) for elem in data if elem.tag == media.Country.TYPE]
+            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
+            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
+            self.producers = [media.Producer(self.server, elem) for elem in data if elem.tag == media.Producer.TYPE]
+            self.actors = [media.Actor(self.server, elem) for elem in data if elem.tag == media.Actor.TYPE]
+            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
 
     @property
     def thumbUrl(self):
@@ -65,12 +64,12 @@ class Video(PlexPartialObject):
     def _find_transcodeSession(self, data):
         elem = data.find('TranscodeSession')
         if elem is not None:
-            return TranscodeSession(self.server, elem)
+            return media.TranscodeSession(self.server, elem)
         return None
 
     def iter_parts(self):
-        for media in self.media:
-            for part in media.parts:
+        for item in self.media:
+            for part in item.parts:
                 yield part
 
     def analyze(self):
@@ -116,6 +115,7 @@ class Video(PlexPartialObject):
         self.server.query('%s/refresh' % self.key, method=put)
 
 
+@utils.register_libtype
 class Movie(Video):
     TYPE = 'movie'
 
@@ -124,17 +124,18 @@ class Movie(Video):
         self.studio = data.attrib.get('studio', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.viewCount = cast(int, data.attrib.get('viewCount', 0))
-        self.viewOffset = cast(int, data.attrib.get('viewOffset', 0))
-        self.year = cast(int, data.attrib.get('year', NA))
+        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
         self.summary = data.attrib.get('summary', NA)
         self.tagline = data.attrib.get('tagline', NA)
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey', NA)
         self.is_watched = bool(self.viewCount > 0)  # custom attr
 
 
+@utils.register_libtype
 class Show(Video):
     TYPE = 'show'
 
@@ -143,30 +144,30 @@ class Show(Video):
         self.studio = data.attrib.get('studio', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.year = cast(int, data.attrib.get('year', NA))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
         self.banner = data.attrib.get('banner', NA)
         self.theme = data.attrib.get('theme', NA)
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.leafCount = cast(int, data.attrib.get('leafCount', NA))
-        self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
-        self.childCount = cast(int, data.attrib.get('childCount', NA))
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.childCount = utils.cast(int, data.attrib.get('childCount', NA))
 
     def seasons(self):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return list_items(self.server, path, Season.TYPE)
+        return utils.list_items(self.server, path, Season.TYPE)
 
     def season(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def episodes(self, watched=None):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return list_items(self.server, leavesKey, watched=watched)
+        return utils.list_items(self.server, leavesKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def watched(self):
         return self.episodes(watched=True)
@@ -181,6 +182,7 @@ class Show(Video):
         self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
+@utils.register_libtype
 class Season(Video):
     TYPE = 'season'
 
@@ -196,22 +198,22 @@ class Season(Video):
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentThumb = data.attrib.get('parentThumb', NA)
         self.parentTheme = data.attrib.get('parentTheme', NA)
-        self.leafCount = cast(int, data.attrib.get('leafCount', NA))
-        self.viewedLeafCount = cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
 
     def episodes(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        return list_items(self.server, childrenKey, watched=watched)
+        return utils.list_items(self.server, childrenKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return find_item(self.server, path, title)
+        return utils.find_item(self.server, path, title)
 
     def get(self, title):
         return self.episode(title)
 
     def show(self):
-        return list_items(self.server, self.parentKey)[0]
+        return utils.list_items(self.server, self.parentKey)[0]
 
     def watched(self):
         return self.episodes(watched=True)
@@ -220,6 +222,7 @@ class Season(Video):
         return self.episodes(watched=False)
 
 
+@utils.register_libtype
 class Episode(Video):
     TYPE = 'episode'
 
@@ -236,11 +239,11 @@ class Episode(Video):
         self.contentRating = data.attrib.get('contentRating', NA)
         self.index = data.attrib.get('index', NA)
         self.rating = data.attrib.get('rating', NA)
-        self.viewCount = cast(int, data.attrib.get('viewCount', 0))
-        self.viewOffset = cast(int, data.attrib.get('viewOffset', 0))
-        self.year = cast(int, data.attrib.get('year', NA))
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.is_watched = bool(self.viewCount > 0)  # custom attr
 
     @property
@@ -248,54 +251,7 @@ class Episode(Video):
         return self.server.url(self.grandparentThumb)
 
     def season(self):
-        return list_items(self.server, self.parentKey)[0]
+        return utils.list_items(self.server, self.parentKey)[0]
 
     def show(self):
-        return list_items(self.server, self.grandparentKey)[0]
-
-
-def build_item(server, elem, initpath):
-    VIDEOCLS = {Movie.TYPE:Movie, Show.TYPE:Show, Season.TYPE:Season, Episode.TYPE:Episode}
-    vtype = elem.attrib.get('type')
-    if vtype in VIDEOCLS:
-        cls = VIDEOCLS[vtype]
-        return cls(server, elem, initpath)
-    raise UnknownType('Unknown video type: %s' % vtype)
-
-
-def find_key(server, key):
-    path = '/library/metadata/{0}'.format(key)
-    try:
-        # Video seems to be the first sub element
-        elem = server.query(path)[0]
-        return build_item(server, elem, path)
-    except:
-        raise NotFound('Unable to find key: %s' % key)
-
-
-def find_item(server, path, title):
-    for elem in server.query(path):
-        if elem.attrib.get('title').lower() == title.lower():
-            return build_item(server, elem, path)
-    raise NotFound('Unable to find title: %s' % title)
-
-
-def list_items(server, path, videotype=None, watched=None):
-    items = []
-    for elem in server.query(path):
-        if videotype and elem.attrib.get('type') != videotype: continue
-        if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
-        if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
-        try:
-            items.append(build_item(server, elem, path))
-        except UnknownType:
-            pass
-    return items
-
-
-def search_type(videotype):
-    if videotype == Movie.TYPE: return 1
-    elif videotype == Show.TYPE: return 2
-    elif videotype == Season.TYPE: return 3
-    elif videotype == Episode.TYPE: return 4
-    raise NotFound('Unknown videotype: %s' % videotype)
+        return utils.list_items(self.server, self.grandparentKey)[0]
