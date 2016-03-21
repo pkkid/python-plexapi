@@ -13,6 +13,7 @@
 * myplex.MyPlexResource.fetch_resources() renamed to myplex.MyPlexResource.fetchResources()
 * media.VideoTag() renamed to media.MediaTag()
 * media.MediaPart.select_stream() renamed to media.MediaPart.selectedStream()
+* video.iter_parts() was renamed to video.iterParts()
 * config.PlexConfig._as_dict() renamed to config.PlexConfig._asDict()
 * build_item() renamed to buildItem() and moved to utils.py
 * list_items() renamed to listItems() and moved to utils.py
