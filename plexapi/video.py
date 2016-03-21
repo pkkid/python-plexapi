@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 PlexVideo
 """
 import re
-from requests import put
 from plexapi import media, utils
-from plexapi.client import Client
 from plexapi.compat import urlencode
-from plexapi.myplex import MyPlexUser
 from plexapi.exceptions import Unsupported
 NA = utils.NA
 
@@ -15,60 +13,24 @@ class Video(utils.PlexPartialObject):
     TYPE = None
 
     def _loadData(self, data):
-        self.type = data.attrib.get('type', NA)
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.key = data.attrib.get('key', NA)
+        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.ratingKey = data.attrib.get('ratingKey', NA)
-        self.title = data.attrib.get('title', NA)
-        self.originalTitle = data.attrib.get('originalTitle', NA)
         self.summary = data.attrib.get('summary', NA)
-        self.art = data.attrib.get('art', NA)
         self.thumb = data.attrib.get('thumb', NA)
-        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
+        self.title = data.attrib.get('title', NA)
+        self.titleSort = data.attrib.get('titleSort', self.title)
+        self.type = data.attrib.get('type', NA)
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
-        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = self._find_user(data)       # for active sessions
-        self.player = self._find_player(data)   # for active sessions
-        self.transcodeSession = self._find_transcodeSession(data)
-        if self.isFullObject():
-            # These are auto-populated when requested
-            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
-            self.countries = [media.Country(self.server, elem) for elem in data if elem.tag == media.Country.TYPE]
-            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
-            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
-            self.producers = [media.Producer(self.server, elem) for elem in data if elem.tag == media.Producer.TYPE]
-            self.actors = [media.Actor(self.server, elem) for elem in data if elem.tag == media.Actor.TYPE]
-            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
-
-    @property
-    def thumbUrl(self):
-        return self.server.url(self.thumb)
-
-    def _find_user(self, data):
-        elem = data.find('User')
-        if elem is not None:
-            return MyPlexUser(elem, self.initpath)
-        return None
-
-    def _find_player(self, data):
-        elem = data.find('Player')
-        if elem is not None:
-            return Client(self.server, elem)
-        return None
-
-    def _find_transcodeSession(self, data):
-        elem = data.find('TranscodeSession')
-        if elem is not None:
-            return media.TranscodeSession(self.server, elem)
-        return None
-
-    def iter_parts(self):
-        for item in self.media:
-            for part in item.parts:
-                yield part
+        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
     def analyze(self):
+        """ The primary purpose of media analysis is to gather information about that media
+            item. All of the media you add to a Library has properties that are useful to
+            know–whether it's a video file, a music track, or one of your photos.
+        """
         self.server.query('/%s/analyze' % self.key)
 
     def getStreamUrl(self, offset=0, maxVideoBitrate=None, videoResolution=None, **kwargs):
@@ -117,18 +79,46 @@ class Movie(Video):
 
     def _loadData(self, data):
         super(Movie, self)._loadData(data)
-        self.studio = data.attrib.get('studio', NA)
+        self.art = data.attrib.get('art', NA)
+        self.audienceRating = utils.cast(float, data.attrib.get('audienceRating', NA))
+        self.audienceRatingImage = data.attrib.get('audienceRatingImage', NA)
+        self.chapterSource = data.attrib.get('chapterSource', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
-        self.rating = data.attrib.get('rating', NA)
-        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
-        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
-        self.year = utils.cast(int, data.attrib.get('year', NA))
-        self.summary = data.attrib.get('summary', NA)
-        self.tagline = data.attrib.get('tagline', NA)
         self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.guid = data.attrib.get('guid', NA)
+        self.originalTitle = data.attrib.get('originalTitle', NA)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey', NA)
-        self.is_watched = bool(self.viewCount > 0)  # custom attr
+        self.rating = data.attrib.get('rating', NA)
+        self.ratingImage = data.attrib.get('ratingImage', NA)
+        self.studio = data.attrib.get('studio', NA)
+        self.tagline = data.attrib.get('tagline', NA)
+        self.userRating = utils.cast(float, data.attrib.get('userRating', NA))
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
+        if self.isFullObject():
+            #self.collections = [media.Collection(self.server, elem) for elem in data if elem.tag == media.Collection.TYPE]
+            self.countries = [media.Country(self.server, elem) for elem in data if elem.tag == media.Country.TYPE]
+            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
+            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
+            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
+            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
+            self.producers = [media.Producer(self.server, elem) for elem in data if elem.tag == media.Producer.TYPE]
+            self.roles = [media.Role(self.server, elem) for elem in data if elem.tag == media.Role.TYPE]
+            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
+        # data for active sessions
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
+        self.user = self._findUser(data)
+        self.player = self._findPlayer(data)
+        self.transcodeSession = self._findTranscodeSession(data)
+    
+    @property
+    def actors(self):
+        return self.roles
+    
+    @property
+    def is_watched(self):
+        return bool(self.viewCount > 0)
 
 
 @utils.register_libtype
@@ -137,33 +127,48 @@ class Show(Video):
 
     def _loadData(self, data):
         super(Show, self)._loadData(data)
-        self.studio = data.attrib.get('studio', NA)
-        self.contentRating = data.attrib.get('contentRating', NA)
-        self.rating = data.attrib.get('rating', NA)
-        self.year = utils.cast(int, data.attrib.get('year', NA))
+        self.art = data.attrib.get('art', NA)
         self.banner = data.attrib.get('banner', NA)
-        self.theme = data.attrib.get('theme', NA)
-        self.duration = utils.cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
         self.childCount = utils.cast(int, data.attrib.get('childCount', NA))
+        self.contentRating = data.attrib.get('contentRating', NA)
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.guid = data.attrib.get('guid', NA)
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.location = self._findLocation(data)
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.rating = utils.cast(float, data.attrib.get('rating', NA))
+        self.studio = data.attrib.get('studio', NA)
+        self.theme = data.attrib.get('theme', NA)
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
+        self.year = utils.cast(int, data.attrib.get('year', NA))
+        if self.isFullObject():
+            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
+            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
+            self.roles = [media.Role(self.server, elem) for elem in data if elem.tag == media.Role.TYPE]
+
+    @property
+    def actors(self):
+        return self.roles
+        
+    @property
+    def is_watched(self):
+        return bool(self.viewedLeafCount == self.leafCount)
 
     def seasons(self):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.list_items(self.server, path, Season.TYPE)
+        return utils.listItems(self.server, path, Season.TYPE)
 
     def season(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.find_item(self.server, path, title)
+        return utils.findItem(self.server, path, title)
 
     def episodes(self, watched=None):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.list_items(self.server, leavesKey, watched=watched)
+        return utils.listItems(self.server, leavesKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.find_item(self.server, path, title)
+        return utils.findItem(self.server, path, title)
 
     def watched(self):
         return self.episodes(watched=True)
@@ -184,32 +189,28 @@ class Season(Video):
 
     def _loadData(self, data):
         super(Season, self)._loadData(data)
-        self.librarySectionID = data.attrib.get('librarySectionID', NA)
-        self.librarySectionTitle = data.attrib.get('librarySectionTitle', NA)
-        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
-        self.parentKey = data.attrib.get('parentKey', NA)
-        self.parentTitle = data.attrib.get('parentTitle', NA)
-        self.parentSummary = data.attrib.get('parentSummary', NA)
-        self.index = data.attrib.get('index', NA)
-        self.parentIndex = data.attrib.get('parentIndex', NA)
-        self.parentThumb = data.attrib.get('parentThumb', NA)
-        self.parentTheme = data.attrib.get('parentTheme', NA)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.parentKey = data.attrib.get('parentKey', NA)
+        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
+        
+    @property
+    def is_watched(self):
+        return bool(self.viewedLeafCount == self.leafCount)
 
     def episodes(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        return utils.list_items(self.server, childrenKey, watched=watched)
+        return utils.listItems(self.server, childrenKey, watched=watched)
 
     def episode(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.find_item(self.server, path, title)
+        return utils.findItem(self.server, path, title)
 
     def get(self, title):
         return self.episode(title)
 
     def show(self):
-        return utils.list_items(self.server, self.parentKey)[0]
+        return utils.listItems(self.server, self.parentKey)[0]
 
     def watched(self):
         return self.episodes(watched=True)
@@ -224,30 +225,46 @@ class Episode(Video):
 
     def _loadData(self, data):
         super(Episode, self)._loadData(data)
-        self.librarySectionID = data.attrib.get('librarySectionID', NA)
-        self.librarySectionTitle = data.attrib.get('librarySectionTitle', NA)
-        self.grandparentKey = data.attrib.get('grandparentKey', NA)
-        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
-        self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
-        self.parentKey = data.attrib.get('parentKey', NA)
-        self.parentIndex = data.attrib.get('parentIndex', NA)
-        self.parentThumb = data.attrib.get('parentThumb', NA)
+        self.art = data.attrib.get('art', NA)
+        self.chapterSource = data.attrib.get('chapterSource', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
-        self.index = data.attrib.get('index', NA)
-        self.rating = data.attrib.get('rating', NA)
-        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.duration = utils.cast(int, data.attrib.get('duration', NA))
+        self.grandparentArt = data.attrib.get('grandparentArt', NA)
+        self.grandparentKey = data.attrib.get('grandparentKey', NA)
+        self.grandparentRatingKey = data.attrib.get('grandparentRatingKey', NA)
+        self.grandparentTheme = data.attrib.get('grandparentTheme', NA)
+        self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
+        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
+        self.guid = data.attrib.get('guid', NA)
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.parentIndex = data.attrib.get('parentIndex', NA)
+        self.parentKey = data.attrib.get('parentKey', NA)
+        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
+        self.parentThumb = data.attrib.get('parentThumb', NA)
+        self.rating = utils.cast(float, data.attrib.get('rating', NA))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        self.duration = utils.cast(int, data.attrib.get('duration', NA))
-        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.is_watched = bool(self.viewCount > 0)  # custom attr
+        if self.isFullObject():
+            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
+            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
+            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
+            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
+        # data for active sessions
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
+        self.user = self._findUser(data)
+        self.player = self._findPlayer(data)
+        self.transcodeSession = self._findTranscodeSession(data)
+
+    @property
+    def is_watched(self):
+        return bool(self.viewCount > 0)
 
     @property
     def thumbUrl(self):
         return self.server.url(self.grandparentThumb)
 
     def season(self):
-        return utils.list_items(self.server, self.parentKey)[0]
+        return utils.listItems(self.server, self.parentKey)[0]
 
     def show(self):
-        return utils.list_items(self.server, self.grandparentKey)[0]
+        return utils.listItems(self.server, self.grandparentKey)[0]

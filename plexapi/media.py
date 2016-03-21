@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Media
 """
@@ -53,7 +54,7 @@ class MediaPart(object):
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.id)
 
-    def selected_stream(self, stream_type):
+    def selectedStream(self, stream_type):
         streams = filter(lambda x: stream_type == x.type, self.streams)
         selected = list(filter(lambda x: x.selected is True, streams))
         if len(selected) == 0:
@@ -168,7 +169,7 @@ class TranscodeSession(object):
         self.height = cast(int, data.attrib.get('height'))
 
 
-class VideoTag(object):
+class MediaTag(object):
     TYPE = None
 
     def __init__(self, server, data):
@@ -182,9 +183,10 @@ class VideoTag(object):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
 
 
-class Country(VideoTag): TYPE='Country'; FILTER='country'  # noqa
-class Director(VideoTag): TYPE = 'Director'; FILTER='director'  # noqa
-class Genre(VideoTag): TYPE='Genre'; FILTER='genre'  # noqa
-class Producer(VideoTag): TYPE = 'Producer'; FILTER='producer'  # noqa
-class Actor(VideoTag): TYPE = 'Role'; FILTER='actor'  # noqa
-class Writer(VideoTag): TYPE = 'Writer'; FILTER='writer'  # noqa
+class Role(MediaTag): TYPE = 'Role'; FILTER = 'role'
+class Country(MediaTag): TYPE = 'Country'; FILTER = 'country'
+class Director(MediaTag): TYPE = 'Director'; FILTER = 'director'
+class Genre(MediaTag): TYPE = 'Genre'; FILTER = 'genre'
+class Producer(MediaTag): TYPE = 'Producer'; FILTER = 'producer'
+class Similar(MediaTag): TYPE = 'Similar'; FILTER = 'similar'
+class Writer(MediaTag): TYPE = 'Writer'; FILTER = 'writer'

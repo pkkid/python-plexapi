@@ -90,8 +90,8 @@ for movie in movies.search(None, director=director):
 ```
 ```python
 # Example 7: List files for the latest episode of Friends.
-the_last_one = plex.library.get('Friends').episodes()[-1]
-for part in the_last_one.iter_parts():
+thelastone = plex.library.get('Friends').episodes()[-1]
+for part in thelastone.iterParts():
     print(part.file)
 ```
 ```python

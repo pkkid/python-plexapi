@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Examples
-
 As of Plex version 0.9.11 I noticed that you must be logged in
 to browse even the plex server locatewd at localhost. You can
 run this example suite with the following command:
@@ -67,8 +67,8 @@ def follow_the_talent(plex):
 @register()
 def list_files(plex):
     """ Example 7: List files for the latest episode of Friends. """
-    the_last_one = plex.library.section('TV Shows').get('Friends').episodes()[-1]
-    for part in the_last_one.iter_parts():
+    thelastone = plex.library.section('TV Shows').get('Friends').episodes()[-1]
+    for part in thelastone.iterParts():
         print(part.file)
 
 

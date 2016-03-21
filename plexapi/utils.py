@@ -1,14 +1,16 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Utils
 """
+from requests import put
 from datetime import datetime
 from plexapi.compat import quote
-from plexapi.exceptions import UnknownType
+from plexapi.exceptions import NotFound, UnknownType
 
 
 # Registry of library types we may come across when parsing XML. This allows us to
 # define a few helper functions to dynamically convery the XML into objects.
-# see build_item() below for an example.
+# see buildItem() below for an example.
 LIBRARY_TYPES = {}
 def register_libtype(cls):
     LIBRARY_TYPES[cls.TYPE] = cls
@@ -20,10 +22,10 @@ def register_libtype(cls):
 # to distinguish between unfetched values and fetched, but non-existent values.
 # (NA == None results to True; NA is None results to False)
 class _NA(object):
-    def __bool__(self): return False  # flake8: noqa; py3
-    def __eq__(self, other): return isinstance(other, __NA__) or other in [None, '__NA__']  # flake8: noqa
-    def __nonzero__(self): return False  # flake8: noqa; py2
-    def __repr__(self): return '__NA__'  # flake8: noqa
+    def __bool__(self): return False
+    def __eq__(self, other): return isinstance(other, _NA) or other in [None, '__NA__']
+    def __nonzero__(self): return False
+    def __repr__(self): return '__NA__'
 NA = _NA()
 
 
@@ -53,6 +55,37 @@ class PlexPartialObject(object):
         if value != NA:
             super(PlexPartialObject, self).__setattr__(attr, value)
 
+    @property
+    def thumbUrl(self):
+        return self.server.url(self.thumb)
+
+    def _findLocation(self, data):
+        elem = data.find('Location')
+        if elem is not None:
+            return elem.attrib.get('path')
+        return None
+
+    def _findPlayer(self, data):
+        elem = data.find('Player')
+        if elem is not None:
+            from plexapi.client import Client
+            return Client(self.server, elem)
+        return None
+
+    def _findTranscodeSession(self, data):
+        elem = data.find('TranscodeSession')
+        if elem is not None:
+            from plexapi import media
+            return media.TranscodeSession(self.server, elem)
+        return None
+
+    def _findUser(self, data):
+        elem = data.find('User')
+        if elem is not None:
+            from plexapi.myplex import MyPlexUser
+            return MyPlexUser(elem, self.initpath)
+        return None
+
     def _loadData(self, data):
         raise Exception('Abstract method not implemented.')
 
@@ -60,15 +93,27 @@ class PlexPartialObject(object):
         return self.initpath == self.key
 
     def isPartialObject(self):
-        return self.initpath != self.key
+        return not self.isFullObject()
+        
+    def iterParts(self):
+        for item in self.media:
+            for part in item.parts:
+                yield part
+
+    def play(self, client):
+        client.playMedia(self)
+
+    def refresh(self):
+        self.server.query('%s/refresh' % self.key, method=put)
 
     def reload(self):
+        """ Reload the data for this object from PlexServer XML. """
         data = self.server.query(self.key)
         self.initpath = self.key
         self._loadData(data[0])
 
 
-def build_item(server, elem, initpath):
+def buildItem(server, elem, initpath):
     libtype = elem.attrib.get('type')
     if libtype in LIBRARY_TYPES:
         cls = LIBRARY_TYPES[libtype]
@@ -89,20 +134,20 @@ def cast(func, value):
     return value
 
 
-def find_key(server, key):
+def findKey(server, key):
     path = '/library/metadata/{0}'.format(key)
     try:
         # Item seems to be the first sub element
         elem = server.query(path)[0]
-        return build_item(server, elem, path)
+        return buildItem(server, elem, path)
     except:
         raise NotFound('Unable to find key: %s' % key)
 
 
-def find_item(server, path, title):
+def findItem(server, path, title):
     for elem in server.query(path):
         if elem.attrib.get('title').lower() == title.lower():
-            return build_item(server, elem, path)
+            return buildItem(server, elem, path)
     raise NotFound('Unable to find item: %s' % title)
 
 
@@ -115,20 +160,20 @@ def joinArgs(args):
     return '?%s' % '&'.join(arglist)
 
 
-def list_items(server, path, libtype=None, watched=None):
+def listItems(server, path, libtype=None, watched=None):
     items = []
     for elem in server.query(path):
         if libtype and elem.attrib.get('type') != libtype: continue
         if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
         if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
         try:
-            items.append(build_item(server, elem, path))
+            items.append(buildItem(server, elem, path))
         except UnknownType:
             pass
     return items
     
 
-def search_type(libtype):
+def searchType(libtype):
     if libtype == 'movie': return 1
     elif libtype == 'show': return 2
     elif libtype == 'season': return 3

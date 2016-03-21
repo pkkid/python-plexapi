@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Play PlayQueues
 """
@@ -18,7 +19,7 @@ class PlayQueue(object):
         self.playQueueSelectedItemOffset = data.attrib.get('playQueueSelectedItemOffset')
         self.playQueueTotalCount = data.attrib.get('playQueueTotalCount')
         self.playQueueVersion = data.attrib.get('playQueueVersion')
-        self.items = [utils.build_item(server, elem, initpath) for elem in data]
+        self.items = [utils.buildItem(server, elem, initpath) for elem in data]
 
     @classmethod
     def create(cls, server, video, shuffle=0, continuous=0):

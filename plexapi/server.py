@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexServer
 """
@@ -5,7 +6,7 @@ import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
-from plexapi import audio, video  # flake8:noqa; required
+from plexapi import audio, video  # noqa; required
 from plexapi.compat import quote
 from plexapi.client import Client
 from plexapi.exceptions import BadRequest, NotFound
@@ -68,8 +69,8 @@ class PlexServer(object):
                 return Client(self, elem)
         raise NotFound('Unknown client name: %s' % name)
 
-    def createPlayQueue(self, video):
-        return PlayQueue.create(self, video)
+    def createPlayQueue(self, item):
+        return PlayQueue.create(self, item)
 
     def headers(self):
         headers = BASE_HEADERS
@@ -91,13 +92,13 @@ class PlexServer(object):
         return ElementTree.fromstring(data) if data else None
         
     def search(self, query, mediatype=None):
-        items = utils.list_items(self, '/search?query=%s' % quote(query))
+        items = utils.listItems(self, '/search?query=%s' % quote(query))
         if mediatype:
             return [item for item in items if item.type == mediatype]
         return items
 
     def sessions(self):
-        return utils.list_items(self, '/status/sessions')
+        return utils.listItems(self, '/status/sessions')
 
     def url(self, path):
         if self.token:

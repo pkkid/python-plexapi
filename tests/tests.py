@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 """
 Test Library Functions
-
 As of Plex version 0.9.11 I noticed that you must be logged in
 to browse even the plex server locatewd at localhost. You can
 run this test suite with the following command:
@@ -164,9 +164,14 @@ def test_navigate_around_show(plex, user=None):
 
 @register('navigate,audio')
 def test_navigate_around_artist(plex, user=None):
-    #section = plex.library.section(AUDIO_SECTION)
-    #artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
-    assert False, 'Test not implemented!'
+    artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
+    albums = artist.albums()
+    print(artist)
+    print(albums)
+    print(artist.producers)
+    print(artist.similar)
+    print(artist.location)
+    print(artist.tracks())
     
     # seasons = show.seasons()
     # season = show.season(SHOW_SEASON)
@@ -219,9 +224,17 @@ def test_refresh_video(plex, user=None):
 #-----------------------
 
 @register('meta,movie')
-def test_original_title(plex, user=None):
+def test_partial_video(plex, user=None):
     movie_title = 'Bedside Detective'
     result = plex.search(movie_title)
+    log(2, 'Title: %s' % result[0].title)
+    log(2, 'Original Title: %s' % result[0].originalTitle)
+    assert(result[0].originalTitle != NA)
+    
+
+@register('meta,movie')
+def test_partial_audio(plex, user=None):
+    result = plex.search(AUDIO_ARTIST)
     log(2, 'Title: %s' % result[0].title)
     log(2, 'Original Title: %s' % result[0].originalTitle)
     assert(result[0].originalTitle != NA)
@@ -342,7 +355,7 @@ def test_client_play_media(plex, user=None):
 #         # fetch the media object associated with the sync item
 #         for video in item.get_media():
 #             # fetch the media parts (actual video/audio streams) associated with the media
-#             for part in video.iter_parts():
+#             for part in video.iterParts():
 #                 print('Found media to download!')
 #                 # make the relevant sync id (media part) as downloaded
 #                 # this tells the server that this device has successfully downloaded this media part of this sync item

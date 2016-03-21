@@ -1,10 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Client
-See: https://code.google.com/p/plex-api/w/list
+https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 """
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import TIMEOUT, log, utils, BASE_HEADERS
+from plexapi import TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest
 from xml.etree import ElementTree
 
@@ -42,7 +43,6 @@ class Client(object):
         return self.sendServerCommand(command, args)
 
     def sendClientCommand(self, command, args=None):
-        # See: https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
         args = args or {}
         args.update({
             'X-Plex-Target-Client-Identifier': self.machineIdentifier,
@@ -68,29 +68,29 @@ class Client(object):
         return 'http://%s:%s/player/%s' % (self.address, self.port, path.lstrip('/'))
 
     # Navigation Commands
-    def moveUp(self): self.sendCommand('navigation/moveUp')  # flake8:noqa
-    def moveDown(self): self.sendCommand('navigation/moveDown')  # flake8:noqa
-    def moveLeft(self): self.sendCommand('navigation/moveLeft')  # flake8:noqa
-    def moveRight(self): self.sendCommand('navigation/moveRight')  # flake8:noqa
-    def pageUp(self): self.sendCommand('navigation/pageUp')  # flake8:noqa
-    def pageDown(self): self.sendCommand('navigation/pageDown')  # flake8:noqa
-    def nextLetter(self): self.sendCommand('navigation/nextLetter')  # flake8:noqa
-    def previousLetter(self): self.sendCommand('navigation/previousLetter')  # flake8:noqa
-    def select(self): self.sendCommand('navigation/select')  # flake8:noqa
-    def back(self): self.sendCommand('navigation/back')  # flake8:noqa
-    def contextMenu(self): self.sendCommand('navigation/contextMenu')  # flake8:noqa
-    def toggleOSD(self): self.sendCommand('navigation/toggleOSD')  # flake8:noqa
+    def moveUp(self): self.sendCommand('navigation/moveUp')
+    def moveDown(self): self.sendCommand('navigation/moveDown')
+    def moveLeft(self): self.sendCommand('navigation/moveLeft')
+    def moveRight(self): self.sendCommand('navigation/moveRight')
+    def pageUp(self): self.sendCommand('navigation/pageUp')
+    def pageDown(self): self.sendCommand('navigation/pageDown')
+    def nextLetter(self): self.sendCommand('navigation/nextLetter')
+    def previousLetter(self): self.sendCommand('navigation/previousLetter')
+    def select(self): self.sendCommand('navigation/select')
+    def back(self): self.sendCommand('navigation/back')
+    def contextMenu(self): self.sendCommand('navigation/contextMenu')
+    def toggleOSD(self): self.sendCommand('navigation/toggleOSD')
 
     # Playback Commands
-    def play(self): self.sendCommand('playback/play')  # flake8:noqa
-    def pause(self): self.sendCommand('playback/pause')  # flake8:noqa
-    def stop(self): self.sendCommand('playback/stop')  # flake8:noqa
-    def stepForward(self): self.sendCommand('playback/stepForward')  # flake8:noqa
-    def bigStepForward(self): self.sendCommand('playback/bigStepForward')  # flake8:noqa
-    def stepBack(self): self.sendCommand('playback/stepBack')  # flake8:noqa
-    def bigStepBack(self): self.sendCommand('playback/bigStepBack')  # flake8:noqa
-    def skipNext(self): self.sendCommand('playback/skipNext')  # flake8:noqa
-    def skipPrevious(self): self.sendCommand('playback/skipPrevious')  # flake8:noqa
+    def play(self): self.sendCommand('playback/play')
+    def pause(self): self.sendCommand('playback/pause')
+    def stop(self): self.sendCommand('playback/stop')
+    def stepForward(self): self.sendCommand('playback/stepForward')
+    def bigStepForward(self): self.sendCommand('playback/bigStepForward')
+    def stepBack(self): self.sendCommand('playback/stepBack')
+    def bigStepBack(self): self.sendCommand('playback/bigStepBack')
+    def skipNext(self): self.sendCommand('playback/skipNext')
+    def skipPrevious(self): self.sendCommand('playback/skipPrevious')
 
     def playMedia(self, video, viewOffset=0):
         playqueue = self.server.createPlayQueue(video)

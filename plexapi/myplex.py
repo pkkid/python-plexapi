@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI MyPlex
 """
@@ -29,7 +30,7 @@ class MyPlexUser(object):
         self.queueUid = data.attrib.get('queueUid')
 
     def resources(self):
-        return MyPlexResource.fetch_resources(self.authenticationToken)
+        return MyPlexResource.fetchResources(self.authenticationToken)
 
     def getResource(self, search, port=32400):
         """ Searches server.name, server.sourceTitle and server.host:server.port
@@ -38,7 +39,7 @@ class MyPlexUser(object):
         return _findResource(self.resources(), search, port)
 
     def devices(self):
-        return MyPlexDevice.fetch_resources(self.authenticationToken)
+        return MyPlexDevice.fetchResources(self.authenticationToken)
 
     @classmethod
     def signin(cls, username, password):
@@ -75,7 +76,7 @@ class MyPlexAccount(object):
         self.subscriptionState = data.attrib.get('subscriptionState')
 
     def resources(self):
-        return MyPlexResource.fetch_resources(self.authToken)
+        return MyPlexResource.fetchResources(self.authToken)
 
     def getResource(self, search, port=32400):
         """ Searches server.name, server.sourceTitle and server.host:server.port
@@ -145,7 +146,7 @@ class MyPlexResource(object):
             results[i] = (uri, None)
 
     @classmethod
-    def fetch_resources(cls, token):
+    def fetchResources(cls, token):
         headers = plexapi.BASE_HEADERS
         headers['X-Plex-Token'] = token
         log.info('GET %s?X-Plex-Token=%s', cls.RESOURCES, token)
@@ -219,7 +220,7 @@ class MyPlexDevice(object):
         return self.connectionsUris[0]
 
     @classmethod
-    def fetch_resources(cls, token):
+    def fetchResources(cls, token):
         headers = plexapi.BASE_HEADERS
         headers['X-Plex-Token'] = token
         log.info('GET %s?X-Plex-Token=%s', cls.DEVICES, token)

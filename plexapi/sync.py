@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexAPI Sync
 """
@@ -33,7 +34,7 @@ class SyncItem(object):
 
     def getMedia(self):
         server = self.server().connect()
-        items = utils.list_items(server, '/sync/items/{0}'.format(self.id))
+        items = utils.listItems(server, '/sync/items/{0}'.format(self.id))
         return items
 
     def markAsDone(self, sync_id):

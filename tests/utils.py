@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Test Library Functions
 """
-import inspect, sys, traceback
+import sys, traceback
 import datetime, time
 from plexapi import server
 from plexapi.myplex import MyPlexUser
@@ -13,7 +14,7 @@ registered = []
 def register(tags=''):
     def wrap2(func):
         registered.append({'name':func.__name__, 'tags':tags.split(','), 'func':func})
-        def wrap1(*args, **kwargs):  # flake8:noqa
+        def wrap1(*args, **kwargs):  # noqa
             func(*args, **kwargs)
         return wrap1
     return wrap2

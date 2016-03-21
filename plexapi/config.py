@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 PlexConfig
+Settings are stored in an INI file and can be overridden after import
+plexapi by simply setting the value.
 """
 from collections import defaultdict
 try:
@@ -13,7 +16,7 @@ class PlexConfig(ConfigParser):
     def __init__(self, path):
         ConfigParser.__init__(self)
         self.read(path)
-        self.data = self._as_dict()
+        self.data = self._asDict()
 
     def get(self, key, default=None, cast=None):
         try:
@@ -23,7 +26,7 @@ class PlexConfig(ConfigParser):
         except:
             return default
 
-    def _as_dict(self):
+    def _asDict(self):
         config = defaultdict(dict)
         for section in self._sections:
             for name, value in self._sections[section].items():

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PlexLibrary
 """
@@ -39,28 +40,28 @@ class Library(object):
         raise NotFound('Invalid library section: %s' % title)
 
     def all(self):
-        return utils.list_items(self.server, '/library/all')
+        return utils.listItems(self.server, '/library/all')
 
     def onDeck(self):
-        return utils.list_items(self.server, '/library/onDeck')
+        return utils.listItems(self.server, '/library/onDeck')
 
     def recentlyAdded(self):
-        return utils.list_items(self.server, '/library/recentlyAdded')
+        return utils.listItems(self.server, '/library/recentlyAdded')
 
     def get(self, title):
-        return utils.find_item(self.server, '/library/all', title)
+        return utils.findItem(self.server, '/library/all', title)
 
     def getByKey(self, key):
-        return utils.find_key(self.server, key)
+        return utils.findKey(self.server, key)
         
     def search(self, title, prefilter='all', libtype=None, **tags):
         args = {}
         if title: args['title'] = title
-        if libtype: args['type'] = utils.search_type(libtype)
+        if libtype: args['type'] = utils.searchType(libtype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/%s%s' % (prefilter, utils.joinArgs(args))
-        return utils.list_items(self.server, query)
+        return utils.listItems(self.server, query)
 
     def cleanBundles(self):
         self.server.query('/library/clean/bundles')
@@ -92,13 +93,13 @@ class LibrarySection(object):
         return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
     def _primary_list(self, key):
-        return utils.list_items(self.server, '/library/sections/%s/%s' % (self.key, key))
+        return utils.listItems(self.server, '/library/sections/%s/%s' % (self.key, key))
 
     def _secondary_list(self, key, input=None):
-        choices = list_choices(self.server, '/library/sections/%s/%s' % (self.key, key))
+        choices = listChoices(self.server, '/library/sections/%s/%s' % (self.key, key))
         if not input:
             return list(choices.keys())
-        return utils.list_items(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
+        return utils.listItems(self.server, '/library/sections/%s/%s/%s' % (self.key, key, choices[input]))
 
     def all(self):
         return self._primary_list('all')
@@ -132,7 +133,7 @@ class LibrarySection(object):
 
     def get(self, title):
         path = '/library/sections/%s/all' % self.key
-        return utils.find_item(self.server, path, title)
+        return utils.findItem(self.server, path, title)
 
     def search(self, title, filter='all', libtype=None, **tags):
         """ Search section content.
@@ -143,11 +144,11 @@ class LibrarySection(object):
         """
         args = {}
         if title: args['title'] = title
-        if libtype: args['type'] = utils.search_type(libtype)
+        if libtype: args['type'] = utils.searchType(libtype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
-        return utils.list_items(self.server, query)
+        return utils.listItems(self.server, query)
 
     def analyze(self):
         self.server.query('/library/sections/%s/analyze' % self.key)
@@ -209,11 +210,11 @@ class MusicSection(LibrarySection):
         """
         args = {}
         if title: args['title'] = title
-        if atype: args['type'] = utils.search_type(atype)
+        if atype: args['type'] = utils.searchType(atype)
         for tag, obj in tags.items():
             args[tag] = obj.id
         query = '/library/sections/%s/%s%s' % (self.key, filter, utils.joinArgs(args))
-        return utils.list_items(self.server, query)
+        return utils.listItems(self.server, query)
 
     def recentlyViewedShows(self):
         return self._primary_list('recentlyViewedShows')
@@ -228,5 +229,5 @@ class MusicSection(LibrarySection):
         return self.search(title, filter=filter, atype='track', **tags)
 
 
-def list_choices(server, path):
+def listChoices(server, path):
     return {c.attrib['title']:c.attrib['key'] for c in server.query(path)}

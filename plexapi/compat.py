@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+# flake8:noqa
 """
 Python 2/3 compatability
 Always try Py3 first
 """
+
 try:
     from urllib.parse import urlencode
 except ImportError:

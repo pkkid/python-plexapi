@@ -1,6 +1,4 @@
-"""
-PlexAPI
-"""
+# -*- coding: utf-8 -*-
 import logging, os
 from logging.handlers import RotatingFileHandler
 from platform import platform, uname
@@ -14,7 +12,7 @@ CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
 PROJECT = 'PlexAPI'
-VERSION = '1.1.0'
+VERSION = '2.0.0a'
 TIMEOUT = CONFIG.get('plexapi.timeout', 5, int)
 
 # Plex Header Configuation
