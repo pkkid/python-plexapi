@@ -101,6 +101,12 @@ print 'Run running the following command to play in VLC:'
 print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
 ```
 
+```python
+# Example 9: Get audio/video/all playlists
+for playlist in self.plex.playlists(playlisttype='audio'): # or playlisttype='video' or playlisttype=None 
+    print(playlist.title)
+```
+
 #### FAQs ####
 
 **Q. Why are you using camelCase and not following PEP8 guidelines?**
