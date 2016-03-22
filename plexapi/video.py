@@ -70,7 +70,7 @@ class Video(utils.PlexPartialObject):
         client.playMedia(self)
 
     def refresh(self):
-        self.server.query('%s/refresh' % self.key, method=put)
+        self.server.query('%s/refresh' % self.key, method=self.server.session.put)
 
 
 @utils.register_libtype
@@ -97,15 +97,14 @@ class Movie(Video):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
-            #self.collections = [media.Collection(self.server, elem) for elem in data if elem.tag == media.Collection.TYPE]
-            self.countries = [media.Country(self.server, elem) for elem in data if elem.tag == media.Country.TYPE]
-            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
-            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
-            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
-            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
-            self.producers = [media.Producer(self.server, elem) for elem in data if elem.tag == media.Producer.TYPE]
-            self.roles = [media.Role(self.server, elem) for elem in data if elem.tag == media.Role.TYPE]
-            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
+            self.collections = [media.Collection(self.server, e) for e in data if e.tag == media.Collection.TYPE]
+            self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
+            self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
+            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+            self.producers = [media.Producer(self.server, e) for e in data if e.tag == media.Producer.TYPE]
+            self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
+            self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._findUser(data)
@@ -117,7 +116,7 @@ class Movie(Video):
         return self.roles
     
     @property
-    def is_watched(self):
+    def isWatched(self):
         return bool(self.viewCount > 0)
 
 
@@ -142,16 +141,15 @@ class Show(Video):
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
-            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
-            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
-            self.roles = [media.Role(self.server, elem) for elem in data if elem.tag == media.Role.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
+            self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
 
     @property
     def actors(self):
         return self.roles
         
     @property
-    def is_watched(self):
+    def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
 
     def seasons(self):
@@ -195,7 +193,7 @@ class Season(Video):
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
         
     @property
-    def is_watched(self):
+    def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
 
     def episodes(self, watched=None):
@@ -245,10 +243,9 @@ class Episode(Video):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
-            self.directors = [media.Director(self.server, elem) for elem in data if elem.tag == media.Director.TYPE]
-            #self.fields = [media.Field(self.server, elem) for elem in data if elem.tag == media.Field.TYPE]
-            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
-            self.writers = [media.Writer(self.server, elem) for elem in data if elem.tag == media.Writer.TYPE]
+            self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
+            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+            self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._findUser(data)
@@ -256,7 +253,7 @@ class Episode(Video):
         self.transcodeSession = self._findTranscodeSession(data)
 
     @property
-    def is_watched(self):
+    def isWatched(self):
         return bool(self.viewCount > 0)
 
     @property

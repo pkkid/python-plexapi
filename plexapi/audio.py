@@ -59,9 +59,9 @@ class Artist(Audio):
         self.key = self.key.replace('/children', '')  # plex bug? http://bit.ly/1Sc2J3V
         self.location = self._findLocation(data)  
         if self.isFullObject():
-            self.countries = [media.Country(self.server, elem) for elem in data if elem.tag == media.Country.TYPE]
-            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
-            self.similar = [media.Similar(self.server, elem) for elem in data if elem.tag == media.Similar.TYPE]
+            self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
+            self.similar = [media.Similar(self.server, e) for e in data if e.tag == media.Similar.TYPE]
 
     def albums(self):
         path = '/library/metadata/%s/children' % self.ratingKey
@@ -98,6 +98,7 @@ class Album(Audio):
     def _loadData(self, data):
         super(Album, self)._loadData(data)
         self.art = data.attrib.get('art', NA)
+        self.key = self.key.replace('/children', '')  # plex bug? http://bit.ly/1Sc2J3V
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
@@ -106,7 +107,7 @@ class Album(Audio):
         self.studio = data.attrib.get('studio', NA)
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
-            self.genres = [media.Genre(self.server, elem) for elem in data if elem.tag == media.Genre.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
     def tracks(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
@@ -118,6 +119,11 @@ class Album(Audio):
 
     def get(self, title):
         return self.track(title)
+        
+    def isFullObject(self):
+        # plex bug? http://bit.ly/1Sc2J3V
+        fixed_key = self.key.replace('/children', '')
+        return self.initpath == fixed_key
 
     def artist(self):
         return utils.listItems(self.server, self.parentKey)[0]
@@ -155,8 +161,8 @@ class Track(Audio):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
-            self.moods = [media.Mood(self.server, elem) for elem in data if elem.tag == media.Mood.TYPE]
-            self.media = [media.Media(self.server, elem, self.initpath, self) for elem in data if elem.tag == media.Media.TYPE]
+            self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
+            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._findUser(data)

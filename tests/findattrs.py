@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Find all attributes for each library type
@@ -5,32 +6,39 @@ Find all attributes for each library type
 import pickle, os, sys
 from collections import defaultdict
 from plexapi.server import PlexServer
+from xml.etree import ElementTree
 
 MAX_SEEN = 9999
-PICKLE_PATH = '/tmp/find_attrs.pickle'
+MAX_EXAMPLES = 10
+PICKLE_PATH = '/tmp/findattrs.pickle'
+ETYPES = ['artist', 'album', 'track', 'movie', 'show', 'season', 'episode']
 
 
 def find_attrs(plex, key, result, examples, seen, indent=0):
     for elem in plex.query(key):
         attrs = sorted(elem.attrib.keys())
         etype = elem.attrib.get('type')
-        if not etype: continue
+        if not etype or seen[etype] >= MAX_SEEN:
+            continue
         seen[etype] += 1
         sys.stdout.write('.'); sys.stdout.flush()
+        # find all attriutes in this element
         for attr in attrs:                
             result[attr].add(etype)
-            if elem.attrib[attr] and len(examples[attr]) <= 10:
+            if elem.attrib[attr] and len(examples[attr]) <= MAX_EXAMPLES:
                 examples[attr].add(elem.attrib[attr])
+        # iterate all subelements
         for subelem in elem:
-            if subelem.tag not in ('artist', 'album', 'track', 'show', 'season', 'episode'):
+            if subelem.tag not in ETYPES:
                 subattr = subelem.tag + '[]'
                 result[subattr].add(etype)
-                subtag = subelem.attrib.get('tag')
-                if subtag and len(examples[subattr]) <= 10:
-                    examples[subattr].add(subtag)
-        if etype in ('artist', 'album', 'track', 'show', 'season', 'episode'):
+                if len(examples[subattr]) <= MAX_EXAMPLES:
+                    xmlstr = ElementTree.tostring(subelem, encoding='utf8').split('\n')[1]
+                    examples[subattr].add(xmlstr)
+        # recurse into the main element (loading its key)
+        if etype in ETYPES:
             subkey = elem.attrib['key']
-            if key != subkey:
+            if key != subkey and seen[etype] < MAX_SEEN:
                 find_attrs(plex, subkey, result, examples, seen, indent+2)
     return result
 
@@ -62,37 +70,25 @@ def print_results(result, examples, seen):
     
 def print_general_summary(result, examples):
     print('\n--- general summary ---')
-    sorted_attrs = sorted(result.items(), key=lambda x: x[0])
-    for attr, etypes in sorted_attrs:
-        print('%-23s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %s' % (attr,
-            'artist' if 'artist' in etypes else '--',
-            'album' if 'album' in etypes else '--',
-            'track' if 'track' in etypes else '--',
-            'movie' if 'movie' in etypes else '--',
-            'show' if 'show' in etypes else '--',
-            'season' if 'season' in etypes else '--',
-            'episode' if 'episode' in etypes else '--',
-            list(examples[attr])[0][:30] if examples[attr] else '_NA_',
-        ))  # noqa
+    for attr, etypes in sorted(result.items(), key=lambda x: x[0].lower()):
+        args = [attr]
+        args += [etype if etype in etypes else '--' for etype in ETYPES]
+        args.append(list(examples[attr])[0][:30] if examples[attr] else '_NA_')
+        print('%-23s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %s' % tuple(args))
 
 def print_summary_by_etype(result, examples):
     # find super attributes (in all etypes)
-    super_attrs = set(['librarySectionID', 'index', 'titleSort'])
+    result['super'] = set(['librarySectionID', 'index', 'titleSort'])
     for attr, etypes in result.items():
         if len(etypes) == 7:
-            super_attrs.add(attr)
+            result['super'].add(attr)
     # print the summary
-    for etype in ('super', 'artist', 'album', 'track', 'movie', 'show', 'season', 'episode'):
+    for etype in ['super'] + ETYPES:
         print('\n--- %s ---' % etype)
-        if etype == 'super':
-            for attr in sorted(super_attrs):
-                example = list(examples[attr])[0][:50] if examples[attr] else '_NA_'
+        for attr in sorted(result.keys(), key=lambda x:x[0].lower()):
+            if (etype in result[attr] and attr not in result['super']) or (etype == 'super' and attr in result['super']):
+                example = list(examples[attr])[0][:80] if examples[attr] else '_NA_'
                 print('%-23s  %s' % (attr, example))
-        else:
-            for attr in sorted(result.keys()):
-                if attr not in super_attrs and etype in result[attr]:
-                    example = list(examples[attr])[0][:50] if examples[attr] else '_NA_'
-                    print('%-23s  %s' % (attr, example))
         
 def print_seen_etypes(seen):
     print('\n')

@@ -117,30 +117,19 @@ def test_search_audio(plex, user=None):
 def test_navigate_to_movie(plex, user=None):
     result_library = plex.library.get(MOVIE_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-    try:
-        result_shows = plex.library.section(SHOW_SECTION).get(MOVIE_TITLE)
-    except:
-        result_shows = None
     log(2, 'Navigating to: %s' % MOVIE_TITLE)
-    log(4, 'Result Library: %s' % result_library)
-    log(4, 'Result Shows: %s' % result_shows)
-    log(4, 'Result Movies: %s' % result_movies)
+    log(2, 'Result Library: %s' % result_library)
+    log(2, 'Result Movies: %s' % result_movies)
+    assert result_movies, 'Movie navigation not working.'
     assert result_library == result_movies, 'Movie navigation not consistent.'
-    assert not result_shows, 'Show navigation returned show title.'
 
 
 @register('navigate,movie,show')
 def test_navigate_to_show(plex, user=None):
     result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
-    try:
-        result_movies = plex.library.section(MOVIE_SECTION).get(SHOW_TITLE)
-    except:
-        result_movies = None
     log(2, 'Navigating to: %s' % SHOW_TITLE)
-    log(4, 'Result Shows: %s' % result_shows)
-    log(4, 'Result Movies: %s' % result_movies)
+    log(2, 'Result Shows: %s' % result_shows)
     assert result_shows, 'Show navigation not working.'
-    assert not result_movies, 'Movie navigation returned show title.'
 
 
 @register('navigate,show')
@@ -151,12 +140,15 @@ def test_navigate_around_show(plex, user=None):
     episodes = show.episodes()
     episode = show.episode(SHOW_EPISODE)
     log(2, 'Navigating around show: %s' % show)
-    log(4, 'Seasons: %s...' % seasons[:3])
-    log(4, 'Season: %s' % season)
-    log(4, 'Episodes: %s...' % episodes[:3])
-    log(4, 'Episode: %s' % episode)
-    assert SHOW_SEASON in [s.title for s in seasons], 'Unable to get season: %s' % SHOW_SEASON
-    assert SHOW_EPISODE in [e.title for e in episodes], 'Unable to get episode: %s' % SHOW_EPISODE
+    log(2, 'Seasons: %s...' % seasons[:3])
+    log(2, 'Season: %s' % season)
+    log(2, 'Episodes: %s...' % episodes[:3])
+    log(2, 'Episode: %s' % episode)
+    assert SHOW_SEASON in [s.title for s in seasons], 'Unable to list season: %s' % SHOW_SEASON
+    assert SHOW_EPISODE in [e.title for e in episodes], 'Unable to list episode: %s' % SHOW_EPISODE
+    assert show.season(SHOW_SEASON) == season, 'Unable to get show season: %s' % SHOW_SEASON
+    assert show.episode(SHOW_EPISODE) == episode, 'Unable to get show episode: %s' % SHOW_EPISODE
+    assert season.episode(SHOW_EPISODE) == episode, 'Unable to get season episode: %s' % SHOW_EPISODE
     assert season.show() == show, 'season.show() doesnt match expected show.'
     assert episode.show() == show, 'episode.show() doesnt match expected show.'
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
@@ -166,27 +158,22 @@ def test_navigate_around_show(plex, user=None):
 def test_navigate_around_artist(plex, user=None):
     artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
     albums = artist.albums()
-    print(artist)
-    print(albums)
-    print(artist.producers)
-    print(artist.similar)
-    print(artist.location)
-    print(artist.tracks())
-    
-    # seasons = show.seasons()
-    # season = show.season(SHOW_SEASON)
-    # episodes = show.episodes()
-    # episode = show.episode(SHOW_EPISODE)
-    # log(2, 'Navigating around show: %s' % show)
-    # log(4, 'Seasons: %s...' % seasons[:3])
-    # log(4, 'Season: %s' % season)
-    # log(4, 'Episodes: %s...' % episodes[:3])
-    # log(4, 'Episode: %s' % episode)
-    # assert SHOW_SEASON in [s.title for s in seasons], 'Unable to get season: %s' % SHOW_SEASON
-    # assert SHOW_EPISODE in [e.title for e in episodes], 'Unable to get episode: %s' % SHOW_EPISODE
-    # assert season.show() == show, 'season.show() doesnt match expected show.'
-    # assert episode.show() == show, 'episode.show() doesnt match expected show.'
-    # assert episode.season() == season, 'episode.season() doesnt match expected season.'
+    album = artist.album(AUDIO_ALBUM)
+    tracks = artist.tracks()
+    track = artist.track(AUDIO_TRACK)
+    log(2, 'Navigating around artist: %s' % artist)
+    log(2, 'Albums: %s...' % albums[:3])
+    log(2, 'Album: %s' % album)
+    log(2, 'Tracks: %s...' % tracks[:3])
+    log(2, 'Track: %s' % track)
+    assert AUDIO_ALBUM in [a.title for a in albums], 'Unable to list album: %s' % AUDIO_ALBUM
+    assert AUDIO_TRACK in [e.title for e in tracks], 'Unable to list track: %s' % AUDIO_TRACK
+    assert artist.album(AUDIO_ALBUM) == album, 'Unable to get artist album: %s' % AUDIO_ALBUM
+    assert artist.track(AUDIO_TRACK) == track, 'Unable to get artist track: %s' % AUDIO_TRACK
+    assert album.track(AUDIO_TRACK) == track, 'Unable to get album track: %s' % AUDIO_TRACK
+    assert album.artist() == artist, 'album.artist() doesnt match expected artist.'
+    assert track.artist() == artist, 'track.artist() doesnt match expected artist.'
+    assert track.album() == album, 'track.album() doesnt match expected album.'
 
 
 #-----------------------
@@ -227,14 +214,6 @@ def test_refresh_video(plex, user=None):
 def test_partial_video(plex, user=None):
     movie_title = 'Bedside Detective'
     result = plex.search(movie_title)
-    log(2, 'Title: %s' % result[0].title)
-    log(2, 'Original Title: %s' % result[0].originalTitle)
-    assert(result[0].originalTitle != NA)
-    
-
-@register('meta,movie')
-def test_partial_audio(plex, user=None):
-    result = plex.search(AUDIO_ARTIST)
     log(2, 'Title: %s' % result[0].title)
     log(2, 'Original Title: %s' % result[0].originalTitle)
     assert(result[0].originalTitle != NA)
@@ -282,15 +261,34 @@ def test_list_video_tags(plex, user=None):
     related = movies.search(None, director=movie.directors[0])
     log(4, related[0:3])
     assert movie in related, 'Movie was not found in related directors search.'
+    
+
+@register('meta,audio')
+def test_list_audio_tags(plex, user=None):
+    section = plex.library.section(AUDIO_SECTION)
+    artist = section.get(AUDIO_ARTIST)
+    track = artist.get(AUDIO_TRACK)
+    log(2, 'Countries: %s' % artist.countries[0:3])
+    log(2, 'Genres: %s' % artist.genres[0:3])
+    log(2, 'Similar: %s' % artist.similar[0:3])
+    log(2, 'Album Genres: %s' % track.album().genres[0:3])
+    log(2, 'Moods: %s' % track.moods[0:3])
+    log(2, 'Media: %s' % track.media[0:3])
+    assert filter(None, artist.countries), 'No countries listed for artist.'
+    assert filter(None, artist.genres), 'No genres listed for artist.'
+    assert filter(None, artist.similar), 'No similar artists listed.'
+    assert filter(None, track.album().genres), 'No genres listed for album.'
+    assert filter(None, track.moods), 'No moods listed for track.'
+    assert filter(None, track.media), 'No media listed for track.'
 
 
 @register('meta,show')
 def test_is_watched(plex, user=None):
     show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     episode = show.get(SHOW_EPISODE)
-    log(2, '%s is_watched: %s' % (episode.title, episode.is_watched))
+    log(2, '%s isWatched: %s' % (episode.title, episode.isWatched))
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-    log(2, '%s is_watched: %s' % (movie.title, movie.is_watched))
+    log(2, '%s isWatched: %s' % (movie.title, movie.isWatched))
 
 
 @register('meta,movie')
@@ -331,19 +329,13 @@ def test_list_devices(plex, user=None):
 def test_client_play_media(plex, user=None):
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
     client = plex.client(PLEX_CLIENT)
-    client.playMedia(episode)
-    time.sleep(10)
-    client.pause()
-    time.sleep(3)
-    client.stepForward()
-    time.sleep(3)
-    client.play()
-    time.sleep(3)
-    client.stop()
-    time.sleep(3)
+    client.playMedia(episode); time.sleep(10)
+    client.pause(); time.sleep(3)
+    client.stepForward(); time.sleep(3)
+    client.play(); time.sleep(3)
+    client.stop(); time.sleep(3)
     movie = plex.library.get(MOVIE_TITLE)
-    movie.play(client)
-    time.sleep(10)
+    movie.play(client); time.sleep(10)
     client.stop()
 
 
