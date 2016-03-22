@@ -42,11 +42,6 @@ class Audio(utils.PlexPartialObject):
             params['protocol'] = kwargs['protocol']
         return self.server.url('/audio/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
-    def reload(self):
-        self.initpath = '/library/metadata/%s' % self.ratingKey
-        data = self.server.query(self.initpath)
-        self._loadData(data[0])
-
 
 @utils.register_libtype
 class Artist(Audio):

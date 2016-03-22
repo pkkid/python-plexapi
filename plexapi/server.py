@@ -77,6 +77,15 @@ class PlexServer(object):
         if self.token:
             headers['X-Plex-Token'] = self.token
         return headers
+        
+    def playlists(self):
+        return utils.listItems(self, '/playlists')
+        
+    def playlist(self, title=None):  # noqa
+        for item in self.playlists():
+            if item.title == title:
+                return item
+        raise NotFound('Invalid playlist title: %s' % title)
 
     def query(self, path, method=None, **kwargs):
         global TOTAL_QUERIES
@@ -105,7 +114,3 @@ class PlexServer(object):
             delim = '&' if '?' in path else '?'
             return '%s%s%sX-Plex-Token=%s' % (self.baseuri, path, delim, self.token)
         return '%s%s' % (self.baseuri, path)
-
-    def playlists(self, playlisttype=None):
-        'Get playlists. `playlisttype` may be "audio", "video" or None (for both types)'
-        return playlist.list_items(self, '/playlists')
