@@ -123,4 +123,8 @@ server provides. If we are not providing an API that is offerered in the
 XML pages, please let us know! -- Adding additional features beyond that
 should be done outside the scope of this library.
 
-[![Analytics](https://ga-beacon.appspot.com/UA-87461-7/python-plexapi/home)](https://github.com/igrigorik/ga-beacon)
+**Q. What are some helpful links if trying to understand the raw Plex API?**
+
+* https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
+* https://forums.plex.tv/discussion/104353/pms-web-api-documentation
+* https://github.com/Arcanemagus/plex-api/wiki
