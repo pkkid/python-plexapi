@@ -302,6 +302,16 @@ def test_fetch_details_not_in_search_result(plex, user=None):
     log(2, '%s actors found.' % len(actors))
 
 
+@register('movie,audio')
+def test_stream_url(plex, user=None):
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()[-1]
+    track = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST).get(AUDIO_TRACK)
+    log(2, 'Movie: vlc "%s"' % movie.getStreamURL())
+    log(2, 'Episode: vlc "%s"' % episode.getStreamURL())
+    log(2, 'Track: cvlc "%s"' % track.getStreamURL())
+    
+
 #-----------------------
 # Play Queue
 #-----------------------

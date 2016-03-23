@@ -3,8 +3,6 @@
 PlexAPI Audio
 """
 from plexapi import media, utils
-from plexapi.compat import urlencode
-from plexapi.exceptions import Unsupported
 NA = utils.NA
 
 
@@ -24,23 +22,6 @@ class Audio(utils.PlexPartialObject):
         self.type = data.attrib.get('type', NA)
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
-
-    def getStreamUrl(self, offset=0, **kwargs):
-        """ Fetch URL to stream audio directly.
-            offset: Start time (in seconds) audio will initiate from (ex: 300).
-            params: Dict of additional parameters to include in URL.
-        """
-        if self.TYPE not in [Track.TYPE, Album.TYPE]:
-            raise Unsupported('Cannot get stream URL for %s.' % self.TYPE)
-        params = {}
-        params['path'] = self.key
-        params['offset'] = offset
-        params['copyts'] = kwargs.get('copyts', 1)
-        params['mediaIndex'] = kwargs.get('mediaIndex', 0)
-        params['X-Plex-Platform'] = kwargs.get('platform', 'Chrome')
-        if 'protocol' in kwargs:
-            params['protocol'] = kwargs['protocol']
-        return self.server.url('/audio/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
 
 @utils.register_libtype
@@ -173,3 +154,6 @@ class Track(Audio):
 
     def artist(self):
         return utils.listItems(self.server, self.grandparentKey)[0]
+        
+    def getStreamURL(self, **params):
+        return self._getStreamURL(**params)

@@ -2,10 +2,11 @@
 """
 PlexAPI Utils
 """
+import re
 from requests import put
 from datetime import datetime
-from plexapi.compat import quote
-from plexapi.exceptions import NotFound, UnknownType
+from plexapi.compat import quote, urlencode
+from plexapi.exceptions import NotFound, UnknownType, Unsupported
 
 
 # Registry of library types we may come across when parsing XML. This allows us to
@@ -58,6 +59,25 @@ class PlexPartialObject(object):
     @property
     def thumbUrl(self):
         return self.server.url(self.thumb)
+        
+    def _getStreamURL(self, **params):
+        if self.TYPE not in ('movie', 'episode', 'track'):
+            raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
+        mvb = params.get('maxVideoBitrate')
+        vr = params.get('videoResolution', '')
+        params = {
+            'path': self.key,
+            'offset': params.get('offset', 0),
+            'copyts': params.get('copyts', 1),
+            'protocol': params.get('protocol'),
+            'mediaIndex': params.get('mediaIndex', 0),
+            'X-Plex-Platform': params.get('platform', 'Chrome'),
+            'maxVideoBitrate': max(mvb,64) if mvb else None,
+            'videoResolution': vr if re.match('^\d+x\d+$', vr) else None
+        }
+        params = {k:v for k,v in params.items() if v is not None}  # remove None values
+        streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
+        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(params)))
 
     def _findLocation(self, data):
         elem = data.find('Location')

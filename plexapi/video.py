@@ -118,6 +118,9 @@ class Movie(Video):
     @property
     def isWatched(self):
         return bool(self.viewCount > 0)
+        
+    def getStreamURL(self, **params):
+        return self._getStreamURL(**params)
 
 
 @utils.register_libtype
@@ -259,6 +262,9 @@ class Episode(Video):
     @property
     def thumbUrl(self):
         return self.server.url(self.grandparentThumb)
+        
+    def getStreamURL(self, **params):
+        return self._getStreamURL(videoResolution='800x600', **params)
 
     def season(self):
         return utils.listItems(self.server, self.parentKey)[0]
