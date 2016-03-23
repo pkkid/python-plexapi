@@ -2,10 +2,7 @@
 """
 PlexVideo
 """
-import re
 from plexapi import media, utils
-from plexapi.compat import urlencode
-from plexapi.exceptions import Unsupported
 NA = utils.NA
 
 
@@ -32,29 +29,6 @@ class Video(utils.PlexPartialObject):
             know–whether it's a video file, a music track, or one of your photos.
         """
         self.server.query('/%s/analyze' % self.key)
-
-    def getStreamUrl(self, offset=0, maxVideoBitrate=None, videoResolution=None, **kwargs):
-        """ Fetch URL to stream video directly.
-            offset: Start time (in seconds) video will initiate from (ex: 300).
-            maxVideoBitrate: Max bitrate video and audio stream (ex: 64).
-            videoResolution: Max resolution of a video stream (ex: 1280x720).
-            params: Dict of additional parameters to include in URL.
-        """
-        if self.TYPE not in [Movie.TYPE, Episode.TYPE]:
-            raise Unsupported('Cannot get stream URL for %s.' % self.TYPE)
-        params = {}
-        params['path'] = self.key
-        params['offset'] = offset
-        params['copyts'] = kwargs.get('copyts', 1)
-        params['mediaIndex'] = kwargs.get('mediaIndex', 0)
-        params['X-Plex-Platform'] = kwargs.get('platform', 'Chrome')
-        if 'protocol' in kwargs:
-            params['protocol'] = kwargs['protocol']
-        if maxVideoBitrate:
-            params['maxVideoBitrate'] = max(maxVideoBitrate, 64)
-        if videoResolution and re.match('^\d+x\d+$', videoResolution):
-            params['videoResolution'] = videoResolution
-        return self.server.url('/video/:/transcode/universal/start.m3u8?%s' % urlencode(params))
 
     def markWatched(self):
         path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
