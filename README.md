@@ -103,7 +103,7 @@ print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
 
 ```python
 # Example 9: Get audio/video/all playlists
-for playlist in self.plex.playlists(playlisttype='audio'): # or playlisttype='video' or playlisttype=None 
+for playlist in self.plex.playlists():
     print(playlist.title)
 ```
 

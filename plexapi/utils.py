@@ -91,6 +91,15 @@ class PlexPartialObject(object):
             from plexapi.client import Client
             return Client(self.server, elem)
         return None
+        
+    def _findStreams(self, streamtype):
+        streams = []
+        for media in self.media:
+            for part in media.parts:
+                for stream in part.streams:
+                    if stream.TYPE == streamtype:
+                        streams.append(stream)
+        return streams
 
     def _findTranscodeSession(self, data):
         elem = data.find('TranscodeSession')
@@ -191,6 +200,21 @@ def listItems(server, path, libtype=None, watched=None):
         except UnknownType:
             pass
     return items
+    
+
+def rget(obj, attrstr, default=None, delim='.'):
+    try:
+        parts = attrstr.split(delim, 1)
+        attr = parts[0]
+        attrstr = parts[1] if len(parts) == 2 else None
+        if isinstance(obj, dict): value = obj[attr]
+        elif isinstance(obj, list): value = obj[int(attr)]
+        elif isinstance(obj, tuple): value = obj[int(attr)]
+        elif isinstance(obj, object): value = getattr(obj, attr)
+        if attrstr: return rget(value, attrstr, default, delim)
+        return value
+    except:
+        return default
     
 
 def searchType(libtype):

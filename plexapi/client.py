@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 PlexAPI Client
+To understand how this works, read this page:
 https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 """
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import TIMEOUT, log, utils
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, Unsupported
 from xml.etree import ElementTree
-
-SERVER = 'server'
-CLIENT = 'client'
 
 
 class Client(object):
@@ -31,26 +29,34 @@ class Client(object):
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
         self.state = data.attrib.get('state')
-        self._sendCommandsTo = CLIENT
+        self._proxyThroughServer = False
+        self._commandId = 0
 
-    def sendCommandsTo(self, value):
-        self._sendCommandsTo = value
+    @property
+    def quickName(self):
+        return self.name or self.product
 
-    def sendCommand(self, command, args=None, sendTo=None):
-        sendTo = sendTo or self._sendCommandsTo
-        if sendTo == CLIENT:
-            return self.sendClientCommand(command, args)
-        return self.sendServerCommand(command, args)
+    def proxyThroughServer(self, value=True):
+        self._proxyThroughServer = value
 
-    def sendClientCommand(self, command, args=None):
-        args = args or {}
-        args.update({
-            'X-Plex-Target-Client-Identifier': self.machineIdentifier,
+    def sendCommand(self, command, proxy=None, **params):
+        proxy = self._proxyThroughServer if proxy is None else proxy
+        if proxy: return self.sendServerCommand(command, **params)
+        return self.sendClientCommand(command, **params)
+
+    def sendClientCommand(self, command, **params):
+        command = command.strip('/')
+        controller = command.split('/')[1]
+        if controller not in self.protocolCapabilities:
+            raise Unsupported('Client %s does not support the %s controller.' % (self.quickName, controller))
+        self._commandId += 1
+        params.update({
             'X-Plex-Device-Name': self.name,
             'X-Plex-Client-Identifier': self.server.machineIdentifier,
-            'type': 'video',  # TODO: Make this with any media type or passed in as an arg
+            'X-Plex-Target-Client-Identifier': self.machineIdentifier,
+            'commandID': self._commandId,
         })
-        url = '%s%s' % (self.url(command), utils.joinArgs(args))
+        url = 'http://%s:%s/%s%s' % (self.address, self.port, command.lstrip('/'), utils.joinArgs(params))
         log.info('GET %s', url)
         response = requests.get(url, timeout=TIMEOUT)
         if response.status_code != requests.codes.ok:
@@ -59,54 +65,92 @@ class Client(object):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def sendServerCommand(self, command, args=None):
-        # TODO: Rip this out, server is throwing exceptions, maybe deprecated?
-        path = '/system/players/%s/%s%s' % (self.address, command, utils.joinArgs(args))
+    def sendServerCommand(self, command, **params):
+        params.update({'commandID': self._commandId})
+        path = '/system/players/%s/%s%s' % (self.address, command, utils.joinArgs(params))
         self.server.query(path)
 
-    def url(self, path):
-        return 'http://%s:%s/player/%s' % (self.address, self.port, path.lstrip('/'))
-
     # Navigation Commands
-    def moveUp(self): self.sendCommand('navigation/moveUp')
-    def moveDown(self): self.sendCommand('navigation/moveDown')
-    def moveLeft(self): self.sendCommand('navigation/moveLeft')
-    def moveRight(self): self.sendCommand('navigation/moveRight')
-    def pageUp(self): self.sendCommand('navigation/pageUp')
-    def pageDown(self): self.sendCommand('navigation/pageDown')
-    def nextLetter(self): self.sendCommand('navigation/nextLetter')
-    def previousLetter(self): self.sendCommand('navigation/previousLetter')
-    def select(self): self.sendCommand('navigation/select')
-    def back(self): self.sendCommand('navigation/back')
-    def contextMenu(self): self.sendCommand('navigation/contextMenu')
-    def toggleOSD(self): self.sendCommand('navigation/toggleOSD')
+    # These commands navigate around the user interface.
+    def contextMenu(self): self.sendCommand('player/navigation/contextMenu')
+    def goBack(self): self.sendCommand('player/navigation/back')
+    def goToHome(self): self.sendCommand('/player/navigation/home')
+    def goToMusic(self): self.sendCommand('/player/navigation/music')
+    def moveDown(self): self.sendCommand('player/navigation/moveDown')
+    def moveLeft(self): self.sendCommand('player/navigation/moveLeft')
+    def moveRight(self): self.sendCommand('player/navigation/moveRight')
+    def moveUp(self): self.sendCommand('player/navigation/moveUp')
+    def nextLetter(self): self.sendCommand('player/navigation/nextLetter')
+    def pageDown(self): self.sendCommand('player/navigation/pageDown')
+    def pageUp(self): self.sendCommand('player/navigation/pageUp')
+    def previousLetter(self): self.sendCommand('player/navigation/previousLetter')
+    def select(self): self.sendCommand('player/navigation/select')
+    def toggleOSD(self): self.sendCommand('player/navigation/toggleOSD')
+
+    def goToMedia(self, media, **params):
+        server_uri = media.server.baseuri.split(':')
+        self.sendCommand('player/mirror/details', **dict({
+            'machineIdentifier': self.server.machineIdentifier,
+            'address': server_uri[1].strip('/'),
+            'port': server_uri[-1],
+            'key': media.key,
+        }, **params))
 
     # Playback Commands
-    def play(self): self.sendCommand('playback/play')
-    def pause(self): self.sendCommand('playback/pause')
-    def stop(self): self.sendCommand('playback/stop')
-    def stepForward(self): self.sendCommand('playback/stepForward')
-    def bigStepForward(self): self.sendCommand('playback/bigStepForward')
-    def stepBack(self): self.sendCommand('playback/stepBack')
-    def bigStepBack(self): self.sendCommand('playback/bigStepBack')
-    def skipNext(self): self.sendCommand('playback/skipNext')
-    def skipPrevious(self): self.sendCommand('playback/skipPrevious')
-
-    def playMedia(self, video, viewOffset=0):
-        playqueue = self.server.createPlayQueue(video)
-        self.sendCommand('playback/playMedia', {
+    # most of the playback commands take a mandatory mtype {'music','photo','video'} argument,
+    # to specify which media type to apply the command to, (except for playMedia). This
+    # is in case there are multiple things happening (e.g. music in the background, photo
+    # slideshow in the foreground).
+    def pause(self, mtype): self.sendCommand('player/playback/pause', type=mtype)
+    def play(self, mtype): self.sendCommand('player/playback/play', type=mtype)
+    def refreshPlayQueue(self, playQueueID, mtype=None): self.sendCommand('player/playback/refreshPlayQueue', playQueueID=playQueueID, type=mtype)
+    def seekTo(self, offset, mtype=None): self.sendCommand('player/playback/seekTo', offset=offset, type=mtype)  # offset in milliseconds
+    def skipNext(self, mtype=None): self.sendCommand('player/playback/skipNext', type=mtype)
+    def skipPrevious(self, mtype=None): self.sendCommand('player/playback/skipPrevious', type=mtype)
+    def skipTo(self, key, mtype=None): self.sendCommand('player/playback/skipTo', key=key, type=mtype)  # skips to item with matching key
+    def stepBack(self, mtype=None): self.sendCommand('player/playback/stepBack', type=mtype)
+    def stepForward(self, mtype): self.sendCommand('player/playback/stepForward', type=mtype)
+    def stop(self, mtype): self.sendCommand('player/playback/stop', type=mtype)
+    def setRepeat(self, repeat, mtype): self.setParameters(repeat=repeat, mtype=mtype)      # 0=off, 1=repeatone, 2=repeatall
+    def setShuffle(self, shuffle, mtype): self.setParameters(shuffle=shuffle, mtype=mtype)  # 0=off, 1=on
+    def setVolume(self, volume, mtype): self.setParameters(volume=volume, mtype=mtype)      # 0-100
+    def setAudioStream(self, audioStreamID, mtype): self.setStreams(audioStreamID=audioStreamID, mtype=mtype)
+    def setSubtitleStream(self, subtitleStreamID, mtype): self.setStreams(subtitleStreamID=subtitleStreamID, mtype=mtype)
+    def setVideoStream(self, videoStreamID, mtype): self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
+    
+    def playMedia(self, media, **params):
+        server_uri = media.server.baseuri.split(':')
+        playqueue = self.server.createPlayQueue(media)
+        self.sendCommand('player/playback/playMedia', **dict({
             'machineIdentifier': self.server.machineIdentifier,
+            'address': server_uri[1].strip('/'),
+            'port': server_uri[-1],
+            'key': media.key,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
-            'key': video.key,
-            'offset': 0,
-        })
-
+        }, **params))
+        
+    def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=None):
+        params = {}
+        if repeat is not None: params['repeat'] = repeat        # 0=off, 1=repeatone, 2=repeatall
+        if shuffle is not None: params['shuffle'] = shuffle     # 0=off, 1=on
+        if volume is not None: params['volume'] = volume        # 0-100
+        if mtype is not None: params['type'] = mtype            # music,photo,video
+        self.sendCommand('player/playback/setParameters', **params)
+        
+    def setStreams(self, audioStreamID=None, subtitleStreamID=None, videoStreamID=None, mtype=None):
+        # Can possibly send {next,on,off}
+        params = {}
+        if audioStreamID is not None: params['audioStreamID'] = audioStreamID
+        if subtitleStreamID is not None: params['subtitleStreamID'] = subtitleStreamID
+        if videoStreamID is not None: params['videoStreamID'] = videoStreamID
+        if mtype is not None: params['type'] = mtype  # music,photo,video
+        self.sendCommand('player/playback/setStreams', **params)
+        
+    # Timeline Commands
     def timeline(self):
-        params = {'wait':1, 'commandID':4}
-        return self.server.query('timeline/poll', params=params)
+        self.sendCommand('timeline/poll', **{'wait':1, 'commandID':4})
 
     def isPlayingMedia(self):
-        # http://192.168.1.31:32500/player/timeline/poll?commandID=4&wait=1&X-Plex-Target-Client-Identifier=198D670A-DE1B-4BF2-BE55-10B4D98E1532&X-Plex-Device-Name=iphone-mike&X-Plex-Client-Identifier=792f0ff5fa644d63ff1e6ea8b130dade08716cb1
         timeline = self.timeline()
         for media_type in timeline:
             if media_type.get('state') == 'playing':

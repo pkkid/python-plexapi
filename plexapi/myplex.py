@@ -172,18 +172,7 @@ class ResourceConnection(object):
         return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
 
 
-def _findResource(resources, search, port=32400):
-    """ Searches server.name """
-    search = search.lower()
-    log.info('Looking for server: %s', search)
-    for server in resources:
-        if search == server.name.lower():
-            log.info('Server found: %s', server)
-            return server
-    log.info('Unable to find server: %s', search)
-    raise NotFound('Unable to find server: %s' % search)
-
-
+# TODO: Is this a plex client in disguise?
 class MyPlexDevice(object):
     DEVICES = 'https://plex.tv/devices.xml'
 
@@ -272,3 +261,15 @@ class MyPlexDevice(object):
     def bigStepBack(self, args=None): self.sendCommand('playback/bigStepBack', args)  # noqa
     def skipNext(self, args=None): self.sendCommand('playback/skipNext', args)  # noqa
     def skipPrevious(self, args=None): self.sendCommand('playback/skipPrevious', args)  # noqa
+
+
+def _findResource(resources, search, port=32400):
+    """ Searches server.name """
+    search = search.lower()
+    log.info('Looking for server: %s', search)
+    for server in resources:
+        if search == server.name.lower():
+            log.info('Server found: %s', server)
+            return server
+    log.info('Unable to find server: %s', search)
+    raise NotFound('Unable to find server: %s' % search)

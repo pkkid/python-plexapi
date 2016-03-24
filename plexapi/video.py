@@ -79,6 +79,9 @@ class Movie(Video):
             self.producers = [media.Producer(self.server, e) for e in data if e.tag == media.Producer.TYPE]
             self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
             self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
+            self.videoStreams = self._findStreams('videostream')
+            self.audioStreams = self._findStreams('audiostream')
+            self.subtitleStreams = self._findStreams('subtitlestream')
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._findUser(data)
@@ -223,6 +226,9 @@ class Episode(Video):
             self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
             self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
             self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
+            self.videoStreams = self._findStreams('videostream')
+            self.audioStreams = self._findStreams('audiostream')
+            self.subtitleStreams = self._findStreams('subtitlestream')
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.user = self._findUser(data)

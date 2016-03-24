@@ -18,12 +18,12 @@ SHOW_TITLE = 'Game of Thrones'
 SHOW_SEASON = 'Season 1'
 SHOW_EPISODE = 'Winter Is Coming'
 MOVIE_SECTION = 'Movies'
-MOVIE_TITLE = 'Jurassic Park'
+MOVIE_TITLE = 'Jurassic World'
 AUDIO_SECTION = 'Music'
 AUDIO_ARTIST = 'Beastie Boys'
 AUDIO_ALBUM = 'Licensed To Ill'
 AUDIO_TRACK = 'Brass Monkey'
-PLEX_CLIENT = 'iphone-mike'
+PLEX_CLIENT = 'pkkid-home'
 
 
 #-----------------------
@@ -261,7 +261,21 @@ def test_list_video_tags(plex, user=None):
     related = movies.search(None, director=movie.directors[0])
     log(4, related[0:3])
     assert movie in related, 'Movie was not found in related directors search.'
-    
+
+
+@register('client')
+def test_list_video_streams(plex, user=None):
+    movie = plex.library.section(MOVIE_SECTION).get('John Wick')
+    videostreams = [s.language for s in movie.videoStreams]
+    audiostreams = [s.language for s in movie.audioStreams]
+    subtitlestreams = [s.language for s in movie.subtitleStreams]
+    log(2, 'Video Streams: %s' % ', '.join(videostreams[0:5]))
+    log(2, 'Audio Streams: %s' % ', '.join(audiostreams[0:5]))
+    log(2, 'Subtitle Streams: %s' % ', '.join(subtitlestreams[0:5]))
+    assert filter(None, videostreams), 'No video streams listed for movie.'
+    assert filter(None, audiostreams), 'No audio streams listed for movie.'
+    assert filter(None, subtitlestreams), 'No subtitle streams listed for movie.'
+
 
 @register('meta,audio')
 def test_list_audio_tags(plex, user=None):
@@ -330,23 +344,91 @@ def test_play_queues(plex, user=None):
 #-----------------------
 
 @register('client')
-def test_list_devices(plex, user=None):
-    assert user, 'Must specify username, password & resource to run this test.'
-    log(2, ', '.join([r.name or r.product for r in user.resources()]))
+def test_list_clients(plex, user=None):
+    clients = [c.name or c.product for c in plex.clients()]
+    log(2, ', '.join(clients))
 
 
 @register('client')
-def test_client_play_media(plex, user=None):
-    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
+def test_client_navigation(plex, user=None):
     client = plex.client(PLEX_CLIENT)
-    client.playMedia(episode); time.sleep(10)
-    client.pause(); time.sleep(3)
-    client.stepForward(); time.sleep(3)
-    client.play(); time.sleep(3)
-    client.stop(); time.sleep(3)
-    movie = plex.library.get(MOVIE_TITLE)
-    movie.play(client); time.sleep(10)
-    client.stop()
+    _navigate(plex, client)
+    
+
+@register('client')
+def test_client_navigation_via_proxy(plex, user=None):
+    client = plex.client(PLEX_CLIENT)
+    client.proxyThroughServer()
+    _navigate(plex, client)
+
+
+def _navigate(plex, client):
+    episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
+    artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
+    log(2, 'Client: %s (%s)' % (client.name, client.product))
+    log(2, 'Capabilities: %s' % client.protocolCapabilities)
+    # Move around a bit
+    log(2, 'Browsing around..')
+    client.moveDown(); time.sleep(0.5)
+    client.moveDown(); time.sleep(0.5)
+    client.moveDown(); time.sleep(0.5)
+    client.select(); time.sleep(3)
+    client.moveRight(); time.sleep(0.5)
+    client.moveRight(); time.sleep(0.5)
+    client.moveLeft(); time.sleep(0.5)
+    client.select(); time.sleep(3)
+    client.goBack(); time.sleep(1)
+    client.goBack(); time.sleep(3)
+    # Go directly to media
+    log(2, 'Navigating to %s..' % episode.title)
+    client.goToMedia(episode); time.sleep(5)
+    log(2, 'Navigating to %s..' % artist.title)
+    client.goToMedia(artist); time.sleep(5)
+    log(2, 'Navigating home..')
+    client.goToHome(); time.sleep(5)
+    client.moveUp(); time.sleep(0.5)
+    client.moveUp(); time.sleep(0.5)
+    client.moveUp(); time.sleep(0.5)
+    # Show context menu
+    client.contextMenu(); time.sleep(3)
+    client.goBack(); time.sleep(5)
+
+
+@register('client')
+def test_video_playback(plex, user=None):
+    client = plex.client(PLEX_CLIENT)
+    _video_playback(plex, client)
+
+
+@register('client')
+def test_video_playback_via_proxy(plex, user=None):
+    client = plex.client(PLEX_CLIENT)
+    client.proxyThroughServer()
+    _video_playback(plex, client)
+
+
+def _video_playback(plex, client):
+    mtype = 'video'
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    subs = [s for s in movie.subtitleStreams if s.language == 'English']
+    log(2, 'Client: %s (%s)' % (client.name, client.product))
+    log(2, 'Capabilities: %s' % client.protocolCapabilities)
+    log(2, 'Playing to %s..' % movie.title)
+    client.playMedia(movie); time.sleep(5)
+    log(2, 'Pause..')
+    client.pause(mtype); time.sleep(2)
+    log(2, 'Step Forward..')
+    client.stepForward(mtype); time.sleep(5)
+    log(2, 'Play..')
+    client.play(mtype); time.sleep(3)
+    log(2, 'Seek to 10m..')
+    client.seekTo(10*60*1000); time.sleep(5)
+    log(2, 'Disable Subtitles..')
+    client.setSubtitleStream(0, mtype); time.sleep(10)
+    log(2, 'Load English Subtitles %s..' % subs[0].id)
+    client.setSubtitleStream(subs[0].id, mtype); time.sleep(10)
+    log(2, 'Stop..')
+    client.stop(mtype); time.sleep(1)
 
 
 # def test_sync_items(plex, user=None):
@@ -362,6 +444,17 @@ def test_client_play_media(plex, user=None):
 #                 # make the relevant sync id (media part) as downloaded
 #                 # this tells the server that this device has successfully downloaded this media part of this sync item
 #                 item.mark_as_done(part.sync_id)
+
+
+#-----------------------
+# Resource
+#-----------------------
+
+@register('resource')
+def test_list_resources(plex, user=None):
+    assert user, 'Must specify username, password & resource to run this test.'
+    resources = [r.name or r.product for r in user.resources()]
+    log(2, ', '.join(resources))
 
 
 if __name__ == '__main__':
