@@ -355,11 +355,11 @@ def test_client_navigation(plex, user=None):
     _navigate(plex, client)
     
 
-@register('client')
-def test_client_navigation_via_proxy(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
-    client.proxyThroughServer()
-    _navigate(plex, client)
+# @register('client')
+# def test_client_navigation_via_proxy(plex, user=None):
+#     client = plex.client(PLEX_CLIENT)
+#     client.proxyThroughServer()
+#     _navigate(plex, client)
 
 
 def _navigate(plex, client):
@@ -400,11 +400,11 @@ def test_video_playback(plex, user=None):
     _video_playback(plex, client)
 
 
-@register('client')
-def test_video_playback_via_proxy(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
-    client.proxyThroughServer()
-    _video_playback(plex, client)
+# @register('client')
+# def test_video_playback_via_proxy(plex, user=None):
+#     client = plex.client(PLEX_CLIENT)
+#     client.proxyThroughServer()
+#     _video_playback(plex, client)
 
 
 def _video_playback(plex, client):

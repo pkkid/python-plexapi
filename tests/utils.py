@@ -44,7 +44,7 @@ def iter_tests(query):
         elif tags:
             matching_tags = [t for t in tags if t in test['tags']]
             if matching_tags: yield test
-        elif query in test['name']:
+        elif query == test['name']:
             yield test
 
 
