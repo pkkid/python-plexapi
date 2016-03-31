@@ -57,13 +57,12 @@ class Library(object):
         return utils.findKey(self.server, key)
         
     def search(self, title, libtype=None, **kwargs):
-        """ Searching within a library section is much more powerful. It seems certain attributes on
-            the media objects can be targeted to filter this search down a bit, but I havent found the
-            documentation for it. For example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu"
-            all work. Other items such as actor=<id> seem to work, but require you already know the id
-            of the actor.
+        """ Searching within a library section is much more powerful. It seems certain attributes on the media
+            objects can be targeted to filter this search down a bit, but I havent found the documentation for
+            it. For example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items
+            such as actor=<id> seem to work, but require you already know the id of the actor.
+            TLDR: This is untested but seems to work. Use library section search when you can.
         """
-        # TODO: FIGURE THIS OUT!
         args = {}
         if title: args['title'] = title
         if libtype: args['type'] = utils.searchType(libtype)
