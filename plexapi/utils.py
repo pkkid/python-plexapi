@@ -9,6 +9,9 @@ from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 
 
+# Search Types - Plex uses these to filter specific media types when searching.
+SEARCHTYPES = {'movie':1, 'show':2, 'season':3, 'episode':4, 'artist':8, 'album':9, 'track':10}
+
 # Registry of library types we may come across when parsing XML. This allows us to
 # define a few helper functions to dynamically convery the XML into objects.
 # see buildItem() below for an example.
@@ -16,7 +19,6 @@ LIBRARY_TYPES = {}
 def register_libtype(cls):
     LIBRARY_TYPES[cls.TYPE] = cls
     return cls
-
 
 # This used to be a simple variable equal to '__NA__'. However, there has been need to
 # compare NA against None in some use cases. This object allows the internals of PlexAPI 
@@ -45,7 +47,7 @@ class PlexPartialObject(object):
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
-        return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
+        return '<%s:%s:%s>' % (self.__class__.__name__, self.key, title.encode('utf8'))
 
     def __getattr__(self, attr):
         if self.isPartialObject():
@@ -143,7 +145,7 @@ class PlexPartialObject(object):
 
 
 def buildItem(server, elem, initpath):
-    libtype = elem.attrib.get('type')
+    libtype = elem.attrib.get('type') or elem.tag
     if libtype in LIBRARY_TYPES:
         cls = LIBRARY_TYPES[libtype]
         return cls(server, elem, initpath)
@@ -189,6 +191,10 @@ def joinArgs(args):
     return '?%s' % '&'.join(arglist)
 
 
+def listChoices(server, path):
+    return {c.attrib['title']:c.attrib['key'] for c in server.query(path)}
+
+
 def listItems(server, path, libtype=None, watched=None):
     items = []
     for elem in server.query(path):
@@ -218,14 +224,13 @@ def rget(obj, attrstr, default=None, delim='.'):
     
 
 def searchType(libtype):
-    if libtype == 'movie': return 1
-    elif libtype == 'show': return 2
-    elif libtype == 'season': return 3
-    elif libtype == 'episode': return 4
-    elif libtype == 'artist': return 8
-    elif libtype == 'album': return 9
-    elif libtype == 'track': return 10
-    raise NotFound('Unknown libtype: %s' % libtype)
+    SEARCHTYPESSTRS = [str(k) for k in SEARCHTYPES.keys()]
+    if libtype in SEARCHTYPES + SEARCHTYPESSTRS:
+        return libtype
+    stype = SEARCHTYPES.get(libtype.lower())
+    if not stype:
+        raise NotFound('Unknown libtype: %s' % libtype)
+    return stype
 
 
 def toDatetime(value, format=None):

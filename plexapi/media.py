@@ -56,7 +56,6 @@ class MediaPart(object):
         selected = list(filter(lambda x: x.selected is True, streams))
         if len(selected) == 0:
             return None
-
         return selected[0]
 
 

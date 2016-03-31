@@ -11,9 +11,10 @@ CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
 CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
-PROJECT = 'PlexAPI'
-VERSION = '2.0.0a'
-TIMEOUT = CONFIG.get('plexapi.timeout', 5, int)
+PROJECT = 'PlexAPI'                                 # name provided to plex server
+VERSION = '2.0.0a'                                  # version of this api
+TIMEOUT = CONFIG.get('plexapi.timeout', 5, int)     # request timeout
+X_PLEX_CONTAINER_SIZE = 50                          # max results to return in a single search page 
 
 # Plex Header Configuation
 X_PLEX_PROVIDES = 'player,controller'                                          # one or more of [player, controller, server]

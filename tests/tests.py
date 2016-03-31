@@ -107,6 +107,12 @@ def test_search_audio(plex, user=None):
     log(4, 'Result Music: %s' % result_music)
     assert result_server, 'Artist not found.'
     assert result_server == result_library == result_music, 'Audio searches not consistent.'
+    
+
+@register('search,show')
+def test_crazy_search(plex, user=None):
+    movies = plex.library.section(MOVIE_SECTION)
+    print(movies.search(duplicate=True))
 
 
 #-----------------------

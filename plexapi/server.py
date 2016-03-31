@@ -101,6 +101,7 @@ class PlexServer(object):
         return ElementTree.fromstring(data) if data else None
         
     def search(self, query, mediatype=None):
+        """ Searching within a library section is much more powerful. """
         items = utils.listItems(self, '/search?query=%s' % quote(query))
         if mediatype:
             return [item for item in items if item.type == mediatype]
