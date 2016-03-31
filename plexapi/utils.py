@@ -47,7 +47,7 @@ class PlexPartialObject(object):
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.key, title.encode('utf8'))
+        return '<%s:%s:%s>' % (self.__class__.__name__, self.ratingKey, title.encode('utf8'))
 
     def __getattr__(self, attr):
         if self.isPartialObject():
@@ -144,8 +144,8 @@ class PlexPartialObject(object):
         self._loadData(data[0])
 
 
-def buildItem(server, elem, initpath):
-    libtype = elem.attrib.get('type') or elem.tag
+def buildItem(server, elem, initpath, bytag=False):
+    libtype = elem.tag if bytag else elem.attrib.get('type')
     if libtype in LIBRARY_TYPES:
         cls = LIBRARY_TYPES[libtype]
         return cls(server, elem, initpath)
@@ -182,6 +182,14 @@ def findItem(server, path, title):
     raise NotFound('Unable to find item: %s' % title)
 
 
+def isInt(string):
+    try: 
+        int(string)
+        return True
+    except ValueError:
+        return False
+
+
 def joinArgs(args):
     if not args: return ''
     arglist = []
@@ -195,14 +203,14 @@ def listChoices(server, path):
     return {c.attrib['title']:c.attrib['key'] for c in server.query(path)}
 
 
-def listItems(server, path, libtype=None, watched=None):
+def listItems(server, path, libtype=None, watched=None, bytag=False):
     items = []
     for elem in server.query(path):
         if libtype and elem.attrib.get('type') != libtype: continue
         if watched is True and elem.attrib.get('viewCount', 0) == 0: continue
         if watched is False and elem.attrib.get('viewCount', 0) >= 1: continue
         try:
-            items.append(buildItem(server, elem, path))
+            items.append(buildItem(server, elem, path, bytag))
         except UnknownType:
             pass
     return items

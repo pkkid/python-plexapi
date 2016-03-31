@@ -1,33 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 PlexLibrary
-
-# --- SEARCH ---
-# type=1
-# sort=column:[asc|desc]
-#  -> column in {addedAt,originallyAvailableAt,lastViewedAt,titleSort,rating,mediaHeight,duration}
-# unwatched=1
-# duplicate=1
-# year=yyyy,yyyy,yyyy
-# decade=<key>,<key>
-# genre=<id>,<id>
-# contentRating=<key>,<key>
-# collection=<id>,<id>
-# director=<id>,<id>
-# actor=<id>,<id>
-# studio=<key>,<key>
-# resolution=720,480,sd  ??
-# X-Plex-Container-Start=0
-# X-Plex-Container-Size=0
-
-# --- CANNED ---
-# /library/sections/1/onDeck
-# /library/sections/1/recentlyViewed
-# /library/sections/1/all?sort=addedAt:desc
-
 """
 from plexapi import log, utils
 from plexapi import X_PLEX_CONTAINER_SIZE
+from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -83,7 +60,8 @@ class Library(object):
         """ Searching within a library section is much more powerful. It seems certain attributes on
             the media objects can be targeted to filter this search down a bit, but I havent found the
             documentation for it. For example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu"
-            all work.
+            all work. Other items such as actor=<id> seem to work, but require you already know the id
+            of the actor.
         """
         # TODO: FIGURE THIS OUT!
         args = {}
@@ -148,7 +126,7 @@ class LibrarySection(object):
             args[category] = self._cleanSearchFilter(subcategory, value)
         if libtype is not None: args['type'] = utils.searchType(libtype)
         query = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
-        return utils.listItems(self.server, query)
+        return utils.listItems(self.server, query, bytag=True)
 
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
@@ -205,26 +183,28 @@ class LibrarySection(object):
         self.server.query('/library/sections/%s/refresh' % self.key)
 
     def _cleanSearchFilter(self, category, value, libtype=None):
-        result = set()
+        # check a few things before we begin
         if category not in self.ALLOWED_FILTERS:
             raise BadRequest('Unknown filter category: %s' % category)
         if category in self.BOOLEAN_FILTERS:
             return '1' if value else '0'
         if not isinstance(value, (list, tuple)):
             value = [value]
+        # convert list of values to list of keys or ids
+        result = set()
         choices = self.listChoices(category, libtype)
         lookup = {c.title.lower():c.key for c in choices}
         allowed = set(c.key for c in choices)
-        for dirtykey in value:
-            dirtykey = str(dirtykey).lower()
-            if dirtykey in allowed:
-                result.add(dirtykey); continue
-            if dirtykey in lookup:
-                result.add(lookup[dirtykey]); continue
-            for key in [k for t,k in lookup.items() if dirtykey in t]:
-                result.add(key)
-        if not result:
-            log.warning('No known filter values: %s; Will probably yield no results.' % ', '.join(value))
+        for item in value:
+            item = str(item.id if isinstance(item, MediaTag) else item).lower()
+            # find most logical choice(s) to use in url
+            if item in allowed: result.add(item); continue
+            if item in lookup: result.add(lookup[item]); continue
+            matches = [k for t,k in lookup.items() if item in t]
+            if matches: map(result.add, matches); continue
+            # nothing matched; use raw item value
+            log.warning('Filter value not listed, using raw item value: %s' % item)
+            result.add(item)    
         return ','.join(result)
                 
     def _cleanSearchSort(self, sort):
@@ -282,7 +262,9 @@ class FilterChoice(object):
         self.initpath = initpath
         self.fastKey = data.attrib.get('fastKey')
         self.key = data.attrib.get('key')
+        self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
