@@ -113,6 +113,15 @@ class LibrarySection(object):
     def onDeck(self):
         return utils.listItems(self.server, '/library/sections/%s/onDeck' % self.key)
         
+    def analyze(self):
+        self.server.query('/library/sections/%s/analyze' % self.key)
+
+    def emptyTrash(self):
+        self.server.query('/library/sections/%s/emptyTrash' % self.key)
+
+    def refresh(self):
+        self.server.query('/library/sections/%s/refresh' % self.key)
+        
     def listChoices(self, category, libtype=None, **kwargs):
         """ List choices for the specified filter category. kwargs can be any of the same
             kwargs in self.search() to help narrow down the choices to only those that
@@ -171,15 +180,6 @@ class LibrarySection(object):
             results += subresults[:maxresults-len(results)]
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results
-    
-    def analyze(self):
-        self.server.query('/library/sections/%s/analyze' % self.key)
-
-    def emptyTrash(self):
-        self.server.query('/library/sections/%s/emptyTrash' % self.key)
-
-    def refresh(self):
-        self.server.query('/library/sections/%s/refresh' % self.key)
 
     def _cleanSearchFilter(self, category, value, libtype=None):
         # check a few things before we begin

@@ -144,7 +144,6 @@ def test_crazy_search(plex, user=None):
     assert movie in movies.search(actor=judy.id), 'Unable to filter movie by year.'
 
 
-
 #-----------------------
 # Library Navigation
 #-----------------------
@@ -392,10 +391,10 @@ def test_client_navigation(plex, user=None):
     
 
 # @register('client')
-# def test_client_navigation_via_proxy(plex, user=None):
-#     client = plex.client(PLEX_CLIENT)
-#     client.proxyThroughServer()
-#     _navigate(plex, client)
+def test_client_navigation_via_proxy(plex, user=None):
+    client = plex.client(PLEX_CLIENT)
+    client.proxyThroughServer()
+    _navigate(plex, client)
 
 
 def _navigate(plex, client):
@@ -437,10 +436,10 @@ def test_video_playback(plex, user=None):
 
 
 # @register('client')
-# def test_video_playback_via_proxy(plex, user=None):
-#     client = plex.client(PLEX_CLIENT)
-#     client.proxyThroughServer()
-#     _video_playback(plex, client)
+def test_video_playback_via_proxy(plex, user=None):
+    client = plex.client(PLEX_CLIENT)
+    client.proxyThroughServer()
+    _video_playback(plex, client)
 
 
 def _video_playback(plex, client):
@@ -467,19 +466,39 @@ def _video_playback(plex, client):
     client.stop(mtype); time.sleep(1)
 
 
-# def test_sync_items(plex, user=None):
-#     user = MyPlexUser('user', 'pass')
-#     device = user.getDevice('device-uuid')
-#     # fetch the sync items via the device sync list
-#     for item in device.sync_items():
-#         # fetch the media object associated with the sync item
-#         for video in item.get_media():
-#             # fetch the media parts (actual video/audio streams) associated with the media
-#             for part in video.iterParts():
-#                 print('Found media to download!')
-#                 # make the relevant sync id (media part) as downloaded
-#                 # this tells the server that this device has successfully downloaded this media part of this sync item
-#                 item.mark_as_done(part.sync_id)
+@register('client')
+def test_client_timeline(plex, user=None):
+    mtype = 'video'
+    client = plex.client(PLEX_CLIENT)
+    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    playing = client.isPlayingMedia()
+    log(2, 'Playing Media: %s' % playing)
+    assert playing is False, 'isPlayingMedia() should have returned False.'
+    client.playMedia(movie); time.sleep(30)
+    playing = client.isPlayingMedia()
+    log(2, 'Playing Media: %s' % playing)
+    assert playing is True, 'isPlayingMedia() should have returned True.'
+    client.stop(mtype); time.sleep(30)
+    playing = client.isPlayingMedia()
+    log(2, 'Playing Media: %s' % playing)
+    assert playing is False, 'isPlayingMedia() should have returned False.'
+
+
+# TODO: MAKE THIS WORK..
+# @register('client')
+def test_sync_items(plex, user=None):
+    user = MyPlexUser('user', 'pass')
+    device = user.getDevice('device-uuid')
+    # fetch the sync items via the device sync list
+    for item in device.sync_items():
+        # fetch the media object associated with the sync item
+        for video in item.get_media():
+            # fetch the media parts (actual video/audio streams) associated with the media
+            for part in video.iterParts():
+                print('Found media to download!')
+                # make the relevant sync id (media part) as downloaded
+                # this tells the server that this device has successfully downloaded this media part of this sync item
+                item.mark_as_done(part.sync_id)
 
 
 #-----------------------

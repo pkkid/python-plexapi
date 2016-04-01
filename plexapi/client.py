@@ -6,7 +6,7 @@ https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 """
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import TIMEOUT, log, utils
+from plexapi import BASE_HEADERS, TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest, Unsupported
 from xml.etree import ElementTree
 
@@ -50,15 +50,10 @@ class Client(object):
         if controller not in self.protocolCapabilities:
             raise Unsupported('Client %s does not support the %s controller.' % (self.quickName, controller))
         self._commandId += 1
-        params.update({
-            'X-Plex-Device-Name': self.name,
-            'X-Plex-Client-Identifier': self.server.machineIdentifier,
-            'X-Plex-Target-Client-Identifier': self.machineIdentifier,
-            'commandID': self._commandId,
-        })
+        params['commandID'] = self._commandId
         url = 'http://%s:%s/player/%s%s' % (self.address, self.port, command.lstrip('/'), utils.joinArgs(params))
         log.info('GET %s', url)
-        response = requests.get(url, timeout=TIMEOUT)
+        response = requests.get(url, headers=BASE_HEADERS, timeout=TIMEOUT)
         if response.status_code != requests.codes.ok:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
@@ -97,7 +92,7 @@ class Client(object):
         }, **params))
 
     # Playback Commands
-    # most of the playback commands take a mandatory mtype {'music','photo','video'} argument,
+    # Most of the playback commands take a mandatory mtype {'music','photo','video'} argument,
     # to specify which media type to apply the command to, (except for playMedia). This
     # is in case there are multiple things happening (e.g. music in the background, photo
     # slideshow in the foreground).
@@ -138,7 +133,6 @@ class Client(object):
         self.sendCommand('playback/setParameters', **params)
         
     def setStreams(self, audioStreamID=None, subtitleStreamID=None, videoStreamID=None, mtype=None):
-        # Can possibly send {next,on,off}
         params = {}
         if audioStreamID is not None: params['audioStreamID'] = audioStreamID
         if subtitleStreamID is not None: params['subtitleStreamID'] = subtitleStreamID
@@ -147,12 +141,12 @@ class Client(object):
         self.sendCommand('playback/setStreams', **params)
         
     # Timeline Commands
+    # TODO: We should properly parse the Timeline XML objects here
     def timeline(self):
-        self.sendCommand('timeline/poll', **{'wait':1, 'commandID':4})
+        return self.sendCommand('timeline/poll', **{'wait':1, 'commandID':4})
 
     def isPlayingMedia(self):
-        timeline = self.timeline()
-        for media_type in timeline:
-            if media_type.get('state') == 'playing':
+        for mediatype in self.timeline():
+            if mediatype.get('state') == 'playing':
                 return True
         return False
