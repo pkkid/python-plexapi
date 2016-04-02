@@ -13,7 +13,7 @@ class Playlist(utils.PlexPartialObject):
 
     def _loadData(self, data):
         self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
-        self.composite = data.attrib.get('composite', NA)  # uri to thumbnail
+        self.composite = data.attrib.get('composite', NA)  # url to thumbnail
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds', NA))
         self.guid = data.attrib.get('guid', NA)

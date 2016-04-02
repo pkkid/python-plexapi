@@ -11,6 +11,8 @@ import argparse, sys, time
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 from utils import log, register, run_tests
+from plexapi.client import PlexClient
+from plexapi.exceptions import NotFound
 from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
@@ -23,8 +25,9 @@ AUDIO_SECTION = 'Music'
 AUDIO_ARTIST = 'Beastie Boys'
 AUDIO_ALBUM = 'Licensed To Ill'
 AUDIO_TRACK = 'Brass Monkey'
-PLEX_CLIENT = 'pkkid-home'
 
+PLEX_CLIENT = 'pkkid-home'
+PLEX_CLIENT_BASEURL = 'http://192.168.1.131:3005'
 
 #-----------------------
 # Core
@@ -380,13 +383,18 @@ def test_play_queues(plex, user=None):
 
 @register('client')
 def test_list_clients(plex, user=None):
-    clients = [c.name or c.product for c in plex.clients()]
-    log(2, ', '.join(clients))
+    clients = [c.title for c in plex.clients()]
+    log(2, 'Clients: %s' % ', '.join(clients))
+    assert clients, 'Server is not listing any clients.'
 
 
 @register('client')
 def test_client_navigation(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
+    try:
+        client = plex.client(PLEX_CLIENT)
+    except NotFound as err:
+        log(2, 'Warning: %s' % err)
+        client = PlexClient(PLEX_CLIENT_BASEURL, server=plex)
     _navigate(plex, client)
     
 
@@ -400,7 +408,7 @@ def test_client_navigation_via_proxy(plex, user=None):
 def _navigate(plex, client):
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
     artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
-    log(2, 'Client: %s (%s)' % (client.name, client.product))
+    log(2, 'Client: %s (%s)' % (client.title, client.product))
     log(2, 'Capabilities: %s' % client.protocolCapabilities)
     # Move around a bit
     log(2, 'Browsing around..')
@@ -446,7 +454,7 @@ def _video_playback(plex, client):
     mtype = 'video'
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     subs = [s for s in movie.subtitleStreams if s.language == 'English']
-    log(2, 'Client: %s (%s)' % (client.name, client.product))
+    log(2, 'Client: %s (%s)' % (client.title, client.product))
     log(2, 'Capabilities: %s' % client.protocolCapabilities)
     log(2, 'Playing to %s..' % movie.title)
     client.playMedia(movie); time.sleep(5)
@@ -502,28 +510,53 @@ def test_sync_items(plex, user=None):
 
 
 #-----------------------
-# Resource
+# MyPlex Resources
 #-----------------------
 
-@register('resource')
-def test_list_resources(plex, user=None):
+@register('myplex,resource')
+def test_myplex_resources(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
-    resources = [r.name or r.product for r in user.resources()]
-    log(2, ', '.join(resources))
+    resources = user.resources()
+    for resource in resources:
+        name = resource.name or 'Unknown'
+        connections = [c.uri for c in resource.connections]
+        connections = ', '.join(connections) if connections else 'None'
+        log(2, '%s (%s): %s' % (name, resource.product, connections))
+    assert resources, 'No resources found for user: %s' % user.name
+    
+
+@register('myplex,devices')
+def test_myplex_devices(plex, user=None):
+    assert user, 'Must specify username, password & resource to run this test.'
+    devices = user.devices()
+    for device in devices:
+        name = device.name or 'Unknown'
+        connections = ', '.join(device.connections) if device.connections else 'None'
+        log(2, '%s (%s): %s' % (name, device.product, connections))
+    assert devices, 'No devices found for user: %s' % user.name
+    
+
+@register('myplex,devices')
+def test_myplex_connect_to_device(plex, user=None):
+    assert user, 'Must specify username, password & resource to run this test.'
+    device = user.device(PLEX_CLIENT)
+    client = device.connect()
+    log(2, 'Connected to client: %s (%s)' % (client.title, client.product))
+    assert client, 'Unable to connect to device'
 
 
 if __name__ == '__main__':
     # There are three ways to authenticate:
     #  1. If the server is running on localhost, just run without any auth.
     #  2. Pass in --username, --password, and --resource.
-    #  3. Pass in --baseuri, --token
+    #  3. Pass in --baseurl, --token
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
-    parser.add_argument('--username', help='Username for the Plex server.')
-    parser.add_argument('--password', help='Password for the Plex server.')
-    parser.add_argument('--resource', help='Name of the Plex resource (requires user/pass).')
-    parser.add_argument('--baseuri', help='Baseuri needed for auth token authentication')
-    parser.add_argument('--token', help='Auth token (instead of user/pass)')
-    parser.add_argument('--query', help='Only run the specified tests.')
+    parser.add_argument('-u', '--username', help='Username for the Plex server.')
+    parser.add_argument('-p', '--password', help='Password for the Plex server.')
+    parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
+    parser.add_argument('-b', '--baseurl', help='Baseurl needed for auth token authentication')
+    parser.add_argument('-t', '--token', help='Auth token (instead of user/pass)')
+    parser.add_argument('-q', '--query', help='Only run the specified tests.')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Print verbose logging.')
     args = parser.parse_args()
     run_tests(__name__, args)

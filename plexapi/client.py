@@ -7,70 +7,87 @@ https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT, log, utils
-from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from xml.etree import ElementTree
 
 
-class Client(object):
+class PlexClient(object):
 
-    def __init__(self, server, data):
+    def __init__(self, baseurl, token=None, session=None, server=None):
+        self.baseurl = baseurl.strip('/')
+        self.token = token
+        self.session = session or requests.Session()
         self.server = server
-        self.name = data.attrib.get('name')
-        self.host = data.attrib.get('host')
-        self.address = data.attrib.get('address')
-        self.port = data.attrib.get('port')
-        self.machineIdentifier = data.attrib.get('machineIdentifier')
-        self.title = data.attrib.get('title')
-        self.version = data.attrib.get('version')
-        self.platform = data.attrib.get('platform')
-        self.protocol = data.attrib.get('protocol')
-        self.product = data.attrib.get('product')
+        data = self._connect()
         self.deviceClass = data.attrib.get('deviceClass')
-        self.protocolVersion = data.attrib.get('protocolVersion')
+        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.product = data.attrib.get('product')
+        self.protocol = data.attrib.get('protocol')
         self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
-        self.state = data.attrib.get('state')
+        self.protocolVersion = data.attrib.get('protocolVersion')
+        self.platform = data.attrib.get('platform')
+        self.platformVersion = data.attrib.get('platformVersion')
+        self.title = data.attrib.get('title')
         self._proxyThroughServer = False
         self._commandId = 0
 
-    @property
-    def quickName(self):
-        return self.name or self.product
+    def _connect(self):
+        try:
+            return self.query('/resources')[0]
+        except Exception as err:
+            log.error('%s: %s', self.baseurl, err)
+            raise NotFound('No client found at: %s' % self.baseurl)
+        
+    def headers(self):
+        headers = BASE_HEADERS
+        if self.token:
+            headers['X-Plex-Token'] = self.token
+        return headers
 
     def proxyThroughServer(self, value=True):
+        if value is True and not self.server:
+            raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
-    def sendCommand(self, command, proxy=None, **params):
-        proxy = self._proxyThroughServer if proxy is None else proxy
-        if proxy: return self.sendServerCommand(command, **params)
-        return self.sendClientCommand(command, **params)
-
-    def sendClientCommand(self, command, **params):
-        command = command.strip('/')
-        controller = command.split('/')[0]
-        if controller not in self.protocolCapabilities:
-            raise Unsupported('Client %s does not support the %s controller.' % (self.quickName, controller))
-        self._commandId += 1
-        params['commandID'] = self._commandId
-        url = 'http://%s:%s/player/%s%s' % (self.address, self.port, command.lstrip('/'), utils.joinArgs(params))
-        log.info('GET %s', url)
-        response = requests.get(url, headers=BASE_HEADERS, timeout=TIMEOUT)
-        if response.status_code != requests.codes.ok:
+    def query(self, path, method=None, **kwargs):
+        url = self.url(path)
+        method = method or self.session.get
+        log.info('%s %s', method.__name__.upper(), url)
+        response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
+        if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def sendServerCommand(self, command, **params):
-        params.update({'commandID': self._commandId})
-        path = '/system/players/%s/%s%s' % (self.address, command, utils.joinArgs(params))
-        self.server.query(path)
+    def sendCommand(self, command, proxy=None, **params):
+        proxy = self._proxyThroughServer if proxy is None else proxy
+        if proxy:
+            # send command via server proxy
+            self._commandId += 1; params['commandID'] = self._commandId
+            path = '/system/players/%s/%s%s' % (self.address, command, utils.joinArgs(params))
+            return self.server.query(path)
+        else:
+            # send command directly to client
+            command = command.strip('/')
+            controller = command.split('/')[0]
+            if controller not in self.protocolCapabilities:
+                raise Unsupported('Client %s does not support the %s controller.' % (self.title, controller))
+            self._commandId += 1; params['commandID'] = self._commandId
+            return self.query('/player/%s%s' % (command, utils.joinArgs(params)))
+        
+    def url(self, path):
+        if self.token:
+            delim = '&' if '?' in path else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
+        return '%s%s' % (self.baseurl, path)
 
     # Navigation Commands
     # These commands navigate around the user interface.
     def contextMenu(self): self.sendCommand('navigation/contextMenu')
     def goBack(self): self.sendCommand('navigation/back')
-    def goToHome(self): self.sendCommand('/navigation/home')
-    def goToMusic(self): self.sendCommand('/navigation/music')
+    def goToHome(self): self.sendCommand('navigation/home')
+    def goToMusic(self): self.sendCommand('navigation/music')
     def moveDown(self): self.sendCommand('navigation/moveDown')
     def moveLeft(self): self.sendCommand('navigation/moveLeft')
     def moveRight(self): self.sendCommand('navigation/moveRight')
@@ -83,11 +100,13 @@ class Client(object):
     def toggleOSD(self): self.sendCommand('navigation/toggleOSD')
 
     def goToMedia(self, media, **params):
-        server_uri = media.server.baseuri.split(':')
+        if not self.server:
+            raise Unsupported('A server must be specified before using this command.')
+        server_url = media.server.baseurl.split(':')
         self.sendCommand('mirror/details', **dict({
             'machineIdentifier': self.server.machineIdentifier,
-            'address': server_uri[1].strip('/'),
-            'port': server_uri[-1],
+            'address': server_url[1].strip('/'),
+            'port': server_url[-1],
             'key': media.key,
         }, **params))
 
@@ -114,12 +133,14 @@ class Client(object):
     def setVideoStream(self, videoStreamID, mtype): self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
     
     def playMedia(self, media, **params):
-        server_uri = media.server.baseuri.split(':')
+        if not self.server:
+            raise Unsupported('A server must be specified before using this command.')
+        server_url = media.server.baseurl.split(':')
         playqueue = self.server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self.server.machineIdentifier,
-            'address': server_uri[1].strip('/'),
-            'port': server_uri[-1],
+            'address': server_url[1].strip('/'),
+            'port': server_url[-1],
             'key': media.key,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))

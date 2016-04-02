@@ -8,6 +8,7 @@ from plexapi.exceptions import NotFound
 
 
 class SyncItem(object):
+
     def __init__(self, device, data, servers=None):
         self.device = device
         self.servers = servers
@@ -23,21 +24,20 @@ class SyncItem(object):
         self.location = data.find('Location').attrib.copy()
 
     def __repr__(self):
-        return '<{0}:{1}>'.format(self.__class__.__name__, self.id)
+        return '<%s:%s>' % (self.__class__.__name__, self.id)
 
     def server(self):
         server = list(filter(lambda x: x.machineIdentifier == self.machineIdentifier, self.servers))
         if 0 == len(server):
             raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
-
         return server[0]
 
     def getMedia(self):
         server = self.server().connect()
-        items = utils.listItems(server, '/sync/items/{0}'.format(self.id))
+        items = utils.listItems(server, '/sync/items/%s' % self.id)
         return items
 
     def markAsDone(self, sync_id):
         server = self.server().connect()
-        uri = '/sync/{0}/{1}/files/{2}/downloaded'.format(self.device.clientIdentifier, server.machineIdentifier, sync_id)
-        server.query(uri, method=requests.put)
+        url = '/sync/%s/%s/files/%s/downloaded' % (self.device.clientIdentifier, server.machineIdentifier, sync_id)
+        server.query(url, method=requests.put)

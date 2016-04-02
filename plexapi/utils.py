@@ -7,6 +7,7 @@ from requests import put
 from datetime import datetime
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
+from threading import Thread
 
 
 # Search Types - Plex uses these to filter specific media types when searching.
@@ -90,8 +91,8 @@ class PlexPartialObject(object):
     def _findPlayer(self, data):
         elem = data.find('Player')
         if elem is not None:
-            from plexapi.client import Client
-            return Client(self.server, elem)
+            from plexapi.client import PlexClient
+            return PlexClient(self.server, elem)
         return None
         
     def _findStreams(self, streamtype):
@@ -239,6 +240,18 @@ def searchType(libtype):
     if not stype:
         raise NotFound('Unknown libtype: %s' % libtype)
     return stype
+
+
+def threaded(callback, listargs):
+    threads, results = [], []
+    for args in listargs:
+        args += [results, len(results)]
+        results.append(None)
+        threads.append(Thread(target=callback, args=args))
+        threads[-1].start()
+    for thread in threads:
+        thread.join()
+    return results
 
 
 def toDatetime(value, format=None):

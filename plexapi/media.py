@@ -26,7 +26,7 @@ class Media(object):
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.optimizedForStreaming = cast(bool, data.attrib.get('has64bitOffsets'))
-        self.parts = [MediaPart(server, elem, initpath, self) for elem in data]
+        self.parts = [MediaPart(server, e, initpath, self) for e in data]
 
     def __repr__(self):
         title = self.video.title.replace(' ','.')[0:20]

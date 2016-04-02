@@ -29,10 +29,13 @@ def log(indent, message, color=None):
 
 def fetch_server(args):
     if args.resource and args.username and args.password:
+        log(0, 'Signing in as MyPlex user %s..' % args.username)
         user = MyPlexUser.signin(args.username, args.password)
-        return user.getResource(args.resource).connect(), user
-    elif args.baseuri and args.token:
-        return server.PlexServer(args.baseuri, args.token), None
+        log(0, 'Connecting to Plex server %s..' % args.resource)
+        return user.resource(args.resource).connect(), user
+    elif args.baseurl and args.token:
+        log(0, 'Connecting to Plex server %s..' % args.baseurl)
+        return server.PlexServer(args.baseurl, args.token), None
     return server.PlexServer(), None
 
 
@@ -52,14 +55,12 @@ def run_tests(module, args):
     plex, user = fetch_server(args)
     tests = {'passed':0, 'failed':0}
     for test in iter_tests(args.query):
-        startqueries = server.TOTAL_QUERIES
         starttime = time.time()
         log(0, '%s (%s)' % (test['name'], ','.join(test['tags'])))
         try:
             test['func'](plex, user)
             runtime = time.time() - starttime
-            queries = server.TOTAL_QUERIES - startqueries
-            log(2, 'PASS! (runtime: %.3fs; queries: %s)' % (runtime, queries), 'blue')
+            log(2, 'PASS! (runtime: %.3fs)' % runtime, 'blue')
             tests['passed'] += 1
         except Exception as err:
             errstr = str(err)

@@ -28,13 +28,13 @@ plex = PlexServer()   # Defaults to localhost:32400
 
 If you want to avoid logging into MyPlex and you already know your auth token
 string, you can use the PlexServer object directly as above, but passing in
-the baseuri and auth token directly.
+the baseurl and auth token directly.
 
 ```python
 from plexapi.server import MyPlexUser
-baseuri = 'http://plexserver:32400'
+baseurl = 'http://plexserver:32400'
 token = '2ffLuB84dqLswk9skLos'
-plex = PlexServer(baseuri, token)
+plex = PlexServer(baseurl, token)
 ```
 
 If you are running on a separate network or using Plex Users you can log
@@ -46,7 +46,7 @@ available libraries.
 ```python
 from plexapi.myplex import MyPlexUser
 user = MyPlexUser.signin('<USERNAME>', '<PASSWORD>')
-plex = user.getResource('<SERVERNAME>').connect()  # returns a PlexServer instance
+plex = user.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
 ```
 
 

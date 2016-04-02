@@ -44,5 +44,6 @@ def reset_base_headers():
         'X-Plex-Product': plexapi.X_PLEX_PRODUCT,
         'X-Plex-Version': plexapi.X_PLEX_VERSION,
         'X-Plex-Device': plexapi.X_PLEX_DEVICE,
+        'X-Plex-Device-Name': plexapi.X_PLEX_DEVICE_NAME,
         'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,
     }

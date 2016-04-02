@@ -5,17 +5,18 @@ PlexAPI MyPlex
 import plexapi, requests
 from plexapi import TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from plexapi.client import PlexClient
+from plexapi.server import PlexServer
 from plexapi.utils import cast, toDatetime
 from requests.status_codes import _codes as codes
-from threading import Thread
 from xml.etree import ElementTree
+
+MYPLEX_SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
+MYPLEX_DEVICES = 'https://plex.tv/devices.xml'
+MYPLEX_RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
 
 
 class MyPlexUser(object):
-    """ Logs into my.plexapp.com to fetch account and token information. This
-        useful to get a token if not on the local network.
-    """
-    SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
 
     def __init__(self, data, initpath=None):
         self.initpath = initpath
@@ -29,25 +30,25 @@ class MyPlexUser(object):
         self.queueEmail = data.attrib.get('queueEmail')
         self.queueUid = data.attrib.get('queueUid')
 
-    def resources(self):
-        return MyPlexResource.fetchResources(self.authenticationToken)
-
-    def getResource(self, search, port=32400):
-        """ Searches server.name, server.sourceTitle and server.host:server.port
-            from the list of available for this PlexUser.
-        """
-        return _findResource(self.resources(), search, port)
-
     def devices(self):
-        return MyPlexDevice.fetchResources(self.authenticationToken)
+        return _listItems(MYPLEX_DEVICES, self.authenticationToken, MyPlexDevice)
+        
+    def device(self, name):
+        return _findItem(self.devices(), name)
+
+    def resources(self):
+        return _listItems(MYPLEX_RESOURCES, self.authenticationToken, MyPlexResource)
+
+    def resource(self, name):
+        return _findItem(self.resources(), name)
 
     @classmethod
     def signin(cls, username, password):
         if 'X-Plex-Token' in plexapi.BASE_HEADERS:
             del plexapi.BASE_HEADERS['X-Plex-Token']
         auth = (username, password)
-        log.info('POST %s', cls.SIGNIN)
-        response = requests.post(cls.SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
+        log.info('POST %s', MYPLEX_SIGNIN)
+        response = requests.post(MYPLEX_SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
         if response.status_code != requests.codes.created:
             codename = codes.get(response.status_code)[0]
             if response.status_code == 401:
@@ -58,7 +59,6 @@ class MyPlexUser(object):
 
 
 class MyPlexAccount(object):
-    """ Represents myPlex account if you already have a connection to a server. """
 
     def __init__(self, server, data):
         self.authToken = data.attrib.get('authToken')
@@ -76,18 +76,13 @@ class MyPlexAccount(object):
         self.subscriptionState = data.attrib.get('subscriptionState')
 
     def resources(self):
-        return MyPlexResource.fetchResources(self.authToken)
+        return _listItems(MYPLEX_RESOURCES, self.authToken, MyPlexResource)
 
-    def getResource(self, search, port=32400):
-        """ Searches server.name, server.sourceTitle and server.host:server.port
-            from the list of available for this PlexAccount.
-        """
-        return _findResource(self.resources(), search, port)
+    def resource(self, name):
+        return _findItem(self.resources(), name)
 
 
 class MyPlexResource(object):
-    RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
-    SSLTESTS = [(True, 'uri'), (False, 'http_uri')]
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -111,48 +106,33 @@ class MyPlexResource(object):
         return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))
 
     def connect(self, ssl=None):
+        # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
+        forcelocal = lambda c: self.owned or c.local
         connections = sorted(self.connections, key=lambda c:c.local, reverse=True)
-        if not self.owned:
-            connections = [c for c in connections if c.local is False]
+        https = [c.uri for c in self.connections if forcelocal(c)]
+        http = [c.httpuri for c in self.connections if forcelocal(c)]
+        connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        threads, results = [], []
-        for testssl, attr in self.SSLTESTS:
-            if ssl in [None, testssl]:
-                for i in range(len(connections)):
-                    uri = getattr(connections[i], attr)
-                    args = (uri, results, len(results))
-                    results.append(None)
-                    threads.append(Thread(target=self._connect, args=args))
-                    threads[-1].start()
-        for thread in threads:
-            thread.join()
-        # At this point we have a list of result tuples containing (uri, PlexServer)
-        # or (uri, None) in the case a connection could not be established.
-        for uri, result in results:
-            log.info('Testing connection: %s %s', uri, 'OK' if result else 'ERR')
-        results = list(filter(None, [r[1] for r in results if r]))
+        listargs = [[c] for c in connections]
+        results = utils.threaded(self._connect, listargs)
+        # At this point we have a list of result tuples containing (url, token, PlexServer)
+        # or (url, token, None) in the case a connection could not be established.
+        for url, token, result in results:
+            okerr = 'OK' if result else 'ERR'
+            log.info('Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
+        results = list(filter(None, [r[2] for r in results if r]))
         if not results:
             raise NotFound('Unable to connect to resource: %s' % self.name)
-        log.info('Connecting to server: %s', results[0])
+        log.info('Connecting to server: %s?X-Plex-Token=%s', results[0].baseurl, results[0].token)
         return results[0]
 
-    def _connect(self, uri, results, i):
+    def _connect(self, url, results, i):
         try:
-            from plexapi.server import PlexServer
-            results[i] = (uri, PlexServer(uri, self.accessToken))
+            results[i] = (url, self.accessToken, PlexServer(url, self.accessToken))
         except NotFound:
-            results[i] = (uri, None)
-
-    @classmethod
-    def fetchResources(cls, token):
-        headers = plexapi.BASE_HEADERS
-        headers['X-Plex-Token'] = token
-        log.info('GET %s?X-Plex-Token=%s', cls.RESOURCES, token)
-        response = requests.get(cls.RESOURCES, headers=headers, timeout=TIMEOUT)
-        data = ElementTree.fromstring(response.text.encode('utf8'))
-        return [MyPlexResource(elem) for elem in data]
+            results[i] = (url, self.accessToken, None)
 
 
 class ResourceConnection(object):
@@ -163,18 +143,13 @@ class ResourceConnection(object):
         self.port = cast(int, data.attrib.get('port'))
         self.uri = data.attrib.get('uri')
         self.local = cast(bool, data.attrib.get('local'))
-
-    @property
-    def http_uri(self):
-        return 'http://%s:%s' % (self.address, self.port)
+        self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
 
 
-# TODO: Is this a plex client in disguise?
 class MyPlexDevice(object):
-    DEVICES = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -193,83 +168,46 @@ class MyPlexDevice(object):
         self.token = data.attrib.get('token')
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
-        self.connectionsUris = [connection.attrib.get('uri') for connection in data.iter('Connection')]
+        self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
     def __repr__(self):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'), self.product.encode('utf8'))
 
-    @property
-    def isReachable(self):
-        return len(self.connectionsUris)
+    def connect(self, ssl=None):
+        # Try connecting to all known resource connections in parellel, but
+        # only return the first server (in order) that provides a response.
+        listargs = [[c] for c in self.connections]
+        results = utils.threaded(self._connect, listargs)
+        # At this point we have a list of result tuples containing (url, token, PlexServer)
+        # or (url, token, None) in the case a connection could not be established.
+        for url, token, result in results:
+            okerr = 'OK' if result else 'ERR'
+            log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
+        results = list(filter(None, [r[2] for r in results if r]))
+        if not results:
+            raise NotFound('Unable to connect to resource: %s' % self.name)
+        log.info('Connecting to server: %s?X-Plex-Token=%s', results[0].baseurl, results[0].token)
+        return results[0]
 
-    @property
-    def baseUrl(self):
-        if not self.isReachable:
-            raise Exception('This device is not reachable')
-        return self.connectionsUris[0]
-
-    @classmethod
-    def fetchResources(cls, token):
-        headers = plexapi.BASE_HEADERS
-        headers['X-Plex-Token'] = token
-        log.info('GET %s?X-Plex-Token=%s', cls.DEVICES, token)
-        response = requests.get(cls.DEVICES, headers=headers, timeout=TIMEOUT)
-        data = ElementTree.fromstring(response.text.encode('utf8'))
-        return [MyPlexDevice(elem) for elem in data]
-
-    def sendCommand(self, command, args=None):
-        url = '%s%s' % (self.url(command), utils.joinArgs(args))
-        log.info('GET %s', url)
-        headers = plexapi.BASE_HEADERS
-        headers['X-Plex-Target-Client-Identifier'] = self.clientIdentifier
-        response = requests.get(url, headers=headers, timeout=TIMEOUT)
-        if response.status_code != requests.codes.ok:
-            codename = codes.get(response.status_code)[0]
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
-        data = response.text.encode('utf8')
-        if data:
-            try:
-                return ElementTree.fromstring(data)
-            except:
-                pass
-        return None
-
-    def url(self, path):
-        return '%s/player/%s' % (self.baseUrl, path.lstrip('/'))
-
-    # Navigation Commands
-    def moveUp(self, args=None): self.sendCommand('navigation/moveUp', args)  # noqa
-    def moveDown(self, args=None): self.sendCommand('navigation/moveDown', args)  # noqa
-    def moveLeft(self, args=None): self.sendCommand('navigation/moveLeft', args)  # noqa
-    def moveRight(self, args=None): self.sendCommand('navigation/moveRight', args)  # noqa
-    def pageUp(self, args=None): self.sendCommand('navigation/pageUp', args)  # noqa
-    def pageDown(self, args=None): self.sendCommand('navigation/pageDown', args)  # noqa
-    def nextLetter(self, args=None): self.sendCommand('navigation/nextLetter', args)  # noqa
-    def previousLetter(self, args=None): self.sendCommand('navigation/previousLetter', args)  # noqa
-    def select(self, args=None): self.sendCommand('navigation/select', args)  # noqa
-    def back(self, args=None): self.sendCommand('navigation/back', args)  # noqa
-    def contextMenu(self, args=None): self.sendCommand('navigation/contextMenu', args)  # noqa
-    def toggleOSD(self, args=None): self.sendCommand('navigation/toggleOSD', args)  # noqa
-
-    # Playback Commands
-    def play(self, args=None): self.sendCommand('playback/play', args)  # noqa
-    def pause(self, args=None): self.sendCommand('playback/pause', args)  # noqa
-    def stop(self, args=None): self.sendCommand('playback/stop', args)  # noqa
-    def stepForward(self, args=None): self.sendCommand('playback/stepForward', args)  # noqa
-    def bigStepForward(self, args=None): self.sendCommand('playback/bigStepForward', args)  # noqa
-    def stepBack(self, args=None): self.sendCommand('playback/stepBack', args)  # noqa
-    def bigStepBack(self, args=None): self.sendCommand('playback/bigStepBack', args)  # noqa
-    def skipNext(self, args=None): self.sendCommand('playback/skipNext', args)  # noqa
-    def skipPrevious(self, args=None): self.sendCommand('playback/skipPrevious', args)  # noqa
+    def _connect(self, url, results, i):
+        try:
+            results[i] = (url, self.token, PlexClient(url, self.token))
+        except NotFound as err:
+            print(err)
+            results[i] = (url, self.token, None)
 
 
-def _findResource(resources, search, port=32400):
-    """ Searches server.name """
-    search = search.lower()
-    log.info('Looking for server: %s', search)
-    for server in resources:
-        if search == server.name.lower():
-            log.info('Server found: %s', server)
-            return server
-    log.info('Unable to find server: %s', search)
-    raise NotFound('Unable to find server: %s' % search)
+def _findItem(items, name):
+    for item in items:
+        if name.lower() == item.name.lower():
+            return item
+    raise NotFound('Unable to find item: %s' % name)
+
+
+def _listItems(url, token, cls):
+    headers = plexapi.BASE_HEADERS
+    headers['X-Plex-Token'] = token
+    log.info('GET %s?X-Plex-Token=%s', url, token)
+    response = requests.get(url, headers=headers, timeout=TIMEOUT)
+    data = ElementTree.fromstring(response.text.encode('utf8'))
+    return [cls(elem) for elem in data]

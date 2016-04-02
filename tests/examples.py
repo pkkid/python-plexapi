@@ -84,14 +84,14 @@ if __name__ == '__main__':
     # There are three ways to authenticate:
     #  1. If the server is running on localhost, just run without any auth.
     #  2. Pass in --username, --password, and --resource.
-    #  3. Pass in --baseuri, --token
+    #  3. Pass in --baseurl, --token
     parser = argparse.ArgumentParser(description='Run PlexAPI examples.')
-    parser.add_argument('--username', help='Username for the Plex server.')
-    parser.add_argument('--password', help='Password for the Plex server.')
-    parser.add_argument('--resource', help='Name of the Plex resource (requires user/pass).')
-    parser.add_argument('--baseuri', help='Baseuri needed for auth token authentication')
-    parser.add_argument('--token', help='Auth token (instead of user/pass)')
-    parser.add_argument('--example', help='Only run the specified example.')
+    parser.add_argument('-u', '--username', help='Username for the Plex server.')
+    parser.add_argument('-p', '--password', help='Password for the Plex server.')
+    parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
+    parser.add_argument('-b', '--baseurl', help='Baseurl needed for auth token authentication')
+    parser.add_argument('-t', '--token', help='Auth token (instead of user/pass)')
+    parser.add_argument('-q', '--example', help='Only run the specified example.')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Print verbose logging.')
     args = parser.parse_args()
     plex, user = fetch_server(args)

@@ -8,21 +8,19 @@ from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
 from plexapi import audio, video, playlist  # noqa; required
 from plexapi.compat import quote
-from plexapi.client import Client
+from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
-from plexapi.myplex import MyPlexAccount
 from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
 
-TOTAL_QUERIES = 0
-DEFAULT_BASEURI = 'http://localhost:32400'
+DEFAULT_BASEURL = 'http://localhost:32400'
 
 
 class PlexServer(object):
 
-    def __init__(self, baseuri=None, token=None, session=None):
-        self.baseuri = baseuri or DEFAULT_BASEURI
+    def __init__(self, baseurl=None, token=None, session=None):
+        self.baseurl = baseurl or DEFAULT_BASEURL
         self.token = token
         self.session = session or requests.Session()
         data = self._connect()
@@ -40,33 +38,36 @@ class PlexServer(object):
         self.version = data.attrib.get('version')
 
     def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.baseuri)
+        return '<%s:%s>' % (self.__class__.__name__, self.baseurl)
 
     def _connect(self):
         try:
             return self.query('/')
         except Exception as err:
-            log.error('%s: %s', self.baseuri, err)
-            raise NotFound('No server found at: %s' % self.baseuri)
+            log.error('%s: %s', self.baseurl, err)
+            raise NotFound('No server found at: %s' % self.baseurl)
 
     @property
     def library(self):
         return Library(self, self.query('/library/'))
 
     def account(self):
+        from plexapi.myplex import MyPlexAccount
         data = self.query('/myplex/account')
         return MyPlexAccount(self, data)
 
     def clients(self):
         items = []
         for elem in self.query('/clients'):
-            items.append(Client(self, elem))
+            baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
+            items.append(PlexClient(baseurl, server=self))
         return items
 
     def client(self, name):
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                return Client(self, elem)
+                baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
+                return PlexClient(baseurl, server=self)
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlayQueue(self, item):
@@ -88,8 +89,6 @@ class PlexServer(object):
         raise NotFound('Invalid playlist title: %s' % title)
 
     def query(self, path, method=None, **kwargs):
-        global TOTAL_QUERIES
-        TOTAL_QUERIES += 1
         url = self.url(path)
         method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
@@ -113,5 +112,5 @@ class PlexServer(object):
     def url(self, path):
         if self.token:
             delim = '&' if '?' in path else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self.baseuri, path, delim, self.token)
-        return '%s%s' % (self.baseuri, path)
+            return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
+        return '%s%s' % (self.baseurl, path)
