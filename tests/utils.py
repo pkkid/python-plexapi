@@ -5,6 +5,8 @@ Test Library Functions
 import sys, traceback
 import datetime, time
 from plexapi import server
+from plexapi.client import PlexClient
+from plexapi.exceptions import NotFound
 from plexapi.myplex import MyPlexUser
 
 COLORS = {'blue':'\033[94m', 'green':'\033[92m', 'red':'\033[91m', 'yellow':'\033[93m', 'end':'\033[0m'}
@@ -37,6 +39,14 @@ def fetch_server(args):
         log(0, 'Connecting to Plex server %s..' % args.baseurl)
         return server.PlexServer(args.baseurl, args.token), None
     return server.PlexServer(), None
+
+
+def safe_client(name, baseurl, server):
+    try:
+        return server.client(name)
+    except NotFound as err:
+        log(2, 'Warning: %s' % err)
+        return PlexClient(baseurl, server=server)
 
 
 def iter_tests(query):

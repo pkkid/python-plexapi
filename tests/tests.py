@@ -10,9 +10,8 @@ run this test suite with the following command:
 import argparse, sys, time
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
-from utils import log, register, run_tests
-from plexapi.client import PlexClient
-from plexapi.exceptions import NotFound
+from utils import log, register, safe_client, run_tests
+from plexapi.myplex import MyPlexUser
 from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
@@ -25,9 +24,9 @@ AUDIO_SECTION = 'Music'
 AUDIO_ARTIST = 'Beastie Boys'
 AUDIO_ALBUM = 'Licensed To Ill'
 AUDIO_TRACK = 'Brass Monkey'
+CLIENT = 'pkkid-home'
+CLIENT_BASEURL = 'http://192.168.1.131:3005'
 
-PLEX_CLIENT = 'pkkid-home'
-PLEX_CLIENT_BASEURL = 'http://192.168.1.131:3005'
 
 #-----------------------
 # Core
@@ -390,17 +389,13 @@ def test_list_clients(plex, user=None):
 
 @register('client')
 def test_client_navigation(plex, user=None):
-    try:
-        client = plex.client(PLEX_CLIENT)
-    except NotFound as err:
-        log(2, 'Warning: %s' % err)
-        client = PlexClient(PLEX_CLIENT_BASEURL, server=plex)
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     _navigate(plex, client)
     
 
 # @register('client')
 def test_client_navigation_via_proxy(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
     _navigate(plex, client)
 
@@ -439,13 +434,13 @@ def _navigate(plex, client):
 
 @register('client')
 def test_video_playback(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     _video_playback(plex, client)
 
 
 # @register('client')
 def test_video_playback_via_proxy(plex, user=None):
-    client = plex.client(PLEX_CLIENT)
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
     _video_playback(plex, client)
 
@@ -477,7 +472,7 @@ def _video_playback(plex, client):
 @register('client')
 def test_client_timeline(plex, user=None):
     mtype = 'video'
-    client = plex.client(PLEX_CLIENT)
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     playing = client.isPlayingMedia()
     log(2, 'Playing Media: %s' % playing)
@@ -539,7 +534,7 @@ def test_myplex_devices(plex, user=None):
 @register('myplex,devices')
 def test_myplex_connect_to_device(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
-    device = user.device(PLEX_CLIENT)
+    device = user.device(CLIENT)
     client = device.connect()
     log(2, 'Connected to client: %s (%s)' % (client.title, client.product))
     assert client, 'Unable to connect to device'

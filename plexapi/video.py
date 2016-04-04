@@ -79,14 +79,14 @@ class Movie(Video):
             self.producers = [media.Producer(self.server, e) for e in data if e.tag == media.Producer.TYPE]
             self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
             self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
-            self.videoStreams = self._findStreams('videostream')
-            self.audioStreams = self._findStreams('audiostream')
-            self.subtitleStreams = self._findStreams('subtitlestream')
+            self.videoStreams = utils.findStreams(self.media, 'videostream')
+            self.audioStreams = utils.findStreams(self.media, 'audiostream')
+            self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = self._findUser(data)
-        self.player = self._findPlayer(data)
-        self.transcodeSession = self._findTranscodeSession(data)
+        self.user = utils.findUser(data, self.initpath)
+        self.player = utils.findPlayer(self.server, data)
+        self.transcodeSession = utils.findTranscodeSession(self.server, data)
     
     @property
     def actors(self):
@@ -113,7 +113,7 @@ class Show(Video):
         self.duration = utils.cast(int, data.attrib.get('duration', NA))
         self.guid = data.attrib.get('guid', NA)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.location = self._findLocation(data)
+        self.location = utils.findLocation(data)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating', NA))
         self.studio = data.attrib.get('studio', NA)
@@ -226,14 +226,14 @@ class Episode(Video):
             self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
             self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
             self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
-            self.videoStreams = self._findStreams('videostream')
-            self.audioStreams = self._findStreams('audiostream')
-            self.subtitleStreams = self._findStreams('subtitlestream')
+            self.videoStreams = utils.findStreams(self.media, 'videostream')
+            self.audioStreams = utils.findStreams(self.media, 'audiostream')
+            self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = self._findUser(data)
-        self.player = self._findPlayer(data)
-        self.transcodeSession = self._findTranscodeSession(data)
+        self.user = utils.findUser(data, self.initpath)
+        self.player = utils.findPlayer(self.server, data)
+        self.transcodeSession = utils.findTranscodeSession(self.server, data)
 
     @property
     def isWatched(self):

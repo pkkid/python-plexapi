@@ -33,7 +33,7 @@ class Artist(Audio):
         self.art = data.attrib.get('art', NA)
         self.guid = data.attrib.get('guid', NA)
         self.key = self.key.replace('/children', '')  # plex bug? http://bit.ly/1Sc2J3V
-        self.location = self._findLocation(data)  
+        self.location = utils.findLocation(data)
         if self.isFullObject():
             self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
@@ -141,9 +141,9 @@ class Track(Audio):
             self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
         # data for active sessions
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = self._findUser(data)
-        self.player = self._findPlayer(data)
-        self.transcodeSession = self._findTranscodeSession(data)
+        self.user = utils.findUser(data, self.initpath)
+        self.player = utils.findPlayer(self.server, data)
+        self.transcodeSession = utils.findTranscodeSession(self.server, data)
 
     @property
     def thumbUrl(self):

@@ -45,7 +45,6 @@ class MyPlexUser(object):
         self.subscriptionFeatures = None  # renamed on server
         self.roles = None
         self.entitlements = None
-        
 
     def devices(self):
         return _listItems(MyPlexDevice.DEVICES, self.authenticationToken, MyPlexDevice)

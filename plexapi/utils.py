@@ -39,13 +39,16 @@ NA = _NA()
 class PlexPartialObject(object):
 
     def __init__(self, server, data, initpath):
-        self.server = server
+        self.server = server  # TODO: This should not be needed here..
         self.initpath = initpath
         self._loadData(data)
         
+    # TODO: Make this work with objects that contain id instead of key (MyPlex objects)
     def __eq__(self, other):
         return other is not None and self.type == other.type and self.key == other.key
 
+    # TODO: This shouldn't be here, move downstream
+    # or make it work with MyPlex objects..
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
         return '<%s:%s:%s>' % (self.__class__.__name__, self.ratingKey, title.encode('utf8'))
@@ -59,10 +62,12 @@ class PlexPartialObject(object):
         if value != NA:
             super(PlexPartialObject, self).__setattr__(attr, value)
 
+    # TODO: This shouldn't be here, move downstream
     @property
     def thumbUrl(self):
         return self.server.url(self.thumb)
         
+    # TODO: Move to Playable()
     def _getStreamURL(self, **params):
         if self.TYPE not in ('movie', 'episode', 'track'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
@@ -82,42 +87,6 @@ class PlexPartialObject(object):
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(params)))
 
-    def _findLocation(self, data):
-        elem = data.find('Location')
-        if elem is not None:
-            return elem.attrib.get('path')
-        return None
-
-    def _findPlayer(self, data):
-        elem = data.find('Player')
-        if elem is not None:
-            from plexapi.client import PlexClient
-            return PlexClient(self.server, elem)
-        return None
-        
-    def _findStreams(self, streamtype):
-        streams = []
-        for media in self.media:
-            for part in media.parts:
-                for stream in part.streams:
-                    if stream.TYPE == streamtype:
-                        streams.append(stream)
-        return streams
-
-    def _findTranscodeSession(self, data):
-        elem = data.find('TranscodeSession')
-        if elem is not None:
-            from plexapi import media
-            return media.TranscodeSession(self.server, elem)
-        return None
-
-    def _findUser(self, data):
-        elem = data.find('User')
-        if elem is not None:
-            from plexapi.myplex import MyPlexUser
-            return MyPlexUser(elem, self.initpath)
-        return None
-
     def _loadData(self, data):
         raise Exception('Abstract method not implemented.')
 
@@ -127,14 +96,17 @@ class PlexPartialObject(object):
     def isPartialObject(self):
         return not self.isFullObject()
         
+    # TODO: Move to Playable()
     def iterParts(self):
         for item in self.media:
             for part in item.parts:
                 yield part
 
+    # TODO: Move to Playable()
     def play(self, client):
         client.playMedia(self)
 
+    # TODO: This shouldn't be here, move downstream
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=put)
 
@@ -181,6 +153,47 @@ def findItem(server, path, title):
         if elem.attrib.get('title').lower() == title.lower():
             return buildItem(server, elem, path)
     raise NotFound('Unable to find item: %s' % title)
+
+
+def findLocation(data):
+    elem = data.find('Location')
+    if elem is not None:
+        return elem.attrib.get('path')
+    return None
+    
+
+def findPlayer(server, data):
+    elem = data.find('Player')
+    if elem is not None:
+        from plexapi.client import PlexClient
+        return PlexClient(server, elem)
+    return None
+
+
+def findStreams(media, streamtype):
+    streams = []
+    for mediaitem in media:
+        for part in mediaitem.parts:
+            for stream in part.streams:
+                if stream.TYPE == streamtype:
+                    streams.append(stream)
+    return streams
+
+
+def findTranscodeSession(server, data):
+    elem = data.find('TranscodeSession')
+    if elem is not None:
+        from plexapi import media
+        return media.TranscodeSession(server, elem)
+    return None
+
+
+def findUser(data, initpath):
+    elem = data.find('User')
+    if elem is not None:
+        from plexapi.myplex import MyPlexUser
+        return MyPlexUser(elem, initpath)
+    return None
 
 
 def isInt(string):
