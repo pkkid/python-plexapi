@@ -11,33 +11,50 @@ from plexapi.utils import cast, toDatetime
 from requests.status_codes import _codes as codes
 from xml.etree import ElementTree
 
-MYPLEX_SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
-MYPLEX_DEVICES = 'https://plex.tv/devices.xml'
-MYPLEX_RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
-
 
 class MyPlexUser(object):
+    SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
+    ACCOUNT = 'https://plex.tv/users/account'
 
     def __init__(self, data, initpath=None):
-        self.initpath = initpath
         self.email = data.attrib.get('email')
         self.id = data.attrib.get('id')
+        self.uuid = data.attrib.get('uuid')
+        self.mailing_list_status = data.attrib.get('mailing_list_status')
         self.thumb = data.attrib.get('thumb')
         self.username = data.attrib.get('username')
         self.title = data.attrib.get('title')
         self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
+        self.locale = data.attrib.get('locale')
         self.authenticationToken = data.attrib.get('authenticationToken')
+        self.scrobbleTypes = data.attrib.get('scrobbleTypes')
+        self.restricted = cast(bool, data.attrib.get('restricted'))
+        self.home = cast(bool, data.attrib.get('home'))
+        self.guest = cast(bool, data.attrib.get('guest'))
         self.queueEmail = data.attrib.get('queueEmail')
         self.queueUid = data.attrib.get('queueUid')
+        self.homeSize = cast(int, data.attrib.get('homeSize'))
+        self.maxHomeSize = cast(int, data.attrib.get('maxHomeSize'))
+        self.secure = cast(bool, data.attrib.get('secure'))
+        self.certificateVersion = data.attrib.get('certificateVersion')
+        
+        # TODO: Complete these items!
+        self.subscriptionActive = None  # renamed on server
+        self.subscriptionStatus = None  # renamed on server
+        self.subscriptionPlan = None  # renmaed on server
+        self.subscriptionFeatures = None  # renamed on server
+        self.roles = None
+        self.entitlements = None
+        
 
     def devices(self):
-        return _listItems(MYPLEX_DEVICES, self.authenticationToken, MyPlexDevice)
+        return _listItems(MyPlexDevice.DEVICES, self.authenticationToken, MyPlexDevice)
         
     def device(self, name):
         return _findItem(self.devices(), name)
 
     def resources(self):
-        return _listItems(MYPLEX_RESOURCES, self.authenticationToken, MyPlexResource)
+        return _listItems(MyPlexResource.RESOURCES, self.authenticationToken, MyPlexResource)
 
     def resource(self, name):
         return _findItem(self.resources(), name)
@@ -47,8 +64,8 @@ class MyPlexUser(object):
         if 'X-Plex-Token' in plexapi.BASE_HEADERS:
             del plexapi.BASE_HEADERS['X-Plex-Token']
         auth = (username, password)
-        log.info('POST %s', MYPLEX_SIGNIN)
-        response = requests.post(MYPLEX_SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
+        log.info('POST %s', cls.SIGNIN)
+        response = requests.post(cls.SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
         if response.status_code != requests.codes.created:
             codename = codes.get(response.status_code)[0]
             if response.status_code == 401:
@@ -76,13 +93,14 @@ class MyPlexAccount(object):
         self.subscriptionState = data.attrib.get('subscriptionState')
 
     def resources(self):
-        return _listItems(MYPLEX_RESOURCES, self.authToken, MyPlexResource)
+        return _listItems(MyPlexResource.RESOURCES, self.authToken, MyPlexResource)
 
     def resource(self, name):
         return _findItem(self.resources(), name)
 
 
 class MyPlexResource(object):
+    RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -150,6 +168,7 @@ class ResourceConnection(object):
 
 
 class MyPlexDevice(object):
+    DEVICES = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
