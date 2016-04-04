@@ -3,11 +3,15 @@
 PlexVideo
 """
 from plexapi import media, utils
+from plexapi.utils import Playable, PlexPartialObject
 NA = utils.NA
 
 
-class Video(utils.PlexPartialObject):
+class Video(PlexPartialObject):
     TYPE = None
+
+    def __init__(self, server, data, initpath):
+        super(Video, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
@@ -22,6 +26,10 @@ class Video(utils.PlexPartialObject):
         self.type = data.attrib.get('type', NA)
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+
+    @property
+    def thumbUrl(self):
+        return self.server.url(self.thumb)
 
     def analyze(self):
         """ The primary purpose of media analysis is to gather information about that media
@@ -40,15 +48,12 @@ class Video(utils.PlexPartialObject):
         self.server.query(path)
         self.reload()
 
-    def play(self, client):
-        client.playMedia(self)
-
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
 
 
 @utils.register_libtype
-class Movie(Video):
+class Movie(Video, Playable):
     TYPE = 'movie'
 
     def _loadData(self, data):
@@ -95,9 +100,6 @@ class Movie(Video):
     @property
     def isWatched(self):
         return bool(self.viewCount > 0)
-        
-    def getStreamURL(self, **params):
-        return self._getStreamURL(**params)
 
 
 @utils.register_libtype
@@ -198,7 +200,7 @@ class Season(Video):
 
 
 @utils.register_libtype
-class Episode(Video):
+class Episode(Video, Playable):
     TYPE = 'episode'
 
     def _loadData(self, data):
@@ -242,9 +244,6 @@ class Episode(Video):
     @property
     def thumbUrl(self):
         return self.server.url(self.grandparentThumb)
-        
-    def getStreamURL(self, **params):
-        return self._getStreamURL(videoResolution='800x600', **params)
 
     def season(self):
         return utils.listItems(self.server, self.parentKey)[0]

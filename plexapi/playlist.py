@@ -4,12 +4,16 @@ PlexPlaylist
 """
 from plexapi import utils
 from plexapi.utils import cast, toDatetime
+from plexapi.utils import PlexPartialObject
 NA = utils.NA
 
 
 @utils.register_libtype
-class Playlist(utils.PlexPartialObject):
+class Playlist(PlexPartialObject):
     TYPE = 'playlist'
+
+    def __init__(self, server, data, initpath):
+        super(Playlist, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
         self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
@@ -17,7 +21,7 @@ class Playlist(utils.PlexPartialObject):
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds', NA))
         self.guid = data.attrib.get('guid', NA)
-        self.key = data.attrib.get('key', NA).replace('/items', '')  # plex bug? http://bit.ly/1Sc2J3V
+        self.key = data.attrib.get('key', NA).replace('/items', '')  # FIX_BUG_50
         self.leafCount = cast(int, data.attrib.get('leafCount', NA))
         self.playlistType = data.attrib.get('playlistType', NA)
         self.ratingKey = data.attrib.get('ratingKey', NA)
@@ -30,8 +34,3 @@ class Playlist(utils.PlexPartialObject):
     def items(self):
         path = '%s/items' % self.key
         return utils.listItems(self.server, path)
-
-    def isFullObject(self):
-        # plex bug? http://bit.ly/1Sc2J3V
-        fixed_key = self.key.replace('/items', '')
-        return self.initpath == fixed_key

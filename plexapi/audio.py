@@ -3,10 +3,14 @@
 PlexAPI Audio
 """
 from plexapi import media, utils
+from plexapi.utils import Playable, PlexPartialObject
 NA = utils.NA
 
 
-class Audio(utils.PlexPartialObject):
+class Audio(PlexPartialObject):
+    
+    def __init__(self, server, data, initpath):
+        super(Audio, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
@@ -22,6 +26,13 @@ class Audio(utils.PlexPartialObject):
         self.type = data.attrib.get('type', NA)
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        
+    @property
+    def thumbUrl(self):
+        return self.server.url(self.thumb)
+    
+    def refresh(self):
+        self.server.query('%s/refresh' % self.key, method=self.server.session.put)
 
 
 @utils.register_libtype
@@ -32,7 +43,7 @@ class Artist(Audio):
         super(Artist, self)._loadData(data)
         self.art = data.attrib.get('art', NA)
         self.guid = data.attrib.get('guid', NA)
-        self.key = self.key.replace('/children', '')  # plex bug? http://bit.ly/1Sc2J3V
+        self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocation(data)
         if self.isFullObject():
             self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
@@ -40,31 +51,23 @@ class Artist(Audio):
             self.similar = [media.Similar(self.server, e) for e in data if e.tag == media.Similar.TYPE]
 
     def albums(self):
-        path = '/library/metadata/%s/children' % self.ratingKey
+        path = '%s/children' % self.key
         return utils.listItems(self.server, path, Album.TYPE)
 
     def album(self, title):
-        path = '/library/metadata/%s/children' % self.ratingKey
+        path = '%s/children' % self.key
         return utils.findItem(self.server, path, title)
 
     def tracks(self, watched=None):
-        leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.listItems(self.server, leavesKey, watched=watched)
+        path = '%s/allLeaves' % self.key
+        return utils.listItems(self.server, path, watched=watched)
 
     def track(self, title):
-        path = '/library/metadata/%s/allLeaves' % self.ratingKey
+        path = '%s/allLeaves' % self.key
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
         return self.track(title)
-        
-    def isFullObject(self):
-        # plex bug? http://bit.ly/1Sc2J3V
-        fixed_key = self.key.replace('/children', '')
-        return self.initpath == fixed_key
-
-    def refresh(self):
-        self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
 @utils.register_libtype
@@ -74,7 +77,7 @@ class Album(Audio):
     def _loadData(self, data):
         super(Album, self)._loadData(data)
         self.art = data.attrib.get('art', NA)
-        self.key = self.key.replace('/children', '')  # plex bug? http://bit.ly/1Sc2J3V
+        self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
@@ -86,20 +89,15 @@ class Album(Audio):
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
     def tracks(self, watched=None):
-        childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        return utils.listItems(self.server, childrenKey, watched=watched)
+        path = '%s/children' % self.key
+        return utils.listItems(self.server, path, watched=watched)
 
     def track(self, title):
-        path = '/library/metadata/%s/children' % self.ratingKey
+        path = '%s/children' % self.key
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
         return self.track(title)
-        
-    def isFullObject(self):
-        # plex bug? http://bit.ly/1Sc2J3V
-        fixed_key = self.key.replace('/children', '')
-        return self.initpath == fixed_key
 
     def artist(self):
         return utils.listItems(self.server, self.parentKey)[0]
@@ -112,7 +110,7 @@ class Album(Audio):
 
 
 @utils.register_libtype
-class Track(Audio):
+class Track(Audio, Playable):
     TYPE = 'track'
 
     def _loadData(self, data):
@@ -154,6 +152,3 @@ class Track(Audio):
 
     def artist(self):
         return utils.listItems(self.server, self.grandparentKey)[0]
-        
-    def getStreamURL(self, **params):
-        return self._getStreamURL(**params)

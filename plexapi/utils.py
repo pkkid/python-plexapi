@@ -38,8 +38,8 @@ NA = _NA()
 # you request is None it will fetch the full object automatically and update itself.
 class PlexPartialObject(object):
 
-    def __init__(self, server, data, initpath):
-        self.server = server  # TODO: This should not be needed here..
+    def __init__(self, data, initpath, server=None):
+        self.server = server
         self.initpath = initpath
         self._loadData(data)
         
@@ -62,13 +62,25 @@ class PlexPartialObject(object):
         if value != NA:
             super(PlexPartialObject, self).__setattr__(attr, value)
 
-    # TODO: This shouldn't be here, move downstream
-    @property
-    def thumbUrl(self):
-        return self.server.url(self.thumb)
-        
-    # TODO: Move to Playable()
-    def _getStreamURL(self, **params):
+    def _loadData(self, data):
+        raise Exception('Abstract method not implemented.')
+
+    def isFullObject(self):
+        return self.initpath == self.key
+
+    def isPartialObject(self):
+        return not self.isFullObject()
+
+    def reload(self):
+        """ Reload the data for this object from PlexServer XML. """
+        data = self.server.query(self.key)
+        self.initpath = self.key
+        self._loadData(data[0])
+
+
+class Playable(object):
+    
+    def getStreamURL(self, **params):
         if self.TYPE not in ('movie', 'episode', 'track'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
         mvb = params.get('maxVideoBitrate')
@@ -86,35 +98,14 @@ class PlexPartialObject(object):
         params = {k:v for k,v in params.items() if v is not None}  # remove None values
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(params)))
-
-    def _loadData(self, data):
-        raise Exception('Abstract method not implemented.')
-
-    def isFullObject(self):
-        return self.initpath == self.key
-
-    def isPartialObject(self):
-        return not self.isFullObject()
-        
-    # TODO: Move to Playable()
+    
     def iterParts(self):
         for item in self.media:
             for part in item.parts:
                 yield part
-
-    # TODO: Move to Playable()
+    
     def play(self, client):
         client.playMedia(self)
-
-    # TODO: This shouldn't be here, move downstream
-    def refresh(self):
-        self.server.query('%s/refresh' % self.key, method=put)
-
-    def reload(self):
-        """ Reload the data for this object from PlexServer XML. """
-        data = self.server.query(self.key)
-        self.initpath = self.key
-        self._loadData(data[0])
 
 
 def buildItem(server, elem, initpath, bytag=False):
