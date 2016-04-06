@@ -383,7 +383,7 @@ def test_play_queues(plex, user=None):
 @register('client')
 def test_list_clients(plex, user=None):
     clients = [c.title for c in plex.clients()]
-    log(2, 'Clients: %s' % ', '.join(clients))
+    log(2, 'Clients: %s' % ', '.join(clients or []))
     assert clients, 'Server is not listing any clients.'
 
 
@@ -393,7 +393,7 @@ def test_client_navigation(plex, user=None):
     _navigate(plex, client)
     
 
-# @register('client')
+@register('client,proxy')
 def test_client_navigation_via_proxy(plex, user=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
@@ -438,7 +438,7 @@ def test_video_playback(plex, user=None):
     _video_playback(plex, client)
 
 
-# @register('client')
+@register('client,proxy')
 def test_video_playback_via_proxy(plex, user=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
@@ -471,9 +471,22 @@ def _video_playback(plex, client):
 
 @register('client')
 def test_client_timeline(plex, user=None):
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+    _test_timeline(plex, client)
+
+
+@register('client,proxy')
+def test_client_timeline_via_proxy(plex, user=None):
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+    client.proxyThroughServer()
+    _test_timeline(plex, client)
+
+
+def _test_timeline(plex, client):
     mtype = 'video'
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+    time.sleep(30)  # previous test may have played media..
     playing = client.isPlayingMedia()
     log(2, 'Playing Media: %s' % playing)
     assert playing is False, 'isPlayingMedia() should have returned False.'
@@ -534,7 +547,10 @@ def test_myplex_devices(plex, user=None):
 @register('myplex,devices')
 def test_myplex_connect_to_device(plex, user=None):
     assert user, 'Must specify username, password & resource to run this test.'
-    device = user.device(CLIENT)
+    devices = user.devices()
+    for device in devices:
+        if device.name == CLIENT and len(device.connections):
+            break
     client = device.connect()
     log(2, 'Connected to client: %s (%s)' % (client.title, client.product))
     assert client, 'Unable to connect to device'

@@ -60,14 +60,14 @@ class PlexServer(object):
         items = []
         for elem in self.query('/clients'):
             baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
-            items.append(PlexClient(baseurl, server=self))
+            items.append(PlexClient(baseurl, server=self, data=elem))
         return items
 
     def client(self, name):
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
                 baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
-                return PlexClient(baseurl, server=self)
+                return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlayQueue(self, item):
@@ -88,11 +88,12 @@ class PlexServer(object):
                 return item
         raise NotFound('Invalid playlist title: %s' % title)
 
-    def query(self, path, method=None, **kwargs):
+    def query(self, path, method=None, headers=None, **kwargs):
         url = self.url(path)
         method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
-        response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
+        headers = dict(self.headers(), **(headers or {}))
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))

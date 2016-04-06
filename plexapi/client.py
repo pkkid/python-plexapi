@@ -13,12 +13,12 @@ from xml.etree import ElementTree
 
 class PlexClient(object):
 
-    def __init__(self, baseurl, token=None, session=None, server=None):
+    def __init__(self, baseurl, token=None, session=None, server=None, data=None):
         self.baseurl = baseurl.strip('/')
         self.token = token
         self.session = session or requests.Session()
         self.server = server
-        data = self._connect()
+        data = data if data is not None else self.connect()
         self.deviceClass = data.attrib.get('deviceClass')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
         self.product = data.attrib.get('product')
@@ -27,11 +27,11 @@ class PlexClient(object):
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
-        self.title = data.attrib.get('title')
+        self.title = data.attrib.get('title') or data.attrib.get('name')
         self._proxyThroughServer = False
         self._commandId = 0
 
-    def _connect(self):
+    def connect(self):
         try:
             return self.query('/resources')[0]
         except Exception as err:
@@ -61,20 +61,17 @@ class PlexClient(object):
         return ElementTree.fromstring(data) if data else None
 
     def sendCommand(self, command, proxy=None, **params):
+        command = command.strip('/')
+        controller = command.split('/')[0]
+        if controller not in self.protocolCapabilities:
+            raise Unsupported('Client %s does not support the %s controller.' % (self.title, controller))
+        path = '/player/%s%s' % (command, utils.joinArgs(params))
+        headers = {'X-Plex-Target-Client-Identifier':self.machineIdentifier}
+        self._commandId += 1; params['commandID'] = self._commandId
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
-            # send command via server proxy
-            self._commandId += 1; params['commandID'] = self._commandId
-            path = '/system/players/%s/%s%s' % (self.address, command, utils.joinArgs(params))
-            return self.server.query(path)
-        else:
-            # send command directly to client
-            command = command.strip('/')
-            controller = command.split('/')[0]
-            if controller not in self.protocolCapabilities:
-                raise Unsupported('Client %s does not support the %s controller.' % (self.title, controller))
-            self._commandId += 1; params['commandID'] = self._commandId
-            return self.query('/player/%s%s' % (command, utils.joinArgs(params)))
+            return self.server.query(path, headers=headers)
+        return self.query('/player/%s%s' % (command, utils.joinArgs(params)))
         
     def url(self, path):
         if self.token:

@@ -13,11 +13,11 @@ CONFIG = PlexConfig(CONFIG_PATH)
 # Core Settings
 PROJECT = 'PlexAPI'                                 # name provided to plex server
 VERSION = '2.0.0a'                                  # version of this api
-TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)     # request timeout
+TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)    # request timeout
 X_PLEX_CONTAINER_SIZE = 50                          # max results to return in a single search page 
 
 # Plex Header Configuation
-X_PLEX_PROVIDES = 'player,controller'                                          # one or more of [player, controller, server]
+X_PLEX_PROVIDES = 'controller'                                                 # one or more of [player, controller, server]
 X_PLEX_PLATFORM = CONFIG.get('headers.platorm', uname()[0])                    # Platform name, eg iOS, MacOSX, Android, LG, etc
 X_PLEX_PLATFORM_VERSION = CONFIG.get('headers.platform_version', uname()[2])   # Operating system version, eg 4.3.1, 10.6.7, 3.2
 X_PLEX_PRODUCT = CONFIG.get('headers.product', PROJECT)                        # Plex application name, eg Laika, Plex Media Server, Media Link
