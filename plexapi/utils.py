@@ -3,7 +3,6 @@
 PlexAPI Utils
 """
 import re
-from requests import put
 from datetime import datetime
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
@@ -20,6 +19,7 @@ LIBRARY_TYPES = {}
 def register_libtype(cls):
     LIBRARY_TYPES[cls.TYPE] = cls
     return cls
+
 
 # This used to be a simple variable equal to '__NA__'. However, there has been need to
 # compare NA against None in some use cases. This object allows the internals of PlexAPI 
@@ -78,6 +78,9 @@ class PlexPartialObject(object):
         self._loadData(data[0])
 
 
+# This is a general place to store functions specific to media that is Playable. Things
+# were getting mixed up a bit when dealing with Shows, Season, Artists, Albums which
+# are all not playable.
 class Playable(object):
     
     def getStreamURL(self, **params):
