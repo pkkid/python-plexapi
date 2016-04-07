@@ -40,7 +40,7 @@ class Artist(Audio):
     TYPE = 'artist'
 
     def _loadData(self, data):
-        super(Artist, self)._loadData(data)
+        Audio._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.guid = data.attrib.get('guid', NA)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
@@ -75,7 +75,7 @@ class Album(Audio):
     TYPE = 'album'
 
     def _loadData(self, data):
-        super(Album, self)._loadData(data)
+        Audio._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
@@ -114,7 +114,8 @@ class Track(Audio, Playable):
     TYPE = 'track'
 
     def _loadData(self, data):
-        super(Track, self)._loadData(data)
+        Audio._loadData(self, data)
+        Playable._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.chapterSource = data.attrib.get('chapterSource', NA)
         self.duration = utils.cast(int, data.attrib.get('duration', NA))
@@ -137,9 +138,9 @@ class Track(Audio, Playable):
         if self.isFullObject():
             self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
             self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
-        # data for active sessions
+        # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = utils.findUser(data, self.initpath)
+        self.username = utils.findUsername(data)
         self.player = utils.findPlayer(self.server, data)
         self.transcodeSession = utils.findTranscodeSession(self.server, data)
 

@@ -7,36 +7,36 @@ from plexapi import TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.client import PlexClient
 from plexapi.server import PlexServer
-from plexapi.utils import cast, toDatetime
 from requests.status_codes import _codes as codes
 from xml.etree import ElementTree
 
 
-class MyPlexUser(object):
+# Your personal MyPlex account and profile information
+class MyPlexAccount(object):
+    BASEURL = 'https://plex.tv/users/account'
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
-    ACCOUNT = 'https://plex.tv/users/account'
-
+    
     def __init__(self, data, initpath=None):
-        self.email = data.attrib.get('email')
-        self.id = data.attrib.get('id')
-        self.uuid = data.attrib.get('uuid')
-        self.mailing_list_status = data.attrib.get('mailing_list_status')
-        self.thumb = data.attrib.get('thumb')
-        self.username = data.attrib.get('username')
-        self.title = data.attrib.get('title')
-        self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
-        self.locale = data.attrib.get('locale')
         self.authenticationToken = data.attrib.get('authenticationToken')
-        self.scrobbleTypes = data.attrib.get('scrobbleTypes')
-        self.restricted = cast(bool, data.attrib.get('restricted'))
-        self.home = cast(bool, data.attrib.get('home'))
-        self.guest = cast(bool, data.attrib.get('guest'))
+        self.certificateVersion = data.attrib.get('certificateVersion')
+        self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
+        self.email = data.attrib.get('email')
+        self.guest = utils.cast(bool, data.attrib.get('guest'))
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.homeSize = utils.cast(int, data.attrib.get('homeSize'))
+        self.id = data.attrib.get('id')
+        self.locale = data.attrib.get('locale')
+        self.mailing_list_status = data.attrib.get('mailing_list_status')
+        self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))
         self.queueEmail = data.attrib.get('queueEmail')
         self.queueUid = data.attrib.get('queueUid')
-        self.homeSize = cast(int, data.attrib.get('homeSize'))
-        self.maxHomeSize = cast(int, data.attrib.get('maxHomeSize'))
-        self.secure = cast(bool, data.attrib.get('secure'))
-        self.certificateVersion = data.attrib.get('certificateVersion')
+        self.restricted = utils.cast(bool, data.attrib.get('restricted'))
+        self.scrobbleTypes = data.attrib.get('scrobbleTypes')
+        self.secure = utils.cast(bool, data.attrib.get('secure'))
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.username = data.attrib.get('username')
+        self.uuid = data.attrib.get('uuid')
         
         # TODO: Complete these items!
         self.subscriptionActive = None  # renamed on server
@@ -45,18 +45,27 @@ class MyPlexUser(object):
         self.subscriptionFeatures = None  # renamed on server
         self.roles = None
         self.entitlements = None
+        
+    def __repr__(self):
+        return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username.encode('utf8'))
 
     def devices(self):
-        return _listItems(MyPlexDevice.DEVICES, self.authenticationToken, MyPlexDevice)
+        return _listItems(MyPlexDevice.BASEURL, self.authenticationToken, MyPlexDevice)
         
     def device(self, name):
         return _findItem(self.devices(), name)
 
     def resources(self):
-        return _listItems(MyPlexResource.RESOURCES, self.authenticationToken, MyPlexResource)
+        return _listItems(MyPlexResource.BASEURL, self.authenticationToken, MyPlexResource)
 
     def resource(self, name):
         return _findItem(self.resources(), name)
+        
+    def users(self):
+        return _listItems(MyPlexUser.BASEURL, self.authenticationToken, MyPlexUser)
+        
+    def user(self, email):
+        return _findItem(self.users(), email, ['username', 'email'])
 
     @classmethod
     def signin(cls, username, password):
@@ -71,35 +80,39 @@ class MyPlexUser(object):
                 raise Unauthorized('(%s) %s' % (response.status_code, codename))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = ElementTree.fromstring(response.text.encode('utf8'))
-        return cls(data)
+        return cls(data, cls.SIGNIN)
 
 
-class MyPlexAccount(object):
-
-    def __init__(self, server, data):
-        self.authToken = data.attrib.get('authToken')
+# Not to be confused with the MyPlexAccount, this represents 
+# non-signed in users such as friends and linked accounts.
+class MyPlexUser(object):
+    BASEURL = 'https://plex.tv/api/users/'
+    
+    def __init__(self, data, initpath=None):
+        self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
+        self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.email = data.attrib.get('email')
+        self.filterAll = data.attrib.get('filterAll')
+        self.filterMovies = data.attrib.get('filterMovies')
+        self.filterMusic = data.attrib.get('filterMusic')
+        self.filterPhotos = data.attrib.get('filterPhotos')
+        self.filterTelevision = data.attrib.get('filterTelevision')
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.protected = utils.cast(bool, data.attrib.get('protected'))
+        self.recommendationsPlaylistId = data.attrib.get('recommendationsPlaylistId')
+        self.restricted = data.attrib.get('restricted')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
-        self.mappingState = data.attrib.get('mappingState')
-        self.mappingError = data.attrib.get('mappingError')
-        self.mappingErrorMessage = data.attrib.get('mappingErrorMessage')
-        self.signInState = data.attrib.get('signInState')
-        self.publicAddress = data.attrib.get('publicAddress')
-        self.publicPort = data.attrib.get('publicPort')
-        self.privateAddress = data.attrib.get('privateAddress')
-        self.privatePort = data.attrib.get('privatePort')
-        self.subscriptionFeatures = data.attrib.get('subscriptionFeatures')
-        self.subscriptionActive = data.attrib.get('subscriptionActive')
-        self.subscriptionState = data.attrib.get('subscriptionState')
-
-    def resources(self):
-        return _listItems(MyPlexResource.RESOURCES, self.authToken, MyPlexResource)
-
-    def resource(self, name):
-        return _findItem(self.resources(), name)
-
+        
+    def __repr__(self):
+        return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username)
+    
 
 class MyPlexResource(object):
-    RESOURCES = 'https://plex.tv/api/resources?includeHttps=1'
+    BASEURL = 'https://plex.tv/api/resources?includeHttps=1'
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -110,13 +123,13 @@ class MyPlexResource(object):
         self.platformVersion = data.attrib.get('platformVersion')
         self.device = data.attrib.get('device')
         self.clientIdentifier = data.attrib.get('clientIdentifier')
-        self.createdAt = toDatetime(data.attrib.get('createdAt'))
-        self.lastSeenAt = toDatetime(data.attrib.get('lastSeenAt'))
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
         self.provides = data.attrib.get('provides')
-        self.owned = cast(bool, data.attrib.get('owned'))
-        self.home = cast(bool, data.attrib.get('home'))
-        self.synced = cast(bool, data.attrib.get('synced'))
-        self.presence = cast(bool, data.attrib.get('presence'))
+        self.owned = utils.cast(bool, data.attrib.get('owned'))
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.synced = utils.cast(bool, data.attrib.get('synced'))
+        self.presence = utils.cast(bool, data.attrib.get('presence'))
         self.connections = [ResourceConnection(elem) for elem in data if elem.tag == 'Connection']
 
     def __repr__(self):
@@ -157,9 +170,9 @@ class ResourceConnection(object):
     def __init__(self, data):
         self.protocol = data.attrib.get('protocol')
         self.address = data.attrib.get('address')
-        self.port = cast(int, data.attrib.get('port'))
+        self.port = utils.cast(int, data.attrib.get('port'))
         self.uri = data.attrib.get('uri')
-        self.local = cast(bool, data.attrib.get('local'))
+        self.local = utils.cast(bool, data.attrib.get('local'))
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
     def __repr__(self):
@@ -167,7 +180,7 @@ class ResourceConnection(object):
 
 
 class MyPlexDevice(object):
-    DEVICES = 'https://plex.tv/devices.xml'
+    BASEURL = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
         self.name = data.attrib.get('name')
@@ -179,7 +192,7 @@ class MyPlexDevice(object):
         self.device = data.attrib.get('device')
         self.model = data.attrib.get('model')
         self.vendor = data.attrib.get('vendor')
-        self.provides = data.attrib.get('provides').split(',')
+        self.provides = data.attrib.get('provides')
         self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.version = data.attrib.get('version')
         self.id = data.attrib.get('id')
@@ -215,11 +228,13 @@ class MyPlexDevice(object):
             results[i] = (url, self.token, None)
 
 
-def _findItem(items, name):
+def _findItem(items, value, attrs=None):
+    attrs = attrs or ['name']
     for item in items:
-        if name.lower() == item.name.lower():
-            return item
-    raise NotFound('Unable to find item: %s' % name)
+        for attr in attrs:
+            if value.lower() == getattr(item, attr).lower():
+                return item
+    raise NotFound('Unable to find item %s' % value)
 
 
 def _listItems(url, token, cls):

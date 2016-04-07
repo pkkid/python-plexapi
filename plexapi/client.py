@@ -28,6 +28,13 @@ class PlexClient(object):
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
+        # active session details
+        self.device = data.attrib.get('device')
+        self.model = data.attrib.get('model')
+        self.state = data.attrib.get('state')
+        self.vendor = data.attrib.get('vendor')
+        self.version = data.attrib.get('version')
+        # private class variables
         self._proxyThroughServer = False
         self._commandId = 0
 
@@ -80,7 +87,7 @@ class PlexClient(object):
         return '%s%s' % (self.baseurl, path)
 
     # Navigation Commands
-    # These commands navigate around the user interface.
+    # These commands navigate around the user-interface.
     def contextMenu(self): self.sendCommand('navigation/contextMenu')
     def goBack(self): self.sendCommand('navigation/back')
     def goToHome(self): self.sendCommand('navigation/home')

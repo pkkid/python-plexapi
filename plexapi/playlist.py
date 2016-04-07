@@ -21,7 +21,8 @@ class Playlist(PlexPartialObject):
         self.duration = cast(int, data.attrib.get('duration', NA))
         self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds', NA))
         self.guid = data.attrib.get('guid', NA)
-        self.key = data.attrib.get('key', NA).replace('/items', '')  # FIX_BUG_50
+        self.key = data.attrib.get('key', NA)
+        if self.key: self.key = self.key.replace('/items', '')  # FIX_BUG_50
         self.leafCount = cast(int, data.attrib.get('leafCount', NA))
         self.playlistType = data.attrib.get('playlistType', NA)
         self.ratingKey = data.attrib.get('ratingKey', NA)

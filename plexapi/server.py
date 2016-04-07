@@ -52,9 +52,8 @@ class PlexServer(object):
         return Library(self, self.query('/library/'))
 
     def account(self):
-        from plexapi.myplex import MyPlexAccount
         data = self.query('/myplex/account')
-        return MyPlexAccount(self, data)
+        return Account(self, data)
 
     def clients(self):
         items = []
@@ -78,6 +77,9 @@ class PlexServer(object):
         if self.token:
             headers['X-Plex-Token'] = self.token
         return headers
+        
+    def history(self):
+        return utils.listItems(self, '/status/sessions/history/all')
         
     def playlists(self):
         return utils.listItems(self, '/playlists')
@@ -115,3 +117,24 @@ class PlexServer(object):
             delim = '&' if '?' in path else '?'
             return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
         return '%s%s' % (self.baseurl, path)
+
+
+# This is the locally cached MyPlex account information. The properties provided don't match
+# the myplex.MyPlexAccount object very well. I believe this is here because access to myplex
+# is not required to get basic plex information.
+class Account(object):
+
+    def __init__(self, server, data):
+        self.authToken = data.attrib.get('authToken')
+        self.username = data.attrib.get('username')
+        self.mappingState = data.attrib.get('mappingState')
+        self.mappingError = data.attrib.get('mappingError')
+        self.mappingErrorMessage = data.attrib.get('mappingErrorMessage')
+        self.signInState = data.attrib.get('signInState')
+        self.publicAddress = data.attrib.get('publicAddress')
+        self.publicPort = data.attrib.get('publicPort')
+        self.privateAddress = data.attrib.get('privateAddress')
+        self.privatePort = data.attrib.get('privatePort')
+        self.subscriptionFeatures = data.attrib.get('subscriptionFeatures')
+        self.subscriptionActive = data.attrib.get('subscriptionActive')
+        self.subscriptionState = data.attrib.get('subscriptionState')

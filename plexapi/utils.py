@@ -42,18 +42,19 @@ class PlexPartialObject(object):
         self.server = server
         self.initpath = initpath
         self._loadData(data)
-        
-    # TODO: Make this work with objects that contain id instead of key (MyPlex objects)
-    def __eq__(self, other):
-        return other is not None and self.type == other.type and self.key == other.key
 
-    # TODO: This shouldn't be here, move downstream
-    # or make it work with MyPlex objects..
+    def __eq__(self, other):
+        return other is not None and self.key == other.key
+
     def __repr__(self):
-        title = self.title.replace(' ','.')[0:20]
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.ratingKey, title.encode('utf8'))
+        clsname = self.__class__.__name__
+        key = self.key.replace('/library/metadata/', '')
+        title = self.title.replace(' ','.')[0:20].encode('utf8')
+        return '<%s:%s:%s>' % (clsname, key, title)
 
     def __getattr__(self, attr):
+        if attr == 'key' or self.__dict__.get(attr):
+            return self.__dict__.get(attr)
         if self.isPartialObject():
             self.reload()
         return self.__dict__[attr]
@@ -66,7 +67,7 @@ class PlexPartialObject(object):
         raise Exception('Abstract method not implemented.')
 
     def isFullObject(self):
-        return self.initpath == self.key
+        return not self.key or self.initpath == self.key
 
     def isPartialObject(self):
         return not self.isFullObject()
@@ -82,6 +83,15 @@ class PlexPartialObject(object):
 # were getting mixed up a bit when dealing with Shows, Season, Artists, Albums which
 # are all not playable.
 class Playable(object):
+    
+    def _loadData(self, data):
+        # data for active sessions (/status/sessions)
+        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.username = findUsername(data)
+        self.player = findPlayer(self.server, data)
+        self.transcodeSession = findTranscodeSession(self.server, data)
+        # data for history details (/status/sessions/history/all)
+        self.viewedAt = toDatetime(data.attrib.get('viewedAt', NA))
     
     def getStreamURL(self, **params):
         if self.TYPE not in ('movie', 'episode', 'track'):
@@ -160,7 +170,8 @@ def findPlayer(server, data):
     elem = data.find('Player')
     if elem is not None:
         from plexapi.client import PlexClient
-        return PlexClient(server, elem)
+        baseurl = 'http://%s:%s' % (elem.attrib.get('address'), elem.attrib.get('port'))
+        return PlexClient(baseurl, server=server, data=elem)
     return None
 
 
@@ -182,11 +193,10 @@ def findTranscodeSession(server, data):
     return None
 
 
-def findUser(data, initpath):
+def findUsername(data):
     elem = data.find('User')
     if elem is not None:
-        from plexapi.myplex import MyPlexUser
-        return MyPlexUser(elem, initpath)
+        return elem.attrib.get('title')
     return None
 
 

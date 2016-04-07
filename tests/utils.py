@@ -7,7 +7,7 @@ import datetime, time
 from plexapi import server
 from plexapi.client import PlexClient
 from plexapi.exceptions import NotFound
-from plexapi.myplex import MyPlexUser
+from plexapi.myplex import MyPlexAccount
 
 COLORS = {'blue':'\033[94m', 'green':'\033[92m', 'red':'\033[91m', 'yellow':'\033[93m', 'end':'\033[0m'}
 
@@ -31,10 +31,10 @@ def log(indent, message, color=None):
 
 def fetch_server(args):
     if args.resource and args.username and args.password:
-        log(0, 'Signing in as MyPlex user %s..' % args.username)
-        user = MyPlexUser.signin(args.username, args.password)
+        log(0, 'Signing in as MyPlex account %s..' % args.username)
+        account = MyPlexAccount.signin(args.username, args.password)
         log(0, 'Connecting to Plex server %s..' % args.resource)
-        return user.resource(args.resource).connect(), user
+        return account.resource(args.resource).connect(), account
     elif args.baseurl and args.token:
         log(0, 'Connecting to Plex server %s..' % args.baseurl)
         return server.PlexServer(args.baseurl, args.token), None
@@ -62,13 +62,13 @@ def iter_tests(query):
 
 
 def run_tests(module, args):
-    plex, user = fetch_server(args)
+    plex, account = fetch_server(args)
     tests = {'passed':0, 'failed':0}
     for test in iter_tests(args.query):
         starttime = time.time()
         log(0, '%s (%s)' % (test['name'], ','.join(test['tags'])))
         try:
-            test['func'](plex, user)
+            test['func'](plex, account)
             runtime = time.time() - starttime
             log(2, 'PASS! (runtime: %.3fs)' % runtime, 'blue')
             tests['passed'] += 1

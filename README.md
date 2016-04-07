@@ -31,7 +31,7 @@ string, you can use the PlexServer object directly as above, but passing in
 the baseurl and auth token directly.
 
 ```python
-from plexapi.server import MyPlexUser
+from plexapi.server import MyPlexAccount
 baseurl = 'http://plexserver:32400'
 token = '2ffLuB84dqLswk9skLos'
 plex = PlexServer(baseurl, token)
@@ -44,9 +44,9 @@ logged into Plex Web you can see the server name in the top left above your
 available libraries.
 
 ```python
-from plexapi.myplex import MyPlexUser
-user = MyPlexUser.signin('<USERNAME>', '<PASSWORD>')
-plex = user.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
+from plexapi.myplex import MyPlexAccount
+account = MyPlexAccount.signin('<USERNAME>', '<PASSWORD>')
+plex = account.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
 ```
 
 

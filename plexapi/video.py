@@ -57,7 +57,8 @@ class Movie(Video, Playable):
     TYPE = 'movie'
 
     def _loadData(self, data):
-        super(Movie, self)._loadData(data)
+        Video._loadData(self, data)
+        Playable._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating', NA))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage', NA)
@@ -87,11 +88,6 @@ class Movie(Video, Playable):
             self.videoStreams = utils.findStreams(self.media, 'videostream')
             self.audioStreams = utils.findStreams(self.media, 'audiostream')
             self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
-        # data for active sessions
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = utils.findUser(data, self.initpath)
-        self.player = utils.findPlayer(self.server, data)
-        self.transcodeSession = utils.findTranscodeSession(self.server, data)
     
     @property
     def actors(self):
@@ -107,7 +103,7 @@ class Show(Video):
     TYPE = 'show'
 
     def _loadData(self, data):
-        super(Show, self)._loadData(data)
+        Video._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.banner = data.attrib.get('banner', NA)
         self.childCount = utils.cast(int, data.attrib.get('childCount', NA))
@@ -168,7 +164,7 @@ class Season(Video):
     TYPE = 'season'
 
     def _loadData(self, data):
-        super(Season, self)._loadData(data)
+        Video._loadData(self, data)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
@@ -204,7 +200,8 @@ class Episode(Video, Playable):
     TYPE = 'episode'
 
     def _loadData(self, data):
-        super(Episode, self)._loadData(data)
+        Video._loadData(self, data)
+        Playable._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.chapterSource = data.attrib.get('chapterSource', NA)
         self.contentRating = data.attrib.get('contentRating', NA)
@@ -231,9 +228,9 @@ class Episode(Video, Playable):
             self.videoStreams = utils.findStreams(self.media, 'videostream')
             self.audioStreams = utils.findStreams(self.media, 'audiostream')
             self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
-        # data for active sessions
+        # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
-        self.user = utils.findUser(data, self.initpath)
+        self.username = utils.findUsername(data)
         self.player = utils.findPlayer(self.server, data)
         self.transcodeSession = utils.findTranscodeSession(self.server, data)
 

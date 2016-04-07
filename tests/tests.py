@@ -11,7 +11,7 @@ import argparse, sys, time
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 from utils import log, register, safe_client, run_tests
-from plexapi.myplex import MyPlexUser
+from plexapi.myplex import MyPlexAccount
 from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
@@ -33,7 +33,7 @@ CLIENT_BASEURL = 'http://192.168.1.131:3005'
 #-----------------------
 
 @register('core,server')
-def test_server(plex, user=None):
+def test_server(plex, account=None):
     log(2, 'Username: %s' % plex.myPlexUsername)
     log(2, 'Platform: %s' % plex.platform)
     log(2, 'Version: %s' % plex.version)
@@ -43,7 +43,7 @@ def test_server(plex, user=None):
 
 
 @register('core')
-def test_list_sections(plex, user=None):
+def test_list_sections(plex, account=None):
     sections = [s.title for s in plex.library.sections()]
     log(2, 'Sections: %s' % sections)
     assert SHOW_SECTION in sections, '%s not a library section.' % SHOW_SECTION
@@ -52,12 +52,66 @@ def test_list_sections(plex, user=None):
     plex.library.section(MOVIE_SECTION)
 
 
+@register('core')
+def test_history(plex, account=None):
+    history = plex.history()
+    for item in history[:20]:
+        log(2, "%s: %s played %s '%s'" % (item.viewedAt, item.username, item.TYPE, item.title))
+    assert len(history), 'No history items have been found.'
+
+
+@register('core')
+def test_sessions(plex, account=None):
+    try:
+        mtype = 'video'
+        movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+        client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+        log(2, 'Playing %s..' % movie.title)
+        client.playMedia(movie); time.sleep(5)
+        sessions = plex.sessions()
+        for item in sessions[:20]:
+            log(2, "%s is playing %s '%s' on %s" % (item.username, item.TYPE, item.title, item.player.platform))
+        assert len(sessions), 'No session items have been found.'
+    finally:
+        log(2, 'Stop..')
+        client.stop(mtype); time.sleep(1)
+        log(2, 'Cleanup: Marking %s watched.' % movie.title)
+        movie.markWatched()
+
+
+# try:
+#     mtype = 'video'
+#     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+#     subs = [s for s in movie.subtitleStreams if s.language == 'English']
+#     log(2, 'Client: %s (%s)' % (client.title, client.product))
+#     log(2, 'Capabilities: %s' % client.protocolCapabilities)
+#     log(2, 'Playing to %s..' % movie.title)
+#     client.playMedia(movie); time.sleep(5)
+#     log(2, 'Pause..')
+#     client.pause(mtype); time.sleep(2)
+#     log(2, 'Step Forward..')
+#     client.stepForward(mtype); time.sleep(5)
+#     log(2, 'Play..')
+#     client.play(mtype); time.sleep(3)
+#     log(2, 'Seek to 10m..')
+#     client.seekTo(10*60*1000); time.sleep(5)
+#     log(2, 'Disable Subtitles..')
+#     client.setSubtitleStream(0, mtype); time.sleep(10)
+#     log(2, 'Load English Subtitles %s..' % subs[0].id)
+#     client.setSubtitleStream(subs[0].id, mtype); time.sleep(10)
+#     log(2, 'Stop..')
+#     
+# finally:
+#     log(2, 'Cleanup: Marking %s watched.' % movie.title)
+#     movie.markWatched()
+
+
 #-----------------------
 # Search
 #-----------------------
 
 @register('search,show')
-def test_search_show(plex, user=None):
+def test_search_show(plex, account=None):
     result_server = plex.search(SHOW_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(SHOW_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).search(SHOW_TITLE)
@@ -71,7 +125,7 @@ def test_search_show(plex, user=None):
     
 
 @register('search,show')
-def test_search_with_apostrophe(plex, user=None):
+def test_search_with_apostrophe(plex, account=None):
     show_title = "Marvel's Daredevil"  # Test ' in show title
     result_server = plex.search(show_title)
     result_shows = plex.library.section(SHOW_SECTION).search(show_title)
@@ -83,7 +137,7 @@ def test_search_with_apostrophe(plex, user=None):
 
 
 @register('search,movie')
-def test_search_movie(plex, user=None):
+def test_search_movie(plex, account=None):
     result_server = plex.search(MOVIE_TITLE)
     result_library = plex.library.search(MOVIE_TITLE)
     result_shows = plex.library.section(SHOW_SECTION).search(MOVIE_TITLE)
@@ -99,7 +153,7 @@ def test_search_movie(plex, user=None):
     
 
 @register('search,audio')
-def test_search_audio(plex, user=None):
+def test_search_audio(plex, account=None):
     result_server = plex.search(AUDIO_ARTIST)
     result_library = plex.library.search(AUDIO_ARTIST)
     result_music = plex.library.section(AUDIO_SECTION).search(AUDIO_ARTIST)
@@ -112,7 +166,7 @@ def test_search_audio(plex, user=None):
     
 
 @register('search,audio')
-def test_search_related(plex, user=None):
+def test_search_related(plex, account=None):
     movies = plex.library.section(MOVIE_SECTION)
     movie = movies.get(MOVIE_TITLE)
     related_by_actors = movies.search(actor=movie.actors, maxresults=3)
@@ -130,7 +184,7 @@ def test_search_related(plex, user=None):
     
 
 @register('search,show')
-def test_crazy_search(plex, user=None):
+def test_crazy_search(plex, account=None):
     movies = plex.library.section(MOVIE_SECTION)
     movie = movies.get('Jurassic World')
     log(2, u'Search by Actor: "Chris Pratt"')
@@ -151,7 +205,7 @@ def test_crazy_search(plex, user=None):
 #-----------------------
 
 @register('navigate,movie,show')
-def test_navigate_to_movie(plex, user=None):
+def test_navigate_to_movie(plex, account=None):
     result_library = plex.library.get(MOVIE_TITLE)
     result_movies = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     log(2, 'Navigating to: %s' % MOVIE_TITLE)
@@ -162,7 +216,7 @@ def test_navigate_to_movie(plex, user=None):
 
 
 @register('navigate,movie,show')
-def test_navigate_to_show(plex, user=None):
+def test_navigate_to_show(plex, account=None):
     result_shows = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     log(2, 'Navigating to: %s' % SHOW_TITLE)
     log(2, 'Result Shows: %s' % result_shows)
@@ -170,7 +224,7 @@ def test_navigate_to_show(plex, user=None):
 
 
 @register('navigate,show')
-def test_navigate_around_show(plex, user=None):
+def test_navigate_around_show(plex, account=None):
     show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     seasons = show.seasons()
     season = show.season(SHOW_SEASON)
@@ -192,7 +246,7 @@ def test_navigate_around_show(plex, user=None):
 
 
 @register('navigate,audio')
-def test_navigate_around_artist(plex, user=None):
+def test_navigate_around_artist(plex, account=None):
     artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
     albums = artist.albums()
     album = artist.album(AUDIO_ALBUM)
@@ -218,7 +272,7 @@ def test_navigate_around_artist(plex, user=None):
 #-----------------------
 
 @register('action,movie')
-def test_mark_movie_watched(plex, user=None):
+def test_mark_movie_watched(plex, account=None):
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     movie.markUnwatched()
     log(2, 'Marking movie watched: %s' % movie)
@@ -232,13 +286,13 @@ def test_mark_movie_watched(plex, user=None):
 
 
 @register('action')
-def test_refresh_section(plex, user=None):
+def test_refresh_section(plex, account=None):
     shows = plex.library.section(MOVIE_SECTION)
     shows.refresh()
     
 
 @register('action,movie')
-def test_refresh_video(plex, user=None):
+def test_refresh_video(plex, account=None):
     result = plex.search(MOVIE_TITLE)
     result[0].refresh()
 
@@ -248,7 +302,7 @@ def test_refresh_video(plex, user=None):
 #-----------------------
 
 @register('meta,movie')
-def test_partial_video(plex, user=None):
+def test_partial_video(plex, account=None):
     movie_title = 'Bedside Detective'
     result = plex.search(movie_title)
     log(2, 'Title: %s' % result[0].title)
@@ -257,7 +311,7 @@ def test_partial_video(plex, user=None):
 
 
 @register('meta,movie,show')
-def test_list_media_files(plex, user=None):
+def test_list_media_files(plex, account=None):
     # Fetch file names from the tv show
     episode_files = []
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()[-1]
@@ -279,7 +333,7 @@ def test_list_media_files(plex, user=None):
 
 
 @register('meta,movie')
-def test_list_video_tags(plex, user=None):
+def test_list_video_tags(plex, account=None):
     movies = plex.library.section(MOVIE_SECTION)
     movie = movies.get(MOVIE_TITLE)
     log(2, 'Countries: %s' % movie.countries[0:3])
@@ -301,7 +355,7 @@ def test_list_video_tags(plex, user=None):
 
 
 @register('client')
-def test_list_video_streams(plex, user=None):
+def test_list_video_streams(plex, account=None):
     movie = plex.library.section(MOVIE_SECTION).get('John Wick')
     videostreams = [s.language for s in movie.videoStreams]
     audiostreams = [s.language for s in movie.audioStreams]
@@ -315,7 +369,7 @@ def test_list_video_streams(plex, user=None):
 
 
 @register('meta,audio')
-def test_list_audio_tags(plex, user=None):
+def test_list_audio_tags(plex, account=None):
     section = plex.library.section(AUDIO_SECTION)
     artist = section.get(AUDIO_ARTIST)
     track = artist.get(AUDIO_TRACK)
@@ -334,7 +388,7 @@ def test_list_audio_tags(plex, user=None):
 
 
 @register('meta,show')
-def test_is_watched(plex, user=None):
+def test_is_watched(plex, account=None):
     show = plex.library.section(SHOW_SECTION).get(SHOW_TITLE)
     episode = show.get(SHOW_EPISODE)
     log(2, '%s isWatched: %s' % (episode.title, episode.isWatched))
@@ -343,7 +397,7 @@ def test_is_watched(plex, user=None):
 
 
 @register('meta,movie')
-def test_fetch_details_not_in_search_result(plex, user=None):
+def test_fetch_details_not_in_search_result(plex, account=None):
     # Search results only contain 3 actors per movie. This text checks there
     # are more than 3 results in the actor list (meaning it fetched the detailed
     # information behind the scenes).
@@ -354,7 +408,7 @@ def test_fetch_details_not_in_search_result(plex, user=None):
 
 
 @register('movie,audio')
-def test_stream_url(plex, user=None):
+def test_stream_url(plex, account=None):
     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()[-1]
     track = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST).get(AUDIO_TRACK)
@@ -368,7 +422,7 @@ def test_stream_url(plex, user=None):
 #-----------------------
 
 @register('queue')
-def test_play_queues(plex, user=None):
+def test_play_queues(plex, account=None):
     episode = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).get(SHOW_EPISODE)
     playqueue = plex.createPlayQueue(episode)
     assert len(playqueue.items) == 1, 'No items in play queue.'
@@ -381,20 +435,20 @@ def test_play_queues(plex, user=None):
 #-----------------------
 
 @register('client')
-def test_list_clients(plex, user=None):
+def test_list_clients(plex, account=None):
     clients = [c.title for c in plex.clients()]
     log(2, 'Clients: %s' % ', '.join(clients or []))
     assert clients, 'Server is not listing any clients.'
 
 
 @register('client')
-def test_client_navigation(plex, user=None):
+def test_client_navigation(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     _navigate(plex, client)
     
 
 @register('client,proxy')
-def test_client_navigation_via_proxy(plex, user=None):
+def test_client_navigation_via_proxy(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
     _navigate(plex, client)
@@ -433,78 +487,85 @@ def _navigate(plex, client):
 
 
 @register('client')
-def test_video_playback(plex, user=None):
+def test_video_playback(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     _video_playback(plex, client)
 
 
 @register('client,proxy')
-def test_video_playback_via_proxy(plex, user=None):
+def test_video_playback_via_proxy(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
     _video_playback(plex, client)
 
 
 def _video_playback(plex, client):
-    mtype = 'video'
-    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-    subs = [s for s in movie.subtitleStreams if s.language == 'English']
-    log(2, 'Client: %s (%s)' % (client.title, client.product))
-    log(2, 'Capabilities: %s' % client.protocolCapabilities)
-    log(2, 'Playing to %s..' % movie.title)
-    client.playMedia(movie); time.sleep(5)
-    log(2, 'Pause..')
-    client.pause(mtype); time.sleep(2)
-    log(2, 'Step Forward..')
-    client.stepForward(mtype); time.sleep(5)
-    log(2, 'Play..')
-    client.play(mtype); time.sleep(3)
-    log(2, 'Seek to 10m..')
-    client.seekTo(10*60*1000); time.sleep(5)
-    log(2, 'Disable Subtitles..')
-    client.setSubtitleStream(0, mtype); time.sleep(10)
-    log(2, 'Load English Subtitles %s..' % subs[0].id)
-    client.setSubtitleStream(subs[0].id, mtype); time.sleep(10)
-    log(2, 'Stop..')
-    client.stop(mtype); time.sleep(1)
+    try:
+        mtype = 'video'
+        movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+        subs = [s for s in movie.subtitleStreams if s.language == 'English']
+        log(2, 'Client: %s (%s)' % (client.title, client.product))
+        log(2, 'Capabilities: %s' % client.protocolCapabilities)
+        log(2, 'Playing to %s..' % movie.title)
+        client.playMedia(movie); time.sleep(5)
+        log(2, 'Pause..')
+        client.pause(mtype); time.sleep(2)
+        log(2, 'Step Forward..')
+        client.stepForward(mtype); time.sleep(5)
+        log(2, 'Play..')
+        client.play(mtype); time.sleep(3)
+        log(2, 'Seek to 10m..')
+        client.seekTo(10*60*1000); time.sleep(5)
+        log(2, 'Disable Subtitles..')
+        client.setSubtitleStream(0, mtype); time.sleep(10)
+        log(2, 'Load English Subtitles %s..' % subs[0].id)
+        client.setSubtitleStream(subs[0].id, mtype); time.sleep(10)
+        log(2, 'Stop..')
+        client.stop(mtype); time.sleep(1)
+    finally:
+        log(2, 'Cleanup: Marking %s watched.' % movie.title)
+        movie.markWatched()
 
 
 @register('client')
-def test_client_timeline(plex, user=None):
+def test_client_timeline(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     _test_timeline(plex, client)
 
 
 @register('client,proxy')
-def test_client_timeline_via_proxy(plex, user=None):
+def test_client_timeline_via_proxy(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     client.proxyThroughServer()
     _test_timeline(plex, client)
 
 
 def _test_timeline(plex, client):
-    mtype = 'video'
-    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
-    movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-    time.sleep(30)  # previous test may have played media..
-    playing = client.isPlayingMedia()
-    log(2, 'Playing Media: %s' % playing)
-    assert playing is False, 'isPlayingMedia() should have returned False.'
-    client.playMedia(movie); time.sleep(30)
-    playing = client.isPlayingMedia()
-    log(2, 'Playing Media: %s' % playing)
-    assert playing is True, 'isPlayingMedia() should have returned True.'
-    client.stop(mtype); time.sleep(30)
-    playing = client.isPlayingMedia()
-    log(2, 'Playing Media: %s' % playing)
-    assert playing is False, 'isPlayingMedia() should have returned False.'
+    try:
+        mtype = 'video'
+        client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+        movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
+        time.sleep(30)  # previous test may have played media..
+        playing = client.isPlayingMedia()
+        log(2, 'Playing Media: %s' % playing)
+        assert playing is False, 'isPlayingMedia() should have returned False.'
+        client.playMedia(movie); time.sleep(30)
+        playing = client.isPlayingMedia()
+        log(2, 'Playing Media: %s' % playing)
+        assert playing is True, 'isPlayingMedia() should have returned True.'
+        client.stop(mtype); time.sleep(30)
+        playing = client.isPlayingMedia()
+        log(2, 'Playing Media: %s' % playing)
+        assert playing is False, 'isPlayingMedia() should have returned False.'
+    finally:
+        log(2, 'Cleanup: Marking %s watched.' % movie.title)
+        movie.markWatched()
 
 
 # TODO: MAKE THIS WORK..
 # @register('client')
-def test_sync_items(plex, user=None):
-    user = MyPlexUser('user', 'pass')
-    device = user.getDevice('device-uuid')
+def test_sync_items(plex, account=None):
+    device = account.getDevice('device-uuid')
     # fetch the sync items via the device sync list
     for item in device.sync_items():
         # fetch the media object associated with the sync item
@@ -521,33 +582,67 @@ def test_sync_items(plex, user=None):
 # MyPlex Resources
 #-----------------------
 
+@register('myplex')
+def test_myplex_accounts(plex, account=None):
+    assert account, 'Must specify username, password & resource to run this test.'
+    log(2, 'MyPlexAccount:')
+    log(4, 'username: %s' % account.username)
+    log(4, 'authenticationToken: %s' % account.authenticationToken)
+    log(4, 'email: %s' % account.email)
+    log(4, 'home: %s' % account.home)
+    log(4, 'queueEmail: %s' % account.queueEmail)
+    assert account.username, 'Account has no username'
+    assert account.authenticationToken, 'Account has no authenticationToken'
+    assert account.email, 'Account has no email'
+    assert account.home is not None, 'Account has no home'
+    assert account.queueEmail, 'Account has no queueEmail'
+    account = plex.account()
+    log(2, 'Local PlexServer.account():')
+    log(4, 'username: %s' % account.username)
+    log(4, 'authToken: %s' % account.authToken)
+    log(4, 'signInState: %s' % account.signInState)
+    assert account.username, 'Account has no username'
+    assert account.authToken, 'Account has no authToken'
+    assert account.signInState, 'Account has no signInState'
+
+
 @register('myplex,resource')
-def test_myplex_resources(plex, user=None):
-    assert user, 'Must specify username, password & resource to run this test.'
-    resources = user.resources()
+def test_myplex_resources(plex, account=None):
+    assert account, 'Must specify username, password & resource to run this test.'
+    resources = account.resources()
     for resource in resources:
         name = resource.name or 'Unknown'
         connections = [c.uri for c in resource.connections]
         connections = ', '.join(connections) if connections else 'None'
         log(2, '%s (%s): %s' % (name, resource.product, connections))
-    assert resources, 'No resources found for user: %s' % user.name
+    assert resources, 'No resources found for account: %s' % account.name
     
 
 @register('myplex,devices')
-def test_myplex_devices(plex, user=None):
-    assert user, 'Must specify username, password & resource to run this test.'
-    devices = user.devices()
+def test_myplex_devices(plex, account=None):
+    assert account, 'Must specify username, password & resource to run this test.'
+    devices = account.devices()
     for device in devices:
         name = device.name or 'Unknown'
         connections = ', '.join(device.connections) if device.connections else 'None'
         log(2, '%s (%s): %s' % (name, device.product, connections))
-    assert devices, 'No devices found for user: %s' % user.name
+    assert devices, 'No devices found for account: %s' % account.name
+
+
+@register('myplex')
+def test_myplex_users(plex, account=None):
+    users = account.users()
+    assert users, 'Found no users on account: %s' % account.name
+    log(2, 'Found %s users.' % len(users))
+    user = account.user('sdfsdfplex')
+    log(2, 'Found user: %s' % user)
+    assert users, 'Could not find user sdfsdfplex'
     
 
 @register('myplex,devices')
-def test_myplex_connect_to_device(plex, user=None):
-    assert user, 'Must specify username, password & resource to run this test.'
-    devices = user.devices()
+def test_myplex_connect_to_device(plex, account=None):
+    assert account, 'Must specify username, password & resource to run this test.'
+    devices = account.devices()
     for device in devices:
         if device.name == CLIENT and len(device.connections):
             break
@@ -562,8 +657,8 @@ if __name__ == '__main__':
     #  2. Pass in --username, --password, and --resource.
     #  3. Pass in --baseurl, --token
     parser = argparse.ArgumentParser(description='Run PlexAPI tests.')
-    parser.add_argument('-u', '--username', help='Username for the Plex server.')
-    parser.add_argument('-p', '--password', help='Password for the Plex server.')
+    parser.add_argument('-u', '--username', help='Username for your MyPlex account.')
+    parser.add_argument('-p', '--password', help='Password for your MyPlex account.')
     parser.add_argument('-r', '--resource', help='Name of the Plex resource (requires user/pass).')
     parser.add_argument('-b', '--baseurl', help='Baseurl needed for auth token authentication')
     parser.add_argument('-t', '--token', help='Auth token (instead of user/pass)')
