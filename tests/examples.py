@@ -8,50 +8,49 @@ run this example suite with the following command:
 >> python examples.py -u <USERNAME> -p <PASSWORD> -s <SERVERNAME>
 """
 import argparse, sys
+from collections import defaultdict
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 from utils import fetch_server, iter_tests, register
 
 
 @register()
-def list_all_unwatched_content(plex):
-    """ Example 1: List all unwatched content in library """
-    for section in plex.library.sections():
-        print('Unwatched content in %s:' % section.title)
-        for video in section.unwatched():
-            print('  %s' % video.title)
+def list_unwatched_movies(plex):
+    """ Example 1: List all unwatched movies. """
+    movies = plex.library.section('Movies')
+    for video in movies.search(unwatched=True, maxresults=10, sort='addedAt:desc'):
+        print('  %s' % video.title)
 
 
 @register()
-def mark_all_conan_episodes_watched(plex):
+def mark_all_friends_episodes_watched(plex):
     """ Example 2: Mark all Friends episodes watched. """
     plex.library.section('TV Shows').get('Friends').markWatched()
 
 
 @register()
-def list_all_clients(plex):
-    """ Example 3: List all Clients connected to the Server. """
+def list_connected_clients(plex):
+    """ Example 3: List clients connected to the server. """
     for client in plex.clients():
-        print(client.name)
-    else:
-        print('No clients')
+        print(client.title)
 
 
 @register()
-def play_avatar_on_iphone(plex):
+def play_avatar_on_client(plex):
     """ Example 4: Play the Movie Avatar on my iPhone.
         Note: Client must be on same network as server.
     """
     avatar = plex.library.section('Movies').get('Avatar')
-    client = plex.client("iphone-mike")
+    client = plex.client('iphone-mike')
     client.playMedia(avatar)
 
 
 @register()
-def search(plex):
-    """ Example 5: List all content with the word 'Game' in the title. """
-    for video in plex.search('Game'):
-        print('%s (%s)' % (video.title, video.TYPE))
+def list_animated_movies(plex):
+    """ Example 5: List all animated movies from the 90s. """
+    movies = plex.library.section('Movies')
+    for video in movies.search(genre='animation', decade=1990):
+        print('  %s (%s)' % (video.title, video.year))
 
 
 @register()
@@ -59,8 +58,7 @@ def follow_the_talent(plex):
     """ Example 6: List all movies directed by the same person as Jurassic Park. """
     movies = plex.library.section('Movies')
     jurassic_park = movies.get('Jurassic Park')
-    director = jurassic_park.directors[0]
-    for movie in movies.search(None, director=director):
+    for movie in movies.search(director=jurassic_park.directors):
         print(movie.title)
 
 
@@ -77,8 +75,32 @@ def get_stream_url(plex):
     """ Example 8: Get a URL you can open in VLC, MPV, etc. """
     jurassic_park = plex.library.section('Movies').get('Jurassic Park')
     print('Try running the following command:')
-    print('vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600'))
+    print('vlc "%s"' % jurassic_park.getStreamURL(videoResolution='800x600'))
+    
 
+@register()
+def most_streamed_titles(plex):
+    """ Example 9: List the most played movies. """
+    popular = defaultdict(int)
+    for item in plex.history():
+        if item.TYPE == 'movie':
+            popular[item.title] += 1
+    popular = sorted(popular.items(), key=lambda x:x[1], reverse=True)
+    for title, count in popular[:5]:
+        print('%s (%s plays)' % (title, count))
+        
+
+@register()
+def most_active_users(plex):
+    """ Example 10: List the most active users. """
+    users = defaultdict(int)
+    for item in plex.history():
+        print(item.TYPE)
+        users[item.username] += 1
+    users = sorted(users.items(), key=lambda x:x[1], reverse=True)
+    for user, count in users[:5]:
+        print('%s (%s plays)' % (user, count))
+    
 
 if __name__ == '__main__':
     # There are three ways to authenticate:

@@ -4,18 +4,19 @@ PlexPlaylist
 """
 from plexapi import utils
 from plexapi.utils import cast, toDatetime
-from plexapi.utils import PlexPartialObject
+from plexapi.utils import PlexPartialObject, Playable
 NA = utils.NA
 
 
 @utils.register_libtype
-class Playlist(PlexPartialObject):
+class Playlist(PlexPartialObject, Playable):
     TYPE = 'playlist'
 
     def __init__(self, server, data, initpath):
         super(Playlist, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
+        Playable._loadData(self, data)
         self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
         self.composite = data.attrib.get('composite', NA)  # url to thumbnail
         self.duration = cast(int, data.attrib.get('duration', NA))

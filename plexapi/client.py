@@ -18,16 +18,7 @@ class PlexClient(object):
         self.token = token
         self.session = session or requests.Session()
         self.server = server
-        data = data if data is not None else self.connect()
-        self.deviceClass = data.attrib.get('deviceClass')
-        self.machineIdentifier = data.attrib.get('machineIdentifier')
-        self.product = data.attrib.get('product')
-        self.protocol = data.attrib.get('protocol')
-        self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
-        self.protocolVersion = data.attrib.get('protocolVersion')
-        self.platform = data.attrib.get('platform')
-        self.platformVersion = data.attrib.get('platformVersion')
-        self.title = data.attrib.get('title') or data.attrib.get('name')
+        self._loadData(data) if data is not None else self.connect()
         # active session details
         self.device = data.attrib.get('device')
         self.model = data.attrib.get('model')
@@ -38,9 +29,21 @@ class PlexClient(object):
         self._proxyThroughServer = False
         self._commandId = 0
 
+    def _loadData(self, data):
+        self.deviceClass = data.attrib.get('deviceClass')
+        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.product = data.attrib.get('product')
+        self.protocol = data.attrib.get('protocol')
+        self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
+        self.protocolVersion = data.attrib.get('protocolVersion')
+        self.platform = data.attrib.get('platform')
+        self.platformVersion = data.attrib.get('platformVersion')
+        self.title = data.attrib.get('title') or data.attrib.get('name')
+
     def connect(self):
         try:
-            return self.query('/resources')[0]
+            data = self.query('/resources')[0]
+            self._loadData(data)
         except Exception as err:
             log.error('%s: %s', self.baseurl, err)
             raise NotFound('No client found at: %s' % self.baseurl)
@@ -56,11 +59,12 @@ class PlexClient(object):
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
-    def query(self, path, method=None, **kwargs):
+    def query(self, path, method=None, headers=None, **kwargs):
         url = self.url(path)
         method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
-        response = method(url, headers=self.headers(), timeout=TIMEOUT, **kwargs)
+        headers = dict(self.headers(), **(headers or {}))
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
@@ -78,7 +82,8 @@ class PlexClient(object):
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
             return self.server.query(path, headers=headers)
-        return self.query('/player/%s%s' % (command, utils.joinArgs(params)))
+        path = '/player/%s%s' % (command, utils.joinArgs(params))
+        return self.query(path, headers=headers)
         
     def url(self, path):
         if self.token:
@@ -166,7 +171,6 @@ class PlexClient(object):
         self.sendCommand('playback/setStreams', **params)
         
     # Timeline Commands
-    # TODO: We should properly parse the Timeline XML objects here
     def timeline(self):
         return self.sendCommand('timeline/poll', **{'wait':1, 'commandID':4})
 

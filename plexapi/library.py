@@ -56,7 +56,7 @@ class Library(object):
     def getByKey(self, key):
         return utils.findKey(self.server, key)
         
-    def search(self, title, libtype=None, **kwargs):
+    def search(self, title=None, libtype=None, **kwargs):
         """ Searching within a library section is much more powerful. It seems certain attributes on the media
             objects can be targeted to filter this search down a bit, but I havent found the documentation for
             it. For example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items

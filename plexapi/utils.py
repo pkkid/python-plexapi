@@ -48,7 +48,7 @@ class PlexPartialObject(object):
 
     def __repr__(self):
         clsname = self.__class__.__name__
-        key = self.key.replace('/library/metadata/', '')
+        key = self.key.replace('/library/metadata/', '') if self.key else 'NA'
         title = self.title.replace(' ','.')[0:20].encode('utf8')
         return '<%s:%s:%s>' % (clsname, key, title)
 
