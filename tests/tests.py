@@ -8,10 +8,9 @@ run this test suite with the following command:
 >> python tests.py -u <USERNAME> -p <PASSWORD> -s <SERVERNAME>
 """
 import argparse, sys, time
-from os.path import dirname, abspath
+from os.path import basename, dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 from utils import log, register, safe_client, run_tests
-from plexapi.myplex import MyPlexAccount
 from plexapi.utils import NA
 
 SHOW_SECTION = 'TV Shows'
@@ -24,6 +23,8 @@ AUDIO_SECTION = 'Music'
 AUDIO_ARTIST = 'Beastie Boys'
 AUDIO_ALBUM = 'Licensed To Ill'
 AUDIO_TRACK = 'Brass Monkey'
+PHOTO_SECTION = 'Photos'
+PHOTO_ALBUM = '2015-12-12 - Family Photo for Christmas card'
 CLIENT = 'pkkid-home'
 CLIENT_BASEURL = 'http://192.168.1.131:3005'
 
@@ -77,33 +78,6 @@ def test_sessions(plex, account=None):
         client.stop(mtype); time.sleep(1)
         log(2, 'Cleanup: Marking %s watched.' % movie.title)
         movie.markWatched()
-
-
-# try:
-#     mtype = 'video'
-#     movie = plex.library.section(MOVIE_SECTION).get(MOVIE_TITLE)
-#     subs = [s for s in movie.subtitleStreams if s.language == 'English']
-#     log(2, 'Client: %s (%s)' % (client.title, client.product))
-#     log(2, 'Capabilities: %s' % client.protocolCapabilities)
-#     log(2, 'Playing to %s..' % movie.title)
-#     client.playMedia(movie); time.sleep(5)
-#     log(2, 'Pause..')
-#     client.pause(mtype); time.sleep(2)
-#     log(2, 'Step Forward..')
-#     client.stepForward(mtype); time.sleep(5)
-#     log(2, 'Play..')
-#     client.play(mtype); time.sleep(3)
-#     log(2, 'Seek to 10m..')
-#     client.seekTo(10*60*1000); time.sleep(5)
-#     log(2, 'Disable Subtitles..')
-#     client.setSubtitleStream(0, mtype); time.sleep(10)
-#     log(2, 'Load English Subtitles %s..' % subs[0].id)
-#     client.setSubtitleStream(subs[0].id, mtype); time.sleep(10)
-#     log(2, 'Stop..')
-#     
-# finally:
-#     log(2, 'Cleanup: Marking %s watched.' % movie.title)
-#     movie.markWatched()
 
 
 #-----------------------
@@ -416,6 +390,21 @@ def test_stream_url(plex, account=None):
     log(2, 'Episode: vlc "%s"' % episode.getStreamURL())
     log(2, 'Track: cvlc "%s"' % track.getStreamURL())
     
+
+@register('photo')
+def test_list_photoalbums(plex, account=None):
+    photosection = plex.library.section(PHOTO_SECTION)
+    photoalbums = photosection.all()
+    log(2, 'Listing albums..')
+    for album in photoalbums[:10]:
+        log(4, '%s' % album.title)
+    assert len(photoalbums), 'No photoalbums found.'
+    album = photosection.get(PHOTO_ALBUM)
+    photos = album.photos()
+    for photo in photos[:10]:
+        log(4, '%s (%sx%s)' % (basename(photo.media[0].parts[0].file), photo.media[0].width, photo.media[0].height))
+    assert len(photoalbums), 'No photos found.'
+
 
 #-----------------------
 # Play Queue

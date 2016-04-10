@@ -123,6 +123,8 @@ class Playable(object):
 
 def buildItem(server, elem, initpath, bytag=False):
     libtype = elem.tag if bytag else elem.attrib.get('type')
+    if libtype == 'photo' and elem.tag == 'Directory':
+        libtype = 'photoalbum'
     if libtype in LIBRARY_TYPES:
         cls = LIBRARY_TYPES[libtype]
         return cls(server, elem, initpath)

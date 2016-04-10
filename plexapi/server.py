@@ -6,7 +6,7 @@ import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
-from plexapi import audio, video, playlist  # noqa; required
+from plexapi import audio, video, photo, playlist  # noqa; required
 from plexapi.compat import quote
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound

@@ -26,6 +26,7 @@ class Library(object):
             MovieSection.TYPE: MovieSection,
             ShowSection.TYPE: ShowSection,
             MusicSection.TYPE: MusicSection,
+            PhotoSection.TYPE: PhotoSection,
         }
         path = '/library/sections'
         for elem in self.server.query(path):
@@ -98,6 +99,7 @@ class LibrarySection(object):
         self.title = data.attrib.get('title')
         self.scanner = data.attrib.get('scanner')
         self.language = data.attrib.get('language')
+        # TODO: Add Location
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]
@@ -242,14 +244,26 @@ class MusicSection(LibrarySection):
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TYPE = 'artist'
     
-    def searchShows(self, **kwargs):
+    def searchArtists(self, **kwargs):
         return self.search(libtype='artist', **kwargs)
 
-    def searchEpisodes(self, **kwargs):
+    def searchAlbums(self, **kwargs):
         return self.search(libtype='album', **kwargs)
         
     def searchTracks(self, **kwargs):
         return self.search(libtype='track', **kwargs)
+
+
+class PhotoSection(LibrarySection):
+    ALLOWED_FILTERS = ()
+    ALLOWED_SORT = ()
+    TYPE = 'photo'
+    
+    def searchAlbums(self, **kwargs):
+        return self.search(libtype='photo', **kwargs)
+        
+    def searchPhotos(self, **kwargs):
+        return self.search(libtype='photo', **kwargs)
 
 
 @utils.register_libtype
