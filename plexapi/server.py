@@ -11,6 +11,7 @@ from plexapi.compat import quote
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
+from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
 
@@ -69,6 +70,9 @@ class PlexServer(object):
                 return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
+    def createPlaylist(self, title, items):
+        return Playlist.create(self, title, items)
+
     def createPlayQueue(self, item):
         return PlayQueue.create(self, item)
 
@@ -82,6 +86,8 @@ class PlexServer(object):
         return utils.listItems(self, '/status/sessions/history/all')
         
     def playlists(self):
+        # TODO: Add sort and type options?
+        # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
         return utils.listItems(self, '/playlists')
         
     def playlist(self, title=None):  # noqa

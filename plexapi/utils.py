@@ -92,6 +92,8 @@ class Playable(object):
         self.transcodeSession = findTranscodeSession(self.server, data)
         # data for history details (/status/sessions/history/all)
         self.viewedAt = toDatetime(data.attrib.get('viewedAt', NA))
+        # data for playlist items
+        self.playlistItemID = cast(int, data.attrib.get('playlistItemID', NA))
     
     def getStreamURL(self, **params):
         if self.TYPE not in ('movie', 'episode', 'track'):

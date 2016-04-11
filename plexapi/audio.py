@@ -8,6 +8,7 @@ NA = utils.NA
 
 
 class Audio(PlexPartialObject):
+    TYPE = None
     
     def __init__(self, server, data, initpath):
         super(Audio, self).__init__(data, initpath, server)
@@ -38,6 +39,7 @@ class Audio(PlexPartialObject):
 @utils.register_libtype
 class Artist(Audio):
     TYPE = 'artist'
+    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)
@@ -73,6 +75,7 @@ class Artist(Audio):
 @utils.register_libtype
 class Album(Audio):
     TYPE = 'album'
+    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)
@@ -112,6 +115,7 @@ class Album(Audio):
 @utils.register_libtype
 class Track(Audio, Playable):
     TYPE = 'track'
+    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)

@@ -55,6 +55,7 @@ class Video(PlexPartialObject):
 @utils.register_libtype
 class Movie(Video, Playable):
     TYPE = 'movie'
+    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -101,6 +102,7 @@ class Movie(Video, Playable):
 @utils.register_libtype
 class Show(Video):
     TYPE = 'show'
+    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -162,6 +164,7 @@ class Show(Video):
 @utils.register_libtype
 class Season(Video):
     TYPE = 'season'
+    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -198,6 +201,7 @@ class Season(Video):
 @utils.register_libtype
 class Episode(Video, Playable):
     TYPE = 'episode'
+    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)

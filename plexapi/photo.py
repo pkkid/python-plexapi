@@ -10,6 +10,7 @@ NA = utils.NA
 @utils.register_libtype
 class Photoalbum(PlexPartialObject):
     TYPE = 'photoalbum'
+    LISTTYPE = 'photo'
 
     def __init__(self, server, data, initpath):
         super(Photoalbum, self).__init__(data, initpath, server)
@@ -41,6 +42,7 @@ class Photoalbum(PlexPartialObject):
 @utils.register_libtype
 class Photo(PlexPartialObject):
     TYPE = 'photo'
+    LISTTYPE = 'photo'
 
     def __init__(self, server, data, initpath):
         super(Photo, self).__init__(data, initpath, server)

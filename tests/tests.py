@@ -272,6 +272,72 @@ def test_refresh_video(plex, account=None):
 
 
 #-----------------------
+# Playlists
+#-----------------------
+
+@register('playlist')
+def test_list_playlists(plex, account=None):
+    playlists = plex.playlists()
+    for playlist in playlists:
+        log(2, playlist.title)
+        
+
+@register('playlist')
+def test_create_playlist(plex, account=None):
+    try:
+        # create the playlist
+        title = 'test_create_playlist'
+        log(2, 'Creating playlist %s..' % title)
+        episodes = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()
+        playlist = plex.createPlaylist(title, episodes[:3])
+        items = playlist.items()
+        log(4, 'Title: %s' % playlist.title)
+        log(4, 'Items: %s' % items)
+        log(4, 'Duration: %s min' % int(playlist.duration / 60000.0))
+        assert playlist.title == title, 'Playlist not created successfully.'
+        assert len(items) == 3, 'Playlist does not contain 3 items.'
+        assert items[0].ratingKey == episodes[0].ratingKey, 'Items not in proper order [0a].'
+        assert items[1].ratingKey == episodes[1].ratingKey, 'Items not in proper order [1a].'
+        assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2a].'
+        # move items around (b)
+        log(2, 'Testing move items..')
+        playlist.moveItem(items[1])
+        items = playlist.items()
+        assert items[0].ratingKey == episodes[1].ratingKey, 'Items not in proper order [0b].'
+        assert items[1].ratingKey == episodes[0].ratingKey, 'Items not in proper order [1b].'
+        assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2b].'
+        # move items around (c)
+        playlist.moveItem(items[0], items[1])
+        items = playlist.items()
+        assert items[0].ratingKey == episodes[0].ratingKey, 'Items not in proper order [0c].'
+        assert items[1].ratingKey == episodes[1].ratingKey, 'Items not in proper order [1c].'
+        assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2c].'
+        # add an item
+        log(2, 'Testing add item: %s' % episodes[3])
+        playlist.addItems(episodes[3])
+        items = playlist.items()
+        log(4, '4th Item: %s' % items[3])
+        assert items[3].ratingKey == episodes[3].ratingKey, 'Missing added item: %s' % episodes[3]
+        # add two items
+        log(2, 'Testing add item: %s' % episodes[4:6])
+        playlist.addItems(episodes[4:6])
+        items = playlist.items()
+        log(4, '5th+ Items: %s' % items[4:])
+        assert items[4].ratingKey == episodes[4].ratingKey, 'Missing added item: %s' % episodes[4]
+        assert items[5].ratingKey == episodes[5].ratingKey, 'Missing added item: %s' % episodes[5]
+        assert len(items) == 6, 'Playlist should have 6 items, %s found' % len(items)
+        # remove item
+        toremove = items[3]
+        log(2, 'Testing remove item: %s' % toremove)
+        playlist.removeItem(toremove)
+        items = playlist.items()
+        assert toremove not in items, 'Removed item still in playlist: %s' % items[3]
+        assert len(items) == 5, 'Playlist should have 5 items, %s found' % len(items)
+    finally:
+        playlist.delete()
+
+
+#-----------------------
 # Metadata
 #-----------------------
 
