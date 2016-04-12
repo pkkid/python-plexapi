@@ -26,17 +26,6 @@ from plexapi.server import PlexServer
 plex = PlexServer()   # Defaults to localhost:32400
 ```
 
-If you want to avoid logging into MyPlex and you already know your auth token
-string, you can use the PlexServer object directly as above, but passing in
-the baseurl and auth token directly.
-
-```python
-from plexapi.server import MyPlexAccount
-baseurl = 'http://plexserver:32400'
-token = '2ffLuB84dqLswk9skLos'
-plex = PlexServer(baseurl, token)
-```
-
 If you are running on a separate network or using Plex Users you can log
 into MyPlex to get a PlexServer instance. An example of this is below. NOTE:
 Servername below is the name of the server (not the hostname and port).  If
@@ -47,6 +36,17 @@ available libraries.
 from plexapi.myplex import MyPlexAccount
 account = MyPlexAccount.signin('<USERNAME>', '<PASSWORD>')
 plex = account.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
+```
+
+If you want to avoid logging into MyPlex and you already know your auth token
+string, you can use the PlexServer object directly as above, but passing in
+the baseurl and auth token directly.
+
+```python
+from plexapi.server import MyPlexAccount
+baseurl = 'http://plexserver:32400'
+token = '2ffLuB84dqLswk9skLos'
+plex = PlexServer(baseurl, token)
 ```
 
 
