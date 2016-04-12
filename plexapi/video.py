@@ -14,6 +14,7 @@ class Video(PlexPartialObject):
         super(Video, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
+        self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.key = data.attrib.get('key', NA)
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
@@ -50,12 +51,14 @@ class Video(PlexPartialObject):
 
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
+        
+    def section(self):
+        return self.server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
 class Movie(Video, Playable):
     TYPE = 'movie'
-    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -102,7 +105,6 @@ class Movie(Video, Playable):
 @utils.register_libtype
 class Show(Video):
     TYPE = 'show'
-    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -113,7 +115,7 @@ class Show(Video):
         self.duration = utils.cast(int, data.attrib.get('duration', NA))
         self.guid = data.attrib.get('guid', NA)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.location = utils.findLocation(data)
+        self.location = utils.findLocations(data, single=True)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating', NA))
         self.studio = data.attrib.get('studio', NA)
@@ -164,7 +166,6 @@ class Show(Video):
 @utils.register_libtype
 class Season(Video):
     TYPE = 'season'
-    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)
@@ -201,7 +202,6 @@ class Season(Video):
 @utils.register_libtype
 class Episode(Video, Playable):
     TYPE = 'episode'
-    LISTTYPE = 'video'
 
     def _loadData(self, data):
         Video._loadData(self, data)

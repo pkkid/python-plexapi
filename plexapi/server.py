@@ -37,6 +37,7 @@ class PlexServer(object):
         self.transcoderActiveVideoSessions = int(data.attrib.get('transcoderActiveVideoSessions', 0))
         self.updatedAt = int(data.attrib.get('updatedAt', 0))
         self.version = data.attrib.get('version')
+        self._library = None  # cached library
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.baseurl)
@@ -50,7 +51,9 @@ class PlexServer(object):
 
     @property
     def library(self):
-        return Library(self, self.query('/library/'))
+        if not self._library:
+            self._library = Library(self, self.query('/library/'))
+        return self._library
 
     def account(self):
         data = self.query('/myplex/account')

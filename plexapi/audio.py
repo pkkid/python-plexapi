@@ -14,6 +14,7 @@ class Audio(PlexPartialObject):
         super(Audio, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
+        self.listType = 'audio'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.index = data.attrib.get('index', NA)
         self.key = data.attrib.get('key', NA)
@@ -34,19 +35,21 @@ class Audio(PlexPartialObject):
     
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
+    
+    def section(self):
+        return self.server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
 class Artist(Audio):
     TYPE = 'artist'
-    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)
         self.art = data.attrib.get('art', NA)
         self.guid = data.attrib.get('guid', NA)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
-        self.location = utils.findLocation(data)
+        self.location = utils.findLocations(data, single=True)
         if self.isFullObject():
             self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
@@ -75,7 +78,6 @@ class Artist(Audio):
 @utils.register_libtype
 class Album(Audio):
     TYPE = 'album'
-    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)
@@ -115,7 +117,6 @@ class Album(Audio):
 @utils.register_libtype
 class Track(Audio, Playable):
     TYPE = 'track'
-    LISTTYPE = 'audio'
 
     def _loadData(self, data):
         Audio._loadData(self, data)

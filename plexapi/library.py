@@ -11,11 +11,12 @@ from plexapi.exceptions import BadRequest, NotFound
 class Library(object):
 
     def __init__(self, server, data):
-        self.server = server
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.server = server
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
+        self._sectionsByID = {}  # cached section UUIDs
 
     def __repr__(self):
         return '<Library:%s>' % self.title1.encode('utf8')
@@ -33,7 +34,9 @@ class Library(object):
             stype = elem.attrib['type']
             if stype in SECTION_TYPES:
                 cls = SECTION_TYPES[stype]
-                items.append(cls(self.server, elem, path))
+                section = cls(self.server, elem, path)
+                self._sectionsByID[section.key] = section
+                items.append(section)
         return items
 
     def section(self, title=None):
@@ -41,6 +44,11 @@ class Library(object):
             if item.title == title:
                 return item
         raise NotFound('Invalid library section: %s' % title)
+        
+    def sectionByID(self, sectionID):
+        if not self._sectionsByID:
+            self.sections()
+        return self._sectionsByID[sectionID]
 
     def all(self):
         return utils.listItems(self.server, '/library/all')
@@ -94,12 +102,23 @@ class LibrarySection(object):
     def __init__(self, server, data, initpath):
         self.server = server
         self.initpath = initpath
-        self.type = data.attrib.get('type')
+        self.agent = data.attrib.get('agent')
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.art = data.attrib.get('art')
+        self.composite = data.attrib.get('composite')
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
+        self.filters = data.attrib.get('filters')
         self.key = data.attrib.get('key')
-        self.title = data.attrib.get('title')
-        self.scanner = data.attrib.get('scanner')
         self.language = data.attrib.get('language')
-        # TODO: Add Location
+        self.language = data.attrib.get('language')
+        self.locations = utils.findLocations(data)
+        self.refreshing = utils.cast(bool, data.attrib.get('refreshing'))
+        self.scanner = data.attrib.get('scanner')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.uuid = data.attrib.get('uuid')
 
     def __repr__(self):
         title = self.title.replace(' ','.')[0:20]

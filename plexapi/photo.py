@@ -10,12 +10,12 @@ NA = utils.NA
 @utils.register_libtype
 class Photoalbum(PlexPartialObject):
     TYPE = 'photoalbum'
-    LISTTYPE = 'photo'
 
     def __init__(self, server, data, initpath):
         super(Photoalbum, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
+        self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.art = data.attrib.get('art', NA)
         self.composite = data.attrib.get('composite', NA)
@@ -37,17 +37,20 @@ class Photoalbum(PlexPartialObject):
     def photo(self, title):
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
+    
+    def section(self):
+        return self.server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
 class Photo(PlexPartialObject):
     TYPE = 'photo'
-    LISTTYPE = 'photo'
 
     def __init__(self, server, data, initpath):
         super(Photo, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
+        self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.index = utils.cast(int, data.attrib.get('index', NA))
         self.key = data.attrib.get('key', NA)

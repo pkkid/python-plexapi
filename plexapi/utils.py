@@ -163,11 +163,14 @@ def findItem(server, path, title):
     raise NotFound('Unable to find item: %s' % title)
 
 
-def findLocation(data):
-    elem = data.find('Location')
-    if elem is not None:
-        return elem.attrib.get('path')
-    return None
+def findLocations(data, single=False):
+    locations = []
+    for elem in data:
+        if elem.tag == 'Location':
+            locations.append(elem.attrib.get('path'))
+    if single:
+        return locations[0] if locations else None
+    return locations
     
 
 def findPlayer(server, data):

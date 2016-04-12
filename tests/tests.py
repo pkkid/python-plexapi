@@ -284,12 +284,12 @@ def test_list_playlists(plex, account=None):
 
 @register('playlist')
 def test_create_playlist(plex, account=None):
+    # create the playlist
+    title = 'test_create_playlist'
+    log(2, 'Creating playlist %s..' % title)
+    episodes = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()
+    playlist = plex.createPlaylist(title, episodes[:3])
     try:
-        # create the playlist
-        title = 'test_create_playlist'
-        log(2, 'Creating playlist %s..' % title)
-        episodes = plex.library.section(SHOW_SECTION).get(SHOW_TITLE).episodes()
-        playlist = plex.createPlaylist(title, episodes[:3])
         items = playlist.items()
         log(4, 'Title: %s' % playlist.title)
         log(4, 'Items: %s' % items)

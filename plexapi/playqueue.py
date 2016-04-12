@@ -23,11 +23,9 @@ class PlayQueue(object):
 
     @classmethod
     def create(cls, server, video, shuffle=0, continuous=0):
-        # TODO: Fix this up, create tests..
-        # NOTE: I have not yet figured out what __GID__ is below or where the proper value
-        # can be obtained. However, the good news is passing anything in seems to work.
+        uuid = video.section().uuid
         path = '/playQueues%s' % utils.joinArgs({
-            'uri': 'library://__GID__/item/%s' % video.key,
+            'uri': 'library://%s/item/%s' % (uuid, video.key),
             'key': video.key,
             'type': 'video',
             'shuffle': shuffle,
