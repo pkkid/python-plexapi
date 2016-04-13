@@ -253,13 +253,12 @@ def rget(obj, attrstr, default=None, delim='.'):
     
 
 def searchType(libtype):
-    SEARCHTYPESSTRS = [str(k) for k in SEARCHTYPES.keys()]
-    if libtype in SEARCHTYPES + SEARCHTYPESSTRS:
+    libtype = str(libtype)
+    if libtype in [str(v) for v in SEARCHTYPES.values()]:
         return libtype
-    stype = SEARCHTYPES.get(libtype.lower())
-    if not stype:
-        raise NotFound('Unknown libtype: %s' % libtype)
-    return stype
+    if SEARCHTYPES.get(libtype) is not None:
+        return SEARCHTYPES[libtype]
+    raise NotFound('Unknown libtype: %s' % libtype)
 
 
 def threaded(callback, listargs):
