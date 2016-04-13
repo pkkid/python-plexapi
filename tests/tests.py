@@ -457,6 +457,14 @@ def test_stream_url(plex, account=None):
     log(2, 'Track: cvlc "%s"' % track.getStreamURL())
     
 
+@register('audio')
+def test_list_audioalbums(plex, account=None):
+    music = plex.library.section(AUDIO_SECTION)
+    albums = music.albums()
+    for album in albums:
+        log(2, '%s - %s [%s]' % (album.artist().title, album.title, album.year))
+
+
 @register('photo')
 def test_list_photoalbums(plex, account=None):
     photosection = plex.library.section(PHOTO_SECTION)
@@ -570,7 +578,7 @@ def _video_playback(plex, client):
         log(2, 'Play..')
         client.play(mtype); time.sleep(3)
         log(2, 'Seek to 10m..')
-        client.seekTo(10*60*1000); time.sleep(5)
+        client.seekTo(10 * 60 * 1000); time.sleep(5)
         log(2, 'Disable Subtitles..')
         client.setSubtitleStream(0, mtype); time.sleep(10)
         log(2, 'Load English Subtitles %s..' % subs[0].id)

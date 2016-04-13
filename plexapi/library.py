@@ -263,6 +263,9 @@ class MusicSection(LibrarySection):
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TYPE = 'artist'
     
+    def albums(self):
+        return utils.listItems(self.server, '/library/sections/%s/albums' % self.key)
+
     def searchArtists(self, **kwargs):
         return self.search(libtype='artist', **kwargs)
 

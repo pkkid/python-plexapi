@@ -53,15 +53,11 @@ class PlexPartialObject(object):
         return '<%s:%s:%s>' % (clsname, key, title)
 
     def __getattr__(self, attr):
-        if attr == 'key' or self.__dict__.get(attr):
+        if attr == 'key' or self.__dict__.get(attr) != NA:
             return self.__dict__.get(attr)
         if self.isPartialObject():
             self.reload()
         return self.__dict__[attr]
-
-    def __setattr__(self, attr, value):
-        if value != NA:
-            super(PlexPartialObject, self).__setattr__(attr, value)
 
     def _loadData(self, data):
         raise Exception('Abstract method not implemented.')
