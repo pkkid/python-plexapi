@@ -22,12 +22,12 @@ class PlayQueue(object):
         self.items = [utils.buildItem(server, elem, initpath) for elem in data]
 
     @classmethod
-    def create(cls, server, video, shuffle=0, continuous=0):
-        uuid = video.section().uuid
+    def create(cls, server, item, shuffle=0, continuous=0):
+        uuid = item.section().uuid
         path = '/playQueues%s' % utils.joinArgs({
-            'uri': 'library://%s/item/%s' % (uuid, video.key),
-            'key': video.key,
-            'type': 'video',
+            'uri': 'library://%s/item/%s' % (uuid, item.key),
+            'key': item.key,
+            'type': item.listType,
             'shuffle': shuffle,
             'continuous': continuous,
             'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,

@@ -345,7 +345,9 @@ def test_play_playlist(plex, account=None):
     print(album.__dict__)
     playlist = plex.createPlaylist('test_play_playlist', album)
     try:
-        print(playlist)
+        log(2, 'Playing playlist: %s' % playlist)
+        client.playMedia(playlist)
+        raise Exception('Test Not Finished')
     finally:
         playlist.delete()
 
