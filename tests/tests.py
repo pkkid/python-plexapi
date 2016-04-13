@@ -337,6 +337,18 @@ def test_create_playlist(plex, account=None):
         playlist.delete()
 
 
+@register('playlist,client')
+def test_play_playlist(plex, account=None):
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+    artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
+    album = artist.album(AUDIO_ALBUM)
+    print(album.__dict__)
+    playlist = plex.createPlaylist('test_play_playlist', album)
+    try:
+        print(playlist)
+    finally:
+        playlist.delete()
+
 #-----------------------
 # Metadata
 #-----------------------
@@ -461,7 +473,7 @@ def test_stream_url(plex, account=None):
 def test_list_audioalbums(plex, account=None):
     music = plex.library.section(AUDIO_SECTION)
     albums = music.albums()
-    for album in albums:
+    for album in albums[:10]:
         log(2, '%s - %s [%s]' % (album.artist().title, album.title, album.year))
 
 

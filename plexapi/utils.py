@@ -7,7 +7,7 @@ from datetime import datetime
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
-
+from plexapi import log
 
 # Search Types - Plex uses these to filter specific media types when searching.
 SEARCHTYPES = {'movie':1, 'show':2, 'season':3, 'episode':4, 'artist':8, 'album':9, 'track':10}
@@ -53,17 +53,20 @@ class PlexPartialObject(object):
         return '<%s:%s:%s>' % (clsname, key, title)
 
     def __getattr__(self, attr):
-        if attr == 'key' or self.__dict__.get(attr) != NA:
-            return self.__dict__.get(attr)
-        if self.isPartialObject():
-            self.reload()
-        return self.__dict__[attr]
+        if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
+            return self.__dict__.get(attr, NA)
+        self.reload()
+        return self.__dict__.get(attr, NA)
+
+    def __setattr__(self, attr, value):     
+        if value != NA or self.isFullObject():
+            super(PlexPartialObject, self).__setattr__(attr, value)
 
     def _loadData(self, data):
         raise Exception('Abstract method not implemented.')
 
     def isFullObject(self):
-        return not self.key or self.initpath == self.key
+        return not self.key or self.key == self.initpath
 
     def isPartialObject(self):
         return not self.isFullObject()
