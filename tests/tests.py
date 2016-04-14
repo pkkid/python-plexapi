@@ -338,18 +338,19 @@ def test_create_playlist(plex, account=None):
 
 
 @register('playlist,client')
-def test_play_playlist(plex, account=None):
+def test_playlist(plex, account=None):
     client = safe_client(CLIENT, CLIENT_BASEURL, plex)
     artist = plex.library.section(AUDIO_SECTION).get(AUDIO_ARTIST)
     album = artist.album(AUDIO_ALBUM)
-    print(album.__dict__)
     playlist = plex.createPlaylist('test_play_playlist', album)
     try:
         log(2, 'Playing playlist: %s' % playlist)
-        client.playMedia(playlist)
-        raise Exception('Test Not Finished')
+        client.playMedia(playlist); time.sleep(5)
+        log(2, 'stop..')
+        client.stop('music'); time.sleep(1)
     finally:
         playlist.delete()
+
 
 #-----------------------
 # Metadata

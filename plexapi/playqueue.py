@@ -22,15 +22,20 @@ class PlayQueue(object):
         self.items = [utils.buildItem(server, elem, initpath) for elem in data]
 
     @classmethod
-    def create(cls, server, item, shuffle=0, continuous=0):
-        uuid = item.section().uuid
-        path = '/playQueues%s' % utils.joinArgs({
-            'uri': 'library://%s/item/%s' % (uuid, item.key),
-            'key': item.key,
-            'type': item.listType,
-            'shuffle': shuffle,
-            'continuous': continuous,
-            'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,
-        })
+    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):
+        args = {}
+        args['includeChapters'] = includeChapters
+        args['includeRelated'] = includeRelated
+        args['repeat'] = repeat
+        args['shuffle'] = shuffle
+        if item.type == 'playlist':
+            args['playlistID'] = item.ratingKey
+            args['type'] = item.playlistType
+        else:
+            uuid = item.section().uuid
+            args['key'] = item.key
+            args['type'] = item.listType
+            args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
+        path = '/playQueues%s' % utils.joinArgs(args)
         data = server.query(path, method=requests.post)
         return cls(server, data, initpath=path)
