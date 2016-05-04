@@ -51,7 +51,7 @@ class Video(PlexPartialObject):
 
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
-        
+
     def section(self):
         return self.server.library.sectionByID(self.librarySectionID)
 
@@ -92,11 +92,11 @@ class Movie(Video, Playable):
             self.videoStreams = utils.findStreams(self.media, 'videostream')
             self.audioStreams = utils.findStreams(self.media, 'audiostream')
             self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
-    
+
     @property
     def actors(self):
         return self.roles
-    
+
     @property
     def isWatched(self):
         return bool(self.viewCount > 0)
@@ -129,7 +129,7 @@ class Show(Video):
     @property
     def actors(self):
         return self.roles
-        
+
     @property
     def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
@@ -169,11 +169,12 @@ class Season(Video):
 
     def _loadData(self, data):
         Video._loadData(self, data)
+        self.season_number = data.attrib.get("index")
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
-        
+
     @property
     def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
@@ -237,6 +238,11 @@ class Episode(Video, Playable):
         self.username = utils.findUsername(data)
         self.player = utils.findPlayer(self.server, data)
         self.transcodeSession = utils.findTranscodeSession(self.server, data)
+        self.episode_number = data.attrib.get("index")
+        if "parentIndex" in data:
+            self.season_number = data.attrib.get("parentIndex")
+        else:
+            self.season_number = self.season().season_number
 
     @property
     def isWatched(self):
