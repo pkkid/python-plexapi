@@ -114,6 +114,7 @@ class Show(Video):
         self.contentRating = data.attrib.get('contentRating', NA)
         self.duration = utils.cast(int, data.attrib.get('duration', NA))
         self.guid = data.attrib.get('guid', NA)
+        self.index = data.attrib.get('index', NA)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
         self.location = utils.findLocations(data, single=True)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
@@ -170,6 +171,7 @@ class Season(Video):
     def _loadData(self, data):
         Video._loadData(self, data)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
+        self.index = data.attrib.get('index', NA)
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', NA))
@@ -177,6 +179,10 @@ class Season(Video):
     @property
     def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
+
+    @property
+    def seasonNumber(self):
+        return self.index
 
     def episodes(self, watched=None):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
@@ -217,6 +223,7 @@ class Episode(Video, Playable):
         self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
         self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.guid = data.attrib.get('guid', NA)
+        self.index = data.attrib.get('index', NA)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentKey = data.attrib.get('parentKey', NA)
@@ -237,10 +244,18 @@ class Episode(Video, Playable):
         self.username = utils.findUsername(data)
         self.player = utils.findPlayer(self.server, data)
         self.transcodeSession = utils.findTranscodeSession(self.server, data)
+        # Cached season number
+        self._seasonNumber = None
 
     @property
     def isWatched(self):
         return bool(self.viewCount > 0)
+
+    @property
+    def seasonNumber(self):
+        if self._seasonNumber is None:
+            self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
+        return self._seasonNumber
 
     @property
     def thumbUrl(self):
