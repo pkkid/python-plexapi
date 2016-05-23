@@ -173,8 +173,10 @@ class PlexClient(object):
     def timeline(self):
         return self.sendCommand('timeline/poll', **{'wait':1, 'commandID':4})
 
-    def isPlayingMedia(self):
+    def isPlayingMedia(self, includePaused=False):
         for mediatype in self.timeline():
             if mediatype.get('state') == 'playing':
+                return True
+            if includePaused and mediatype.get('state') == 'paused':
                 return True
         return False
