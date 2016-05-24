@@ -133,6 +133,9 @@ class LibrarySection(object):
         
     def onDeck(self):
         return utils.listItems(self.server, '/library/sections/%s/onDeck' % self.key)
+
+    def recentlyAdded(self, maxresults=50):
+        return self.search(sort='addedAt:desc', maxresults=maxresults)
         
     def analyze(self):
         self.server.query('/library/sections/%s/analyze' % self.key)
@@ -224,7 +227,7 @@ class LibrarySection(object):
             if matches: map(result.add, matches); continue
             # nothing matched; use raw item value
             log.warning('Filter value not listed, using raw item value: %s' % item)
-            result.add(item)    
+            result.add(item)
         return ','.join(result)
                 
     def _cleanSearchSort(self, sort):
@@ -256,6 +259,9 @@ class ShowSection(LibrarySection):
 
     def searchEpisodes(self, **kwargs):
         return self.search(libtype='episode', **kwargs)
+
+    def recentlyAdded(self, libtype='episode', maxresults=50):
+        return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
 
 
 class MusicSection(LibrarySection):
