@@ -354,11 +354,18 @@ def test_playlist(plex, account=None):
 
 @register('playlist,photos')
 def test_playlist_photos(plex, account=None):
-    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+    client = safe_client('iphone-mike', CLIENT_BASEURL, plex)
     photosection = plex.library.section(PHOTO_SECTION)
     album = photosection.get(PHOTO_ALBUM)
     photos = album.photos()
-    client.playMedia(photos[0])
+    playlist = plex.createPlaylist('test_play_playlist2', photos)
+    try:
+        client.playMedia(playlist)
+        for i in range(3):
+            time.sleep(2)
+            client.skipNext(mtype='photo')
+    finally:
+        playlist.delete()
 
 
 #-----------------------
