@@ -352,6 +352,15 @@ def test_playlist(plex, account=None):
         playlist.delete()
 
 
+@register('playlist,photos')
+def test_playlist_photos(plex, account=None):
+    client = safe_client(CLIENT, CLIENT_BASEURL, plex)
+    photosection = plex.library.section(PHOTO_SECTION)
+    album = photosection.get(PHOTO_ALBUM)
+    photos = album.photos()
+    client.playMedia(photos[0])
+
+
 #-----------------------
 # Metadata
 #-----------------------
@@ -593,7 +602,7 @@ def _video_playback(plex, client):
         log(2, 'Play..')
         client.play(mtype); time.sleep(3)
         log(2, 'Seek to 10m..')
-        client.seekTo(10 * 60 * 1000); time.sleep(5)
+        client.seekTo(10*60*1000); time.sleep(5)
         log(2, 'Disable Subtitles..')
         client.setSubtitleStream(0, mtype); time.sleep(10)
         log(2, 'Load English Subtitles %s..' % subs[0].id)

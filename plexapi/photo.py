@@ -69,3 +69,6 @@ class Photo(PlexPartialObject):
     
     def photoalbum(self):
         return utils.listItems(self.server, self.parentKey)[0]
+
+    def section(self):
+        return self.server.library.sectionByID(self.photoalbum().librarySectionID)
