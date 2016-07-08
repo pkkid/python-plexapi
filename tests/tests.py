@@ -368,6 +368,16 @@ def test_playlist_photos(plex, account=None):
         playlist.delete()
 
 
+@register('playlist,photos')
+def test_play_photos(plex, account=None):
+    client = safe_client('iphone-mike', CLIENT_BASEURL, plex)
+    photosection = plex.library.section(PHOTO_SECTION)
+    album = photosection.get(PHOTO_ALBUM)
+    photos = album.photos()
+    for photo in photos[:4]:
+        client.playMedia(photo)
+        time.sleep(2)
+
 #-----------------------
 # Metadata
 #-----------------------
