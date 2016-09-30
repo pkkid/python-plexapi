@@ -43,7 +43,7 @@ string, you can use the PlexServer object directly as above, but passing in
 the baseurl and auth token directly.
 
 ```python
-from plexapi.server import MyPlexAccount
+from plexapi.server import PlexServer
 baseurl = 'http://plexserver:32400'
 token = '2ffLuB84dqLswk9skLos'
 plex = PlexServer(baseurl, token)
