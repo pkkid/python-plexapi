@@ -66,7 +66,7 @@ plex.library.get('Conan (2010)').markWatched()
 ```python
 # Example 3: List all clients connected to the Server.
 for client in plex.clients():
-    print(client.name)
+    print(client.title)
 ```
 ```python
 # Example 4: Play the movie Avatar on another client.
