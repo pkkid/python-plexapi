@@ -89,6 +89,7 @@ class Movie(Video, Playable):
             self.producers = [media.Producer(self.server, e) for e in data if e.tag == media.Producer.TYPE]
             self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
             self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
+            self.fields = [media.Field(e) for e in data if e.tag == media.Field.TYPE]
             self.videoStreams = utils.findStreams(self.media, 'videostream')
             self.audioStreams = utils.findStreams(self.media, 'audiostream')
             self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
