@@ -4,17 +4,20 @@
 PlexAPI Exceptions
 """
 
-class BadRequest(Exception):
+class PlexApiException(Exception):
     pass
 
-class NotFound(Exception):
+class BadRequest(PlexApiException):
     pass
 
-class UnknownType(Exception):
+class NotFound(PlexApiException):
     pass
 
-class Unsupported(Exception):
+class UnknownType(PlexApiException):
     pass
 
-class Unauthorized(Exception):
+class Unsupported(PlexApiException):
+    pass
+
+class Unauthorized(PlexApiException):
     pass
