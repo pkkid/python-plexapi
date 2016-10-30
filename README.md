@@ -41,10 +41,13 @@ token = '2ffLuB84dqLswk9skLos'
 plex = PlexServer(baseurl, token)
 ```
 
-`NO LONGER WORKING ON LATEST VERSION OF PLEX` (see bug #68) If running the PlexAPI
-on the same network as the Plex Server (and you are not using Plex Users), you can
-authenticate without a username and password. Getting a PlexServer instance is as
-easy as the following:
+```diff
+- This final auth method no longer working on the latest version of Plex.
+- See bug #68.
+```
+If running the PlexAPI on the same network as the Plex Server (and you are not
+using Plex Users), you can authenticate without a username and password. Getting
+a PlexServer instance is as easy as the following:
 
 ```python
 from plexapi.server import PlexServer
