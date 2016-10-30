@@ -16,13 +16,11 @@ Python bindings for the Plex API.
 
 #### Getting a PlexServer Instance ####
 
-There are three types of authentication.
-
-If you are running on a separate network or using Plex Users you can log
-into MyPlex to get a PlexServer instance. An example of this is below. NOTE:
-Servername below is the name of the server (not the hostname and port).  If
-logged into Plex Web you can see the server name in the top left above your
-available libraries.
+There are two types of authentication. If you are running on a separate network
+or using Plex Users you can log into MyPlex to get a PlexServer instance. An
+example of this is below. NOTE: Servername below is the name of the server (not
+the hostname and port).  If logged into Plex Web you can see the server name in
+the top left above your available libraries.
 
 ```python
 from plexapi.myplex import MyPlexAccount
