@@ -186,3 +186,15 @@ class Producer(MediaTag): TYPE = 'Producer'; FILTER = 'producer'
 class Role(MediaTag): TYPE = 'Role'; FILTER = 'role'
 class Similar(MediaTag): TYPE = 'Similar'; FILTER = 'similar'
 class Writer(MediaTag): TYPE = 'Writer'; FILTER = 'writer'
+
+
+class Field(object):
+    TYPE = 'Field'
+
+    def __init__(self, data):
+        self.name = data.attrib.get('name')
+        self.locked = cast(bool, data.attrib.get('locked'))
+
+    def __repr__(self):
+        name = self.name.replace(' ', '.')[0:20]
+        return '<%s:%s:%s>' % (self.__class__.__name__, name, self.locked)
