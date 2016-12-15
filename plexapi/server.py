@@ -2,26 +2,44 @@
 """
 PlexServer
 """
+
+from xml.etree import ElementTree
+
 import requests
 from requests.status_codes import _codes as codes
+
 from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
 from plexapi import audio, video, photo, playlist  # noqa; required
-from plexapi.compat import quote
 from plexapi.client import PlexClient
+from plexapi.compat import quote
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
-from xml.etree import ElementTree
-
-DEFAULT_BASEURL = 'http://localhost:32400'
 
 
 class PlexServer(object):
+    """Main class to interact with plexapi
 
-    def __init__(self, baseurl=None, token=None, session=None):
-        self.baseurl = baseurl or DEFAULT_BASEURL
+       Examples:
+                >>>> plex = PlexServer(token=12345)
+                >>>> for client in plex.clients():
+                >>>>     print(client.title)
+
+        Note:
+            See test/example.py for more examples
+
+    """
+
+    def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
+        """Args:
+                baseurl (string): Base url for PMS
+                token (string): X-Plex-Token, using for authenication with PMS
+                session (requests.Session, optional): Use your own session object if you want
+                                                      to cache the http responses from PMS
+        """
+        self.baseurl = baseurl
         self.token = token
         self.session = session or requests.Session()
         data = self._connect()
@@ -60,16 +78,30 @@ class PlexServer(object):
         return Account(self, data)
 
     def clients(self):
+        """Querys PMS for all clients connected to PMS
+
+            Returns:
+                list: of clients connnected to PMS
+
+        """
         items = []
         for elem in self.query('/clients'):
-            baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
+            baseurl = 'http://%s:%s' % (elem.attrib['address'],
+                                        elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
         return items
 
     def client(self, name):
+        """Querys PMS for all clients connected to PMS
+
+            Returns:
+                Plexclient
+
+        """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                baseurl = 'http://%s:%s' % (elem.attrib['address'], elem.attrib['port'])
+                baseurl = 'http://%s:%s' % (
+                    elem.attrib['address'], elem.attrib['port'])
                 return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
@@ -84,15 +116,15 @@ class PlexServer(object):
         if self.token:
             headers['X-Plex-Token'] = self.token
         return headers
-        
+
     def history(self):
         return utils.listItems(self, '/status/sessions/history/all')
-        
+
     def playlists(self):
         # TODO: Add sort and type options?
         # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
         return utils.listItems(self, '/playlists')
-        
+
     def playlist(self, title=None):  # noqa
         for item in self.playlists():
             if item.title == title:
@@ -103,14 +135,15 @@ class PlexServer(object):
         url = self.url(path)
         method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
-        headers = dict(self.headers(), **(headers or {}))
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        h = headers.copy()
+        h.update(headers or {})
+        response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
-        
+
     def search(self, query, mediatype=None):
         """ Searching within a library section is much more powerful. """
         items = utils.listItems(self, '/search?query=%s' % quote(query))
@@ -128,10 +161,11 @@ class PlexServer(object):
         return '%s%s' % (self.baseurl, path)
 
 
-# This is the locally cached MyPlex account information. The properties provided don't match
-# the myplex.MyPlexAccount object very well. I believe this is here because access to myplex
-# is not required to get basic plex information.
 class Account(object):
+    """This is the locally cached MyPlex account information. The properties provided don't match
+       the myplex.MyPlexAccount object very well. I believe this is here because access to myplex
+       is not required to get basic plex information.
+    """
 
     def __init__(self, server, data):
         self.authToken = data.attrib.get('authToken')
