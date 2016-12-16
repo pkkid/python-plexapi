@@ -26,9 +26,9 @@ def register_libtype(cls):
     This allows us to define a few helper functions to dynamically convery
     the XML into objects. See buildItem() below for an example.
     """
-
     LIBRARY_TYPES[cls.TYPE] = cls
     return cls
+
 
 class _NA(object):
     """This used to be a simple variable equal to '__NA__'.
@@ -53,7 +53,6 @@ class _NA(object):
 NA = _NA()
 
 
-
 class PlexPartialObject(object):
     """Not all objects in the Plex listings return the complete list of elements
     for the object.This object will allow you to assume each object is complete,
@@ -74,12 +73,14 @@ class PlexPartialObject(object):
         return other is not None and self.key == other.key
 
     def __repr__(self):
+        """Pretty repr."""
         clsname = self.__class__.__name__
         key = self.key.replace('/library/metadata/', '') if self.key else 'NA'
         title = self.title.replace(' ', '.')[0:20].encode('utf8')
         return '<%s:%s:%s>' % (clsname, key, title)
 
     def __getattr__(self, attr):
+        """Auto reload self, if the attribute is NA"""
         if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
             return self.__dict__.get(attr, NA)
         self.reload()
@@ -87,7 +88,8 @@ class PlexPartialObject(object):
 
     def __setattr__(self, attr, value):
         if value != NA or self.isFullObject():
-            super(PlexPartialObject, self).__setattr__(attr, value)
+            self.__dict__[attr] = value # twice as fast
+            #super(PlexPartialObject, self).__setattr__(attr, value)
 
     def _loadData(self, data):
         raise Exception('Abstract method not implemented.')
@@ -366,6 +368,7 @@ def threaded(callback, listargs):
 
 
 def toDatetime(value, format=None):
+    """Helper for datetime"""
     if value and value != NA:
         if format:
             value = datetime.strptime(value, format)
