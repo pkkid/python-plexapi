@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 PlexServer
 """
@@ -183,19 +184,20 @@ class PlexServer(object):
             path (sting): relative path to PMS, fx /search?query=HELLO
             method (None, optional): requests.method, fx requests.put
             headers (None, optional): Headers that will be passed to PMS
-            **kwargs (dict): Loads of different stuff
+            **kwargs (dict): Used for filter and sorting.
 
         Raises:
             BadRequest: Description
 
         Returns:
-            ElementTree or None
+            xml.etree.ElementTree.Element or None
         """
         url = self.url(path)
         method = method or self.session.get
         log.info('%s %s', method.__name__.upper(), url)
-        h = headers.copy()
-        h.update(headers or {})
+        h = self.headers().copy()
+        if headers:
+            h.update(headers)
         response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
@@ -236,7 +238,7 @@ class Account(object):
     is not required to get basic plex information.
 
     Attributes:
-        authToken (TYPE): Description
+        authToken (sting): X-Plex-Token, using for authenication with PMS
         mappingError (TYPE): Description
         mappingErrorMessage (TYPE): Description
         mappingState (TYPE): Description
@@ -252,6 +254,10 @@ class Account(object):
     """
 
     def __init__(self, server, data):
+        """Args:
+                server (Plexclient): 
+                data (xml.etree.ElementTree.Element): used to set the class attributes. 
+        """
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')
         self.mappingState = data.attrib.get('mappingState')
