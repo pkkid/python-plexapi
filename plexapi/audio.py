@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Summary
-
-Attributes:
-    NA (TYPE): Description
-"""
 
 from plexapi import media, utils
 from plexapi.utils import Playable, PlexPartialObject
@@ -17,16 +12,16 @@ class Audio(PlexPartialObject):
     Attributes:
         addedAt (int): int from epoch, datetime.datetime
         index (sting): 1
-        key (string): Fx /library/metadata/102631
+        key (str): Fx /library/metadata/102631
         lastViewedAt (datetime.datetime): parse int into datetime.datetime.
         librarySectionID (int):
         listType (str): audio
         ratingKey (int): Unique key to identify this item
-        summary (string): Summery of the artist, track, album
-        thumb (string): Url to thumb image
-        title (string): Fx Aerosmith
-        titleSort (string): Defaults title if None
-        TYPE (string):  overwritten by subclass
+        summary (str): Summery of the artist, track, album
+        thumb (str): Url to thumb image
+        title (str): Fx Aerosmith
+        titleSort (str): Defaults title if None
+        TYPE (str):  overwritten by subclass
         type (string, NA): Description
         updatedAt (datatime.datetime): parse int to datetime.datetime
         viewCount (int): How many time has this item been played
@@ -34,18 +29,18 @@ class Audio(PlexPartialObject):
     TYPE = None
 
     def __init__(self, server, data, initpath):
-        """Used to set the attributes
+        """Used to set the attributes.
 
         Args:
             server (Plexserver): PMS your connected to
             data (Element): XML reponse from PMS as Element
                             normally built from server.query
-            initpath (string): Fx /library/sections/7/all
+            initpath (str): Fx /library/sections/7/all
         """
         super(Audio, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
-        """Used to set the attributes
+        """Used to set the attributes.
 
         Args:
             data (Element): XML reponse from PMS as Element
@@ -68,49 +63,37 @@ class Audio(PlexPartialObject):
 
     @property
     def thumbUrl(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Return url to thumb image."""
         return self.server.url(self.thumb)
 
     def refresh(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Refresh the metadata."""
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
 
     def section(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Library section."""
         return self.server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
 class Artist(Audio):
-    """Summary
+    """Artist.
 
     Attributes:
-        art (string): /library/metadata/102631/art/1469310342
-        countries (string): Description
-        genres (list): Description
-        guid (string): Fx guid com.plexapp.agents.plexmusic://gracenote/artist/05517B8701668D28?lang=en
-        key (string): Fx /library/metadata/102631
-        location (string): Filepath
-        similar (list): Description
-        TYPE (string): artist
+        art (str): /library/metadata/102631/art/1469310342
+        countries (list): List of media.County fx [<Country:24200:United.States>]
+        genres (list): List of media.Genre fx [<Genre:25555:Classic.Rock>]
+        guid (str): Fx guid com.plexapp.agents.plexmusic://gracenote/artist/05517B8701668D28?lang=en
+        key (str): Fx /library/metadata/102631
+        location (str): Filepath
+        similar (list): List of media.Similar fx [<Similar:25220:Guns.N'.Roses>]
+        TYPE (str): artist
     """
 
     TYPE = 'artist'
 
     def _loadData(self, data):
-        """Used to set the attributes
+        """Used to set the attributes.
 
         Args:
             data (Element): XML reponse from PMS as Element
@@ -121,95 +104,79 @@ class Artist(Audio):
         self.guid = data.attrib.get('guid', NA)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
-        if self.isFullObject(): # check if this is needed
-            self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
-            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
-            self.similar = [media.Similar(self.server, e) for e in data if e.tag == media.Similar.TYPE]
+        if self.isFullObject():  # check if this is needed
+            self.countries = [media.Country(self.server, e)
+                              for e in data if e.tag == media.Country.TYPE]
+            self.genres = [media.Genre(self.server, e)
+                           for e in data if e.tag == media.Genre.TYPE]
+            self.similar = [media.Similar(self.server, e)
+                            for e in data if e.tag == media.Similar.TYPE]
 
     def albums(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Return a list of Albums by thus artist."""
         path = '%s/children' % self.key
         return utils.listItems(self.server, path, Album.TYPE)
 
     def album(self, title):
-        """Summary
-
-        Args:
-            title (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """Return a album from this artist that match title."""
         path = '%s/children' % self.key
         return utils.findItem(self.server, path, title)
 
     def tracks(self, watched=None):
-        """Summary
+        """Return all tracks to this artist.
 
         Args:
-            watched (None, optional): Description
+            watched(None, False, True): Default to None.
 
         Returns:
-            TYPE: Description
+            List: of Track
         """
         path = '%s/allLeaves' % self.key
         return utils.listItems(self.server, path, watched=watched)
 
     def track(self, title):
-        """Summary
+        """Return a Track that matches title.
 
         Args:
-            title (TYPE): Description
+            title (str): Fx song name
 
         Returns:
-            TYPE: Description
+            Track:
         """
         path = '%s/allLeaves' % self.key
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
-        """Summary
-
-        Args:
-            title (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """Alias. See track."""
         return self.track(title)
 
 
 @utils.register_libtype
 class Album(Audio):
-    """Summary
+    """Album.
 
     Attributes:
-        art (TYPE): Description
-        genres (TYPE): Description
-        key (TYPE): Description
+        art (str): Fx /library/metadata/102631/art/1469310342
+        genres (list): List of media.Genre
+        key (str): Fx /library/metadata/102632
         originallyAvailableAt (TYPE): Description
-        parentKey (TYPE): Description
-        parentRatingKey (TYPE): Description
-        parentThumb (TYPE): Description
-        parentTitle (TYPE): Description
-        studio (TYPE): Description
-        TYPE (str): Description
-        year (TYPE): Description
+        parentKey (str): /library/metadata/102631
+        parentRatingKey (int): Fx 1337
+        parentThumb (TYPE): Relative url to parent thumb image
+        parentTitle (str): Aerosmith
+        studio (str):
+        TYPE (str): album
+        year (int): 1999
     """
+
     TYPE = 'album'
 
     def _loadData(self, data):
-        """Summary
+        """Used to set the attributes.
 
         Args:
-            data (TYPE): Description
-
-        Returns:
-            TYPE: Description
+            data (Element): XML reponse from PMS as Element
+                            normally built from server.query
         """
         Audio._loadData(self, data)
         self.art = data.attrib.get('art', NA)
@@ -225,97 +192,79 @@ class Album(Audio):
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
     def tracks(self, watched=None):
-        """Summary
+        """Return all tracks to this album.
 
         Args:
-            watched (None, optional): Description
+            watched(None, False, True): Default to None.
 
         Returns:
-            TYPE: Description
+            List: of Track
         """
         path = '%s/children' % self.key
         return utils.listItems(self.server, path, watched=watched)
 
     def track(self, title):
-        """Summary
+        """Return a Track that matches title.
 
         Args:
-            title (TYPE): Description
+            title (str): Fx song name
 
         Returns:
-            TYPE: Description
+            Track:
         """
         path = '%s/children' % self.key
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
-        """Summary
-
-        Args:
-            title (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """Alias. See track."""
         return self.track(title)
 
     def artist(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Return Artist of this album."""
         return utils.listItems(self.server, self.parentKey)[0]
 
     def watched(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Return Track that is lisson on."""
         return self.tracks(watched=True)
 
     def unwatched(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Return Track that is not lisson on."""
         return self.tracks(watched=False)
 
 
 @utils.register_libtype
 class Track(Audio, Playable):
-    """Summary
+    """Track.
 
     Attributes:
-        art (TYPE): Description
+        art (str): Relative path fx /library/metadata/102631/art/1469310342
         chapterSource (TYPE): Description
         duration (TYPE): Description
-        grandparentArt (TYPE): Description
-        grandparentKey (TYPE): Description
+        grandparentArt (str): Relative path
+        grandparentKey (str): Relative path Fx /library/metadata/102631
         grandparentRatingKey (TYPE): Description
-        grandparentThumb (TYPE): Description
-        grandparentTitle (TYPE): Description
+        grandparentThumb (str): Relative path to Artist thumb img
+        grandparentTitle (str): Aerosmith
         guid (TYPE): Description
-        media (TYPE): Description
-        moods (TYPE): Description
-        originalTitle (TYPE): Description
-        parentIndex (TYPE): Description
-        parentKey (TYPE): Description
-        parentRatingKey (TYPE): Description
-        parentThumb (TYPE): Description
-        parentTitle (TYPE): Description
-        player (TYPE): Description
-        primaryExtraKey (TYPE): Description
-        ratingCount (TYPE): Description
-        sessionKey (TYPE): Description
-        transcodeSession (TYPE): Description
-        TYPE (str): Description
-        username (TYPE): Description
-        viewOffset (TYPE): Description
-        year (TYPE): Description
+        media (list): List of media.Media
+        moods (list): List of media.Moods
+        originalTitle (str): Some track title
+        parentIndex (int): 1
+        parentKey (str): Relative path Fx /library/metadata/102632
+        parentRatingKey (int): 1337
+        parentThumb (str): Relative path to Album thumb
+        parentTitle (str): Album title
+        player (None): #TODO
+        primaryExtraKey (TYPE): #TODO
+        ratingCount (int): 10
+        sessionKey (int): Description
+        transcodeSession (None):
+        TYPE (str): track
+        username (str): username@mail.com
+        viewOffset (int): 100
+        year (int): 1999
     """
+
     TYPE = 'track'
 
     def _loadData(self, data):
@@ -345,9 +294,11 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount', NA))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        if self.isFullObject(): # check me
-            self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
-            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+        if self.isFullObject():  # check me
+            self.moods = [media.Mood(self.server, e)
+                          for e in data if e.tag == media.Mood.TYPE]
+            self.media = [media.Media(self.server, e, self.initpath, self)
+                          for e in data if e.tag == media.Media.TYPE]
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.username = utils.findUsername(data)
@@ -360,9 +311,9 @@ class Track(Audio, Playable):
         return self.server.url(self.parentThumb)
 
     def album(self):
-        """Return this track's Album"""
+        """Return this track's Album."""
         return utils.listItems(self.server, self.parentKey)[0]
 
     def artist(self):
-        """Return this track's Artist"""
+        """Return this track's Artist."""
         return utils.listItems(self.server, self.grandparentKey)[0]

@@ -13,27 +13,27 @@ from xml.etree import ElementTree
 
 
 class PlexClient(object):
-    """Main class for interacting with a client
+    """Main class for interacting with a client.
 
     Attributes:
-        baseurl (string): http adress for the client
+        baseurl (str): http adress for the client
         device (None): Description
         deviceClass (sting): pc, phone
-        machineIdentifier (string): uuid fx 5471D9EA-1467-4051-9BE7-FCBDF490ACE3
+        machineIdentifier (str): uuid fx 5471D9EA-1467-4051-9BE7-FCBDF490ACE3
         model (TYPE): Description
         platform (TYPE): Description
         platformVersion (TYPE): Description
-        product (string): plex for ios
-        protocol (string): plex
+        product (str): plex for ios
+        protocol (str): plex
         protocolCapabilities (list): List of what client can do
-        protocolVersion (string): 1
+        protocolVersion (str): 1
         server (plexapi.server.Plexserver): PMS your connected to
         session (None or requests.Session): Add your own session object to cache stuff
         state (None): Description
-        title (string): fx Johns Iphone
-        token (string): X-Plex-Token, using for authenication with PMS
-        vendor (string): Description
-        version (string): fx. 4.6
+        title (str): fx Johns Iphone
+        token (str): X-Plex-Token, using for authenication with PMS
+        vendor (str): Description
+        version (str): fx. 4.6
     """
 
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
@@ -115,7 +115,7 @@ class PlexClient(object):
         """Used to fetch relative paths to pms.
 
         Args:
-            path (string): Relative path
+            path (str): Relative path
             method (None, optional): requests.post etc
             headers (None, optional): Set headers manually
             **kwargs (TYPE): Passord to the http request used for filter, sorting.
@@ -141,7 +141,7 @@ class PlexClient(object):
         """Send a command to the client
 
         Args:
-            command (string): See the commands listed below
+            command (str): See the commands listed below
             proxy (None, optional): Description
             **params (dict): Description
 
@@ -170,7 +170,7 @@ class PlexClient(object):
         """Return a full url
 
         Args:
-            path (string): Relative path
+            path (str): Relative path
 
         Returns:
             string: full path to PMS
@@ -234,7 +234,7 @@ class PlexClient(object):
         """Go to a media on the client.
 
         Args:
-            media (string): movie, music, photo
+            media (str): movie, music, photo
             **params (TYPE): Description # todo
 
         Raises:
@@ -261,7 +261,7 @@ class PlexClient(object):
         """Pause playback
 
         Args:
-            mtype (string): music, photo, video
+            mtype (str): music, photo, video
         """
         self.sendCommand('playback/pause', type=mtype)
 
@@ -269,7 +269,7 @@ class PlexClient(object):
         """Start playback
 
         Args:
-            mtype (string): music, photo, video
+            mtype (str): music, photo, video
         """
         self.sendCommand('playback/play', type=mtype)
 
@@ -346,7 +346,7 @@ class PlexClient(object):
         """Stop playback
 
         Args:
-            mtype (string): video, music, photo
+            mtype (str): video, music, photo
 
         """
         self.sendCommand('playback/stop', type=mtype)
@@ -383,7 +383,7 @@ class PlexClient(object):
 
         Args:
             audioStreamID (TYPE): Description
-            mtype (string): video, music, photo
+            mtype (str): video, music, photo
         """
         self.setStreams(audioStreamID=audioStreamID, mtype=mtype)
 
@@ -392,7 +392,7 @@ class PlexClient(object):
 
         Args:
             subtitleStreamID (TYPE): Description
-            mtype (string): video, music, photo
+            mtype (str): video, music, photo
         """
         self.setStreams(subtitleStreamID=subtitleStreamID, mtype=mtype)
 
@@ -401,7 +401,7 @@ class PlexClient(object):
 
         Args:
             videoStreamID (TYPE): Description
-            mtype (string): video, music, photo
+            mtype (str): video, music, photo
 
         """
         self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
@@ -410,7 +410,7 @@ class PlexClient(object):
         """Start playback on a media item.
 
         Args:
-            media (string): movie, music, photo
+            media (str): movie, music, photo
             **params (TYPE): Description
 
         Raises:

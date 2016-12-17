@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
 
-from xml.etree import ElementTree
+if sys.version_info <= (3, 3):
+    try:
+        from xml.etree import cElementTree as ElementTree
+    except ImportError:
+        from xml.etree import ElementTree
+else:
+    # py 3.3 and above selects the fastest automatically
+    from xml.etree import ElementTree
 
 import requests
 from requests.status_codes import _codes as codes
@@ -28,29 +36,29 @@ class PlexServer(object):
          See test/example.py for more examples
 
     Attributes:
-        baseurl (string): Base url for PMS. Fx http://10.0.0.97:32400
-        friendlyName (string): Pretty name for PMS fx s-PC
-        machineIdentifier (string): uuid for PMS
+        baseurl (str): Base url for PMS. Fx http://10.0.0.97:32400
+        friendlyName (str): Pretty name for PMS fx s-PC
+        machineIdentifier (str): uuid for PMS
         myPlex (bool): Description
-        myPlexMappingState (string): fx mapped
-        myPlexSigninState (string): fx ok
-        myPlexSubscription (string): 1
-        myPlexUsername (string): username@email.com
-        platform (string): The platform PMS is running on.
-        platformVersion (string): fx 6.1 (Build 7601)
+        myPlexMappingState (str): fx mapped
+        myPlexSigninState (str): fx ok
+        myPlexSubscription (str): 1
+        myPlexUsername (str): username@email.com
+        platform (str): The platform PMS is running on.
+        platformVersion (str): fx 6.1 (Build 7601)
         session (requests.Session, optinal): Add your own session object for caching
-        token (string): X-Plex-Token, using for authenication with PMS
+        token (str): X-Plex-Token, using for authenication with PMS
         transcoderActiveVideoSessions (int): How any active video sessions
         updatedAt (int): Last updated at as epoch
-        version (string): fx 1.3.2.3112-1751929
+        version (str): fx 1.3.2.3112-1751929
 
     """
 
     def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
         """
         Args:
-            baseurl (string): Base url for PMS
-            token (string): X-Plex-Token, using for authenication with PMS
+            baseurl (str): Base url for PMS
+            token (str): X-Plex-Token, using for authenication with PMS
             session (requests.Session, optional): Use your own session object if you want
                                                   to cache the http responses from PMS
         """
@@ -92,6 +100,7 @@ class PlexServer(object):
         return self._library
 
     def account(self):
+        """Returns Account."""
         data = self.query('/myplex/account')
         return Account(self, data)
 
@@ -116,7 +125,7 @@ class PlexServer(object):
             Plexclient
 
         Args:
-            name (string): client title, John's Iphone
+            name (str): client title, John's Iphone
 
         Raises:
             NotFound: Unknown client name Betty
@@ -161,10 +170,10 @@ class PlexServer(object):
         """Returns a playlist with a given name or raise NotFound.
 
         Args:
-            title (string): title of the playlist
+            title (str): title of the playlist
 
         Raises:
-            NotFound: Description
+            NotFound: Invalid playlist title: title
         """
         for item in self.playlists():
             if item.title == title:
@@ -177,13 +186,13 @@ class PlexServer(object):
            from PMS into a Element
 
         Args:
-            path (string): relative path to PMS, fx /search?query=HELLO
+            path (str): relative path to PMS, fx /search?query=HELLO
             method (None, optional): requests.method, requests.put
             headers (None, optional): Headers that will be passed to PMS
             **kwargs (dict): Used for filter and sorting.
 
         Raises:
-            BadRequest: Description
+            BadRequest: fx (404) Not Found
 
         Returns:
             xml.etree.ElementTree.Element or None
@@ -205,8 +214,8 @@ class PlexServer(object):
         """Searching within a library section is much more powerful.
 
         Args:
-            query (string): Search string
-            mediatype (string, optional): Limit your search to a media type.
+            query (str): Search str
+            mediatype (str, optional): Limit your search to a media type.
 
         Returns:
             List
@@ -236,23 +245,25 @@ class Account(object):
 
     Attributes:
         authToken (sting): X-Plex-Token, using for authenication with PMS
-        mappingError (string):
-        mappingErrorMessage (None, string): Description
+        mappingError (str):
+        mappingErrorMessage (None, str): Description
         mappingState (TYPE): Description
-        privateAddress (string): Local ip
-        privatePort (string): Local port
-        publicAddress (string): Public ip
-        publicPort (string): Public port
-        signInState (string): ok
-        subscriptionActive (string): is returned as it
-        subscriptionFeatures (string): What feature your account has access to.
-                                       Fx: camera_upload,cloudsync,content_filter
-        subscriptionState (string): Active
-        username (string): You username
+        privateAddress (str): Local ip
+        privatePort (str): Local port
+        publicAddress (str): Public ip
+        publicPort (str): Public port
+        signInState (str): ok
+        subscriptionActive (str): is returned as it
+        subscriptionFeatures (str): What feature your account has access to.
+                                    Fx: camera_upload,cloudsync,content_filter
+        subscriptionState (str): Active
+        username (str): You username
     """
 
     def __init__(self, server, data):
-        """Args:
+        """Set attrs.
+
+        Args:
                 server (Plexclient):
                 data (xml.etree.ElementTree.Element): used to set the class attributes.
         """

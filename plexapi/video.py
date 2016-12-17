@@ -15,7 +15,7 @@ class Video(PlexPartialObject):
         Args:
             server (Plexserver): The PMS server your connected to
             data (Element): Element built from server.query
-            initpath (string): Relativ path fx /library/sections/1/all
+            initpath (str): Relativ path fx /library/sections/1/all
 
         """
         super(Video, self).__init__(data, initpath, server)
@@ -192,7 +192,7 @@ class Show(Video):
         """Returns a Season
 
         Args:
-            title (string): fx Season1
+            title (str): fx Season1
         """
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
@@ -222,7 +222,7 @@ class Show(Video):
         """Get a Episode with a title.
 
            Args:
-                title (string): fx Secret santa
+                title (str): fx Secret santa
         """
         return self.episode(title)
 
@@ -283,7 +283,7 @@ class Season(Video):
         """Get a episode witha mathcing title
 
            Args:
-                title (string): fx Secret santa
+                title (str): fx Secret santa
 
             Returns:
                 Episode
@@ -355,7 +355,7 @@ class Episode(Video, Playable):
 
     @property
     def isWatched(self):
-        """Returns True if watched, Fale if not."""
+        """Returns True if watched, False if not."""
         return bool(self.viewCount > 0)
 
     @property
