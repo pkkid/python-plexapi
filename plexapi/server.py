@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-PlexServer
-"""
-
 from xml.etree import ElementTree
 
 import requests
@@ -32,21 +28,21 @@ class PlexServer(object):
          See test/example.py for more examples
 
     Attributes:
-        baseurl (string): Base url for PMS
-        friendlyName (string): Pretty name for PMS
+        baseurl (string): Base url for PMS. Fx http://10.0.0.97:32400
+        friendlyName (string): Pretty name for PMS fx s-PC
         machineIdentifier (string): uuid for PMS
-        myPlex (TYPE): Description
-        myPlexMappingState (TYPE): Description
-        myPlexSigninState (TYPE): Description
-        myPlexSubscription (TYPE): Description
-        myPlexUsername (string): Description
-        platform (string): Description
-        platformVersion (string): Description
+        myPlex (bool): Description
+        myPlexMappingState (string): fx mapped
+        myPlexSigninState (string): fx ok
+        myPlexSubscription (string): 1
+        myPlexUsername (string): username@email.com
+        platform (string): The platform PMS is running on.
+        platformVersion (string): fx 6.1 (Build 7601)
         session (requests.Session, optinal): Add your own session object for caching
         token (string): X-Plex-Token, using for authenication with PMS
         transcoderActiveVideoSessions (int): How any active video sessions
-        updatedAt (int): Last updated at
-        version (TYPE): Description
+        updatedAt (int): Last updated at as epoch
+        version (string): fx 1.3.2.3112-1751929
 
     """
 
@@ -100,7 +96,7 @@ class PlexServer(object):
         return Account(self, data)
 
     def clients(self):
-        """Query PMS for all clients connected to PMS
+        """Query PMS for all clients connected to PMS.
 
         Returns:
             list: of Plexclient connnected to PMS
@@ -114,7 +110,7 @@ class PlexServer(object):
         return items
 
     def client(self, name):
-        """Querys PMS for all clients connected to PMS
+        """Querys PMS for all clients connected to PMS.
 
         Returns:
             Plexclient
@@ -134,7 +130,7 @@ class PlexServer(object):
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlaylist(self, title, items):
-        """Create a playlist
+        """Create a playlist.
 
            Returns:
                 Playlist
@@ -178,11 +174,11 @@ class PlexServer(object):
     def query(self, path, method=None, headers=None, **kwargs):
         """Main method used to handle http connection to PMS.
            encodes the response to utf-8 and parses the xml returned
-           from PMS
+           from PMS into a Element
 
         Args:
-            path (sting): relative path to PMS, fx /search?query=HELLO
-            method (None, optional): requests.method, fx requests.put
+            path (string): relative path to PMS, fx /search?query=HELLO
+            method (None, optional): requests.method, requests.put
             headers (None, optional): Headers that will be passed to PMS
             **kwargs (dict): Used for filter and sorting.
 
@@ -233,30 +229,32 @@ class PlexServer(object):
 
 
 class Account(object):
-    """This is the locally cached MyPlex account information. The properties provided don't match
-    the myplex.MyPlexAccount object very well. I believe this is here because access to myplex
-    is not required to get basic plex information.
+    """This is the locally cached MyPlex account information.
+    The properties provided don't matchthe myplex.MyPlexAccount object very well.
+    I believe this is here because access to myplexis not required
+    to get basic plex information.
 
     Attributes:
         authToken (sting): X-Plex-Token, using for authenication with PMS
-        mappingError (TYPE): Description
-        mappingErrorMessage (TYPE): Description
+        mappingError (string):
+        mappingErrorMessage (None, string): Description
         mappingState (TYPE): Description
-        privateAddress (TYPE): Description
-        privatePort (TYPE): Description
-        publicAddress (TYPE): Description
-        publicPort (TYPE): Description
-        signInState (TYPE): Description
-        subscriptionActive (TYPE): Description
-        subscriptionFeatures (TYPE): Description
-        subscriptionState (TYPE): Description
-        username (TYPE): Description
+        privateAddress (string): Local ip
+        privatePort (string): Local port
+        publicAddress (string): Public ip
+        publicPort (string): Public port
+        signInState (string): ok
+        subscriptionActive (string): is returned as it
+        subscriptionFeatures (string): What feature your account has access to.
+                                       Fx: camera_upload,cloudsync,content_filter
+        subscriptionState (string): Active
+        username (string): You username
     """
 
     def __init__(self, server, data):
         """Args:
-                server (Plexclient): 
-                data (xml.etree.ElementTree.Element): used to set the class attributes. 
+                server (Plexclient):
+                data (xml.etree.ElementTree.Element): used to set the class attributes.
         """
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')

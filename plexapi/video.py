@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""
-PlexVideo
-
-Attributes:
-    NA (TYPE): Description
-"""
 from plexapi import media, utils
 from plexapi.utils import Playable, PlexPartialObject
+
 NA = utils.NA
 
 
@@ -15,18 +10,19 @@ class Video(PlexPartialObject):
     TYPE = None
 
     def __init__(self, server, data, initpath):
-        """
+        """Default class for all video types.
+
         Args:
             server (Plexserver): The PMS server your connected to
             data (Element): Element built from server.query
             initpath (string): Relativ path fx /library/sections/1/all
-        
+
         """
         super(Video, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -47,6 +43,7 @@ class Video(PlexPartialObject):
 
     @property
     def thumbUrl(self):
+        """Return url to thumb image."""
         return self.server.url(self.thumb)
 
     def analyze(self):
@@ -58,28 +55,24 @@ class Video(PlexPartialObject):
         self.server.query('/%s/analyze' % self.key)
 
     def markWatched(self):
-        """Mark a items as watched.
-        """
+        """Mark a items as watched."""
         path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self.server.query(path)
         self.reload()
 
     def markUnwatched(self):
-        """Mark a item as unwatched.
-        """
+        """Mark a item as unwatched."""
         path = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self.server.query(path)
         self.reload()
 
     def refresh(self):
-        """Refresh a item.
-        """
+        """Refresh a item."""
         self.server.query('%s/refresh' %
                           self.key, method=self.server.session.put)
 
     def section(self):
-        """Library section.
-        """
+        """Library section."""
         return self.server.library.sectionByID(self.librarySectionID)
 
 
@@ -89,9 +82,10 @@ class Movie(Video, Playable):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
-            data (Element): Usually built from server.query
+            data (Element): XML reponse from PMS as Element
+                            normally built from server.query
         """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -153,7 +147,7 @@ class Show(Video):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -190,16 +184,25 @@ class Show(Video):
         return bool(self.viewedLeafCount == self.leafCount)
 
     def seasons(self):
-        """Returns a list of Season
-        """
+        """Returns a list of Season."""
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, path, Season.TYPE)
 
     def season(self, title):
+        """Returns a Season
+
+        Args:
+            title (string): fx Season1
+        """
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
 
     def episodes(self, watched=None):
+        """Returs a list of Episode
+
+           Args:
+                watched (bool): Defaults to None. Exclude watched episodes
+        """
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
         return utils.listItems(self.server, leavesKey, watched=watched)
 
@@ -208,21 +211,23 @@ class Show(Video):
         return utils.findItem(self.server, path, title)
 
     def watched(self):
-        """Return a list of watched episodes
-        """
+        """Return a list of watched episodes"""
         return self.episodes(watched=True)
 
     def unwatched(self):
-        """Return a list of unwatched episodes
-        """
+        """Return a list of unwatched episodes"""
         return self.episodes(watched=False)
 
     def get(self, title):
+        """Get a Episode with a title.
+
+           Args:
+                title (string): fx Secret santa
+        """
         return self.episode(title)
 
     def refresh(self):
-        """Refresh the metadata
-        """
+        """Refresh the metadata."""
         self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
 
 
@@ -232,7 +237,7 @@ class Season(Video):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -250,36 +255,51 @@ class Season(Video):
 
     @property
     def seasonNumber(self):
+        """Reurns season number."""
         return self.index
 
     def episodes(self, watched=None):
-        """Return list of Episode
-        
-        Args:
-            watched (None, optional): Description
+        """Returs a list of Episode
+
+           Args:
+                watched (bool): Defaults to None. Exclude watched episodes
         """
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, childrenKey, watched=watched)
 
     def episode(self, title):
-        """Return Episode
-        
+        """Find a episode with a matching title.
+
         Args:
-            title (TYPE): Description
+            title (sting): Fx
+
+        Returns:
+                Episode
         """
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
+        """Get a episode witha mathcing title
+
+           Args:
+                title (string): fx Secret santa
+
+            Returns:
+                Episode
+        """
         return self.episode(title)
 
     def show(self):
+        """Return this seasons show."""
         return utils.listItems(self.server, self.parentKey)[0]
 
     def watched(self):
+        """Returns a list of watched Episode"""
         return self.episodes(watched=True)
 
     def unwatched(self):
+        """Returns a list of unwatched Episode"""
         return self.episodes(watched=False)
 
 
@@ -288,6 +308,11 @@ class Episode(Video, Playable):
     TYPE = 'episode'
 
     def _loadData(self, data):
+        """Used to set the attributes
+
+            Args:
+                data (Element): Usually built from server.query
+        """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.art = data.attrib.get('art', NA)
@@ -311,7 +336,6 @@ class Episode(Video, Playable):
         self.rating = utils.cast(float, data.attrib.get('rating', NA))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        #if self.isFullObject():
         self.directors = [media.Director(self.server, e)
                           for e in data if e.tag == media.Director.TYPE]
         self.media = [media.Media(self.server, e, self.initpath, self)
@@ -331,20 +355,25 @@ class Episode(Video, Playable):
 
     @property
     def isWatched(self):
+        """Returns True if watched, Fale if not."""
         return bool(self.viewCount > 0)
 
     @property
     def seasonNumber(self):
+        """Return this episode seasonnumber."""
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return self._seasonNumber
 
     @property
     def thumbUrl(self):
+        """Return url to thumb image."""
         return self.server.url(self.grandparentThumb)
 
     def season(self):
+        """Return this episode Season"""
         return utils.listItems(self.server, self.parentKey)[0]
 
     def show(self):
+        """Return this episodes Show"""
         return utils.listItems(self.server, self.grandparentKey)[0]

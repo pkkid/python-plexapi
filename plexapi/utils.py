@@ -533,7 +533,7 @@ def threaded(callback, listargs):
 
 
 def toDatetime(value, format=None):
-    """Helper for datetime
+    """Helper for datetime.
 
     Args:
         value (string): value to use to make datetime
