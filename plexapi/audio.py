@@ -9,7 +9,7 @@ NA = utils.NA
 
 class Audio(PlexPartialObject):
     TYPE = None
-    
+
     def __init__(self, server, data, initpath):
         super(Audio, self).__init__(data, initpath, server)
 
@@ -28,14 +28,15 @@ class Audio(PlexPartialObject):
         self.type = data.attrib.get('type', NA)
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
-        
+
     @property
     def thumbUrl(self):
-        return self.server.url(self.thumb)
-    
+        if self.thumb:
+            return self.server.url(self.thumb)
+
     def refresh(self):
         self.server.query('%s/refresh' % self.key, method=self.server.session.put)
-    
+
     def section(self):
         return self.server.library.sectionByID(self.librarySectionID)
 
@@ -151,7 +152,8 @@ class Track(Audio, Playable):
 
     @property
     def thumbUrl(self):
-        return self.server.url(self.parentThumb)
+        if self.parentThumb:
+            return self.server.url(self.parentThumb)
 
     def album(self):
         return utils.listItems(self.server, self.parentKey)[0]
