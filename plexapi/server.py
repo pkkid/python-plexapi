@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
-"""
-PlexServer
-"""
+import sys
 
-from xml.etree import ElementTree
+if sys.version_info <= (3, 3):
+    try:
+        from xml.etree import cElementTree as ElementTree
+    except ImportError:
+        from xml.etree import ElementTree
+else:
+    # py 3.3 and above selects the fastest automatically
+    from xml.etree import ElementTree
 
 import requests
 from requests.status_codes import _codes as codes
