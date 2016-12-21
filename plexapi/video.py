@@ -20,13 +20,13 @@ class Video(PlexPartialObject):
             server (Plexserver): The PMS server your connected to
             data (Element): Element built from server.query
             initpath (string): Relativ path fx /library/sections/1/all
-        
+
         """
         super(Video, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -47,7 +47,8 @@ class Video(PlexPartialObject):
 
     @property
     def thumbUrl(self):
-        return self.server.url(self.thumb)
+        if self.thumb:
+            return self.server.url(self.thumb)
 
     def analyze(self):
         """The primary purpose of media analysis is to gather information about
@@ -89,7 +90,7 @@ class Movie(Video, Playable):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -153,7 +154,7 @@ class Show(Video):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -175,11 +176,11 @@ class Show(Video):
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        if self.isFullObject():
-            self.genres = [media.Genre(self.server, e)
-                           for e in data if e.tag == media.Genre.TYPE]
-            self.roles = [media.Role(self.server, e)
-                          for e in data if e.tag == media.Role.TYPE]
+        #if self.isFullObject(): # will be fixed with docs.
+        self.genres = [media.Genre(self.server, e)
+                       for e in data if e.tag == media.Genre.TYPE]
+        self.roles = [media.Role(self.server, e)
+                      for e in data if e.tag == media.Role.TYPE]
 
     @property
     def actors(self):
@@ -232,7 +233,7 @@ class Season(Video):
 
     def _loadData(self, data):
         """Used to set the attributes
-        
+
         Args:
             data (Element): Usually built from server.query
         """
@@ -254,7 +255,7 @@ class Season(Video):
 
     def episodes(self, watched=None):
         """Return list of Episode
-        
+
         Args:
             watched (None, optional): Description
         """
@@ -263,7 +264,7 @@ class Season(Video):
 
     def episode(self, title):
         """Return Episode
-        
+
         Args:
             title (TYPE): Description
         """
@@ -341,7 +342,8 @@ class Episode(Video, Playable):
 
     @property
     def thumbUrl(self):
-        return self.server.url(self.grandparentThumb)
+        if self.grandparentThumb:
+            return self.server.url(self.grandparentThumb)
 
     def season(self):
         return utils.listItems(self.server, self.parentKey)[0]

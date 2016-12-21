@@ -52,7 +52,8 @@ class Library(object):
         return self._sectionsByID[sectionID]
 
     def all(self):
-        return utils.listItems(self.server, '/library/all')
+        return [item for section in self.library.sections()
+                for item in section.all()]
 
     def onDeck(self):
         return utils.listItems(self.server, '/library/onDeck')
