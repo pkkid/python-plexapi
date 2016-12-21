@@ -37,7 +37,7 @@ class Playlist(PlexPartialObject, Playable):
     def items(self):
         path = '%s/items' % self.key
         return utils.listItems(self.server, path)
-        
+
     def addItems(self, items):
         if not isinstance(items, (list, tuple)):
             items = [items]
@@ -61,23 +61,25 @@ class Playlist(PlexPartialObject, Playable):
         path = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after: path += '?after=%s' % after.playlistItemID
         return self.server.query(path, method=self.server.session.put)
-        
+
     def edit(self, title=None, summary=None):
         path = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
         return self.server.query(path, method=self.server.session.put)
-        
+
     def delete(self):
         return self.server.query(self.key, method=self.server.session.delete)
-        
+
     @classmethod
     def create(cls, server, title, items):
         if not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
+
         for item in items:
             if item.listType != items[0].listType:
                 raise BadRequest('Can not mix media types when building a playlist')
-            ratingKeys.append(item.ratingKey)
+            ratingKeys.append(str(item.ratingKey))
+
         ratingKeys = ','.join(ratingKeys)
         uuid = items[0].section().uuid
         path = '/playlists%s' % utils.joinArgs({
@@ -86,5 +88,6 @@ class Playlist(PlexPartialObject, Playable):
             'title': title,
             'smart': 0
         })
+
         data = server.query(path, method=server.session.post)[0]
         return cls(server, data, initpath=path)
