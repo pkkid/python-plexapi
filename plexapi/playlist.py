@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-PlexPlaylist
-"""
+
 from plexapi import utils
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast, toDatetime
@@ -45,7 +43,7 @@ class Playlist(PlexPartialObject, Playable):
         for item in items:
             if item.listType != self.playlistType:
                 raise BadRequest('Can not mix media types when building a playlist: %s and %s' % (self.playlistType, item.listType))
-            ratingKeys.append(item.ratingKey)
+            ratingKeys.append(str(item.ratingKey))
         uuid = items[0].section().uuid
         ratingKeys = ','.join(ratingKeys)
         path = '%s/items%s' % (self.key, utils.joinArgs({
