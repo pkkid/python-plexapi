@@ -7,8 +7,11 @@ Attributes:
     NA (TYPE): Description
     SEARCHTYPES (TYPE): Description
 """
+import inspect
 import re
 from datetime import datetime
+from xml.etree import ElementTree as ET
+
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
@@ -276,6 +279,77 @@ def cast(func, value):
     return value
 
 
+def Filter(item, **kwargs):
+    """Simple helper filter on stuff.
+       <>! etc is something that will be used in a later pr.
+
+       Args:
+            item (media, element): What to filter on
+            kwargs (dict): attrib key attrib value or class attr
+    """
+    if not kwargs:
+        yield False
+
+    for k, v in kwargs.items():
+        real_k = k
+        k = k.replace('<', '').replace('>', '').replace('!', '')
+
+        if isinstance(item, ET.Element):
+            i = item.attrib.get(k)
+            if i is None:
+                continue
+
+        else:
+            try:
+                i = getattr(item, k)
+            except AttributeError:
+                if real_k != 'tag':
+                    # Lets ignore errors for now.
+                    continue
+
+        if i == v:
+            yield True
+
+        # Emulate the the plexapi
+        elif '<' in real_k and v <= i:
+            yield True
+
+        elif '>' in real_k and v >= i:
+            yield True
+
+        elif '!' in real_k and v != i:
+            yield True
+
+        elif isinstance(i, list):
+            if isinstance(v, list):
+                if v == i:
+                    yield True
+            elif v in i:
+                yield True
+            else:
+                for z in i:
+                    # check this.
+                    if inspect.isclass(type(z)):
+                        if list(Filter(z, **kwargs)):
+                            yield True
+        else:
+            yield False
+
+
+def filterAll(items, typ='all', **kwargs):
+    """This helper will allow you to filter for any/all attrs
+
+       Use library search when ever you can as that is done by pms # later pr.
+
+    """
+    for i in items:
+        check = list(Filter(i, **kwargs))
+        if typ == 'all' and all(check):
+            yield i
+        elif typ == 'any' and any(check):
+            yield i
+
+
 def findKey(server, key):
     """Finds and builds a object based on ratingKey.
 
@@ -310,6 +384,40 @@ def findItem(server, path, title):
         if elem.attrib.get('title').lower() == title.lower():
             return buildItem(server, elem, path)
     raise NotFound('Unable to find item: %s' % title)
+
+
+def betterFind(server, path, title=None, typ=None, **kwargs):
+    """Finds and builds a object based on title, or xml stuff.
+
+    Args:
+        server (Plexserver): Description
+        path (string): Relative path
+        title (string): Fx 16 blocks
+        typ: (None, string): Require all or any kwargs
+        kwargs (dict): keys and values be strings, uses xml keys and
+                       values.
+
+    Raises:
+        NotFound: Unable to find item: title
+    """
+    if title:
+        return findItem(server, path, title)
+
+    elif kwargs and typ:
+        found = list(filterAll(server.query(path), typ, **kwargs))
+        if not found:
+            raise NotFound('Unable to find a item in %s filtering on %s' % (path, ''.join(kwargs.keys())))
+        return [buildItem(server, f, path) for f in found]
+
+
+
+
+
+
+
+
+
+
 
 
 def findLocations(data, single=False):
