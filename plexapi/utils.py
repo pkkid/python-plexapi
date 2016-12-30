@@ -281,7 +281,8 @@ def cast(func, value):
 
 def Filter(item, **kwargs):
     """Simple helper filter on stuff.
-       <>! etc is something that will be used in a later pr.
+       <>! etc is something that will be used in a later pr. Since pms
+       filter this way on every type.
 
        Args:
             item (media, element): What to filter on
@@ -333,6 +334,7 @@ def Filter(item, **kwargs):
                         if list(Filter(z, **kwargs)):
                             yield True
         else:
+
             yield False
 
 
@@ -343,6 +345,7 @@ def filterAll(items, typ='all', **kwargs):
 
     """
     for i in items:
+        print i, i.genres
         check = list(Filter(i, **kwargs))
         if typ == 'all' and all(check):
             yield i
