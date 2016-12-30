@@ -281,11 +281,15 @@ def cast(func, value):
 
 def Filter(item, **kwargs):
     """Simple helper filter on stuff.
-       <>! etc is something that will be used in a later pr.
+       <>! etc is something that will be used in a later pr. Since pms
+       cant filter this way on every type.
 
        Args:
-            item (media, element): What to filter on
+            item (media, element): The item to use the filter on.
             kwargs (dict): attrib key attrib value or class attr
+
+        Yields:
+            Bool
     """
     if not kwargs:
         yield False
@@ -333,13 +337,22 @@ def Filter(item, **kwargs):
                         if list(Filter(z, **kwargs)):
                             yield True
         else:
+
             yield False
 
 
 def filterAll(items, typ='all', **kwargs):
-    """This helper will allow you to filter for any/all attrs
+    """This helper will allow you to filter for any/all attrs.
 
        Use library search when ever you can as that is done by pms # later pr.
+
+       Args:
+            items (list): of Element or class.
+            typ (str): Require all or any kwargs.
+            kwargs (dict): Dict passed to Filter to filter on.
+
+        Yields:
+            Element or Class
 
     """
     for i in items:
@@ -408,16 +421,6 @@ def betterFind(server, path, title=None, typ=None, **kwargs):
         if not found:
             raise NotFound('Unable to find a item in %s filtering on %s' % (path, ''.join(kwargs.keys())))
         return [buildItem(server, f, path) for f in found]
-
-
-
-
-
-
-
-
-
-
 
 
 def findLocations(data, single=False):
