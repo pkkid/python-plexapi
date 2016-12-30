@@ -282,10 +282,10 @@ def cast(func, value):
 def Filter(item, **kwargs):
     """Simple helper filter on stuff.
        <>! etc is something that will be used in a later pr. Since pms
-       filter this way on every type.
+       cant filter this way on every type.
 
        Args:
-            item (media, element): What to filter on
+            item (media, element): The item to use the filter on.
             kwargs (dict): attrib key attrib value or class attr
     """
     if not kwargs:
@@ -345,7 +345,6 @@ def filterAll(items, typ='all', **kwargs):
 
     """
     for i in items:
-        print i, i.genres
         check = list(Filter(i, **kwargs))
         if typ == 'all' and all(check):
             yield i
