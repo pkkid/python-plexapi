@@ -460,9 +460,9 @@ def listItems(server, path, libtype=None, watched=None, bytag=False):
     for elem in server.query(path):
         if libtype and elem.attrib.get('type') != libtype:
             continue
-        if watched is True and elem.attrib.get('viewCount', 0) == 0:
+        if watched is True and int(elem.attrib.get('viewCount', 0)) == 0:
             continue
-        if watched is False and elem.attrib.get('viewCount', 0) >= 1:
+        if watched is False and int(elem.attrib.get('viewCount', 0)) >= 1:
             continue
         try:
             items.append(buildItem(server, elem, path, bytag))
