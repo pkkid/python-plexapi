@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-PlexLibrary
-"""
+
 from plexapi import log, utils
 from plexapi import X_PLEX_CONTAINER_SIZE
 from plexapi.compat import unquote
@@ -52,7 +50,7 @@ class Library(object):
         return self._sectionsByID[sectionID]
 
     def all(self):
-        return [item for section in self.library.sections()
+        return [item for section in self.sections()
                 for item in section.all()]
 
     def onDeck(self):
