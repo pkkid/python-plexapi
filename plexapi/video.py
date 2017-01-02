@@ -44,7 +44,8 @@ class Video(PlexPartialObject):
     @property
     def thumbUrl(self):
         """Return url to thumb image."""
-        return self.server.url(self.thumb)
+        if self.thumb:
+            return self.server.url(self.thumb)
 
     def analyze(self):
         """The primary purpose of media analysis is to gather information about
@@ -169,11 +170,11 @@ class Show(Video):
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        if self.isFullObject():
-            self.genres = [media.Genre(self.server, e)
-                           for e in data if e.tag == media.Genre.TYPE]
-            self.roles = [media.Role(self.server, e)
-                          for e in data if e.tag == media.Role.TYPE]
+        #if self.isFullObject(): # will be fixed with docs.
+        self.genres = [media.Genre(self.server, e)
+                       for e in data if e.tag == media.Genre.TYPE]
+        self.roles = [media.Role(self.server, e)
+                      for e in data if e.tag == media.Role.TYPE]
 
     @property
     def actors(self):
@@ -263,6 +264,11 @@ class Season(Video):
 
            Args:
                 watched (bool): Defaults to None. Exclude watched episodes
+
+           Returns:
+                list: of Episode
+
+        
         """
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, childrenKey, watched=watched)
@@ -280,7 +286,7 @@ class Season(Video):
         return utils.findItem(self.server, path, title)
 
     def get(self, title):
-        """Get a episode witha mathcing title
+        """Get a episode witha matching title
 
            Args:
                 title (str): fx Secret santa
@@ -368,7 +374,8 @@ class Episode(Video, Playable):
     @property
     def thumbUrl(self):
         """Return url to thumb image."""
-        return self.server.url(self.grandparentThumb)
+        if self.grandparentThumb:
+            return self.server.url(self.grandparentThumb)
 
     def season(self):
         """Return this episode Season"""

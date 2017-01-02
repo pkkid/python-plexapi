@@ -236,6 +236,28 @@ class PlexServer(object):
             return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
         return '%s%s' % (self.baseurl, path)
 
+    def transcodeImage(self, media, height, width, opacity=100, saturation=100):
+        """Transcode a image.
+
+           Args:
+                height (int): height off image
+                width (int): width off image
+                opacity (int): Dont seems to be in use anymore # check it
+                saturation (int): transparency
+
+            Returns:
+                transcoded_image_url or None
+
+        """
+        # check for NA incase any tries to pass thumb, or art directly.
+        if media:
+            transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
+                            height, width, opacity, saturation, media)
+
+            return self.url(transcode_url)
+
+
+
 
 class Account(object):
     """This is the locally cached MyPlex account information.
@@ -264,8 +286,8 @@ class Account(object):
         """Set attrs.
 
         Args:
-                server (Plexclient):
-                data (xml.etree.ElementTree.Element): used to set the class attributes.
+            server (Plexclient):
+            data (xml.etree.ElementTree.Element): used to set the class attributes.
         """
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')

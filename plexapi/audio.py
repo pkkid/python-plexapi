@@ -64,7 +64,8 @@ class Audio(PlexPartialObject):
     @property
     def thumbUrl(self):
         """Return url to thumb image."""
-        return self.server.url(self.thumb)
+        if self.thumb:
+            return self.server.url(self.thumb)
 
     def refresh(self):
         """Refresh the metadata."""
@@ -308,7 +309,8 @@ class Track(Audio, Playable):
     @property
     def thumbUrl(self):
         """Return url to thumb image."""
-        return self.server.url(self.parentThumb)
+        if self.parentThumb:
+            return self.server.url(self.parentThumb)
 
     def album(self):
         """Return this track's Album."""
