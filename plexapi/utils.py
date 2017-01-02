@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-PlexAPI Utils
 
-Attributes:
-    LIBRARY_TYPES (dict): Description
-    NA (TYPE): Description
-    SEARCHTYPES (TYPE): Description
-"""
 import re
 from datetime import datetime
 from plexapi.compat import quote, urlencode
@@ -39,38 +32,29 @@ class _NA(object):
     """
 
     def __bool__(self):
-        """Summary
+        """Make sure Na always is False.
 
         Returns:
-            TYPE: Description
+            bool: False
         """
         return False
 
     def __eq__(self, other):
-        """Summary
+        """Check eq.
 
         Args:
-            other (TYPE): Description
+            other (str): Description
 
         Returns:
-            TYPE: Description
+            bool: True is equal
         """
         return isinstance(other, _NA) or other in [None, '__NA__']
 
     def __nonzero__(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
         return False
 
     def __repr__(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """Pretty print."""
         return '__NA__'
 
 NA = _NA()
@@ -83,15 +67,15 @@ class PlexPartialObject(object):
     automatically and update itself.
 
     Attributes:
-        initpath (TYPE): Description
-        server (TYPE): Description
+        initpath (str): Relative url to PMS
+        server (): Description
     """
 
     def __init__(self, data, initpath, server=None):
         """
         Args:
             data (xml.etree.ElementTree.Element): passed from server.query
-            initpath (string): Relative path
+            initpath (str): Relative path
             server (None or Plexserver, optional): PMS class your connected to
         """
         self.server = server
@@ -120,7 +104,7 @@ class PlexPartialObject(object):
         """Auto reload self, if the attribute is NA
 
         Args:
-            attr (string): fx key
+            attr (str): fx key
         """
         if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
             return self.__dict__.get(attr, NA)
@@ -131,7 +115,7 @@ class PlexPartialObject(object):
         """Set attribute
 
         Args:
-            attr (string): fx key
+            attr (str): fx key
             value (TYPE): Description
         """
         if value != NA or self.isFullObject():
@@ -164,12 +148,12 @@ class Playable(object):
        Artists, Albums which are all not playable.
 
     Attributes: # todo
-        player (TYPE): Description
-        playlistItemID (TYPE): Description
-        sessionKey (TYPE): Description
-        transcodeSession (TYPE): Description
-        username (TYPE): Description
-        viewedAt (datetime): Description
+        player (Plexclient): Player
+        playlistItemID (int): Playlist item id
+        sessionKey (int): 1223
+        transcodeSession (str): 12312312
+        username (str): Fx Hellowlol
+        viewedAt (datetime): viewed at.
     """
 
     def _loadData(self, data):
@@ -241,7 +225,7 @@ def buildItem(server, elem, initpath, bytag=False):
     Args:
         server (Plexserver): Your connected to.
         elem (xml.etree.ElementTree.Element): xml from PMS
-        initpath (string): Relative path
+        initpath (str): Relative path
         bytag (bool, optional): Description # figure out what this do
 
     Raises:
@@ -300,8 +284,8 @@ def findItem(server, path, title):
 
     Args:
         server (Plexserver): Description
-        path (string): Relative path
-        title (string): Fx 16 blocks
+        path (str): Relative path
+        title (str): Fx 16 blocks
 
     Raises:
         NotFound: Unable to find item: title
@@ -355,7 +339,7 @@ def findStreams(media, streamtype):
 
     Args:
         media (Show, Movie, Episode): A item where find streams
-        streamtype (string): Possible options [movie, show, episode] # is this correct?
+        streamtype (str): Possible options [movie, show, episode] # is this correct?
 
     Returns:
         list: of streams
@@ -402,10 +386,10 @@ def findUsername(data):
     return None
 
 
-def isInt(string):
+def isInt(str):
     """Check of a string is a int"""
     try:
-        int(string)
+        int(str)
         return True
     except ValueError:
         return False
@@ -435,7 +419,7 @@ def listChoices(server, path):
 
     Args:
         server (Plexserver): Server your connected to
-        path (string): Relative path to PMS
+        path (str): Relative path to PMS
 
     Returns:
         dict: title:key
@@ -448,7 +432,7 @@ def listItems(server, path, libtype=None, watched=None, bytag=False):
 
     Args:
         server (Plexserver): PMS your connected to.
-        path (string): Relative path to PMS
+        path (str): Relative path to PMS
         libtype (None or string, optional): [movie, show, episode, music] # check me
         watched (None, True, False, optional): Skip or include watched items
         bytag (bool, optional): Dunno wtf this is used for # todo
@@ -496,7 +480,7 @@ def searchType(libtype):
        Used when querying PMS.
 
     Args:
-        libtype (string): Possible options see SEARCHTYPES
+        libtype (str): Possible options see SEARCHTYPES
 
     Returns:
         int: fx 1
@@ -533,10 +517,10 @@ def threaded(callback, listargs):
 
 
 def toDatetime(value, format=None):
-    """Helper for datetime
+    """Helper for datetime.
 
     Args:
-        value (string): value to use to make datetime
+        value (str): value to use to make datetime
         format (None, optional): string as strptime.
 
     Returns:
