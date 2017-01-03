@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from plexapi import log, utils
 from plexapi import X_PLEX_CONTAINER_SIZE
 from plexapi.compat import unquote
-from plexapi.media import MediaTag
+from plexapi.media import MediaTag, Genre, Role, Director
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -96,6 +97,9 @@ class Library(object):
 
     def refresh(self):
         self.server.query('/library/sections/all/refresh')
+
+    def __len__(self):
+        return len(self.sections())
 
 
 class LibrarySection(object):
@@ -319,6 +323,42 @@ class PhotoSection(LibrarySection):
 
     def searchPhotos(self, **kwargs):
         return self.search(libtype='photo', **kwargs)
+
+
+@utils.register_libtype
+class Hub(object):
+    TYPE = 'Hub'
+
+    def __init__(self, server, data, initpath):
+        self.server = server
+        self.initpath = initpath
+        self.type = data.attrib.get('type')
+        self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.title = data.attrib.get('title')
+        self._items = []
+        self.size = utils.cast(int, data.attrib.get('title'), 0)
+
+        if self.type == 'genre':
+            self._items = [Genre(self.server, elem) for elem in data]
+        elif self.type == 'director':
+            self._items = [Director(self.server, elem) for elem in data]
+        elif self.type == 'actor':
+            self._items = [Role(self.server, elem) for elem in data]
+        else:
+            for elem in data:
+                try:
+                    self._items.append(utils.buildItem(self.server, elem, '/hubs'))
+                except Exception as e:
+                    logging.exception('Failed %s to build %s' % (self.type, self.title))
+
+    def __repr__(self):
+        return '<Hub:%s>' % self.title.encode('utf8')
+
+    def __len__(self):
+        return self.size
+
+    def all(self):
+        return self._items
 
 
 @utils.register_libtype

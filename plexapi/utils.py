@@ -242,22 +242,33 @@ def buildItem(server, elem, initpath, bytag=False):
 
 
 def cast(func, value):
-    """Helper to change to the correct type
+    """Helper to change to the correct type.
 
     Args:
         func (function): function to used [int, bool float]
         value (string, int, float): value to cast
+
+    Returns:
+        None, nan, int, bool, or float
+
+    Raises:
+        TypeError: cast only allows int, float and bool
+                   as func argument
+
     """
-    if value not in [None, NA]:
-        if func == bool:
-            return bool(int(value))
-        elif func in [int, float]:
-            try:
-                return func(value)
-            except ValueError:
-                return float('nan')
-        return func(value)
-    return value
+    if not value:
+        return
+
+    if func in (int, float):
+        try:
+            return func(value)
+        except ValueError:
+            return float('nan')
+
+    elif func == bool:
+        return bool(int(value))
+    else:
+        raise TypeError('Cast only allows int, float and bool')
 
 
 def findKey(server, key):

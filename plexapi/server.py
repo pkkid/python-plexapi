@@ -17,7 +17,7 @@ from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, utils
 from plexapi import audio, video, photo, playlist  # noqa; required # why is this needed?
 from plexapi.client import PlexClient
-from plexapi.compat import quote
+from plexapi.compat import quote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.playlist import Playlist
@@ -210,20 +210,55 @@ class PlexServer(object):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def search(self, query, mediatype=None):
+    def search(self, query, mediatype=None, limit=None, **kwargs):
         """Searching within a library section is much more powerful.
 
         Args:
             query (str): Search str
             mediatype (str, optional): Limit your search to a media type.
+            kwargs (dict): #TODO
 
         Returns:
             List
         """
-        items = utils.listItems(self, '/search?query=%s' % quote(query))
+        if query and not kwargs:
+            items = []
+            for item in self.hubs(query, mediatype=mediatype, limit=limit):
+                items.extend(item.all())
+            return items
+
+        else:
+            items = utils.listItems(self, '/search?query=%s' % quote(query))
+            if mediatype:
+                return [item for item in items if item.type == mediatype]
+            else:
+                return items
+
+    def hubs(self, query, mediatype=None, limit=None):
+        """Searching within a library section is much more powerful.
+
+        Args:
+            query (str): Search str
+            mediatype (str, optional): Limit your search to a media type.
+            limit (int) Default to None, limit your results to x results
+
+        Returns:
+            List: of Hub
+        """
+        p = {}
+
+        if query:
+            p['query'] = query
         if mediatype:
-            return [item for item in items if item.type == mediatype]
-        return items
+            p['section'] = utils.SEARCHTYPES[mediatype]
+        if limit:
+            p['limit'] = limit
+
+        u = '/hubs/search?%s' % urlencode(p)
+
+        hubs = utils.listItems(self, u, bytag=True)
+
+        return [i for i in hubs if i]
 
     def sessions(self):
         """List all active sessions."""
@@ -255,8 +290,6 @@ class PlexServer(object):
                             height, width, opacity, saturation, media)
 
             return self.url(transcode_url)
-
-
 
 
 class Account(object):
