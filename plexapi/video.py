@@ -189,12 +189,16 @@ class Show(Video):
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, path, Season.TYPE)
 
-    def season(self, title):
+    def season(self, title=None):
         """Returns a Season
 
         Args:
-            title (str): fx Season1
+            title (str, int): fx Season 1
         """
+        title = str(title)
+        if title.isdigit():
+            title = 'season %s' % title
+
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
 
@@ -207,9 +211,18 @@ class Show(Video):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
         return utils.listItems(self.server, leavesKey, watched=watched)
 
-    def episode(self, title):
-        path = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.findItem(self.server, path, title)
+    def episode(self, title=None, season=None, episode=None):
+        if title:
+            path = '/library/metadata/%s/allLeaves' % self.ratingKey
+            return utils.findItem(self.server, path, title)
+
+        elif season and episode:
+            results = [i for i in self.episodes()
+                       if i.seasonNumber == season and i.index == episode]
+            if results:
+                return results[0]
+
+
 
     def watched(self):
         """Return a list of watched episodes"""
@@ -244,7 +257,7 @@ class Season(Video):
         """
         Video._loadData(self, data)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.index = data.attrib.get('index', NA)
+        self.index = utils.cast(int, data.attrib.get('index', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey', NA))
         self.viewedLeafCount = utils.cast(
@@ -268,25 +281,38 @@ class Season(Video):
            Returns:
                 list: of Episode
 
-        
+
         """
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, childrenKey, watched=watched)
 
-    def episode(self, title):
-        """Find a episode with a matching title.
+    def episode(self, title=None, season=None, episode=None):
+        """Find a episode with a matching title or match
+           against season and episode.
 
         Args:
             title (sting): Fx
+            season (int, optional): Not needed, just kept for comp with Show.
+            episode (int, optional): Default None
 
         Returns:
                 Episode
         """
-        path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.findItem(self.server, path, title)
+        if title:
+            path = '/library/metadata/%s/children' % self.ratingKey
+            return utils.findItem(self.server, path, title)
+
+        if episode:
+            if season is None:
+                season = self.index
+            results = [i for i in self.episodes()
+                       if i.seasonNumber == season and i.index == episode]
+            if results:
+                return results[0]
+
 
     def get(self, title):
-        """Get a episode witha matching title
+        """Get a episode witha matching title.
 
            Args:
                 title (str): fx Secret santa
@@ -332,7 +358,7 @@ class Episode(Video, Playable):
         self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
         self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.guid = data.attrib.get('guid', NA)
-        self.index = data.attrib.get('index', NA)
+        self.index = utils.cast(int, data.attrib.get('index', NA))
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentIndex = data.attrib.get('parentIndex', NA)
@@ -369,7 +395,7 @@ class Episode(Video, Playable):
         """Return this episode seasonnumber."""
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
-        return self._seasonNumber
+        return utils.cast(int, self._seasonNumber)
 
     @property
     def thumbUrl(self):
