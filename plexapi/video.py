@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from plexapi import media, utils
+from plexapi.exceptions import NotFound
 from plexapi.utils import Playable, PlexPartialObject
 
 NA = utils.NA
@@ -195,9 +196,8 @@ class Show(Video):
         Args:
             title (str, int): fx Season 1
         """
-        title = str(title)
-        if title.isdigit():
-            title = 'season %s' % title
+        if isinstance(title, int):
+            title = 'Season %s' % title
 
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
@@ -212,6 +212,33 @@ class Show(Video):
         return utils.listItems(self.server, leavesKey, watched=watched)
 
     def episode(self, title=None, season=None, episode=None):
+        """Find a episode using a title or season and episode.
+
+           Note:
+                Both season and episode is required if title is missing.
+
+           Args:
+                title (str): Default None
+                season (int): Season number, default None
+                episode (int): Episode number, default None
+
+           Raises:
+                ValueError: If season and episode is missing.
+                NotFound: If the episode is missing.
+
+           Returns:
+                Episode
+
+           Examples:
+                >>> plex.search('The blacklist')[0].episode(season=1, episode=1)
+                <Episode:116263:The.Freelancer>
+                >>> plex.search('The blacklist')[0].episode('The Freelancer')
+                <Episode:116263:The.Freelancer>
+
+        """
+        if not title and (not season or not episode):
+            raise TypeError('Missing argument: title or season and episode are required')
+
         if title:
             path = '/library/metadata/%s/allLeaves' % self.ratingKey
             return utils.findItem(self.server, path, title)
@@ -221,8 +248,8 @@ class Show(Video):
                        if i.seasonNumber == season and i.index == episode]
             if results:
                 return results[0]
-
-
+            else:
+                raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
 
     def watched(self):
         """Return a list of watched episodes"""
@@ -260,6 +287,7 @@ class Season(Video):
         self.index = utils.cast(int, data.attrib.get('index', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey', NA))
+        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
 
@@ -286,33 +314,48 @@ class Season(Video):
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, childrenKey, watched=watched)
 
-    def episode(self, title=None, season=None, episode=None):
-        """Find a episode with a matching title or match
-           against season and episode.
+    def episode(self, title=None, episode=None):
+        """Find a episode using a title or season and episode.
 
-        Args:
-            title (sting): Fx
-            season (int, optional): Not needed, just kept for comp with Show.
-            episode (int, optional): Default None
+           Note:
+                episode is required if title is missing.
 
-        Returns:
+           Args:
+                title (str): Default None
+                episode (int): Episode number, default None
+
+           Raises:
+                TypeError: If title and episode is missing.
+                NotFound: If that episode cant be found.
+
+           Returns:
                 Episode
+
+           Examples:
+                >>> plex.search('The blacklist').season(1).episode(episode=1)
+                <Episode:116263:The.Freelancer>
+                >>> plex.search('The blacklist').season(1).episode('The Freelancer')
+                <Episode:116263:The.Freelancer>
+
         """
+        if not title and not episode:
+            raise TypeError('Missing argument, you need to use title or episode.')
+
         if title:
             path = '/library/metadata/%s/children' % self.ratingKey
             return utils.findItem(self.server, path, title)
 
-        if episode:
-            if season is None:
-                season = self.index
+        elif episode:
             results = [i for i in self.episodes()
-                       if i.seasonNumber == season and i.index == episode]
+                       if i.seasonNumber == self.index and i.index == episode]
             if results:
                 return results[0]
+            else:
+                raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
 
 
     def get(self, title):
-        """Get a episode witha matching title.
+        """Get a episode with a matching title.
 
            Args:
                 title (str): fx Secret santa
@@ -333,6 +376,12 @@ class Season(Video):
     def unwatched(self):
         """Returns a list of unwatched Episode"""
         return self.episodes(watched=False)
+
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
+        title = self.title.replace(' ', '.')[0:20].encode('utf8')
+        return '<%s:%s:%s:%s>' % (clsname, key, self.grandparentTitle, title)
 
 
 @utils.register_libtype
@@ -384,6 +433,12 @@ class Episode(Video, Playable):
         self.transcodeSession = utils.findTranscodeSession(self.server, data)
         # Cached season number
         self._seasonNumber = None
+
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
+        title = self.title.replace(' ', '.')[0:20].encode('utf8')
+        return '<%s:%s:%s:S%s:E%s:%s>' % (clsname, key, self.grandparentTitle, self.seasonNumber, self.index, title)
 
     @property
     def isWatched(self):
