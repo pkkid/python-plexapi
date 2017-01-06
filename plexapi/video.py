@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from plexapi import media, utils
+from plexapi.exceptions import NotFound
 from plexapi.utils import Playable, PlexPartialObject
 
 NA = utils.NA
@@ -189,12 +190,15 @@ class Show(Video):
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, path, Season.TYPE)
 
-    def season(self, title):
+    def season(self, title=None):
         """Returns a Season
 
         Args:
-            title (str): fx Season1
+            title (str, int): fx Season 1
         """
+        if isinstance(title, int):
+            title = 'Season %s' % title
+
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
 
@@ -207,9 +211,45 @@ class Show(Video):
         leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
         return utils.listItems(self.server, leavesKey, watched=watched)
 
-    def episode(self, title):
-        path = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.findItem(self.server, path, title)
+    def episode(self, title=None, season=None, episode=None):
+        """Find a episode using a title or season and episode.
+
+           Note:
+                Both season and episode is required if title is missing.
+
+           Args:
+                title (str): Default None
+                season (int): Season number, default None
+                episode (int): Episode number, default None
+
+           Raises:
+                ValueError: If season and episode is missing.
+                NotFound: If the episode is missing.
+
+           Returns:
+                Episode
+
+           Examples:
+                >>> plex.search('The blacklist')[0].episode(season=1, episode=1)
+                <Episode:116263:The.Freelancer>
+                >>> plex.search('The blacklist')[0].episode('The Freelancer')
+                <Episode:116263:The.Freelancer>
+
+        """
+        if not title and (not season or not episode):
+            raise TypeError('Missing argument: title or season and episode are required')
+
+        if title:
+            path = '/library/metadata/%s/allLeaves' % self.ratingKey
+            return utils.findItem(self.server, path, title)
+
+        elif season and episode:
+            results = [i for i in self.episodes()
+                       if i.seasonNumber == season and i.index == episode]
+            if results:
+                return results[0]
+            else:
+                raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
 
     def watched(self):
         """Return a list of watched episodes"""
@@ -244,9 +284,10 @@ class Season(Video):
         """
         Video._loadData(self, data)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.index = data.attrib.get('index', NA)
+        self.index = utils.cast(int, data.attrib.get('index', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey', NA))
+        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
 
@@ -268,25 +309,53 @@ class Season(Video):
            Returns:
                 list: of Episode
 
-        
+
         """
         childrenKey = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, childrenKey, watched=watched)
 
-    def episode(self, title):
-        """Find a episode with a matching title.
+    def episode(self, title=None, episode=None):
+        """Find a episode using a title or season and episode.
 
-        Args:
-            title (sting): Fx
+           Note:
+                episode is required if title is missing.
 
-        Returns:
+           Args:
+                title (str): Default None
+                episode (int): Episode number, default None
+
+           Raises:
+                TypeError: If title and episode is missing.
+                NotFound: If that episode cant be found.
+
+           Returns:
                 Episode
+
+           Examples:
+                >>> plex.search('The blacklist').season(1).episode(episode=1)
+                <Episode:116263:The.Freelancer>
+                >>> plex.search('The blacklist').season(1).episode('The Freelancer')
+                <Episode:116263:The.Freelancer>
+
         """
-        path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.findItem(self.server, path, title)
+        if not title and not episode:
+            raise TypeError('Missing argument, you need to use title or episode.')
+
+        if title:
+            path = '/library/metadata/%s/children' % self.ratingKey
+            return utils.findItem(self.server, path, title)
+
+        elif episode:
+            results = [i for i in self.episodes()
+                       if i.seasonNumber == self.index and i.index == episode]
+            if results:
+                return results[0]
+            else:
+                raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
+
 
     def get(self, title):
-        """Get a episode witha matching title
+        """Get a episode with a matching title.
 
            Args:
                 title (str): fx Secret santa
@@ -307,6 +376,12 @@ class Season(Video):
     def unwatched(self):
         """Returns a list of unwatched Episode"""
         return self.episodes(watched=False)
+
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
+        title = self.title.replace(' ', '.')[0:20].encode('utf8')
+        return '<%s:%s:%s:%s>' % (clsname, key, self.grandparentTitle, title)
 
 
 @utils.register_libtype
@@ -332,7 +407,7 @@ class Episode(Video, Playable):
         self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
         self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.guid = data.attrib.get('guid', NA)
-        self.index = data.attrib.get('index', NA)
+        self.index = utils.cast(int, data.attrib.get('index', NA))
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentIndex = data.attrib.get('parentIndex', NA)
@@ -359,6 +434,12 @@ class Episode(Video, Playable):
         # Cached season number
         self._seasonNumber = None
 
+    def __repr__(self):
+        clsname = self.__class__.__name__
+        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
+        title = self.title.replace(' ', '.')[0:20].encode('utf8')
+        return '<%s:%s:%s:S%s:E%s:%s>' % (clsname, key, self.grandparentTitle, self.seasonNumber, self.index, title)
+
     @property
     def isWatched(self):
         """Returns True if watched, False if not."""
@@ -369,7 +450,7 @@ class Episode(Video, Playable):
         """Return this episode seasonnumber."""
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
-        return self._seasonNumber
+        return utils.cast(int, self._seasonNumber)
 
     @property
     def thumbUrl(self):
