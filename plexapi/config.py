@@ -18,6 +18,14 @@ class PlexConfig(ConfigParser):
         self.read(path)
         self.data = self._asDict()
 
+    def __getattr__(self, attr):
+        if attr not in ('get', '_asDict', 'data'):
+            for section in self._sections:
+                for name, value in self._sections[section].items():
+                    if name == attr:
+                        return value
+        raise Exception('Config attr not found: %s' % attr)
+
     def get(self, key, default=None, cast=None):
         try:
             section, name = key.split('.')
