@@ -1,0 +1,695 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>myplex &mdash; Python PlexAPI 2.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Python PlexAPI 2.0.2 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Python PlexAPI
+          
+
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="simple">
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">Python PlexAPI</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      
+    <li>myplex</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for myplex</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">cElementTree</span> <span class="k">as</span> <span class="n">ElementTree</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># py 3.3 and above selects the fastest automatically</span>
+    <span class="kn">from</span> <span class="nn">xml.etree</span> <span class="kn">import</span> <span class="n">ElementTree</span>
+
+<span class="kn">from</span> <span class="nn">requests.status_codes</span> <span class="kn">import</span> <span class="n">_codes</span> <span class="k">as</span> <span class="n">codes</span>
+
+<span class="kn">import</span> <span class="nn">plexapi</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">plexapi</span> <span class="kn">import</span> <span class="n">TIMEOUT</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">plexapi.exceptions</span> <span class="kn">import</span> <span class="n">BadRequest</span><span class="p">,</span> <span class="n">NotFound</span><span class="p">,</span> <span class="n">Unauthorized</span>
+<span class="kn">from</span> <span class="nn">plexapi.client</span> <span class="kn">import</span> <span class="n">PlexClient</span>
+<span class="kn">from</span> <span class="nn">plexapi.server</span> <span class="kn">import</span> <span class="n">PlexServer</span>
+
+
+<div class="viewcode-block" id="MyPlexAccount"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount">[docs]</a><span class="k">class</span> <span class="nc">MyPlexAccount</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Your personal MyPlex account and profile information. The easiest way to build</span>
+<span class="sd">        this object is by calling the staticmethod :func:`~myplex.MyPlexAccount.signin`</span>
+<span class="sd">        with your username and password. This object represents the data found Account on</span>
+<span class="sd">        the myplex.tv servers at the url https://plex.tv/users/account.</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            * ``authenticationToken``: (str) &#39;&lt;Unknown&gt;</span>
+<span class="sd">            * ``certificateVersion``: (str) &lt;Unknown&gt;</span>
+<span class="sd">            * ``cloudSyncDevice``: (str) &lt;Unknown&gt;</span>
+<span class="sd">            * ``email``: (str) Your current Plex email address.</span>
+<span class="sd">            * ``entitlements``: (List&lt;str&gt;) List of devices your allowed to use with this account.</span>
+<span class="sd">            * ``guest``: (bool) &lt;Unknown&gt;</span>
+<span class="sd">            * ``home``: (bool) &lt;Unknown&gt;</span>
+<span class="sd">            * ``homeSize``: (int) &lt;Unknown&gt;</span>
+<span class="sd">            * ``id``: (str) Your Plex account ID.</span>
+<span class="sd">            * ``locale``: (str) Your Plex locale</span>
+<span class="sd">            * ``mailing_list_status``: (str) Your current mailing list status.</span>
+<span class="sd">            * ``maxHomeSize``: (int) &lt;Unknown&gt;</span>
+<span class="sd">            * ``queueEmail``: (str) Email address to add items to your `Watch Later` queue.</span>
+<span class="sd">            * ``queueUid``: (str) &lt;Unknown&gt;</span>
+<span class="sd">            * ``restricted``: (bool)&lt;Unknown&gt;</span>
+<span class="sd">            * ``roles``: (List&lt;str&gt;) Lit of account roles. Plexpass membership listed here.</span>
+<span class="sd">            * ``scrobbleTypes``: (str) Description</span>
+<span class="sd">            * ``secure``: (bool) Description</span>
+<span class="sd">            * ``subscriptionActive``: (bool) True if your subsctiption is active.</span>
+<span class="sd">            * ``subscriptionFeatures``: (List&lt;str&gt;) List of features allowed on your subscription.</span>
+<span class="sd">            * ``subscriptionPlan``: (str) Name of subscription plan.</span>
+<span class="sd">            * ``subscriptionStatus``: (str) String representation of `subscriptionActive`.</span>
+<span class="sd">            * ``thumb``: (str) URL of your account thumbnail.</span>
+<span class="sd">            * ``title``: (str) &lt;Unknown&gt; - Looks like an alias for `username`.</span>
+<span class="sd">            * ``username``: (str) Your account username.</span>
+<span class="sd">            * ``uuid``: (str) &lt;Unknown&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">BASEURL</span> <span class="o">=</span> <span class="s1">&#39;https://plex.tv/users/account&#39;</span>
+    <span class="n">SIGNIN</span> <span class="o">=</span> <span class="s1">&#39;https://my.plexapp.com/users/sign_in.xml&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">initpath</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">authenticationToken</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;authenticationToken&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">certificateVersion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;certificateVersion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cloudSyncDevice</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cloudSyncDevice&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">guest</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;guest&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">home</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;home&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">homeSize</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;homeSize&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locale</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;locale&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mailing_list_status</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mailing_list_status&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxHomeSize</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;maxHomeSize&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queueEmail</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;queueEmail&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queueUid</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;queueUid&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restricted</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;restricted&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scrobbleTypes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;scrobbleTypes&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">secure</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;secure&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumb</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;thumb&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uuid&#39;</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Complete these items!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionActive</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># renamed on server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionStatus</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># renamed on server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionPlan</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># renmaed on server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscriptionFeatures</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># renamed on server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roles</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entitlements</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MyPlexAccount.devices"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.devices">[docs]</a>    <span class="k">def</span> <span class="nf">devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns a list of all :class:`~myplex.MyPlexDevice` objects connected to the server. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_listItems</span><span class="p">(</span><span class="n">MyPlexDevice</span><span class="o">.</span><span class="n">BASEURL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">authenticationToken</span><span class="p">,</span> <span class="n">MyPlexDevice</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyPlexAccount.device"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.device">[docs]</a>    <span class="k">def</span> <span class="nf">device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the :class:`~myplex.MyPlexDevice` that matched the name specified.</span>
+<span class="sd">            </span>
+<span class="sd">            * **name**: (str) Name to match against.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_findItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">(),</span> <span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyPlexAccount.resources"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.resources">[docs]</a>    <span class="k">def</span> <span class="nf">resources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Resources.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List: of MyPlexResource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_listItems</span><span class="p">(</span><span class="n">MyPlexResource</span><span class="o">.</span><span class="n">BASEURL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">authenticationToken</span><span class="p">,</span> <span class="n">MyPlexResource</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyPlexAccount.resource"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.resource">[docs]</a>    <span class="k">def</span> <span class="nf">resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find resource ny name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): to find</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            class: MyPlexResource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_findItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="p">(),</span> <span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyPlexAccount.users"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.users">[docs]</a>    <span class="k">def</span> <span class="nf">users</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List of users.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List: of MyPlexuser</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_listItems</span><span class="p">(</span><span class="n">MyPlexUser</span><span class="o">.</span><span class="n">BASEURL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">authenticationToken</span><span class="p">,</span> <span class="n">MyPlexUser</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MyPlexAccount.user"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.user">[docs]</a>    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find a user by email.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (str): Username to match against.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            class: User</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_findItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">users</span><span class="p">(),</span> <span class="n">email</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">])</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="MyPlexAccount.signin"><a class="viewcode-back" href="../index.html#myplex.MyPlexAccount.signin">[docs]</a>    <span class="k">def</span> <span class="nf">signin</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username</span>
+<span class="sd">            password (str): password</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            class: MyPlexAccount</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BadRequest: (HTTPCODE) http codename</span>
+<span class="sd">            Unauthorized: (HTTPCODE) http codename</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;X-Plex-Token&#39;</span> <span class="ow">in</span> <span class="n">plexapi</span><span class="o">.</span><span class="n">BASE_HEADERS</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plexapi</span><span class="o">.</span><span class="n">BASE_HEADERS</span><span class="p">[</span><span class="s1">&#39;X-Plex-Token&#39;</span><span class="p">]</span>
+        <span class="n">auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;POST </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SIGNIN</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">SIGNIN</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">plexapi</span><span class="o">.</span><span class="n">BASE_HEADERS</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+            <span class="n">codename</span> <span class="o">=</span> <span class="n">codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">401</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">Unauthorized</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">%s</span><span class="s1">) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                   <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">codename</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">BadRequest</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">%s</span><span class="s1">) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">codename</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">SIGNIN</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># Not to be confused with the MyPlexAccount, this represents</span>
+<span class="c1"># non-signed in users such as friends and linked accounts.</span>
+<span class="k">class</span> <span class="nc">MyPlexUser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to other users.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        allowCameraUpload (bool): True if this user can upload images</span>
+<span class="sd">        allowChannels (bool): True if this user has access to channels</span>
+<span class="sd">        allowSync (bool): True if this user can sync</span>
+<span class="sd">        BASEURL (str): Description</span>
+<span class="sd">        email (str): user@gmail.com</span>
+<span class="sd">        filterAll (str): Description</span>
+<span class="sd">        filterMovies (str): Description</span>
+<span class="sd">        filterMusic (str): Description</span>
+<span class="sd">        filterPhotos (str): Description</span>
+<span class="sd">        filterTelevision (str): Description</span>
+<span class="sd">        home (bool):</span>
+<span class="sd">        id (int): 1337</span>
+<span class="sd">        protected (False): Is this if ssl? check it</span>
+<span class="sd">        recommendationsPlaylistId (str): Description</span>
+<span class="sd">        restricted (str): fx 0</span>
+<span class="sd">        thumb (str): Link to the users avatar</span>
+<span class="sd">        title (str): Hellowlol</span>
+<span class="sd">        username (str): Hellowlol</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">BASEURL</span> <span class="o">=</span> <span class="s1">&#39;https://plex.tv/api/users/&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">initpath</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (Element): XML repsonse as Element</span>
+<span class="sd">            initpath (None, optional): Relative url str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowCameraUpload</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+            <span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowCameraUpload&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowChannels</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowChannels&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowSync</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;allowSync&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterAll</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filterAll&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterMovies</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filterMovies&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterMusic</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filterMusic&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterPhotos</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filterPhotos&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filterTelevision</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filterTelevision&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">home</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;home&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protected</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;protected&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recommendationsPlaylistId</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;recommendationsPlaylistId&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restricted</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;restricted&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumb</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;thumb&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;username&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pretty repr.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MyPlexResource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Summary</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        accessToken (str): This resource accesstoken.</span>
+<span class="sd">        BASEURL (TYPE): Description</span>
+<span class="sd">        clientIdentifier (str): 1f2fe128794fd...</span>
+<span class="sd">        connections (list): of ResourceConnection</span>
+<span class="sd">        createdAt (datetime): Description</span>
+<span class="sd">        device (str): pc</span>
+<span class="sd">        home (None): Dunno wtf this can me</span>
+<span class="sd">        lastSeenAt (datetime): Description</span>
+<span class="sd">        name (str): Pretty name fx S-PC</span>
+<span class="sd">        owned (bool): True if this is your own.</span>
+<span class="sd">        platform (str): Windows</span>
+<span class="sd">        platformVersion (str): fx. 6.1 (Build 7601)</span>
+<span class="sd">        presence (bool): True if online</span>
+<span class="sd">        product (str): Plex Media Server</span>
+<span class="sd">        productVersion (str): 1.3.3.3148-b38628e</span>
+<span class="sd">        provides (str): fx server</span>
+<span class="sd">        synced (bool): Description</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">BASEURL</span> <span class="o">=</span> <span class="s1">&#39;https://plex.tv/api/resources?includeHttps=1&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (Element): XML response as Element</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accessToken</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;accessToken&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">product</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;product&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">productVersion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;productVersion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;platform&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platformVersion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;platformVersion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clientIdentifier</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;clientIdentifier&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createdAt</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">toDatetime</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;createdAt&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastSeenAt</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">toDatetime</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lastSeenAt&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provides</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;provides&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">owned</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;owned&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">home</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;home&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synced</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;synced&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">presence</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;presence&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">ResourceConnection</span><span class="p">(</span>
+            <span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">elem</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s1">&#39;Connection&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pretty repr.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ssl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connect.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ssl (None, optional): Use ssl.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            class: Plexserver</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Unable to connect to resource: name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Sort connections from (https, local) to (http, remote)</span>
+        <span class="c1"># Only check non-local connections unless we own the resource</span>
+        <span class="n">forcelocal</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">owned</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">local</span>
+        <span class="n">connections</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="o">.</span><span class="n">local</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">https</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uri</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="k">if</span> <span class="n">forcelocal</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span>
+        <span class="n">http</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">httpuri</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="k">if</span> <span class="n">forcelocal</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span>
+        <span class="n">connections</span> <span class="o">=</span> <span class="n">https</span> <span class="o">+</span> <span class="n">http</span>
+        <span class="c1"># Try connecting to all known resource connections in parellel, but</span>
+        <span class="c1"># only return the first server (in order) that provides a response.</span>
+        <span class="n">listargs</span> <span class="o">=</span> <span class="p">[[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">threaded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">,</span> <span class="n">listargs</span><span class="p">)</span>
+        <span class="c1"># At this point we have a list of result tuples containing (url, token, PlexServer)</span>
+        <span class="c1"># or (url, token, None) in the case a connection could not be</span>
+        <span class="c1"># established.</span>
+        <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">okerr</span> <span class="o">=</span> <span class="s1">&#39;OK&#39;</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="s1">&#39;ERR&#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;Testing resource connection: </span><span class="si">%s</span><span class="s1">?X-Plex-Token=</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">okerr</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">and</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s1">&#39;Unable to connect to resource: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connecting to server: </span><span class="si">%s</span><span class="s1">?X-Plex-Token=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                 <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">baseurl</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connect.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): url to the resource</span>
+<span class="sd">            results (TYPE): Description</span>
+<span class="sd">            i (TYPE): Description</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TYPE: Description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessToken</span><span class="p">,</span>
+                          <span class="n">PlexServer</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessToken</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">NotFound</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">accessToken</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ResourceConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ResourceConnection.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        address (str): Local ip adress</span>
+<span class="sd">        httpuri (str): Full local address</span>
+<span class="sd">        local (bool): True if local</span>
+<span class="sd">        port (int): 32400</span>
+<span class="sd">        protocol (str): http or https</span>
+<span class="sd">        uri (str): External adress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set attrs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (Element): XML response as Element from PMS.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;address&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;port&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uri</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;uri&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;local&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">httpuri</span> <span class="o">=</span> <span class="s1">&#39;http://</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pretty repr.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uri</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="MyPlexDevice"><a class="viewcode-back" href="../index.html#myplex.MyPlexDevice">[docs]</a><span class="k">class</span> <span class="nc">MyPlexDevice</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Device connected.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        BASEURL (str): Plex.tv XML device url</span>
+<span class="sd">        clientIdentifier (str): 0x685d43d...</span>
+<span class="sd">        connections (list):</span>
+<span class="sd">        device (str): fx Windows</span>
+<span class="sd">        id (str): 123</span>
+<span class="sd">        model (str):</span>
+<span class="sd">        name (str): fx Computername</span>
+<span class="sd">        platform (str): Windows</span>
+<span class="sd">        platformVersion (str): Fx 8</span>
+<span class="sd">        product (str): Fx PlexAPI</span>
+<span class="sd">        productVersion (string): 2.0.2</span>
+<span class="sd">        provides (str): fx controller</span>
+<span class="sd">        publicAddress (str): Public ip address</span>
+<span class="sd">        screenDensity (str): Description</span>
+<span class="sd">        screenResolution (str): Description</span>
+<span class="sd">        token (str): Auth token</span>
+<span class="sd">        vendor (str): Description</span>
+<span class="sd">        version (str): fx 2.0.2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">BASEURL</span> <span class="o">=</span> <span class="s1">&#39;https://plex.tv/devices.xml&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set attrs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (Element): XML response as Element from PMS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">publicAddress</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;publicAddress&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">product</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;product&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">productVersion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;productVersion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;platform&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platformVersion</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;platformVersion&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;device&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vendor</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vendor&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provides</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;provides&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clientIdentifier</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;clientIdentifier&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">screenResolution</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screenResolution&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">screenDensity</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screenDensity&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[</span><span class="n">connection</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;uri&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="s1">&#39;Connection&#39;</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Pretty repr.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">product</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MyPlexDevice.connect"><a class="viewcode-back" href="../index.html#myplex.MyPlexDevice.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ssl</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connect to the first server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ssl (None, optional): Use SSL?</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TYPE: Plexserver</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotFound: Unable to connect to resource: name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try connecting to all known resource connections in parellel, but</span>
+        <span class="c1"># only return the first server (in order) that provides a response.</span>
+        <span class="n">listargs</span> <span class="o">=</span> <span class="p">[[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">threaded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">,</span> <span class="n">listargs</span><span class="p">)</span>
+        <span class="c1"># At this point we have a list of result tuples containing (url, token, PlexServer)</span>
+        <span class="c1"># or (url, token, None) in the case a connection could not be</span>
+        <span class="c1"># established.</span>
+        <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">okerr</span> <span class="o">=</span> <span class="s1">&#39;OK&#39;</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="s1">&#39;ERR&#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Testing device connection: </span><span class="si">%s</span><span class="s1">?X-Plex-Token=</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                     <span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">okerr</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s1">&#39;Unable to connect to resource: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Connecting to server: </span><span class="si">%s</span><span class="s1">?X-Plex-Token=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                 <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">baseurl</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summary</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (TYPE): Description</span>
+<span class="sd">            results (TYPE): Description</span>
+<span class="sd">            i (TYPE): Description</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TYPE: Description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">PlexClient</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">NotFound</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_findItem</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple helper to find something using attrs</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        items (cls): list of Object to get the attrs from</span>
+<span class="sd">        value (str): value to match against</span>
+<span class="sd">        attrs (None, optional): attr to match against value.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TYPE: Description</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        NotFound: Description</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span> <span class="ow">or</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">item</span>
+    <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="s1">&#39;Unable to find item </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_listItems</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper that builds list of classes from a XML response.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        url (str): Description</span>
+<span class="sd">        token (str): Description</span>
+<span class="sd">        cls (class): Class to initate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List: of classes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">plexapi</span><span class="o">.</span><span class="n">BASE_HEADERS</span>
+    <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Plex-Token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;GET </span><span class="si">%s</span><span class="s1">?X-Plex-Token=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">cls</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, M.Shepanski.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'2.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

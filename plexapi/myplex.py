@@ -21,48 +21,43 @@ from plexapi.server import PlexServer
 
 
 class MyPlexAccount(object):
-    """Your personal MyPlex account and profile information
+    """ Your personal MyPlex account and profile information. The easiest way to build
+        this object is by calling the staticmethod :func:`~myplex.MyPlexAccount.signin`
+        with your username and password. This object represents the data found Account on
+        the myplex.tv servers at the url https://plex.tv/users/account.
 
-    Attributes:
-        authenticationToken (TYPE): Description
-        BASEURL (str): Description
-        certificateVersion (TYPE): Description
-        cloudSyncDevice (TYPE): Description
-        email (TYPE): Description
-        entitlements (TYPE): Description
-        guest (TYPE): Description
-        home (TYPE): Description
-        homeSize (TYPE): Description
-        id (TYPE): Description
-        locale (TYPE): Description
-        mailing_list_status (TYPE): Description
-        maxHomeSize (TYPE): Description
-        queueEmail (TYPE): Description
-        queueUid (TYPE): Description
-        restricted (TYPE): Description
-        roles (TYPE): Description
-        scrobbleTypes (TYPE): Description
-        secure (TYPE): Description
-        SIGNIN (str): Description
-        subscriptionActive (TYPE): Description
-        subscriptionFeatures (TYPE): Description
-        subscriptionPlan (TYPE): Description
-        subscriptionStatus (TYPE): Description
-        thumb (TYPE): Description
-        title (TYPE): Description
-        username (TYPE): Description
-        uuid (TYPE): Description
+        Attributes:
+            * ``authenticationToken``: (str) '<Unknown>
+            * ``certificateVersion``: (str) <Unknown>
+            * ``cloudSyncDevice``: (str) <Unknown>
+            * ``email``: (str) Your current Plex email address.
+            * ``entitlements``: (List<str>) List of devices your allowed to use with this account.
+            * ``guest``: (bool) <Unknown>
+            * ``home``: (bool) <Unknown>
+            * ``homeSize``: (int) <Unknown>
+            * ``id``: (str) Your Plex account ID.
+            * ``locale``: (str) Your Plex locale
+            * ``mailing_list_status``: (str) Your current mailing list status.
+            * ``maxHomeSize``: (int) <Unknown>
+            * ``queueEmail``: (str) Email address to add items to your `Watch Later` queue.
+            * ``queueUid``: (str) <Unknown>
+            * ``restricted``: (bool)<Unknown>
+            * ``roles``: (List<str>) Lit of account roles. Plexpass membership listed here.
+            * ``scrobbleTypes``: (str) Description
+            * ``secure``: (bool) Description
+            * ``subscriptionActive``: (bool) True if your subsctiption is active.
+            * ``subscriptionFeatures``: (List<str>) List of features allowed on your subscription.
+            * ``subscriptionPlan``: (str) Name of subscription plan.
+            * ``subscriptionStatus``: (str) String representation of `subscriptionActive`.
+            * ``thumb``: (str) URL of your account thumbnail.
+            * ``title``: (str) <Unknown> - Looks like an alias for `username`.
+            * ``username``: (str) Your account username.
+            * ``uuid``: (str) <Unknown>
     """
     BASEURL = 'https://plex.tv/users/account'
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
 
     def __init__(self, data, initpath=None):
-        """Sets the attrs.
-
-        Args:
-            data (Element): XML response from PMS as a Element
-            initpath (string, optional): relative path.
-        """
         self.authenticationToken = data.attrib.get('authenticationToken')
         self.certificateVersion = data.attrib.get('certificateVersion')
         self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
@@ -93,25 +88,16 @@ class MyPlexAccount(object):
         self.entitlements = None
 
     def __repr__(self):
-        """Pretty print."""
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username.encode('utf8'))
 
     def devices(self):
-        """Return a all devices connected to the plex account.
-
-        Returns:
-            list: of MyPlexDevice
-        """
+        """ Returns a list of all :class:`~myplex.MyPlexDevice` objects connected to the server. """
         return _listItems(MyPlexDevice.BASEURL, self.authenticationToken, MyPlexDevice)
 
     def device(self, name):
-        """Return a device wth a matching name.
-
-        Args:
-            name (str): Name to match against.
-
-        Returns:
-            class: MyPlexDevice
+        """ Returns the :class:`~myplex.MyPlexDevice` that matched the name specified.
+            
+            * **name**: (str) Name to match against.
         """
         return _findItem(self.devices(), name)
 
