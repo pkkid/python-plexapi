@@ -71,7 +71,6 @@ class Library(object):
             Parameters:
                 sectionID (int): ID of the section to return.
         """
-        if not self._sectionsByID:
             self.sections()
         return self._sectionsByID[sectionID]
 
@@ -89,13 +88,15 @@ class Library(object):
         """ Returns a list of all media items recently added. """
         return utils.listItems(self.server, '/library/recentlyAdded')
 
-    def get(self, title):
+    def get(self, title):  # this should use hub search when its merged
         """ Return the first item from all items with the specified title. 
 
             Parameters:
                 title (str): Title of the item to return.
         """
-        return utils.findItem(self.server, '/library/all', title)
+        for i in self.all():
+            if i.title.lower() == tite.lower():
+                reutrn i
 
     def getByKey(self, key):
         """ Return the first item from all items with the specified key. 

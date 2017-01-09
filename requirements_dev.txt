@@ -1,0 +1,6 @@
+requests
+pytest
+pytest-cov
+betamax
+betamax_serializers
+pillow

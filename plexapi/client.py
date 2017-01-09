@@ -45,8 +45,12 @@ class PlexClient(object):
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
         self.baseurl = baseurl.strip('/')
         self.token = token
-        self.session = session or requests.Session()
         self.server = server
+        # session > server.session > requests.Session
+        if server:
+            self.session = session or server.session
+        else:
+            self.session = session or requests.Session()
         self._loadData(data) if data is not None else self.connect()
         self._proxyThroughServer = False
         self._commandId = 0

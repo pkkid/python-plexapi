@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging, re
+import os
 from datetime import datetime
 from plexapi.compat import quote, urlencode, string_type
+import requests
+
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
+
 
 # Search Types - Plex uses these to filter specific media types when searching.
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
@@ -73,6 +77,7 @@ class PlexPartialObject(object):
         self.server = server
         self.initpath = initpath
         self._loadData(data)
+        self._reloaded = False
 
     def __eq__(self, other):
         return other is not None and self.key == other.key
@@ -87,6 +92,7 @@ class PlexPartialObject(object):
         # Auto reload self, from the full key (path) when needed.
         if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
             return self.__dict__.get(attr, NA)
+        print('reload because of %s' % attr)
         self.reload()
         return self.__dict__.get(attr, NA)
 
@@ -114,6 +120,7 @@ class PlexPartialObject(object):
         data = self.server.query(self.key)
         self.initpath = self.key
         self._loadData(data[0])
+        self._reloaded = True
 
 
 class Playable(object):
@@ -170,7 +177,9 @@ class Playable(object):
         # remove None values
         params = {k: v for k, v in params.items() if v is not None}
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
-        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(params)))
+        # sort the keys since the randomness fucks with my tests..
+        sorted_params = sorted(params.items(), key=lambda val: val[0])
+        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
         """ Iterates over the parts of this media item. """
@@ -185,6 +194,37 @@ class Playable(object):
                 client (:class:`~plexapi.client.PlexClient`): Client to start playing on.
         """
         client.playMedia(self)
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """Download a episode. If kwargs are passed your can download a trancoded file.
+
+           Args:
+                savepath (str): Abs path to savefolder
+                keep_orginal_name (bool): Use the mediafiles orginal name
+
+           kwargs:
+                See getStreamURL docs.
+
+        """
+        downloaded = []
+        locs = [i for i in self.iterParts() if i]
+        for loc in locs:
+            if keep_orginal_name is False:
+                name = '%s.%s' % (self._prettyfilename(), loc.container)
+            else:
+                name = loc.file
+
+            # So this seems to be a alot slower but allows transcode.
+            if kwargs:
+                download_url = self.getStreamURL(**kwargs)
+            else:
+                download_url = self.server.url('%s?download=1' % loc.key)
+
+            dl = download(download_url, filename=name, savepath=savepath, session=self.server.session)
+            if dl:
+                downloaded.append(dl)
+
+        return downloaded
 
 
 def buildItem(server, elem, initpath, bytag=False):
@@ -466,6 +506,7 @@ def threaded(callback, listargs):
         threads[-1].start()
     for thread in threads:
         thread.join()
+
     return results
 
 
@@ -482,3 +523,70 @@ def toDatetime(value, format=None):
         else:
             value = datetime.fromtimestamp(int(value))
     return value
+
+
+def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
+    """Helper to download a thumb, videofile or something.
+
+       Args:
+            url (str): url where the content be reached
+            filename (str): Filename of the downloaded file, default None
+            savepath (str): Defaults to current working dir
+            chunksize (int): What chunksize read/write at the time
+            mocked (bool): Helper to do evertything except write the file.
+
+        Example:
+
+            >>> download(a_episode.getStreamURL(), a_episode.location)
+            /path/to/file
+
+        Returns:
+                /path/to/file or None
+
+    """
+    session = session or requests.Session()
+
+    if savepath is None:
+        savepath = os.getcwd()
+    else:
+        # Make sure the user supplied path exists
+        try:
+            os.makedirs(savepath)
+        except OSError:
+            if not os.path.isdir(savepath):
+                raise
+
+    filename = os.path.basename(filename)
+    fullpath = os.path.join(savepath, filename)
+
+    try:
+        response = session.get(url, stream=True)
+
+        # images dont have a extention so we try
+        # to guess it from content-type
+        ext = os.path.splitext(fullpath)[-1]
+        if ext:
+            ext = ''
+        else:
+            cp = response.headers.get('content-type')
+
+            if cp:
+                if 'image' in cp:
+                    ext = '.%s' % cp.split('/')[1]
+
+        fullpath = '%s%s' % (fullpath, ext)
+
+        if mocked:
+            return fullpath
+
+        with open(fullpath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunksize):
+                if chunk:
+                    f.write(chunk)
+
+        log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
+
+        return fullpath
+
+    except Exception as e:
+        log.exception('Failed to download %s to %s %s' % (url, fullpath, e))
