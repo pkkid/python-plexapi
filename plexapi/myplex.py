@@ -21,38 +21,38 @@ from plexapi.server import PlexServer
 
 
 class MyPlexAccount(object):
-    """ Your personal MyPlex account and profile information. The easiest way to build
+    """ MyPlex account and profile information. The easiest way to build
         this object is by calling the staticmethod :func:`~myplex.MyPlexAccount.signin`
         with your username and password. This object represents the data found Account on
         the myplex.tv servers at the url https://plex.tv/users/account.
 
         Attributes:
-            * ``authenticationToken``: (str) '<Unknown>
-            * ``certificateVersion``: (str) <Unknown>
-            * ``cloudSyncDevice``: (str) <Unknown>
-            * ``email``: (str) Your current Plex email address.
-            * ``entitlements``: (List<str>) List of devices your allowed to use with this account.
-            * ``guest``: (bool) <Unknown>
-            * ``home``: (bool) <Unknown>
-            * ``homeSize``: (int) <Unknown>
-            * ``id``: (str) Your Plex account ID.
-            * ``locale``: (str) Your Plex locale
-            * ``mailing_list_status``: (str) Your current mailing list status.
-            * ``maxHomeSize``: (int) <Unknown>
-            * ``queueEmail``: (str) Email address to add items to your `Watch Later` queue.
-            * ``queueUid``: (str) <Unknown>
-            * ``restricted``: (bool)<Unknown>
-            * ``roles``: (List<str>) Lit of account roles. Plexpass membership listed here.
-            * ``scrobbleTypes``: (str) Description
-            * ``secure``: (bool) Description
-            * ``subscriptionActive``: (bool) True if your subsctiption is active.
-            * ``subscriptionFeatures``: (List<str>) List of features allowed on your subscription.
-            * ``subscriptionPlan``: (str) Name of subscription plan.
-            * ``subscriptionStatus``: (str) String representation of `subscriptionActive`.
-            * ``thumb``: (str) URL of your account thumbnail.
-            * ``title``: (str) <Unknown> - Looks like an alias for `username`.
-            * ``username``: (str) Your account username.
-            * ``uuid``: (str) <Unknown>
+            authenticationToken (str): <Unknown>
+            certificateVersion (str): <Unknown>
+            cloudSyncDevice (str): 
+            email (str): Your current Plex email address.
+            entitlements (List<str>): List of devices your allowed to use with this account.
+            guest (bool): <Unknown>
+            home (bool): <Unknown>
+            homeSize (int): <Unknown>
+            id (str): Your Plex account ID.
+            locale (str): Your Plex locale
+            mailing_list_status (str): Your current mailing list status.
+            maxHomeSize (int): <Unknown>
+            queueEmail (str): Email address to add items to your `Watch Later` queue.
+            queueUid (str): <Unknown>
+            restricted (bool): <Unknown>
+            roles: (List<str>) Lit of account roles. Plexpass membership listed here.
+            scrobbleTypes (str): Description
+            secure (bool): Description
+            subscriptionActive (bool): True if your subsctiption is active.
+            subscriptionFeatures: (List<str>) List of features allowed on your subscription.
+            subscriptionPlan (str): Name of subscription plan.
+            subscriptionStatus (str): String representation of `subscriptionActive`.
+            thumb (str): URL of your account thumbnail.
+            title (str): <Unknown> - Looks like an alias for `username`.
+            username (str): Your account username.
+            uuid (str): <Unknown>
     """
     BASEURL = 'https://plex.tv/users/account'
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'

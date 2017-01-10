@@ -14,6 +14,7 @@ bin/
 include/
 .cache/
 .Python
+docs/_build/
 
 pip-selfcheck.json
 
