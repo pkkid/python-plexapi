@@ -329,7 +329,7 @@ class MyPlexResource(object):
                 'Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
 
         results = [r[2] for r in results if r and r is not None]
-        if not results:
+        if not any(results):
             raise NotFound('Unable to connect to resource: %s' % self.name)
         log.info('Connecting to server: %s?X-Plex-Token=%s',
                  results[0].baseurl, results[0].token)
