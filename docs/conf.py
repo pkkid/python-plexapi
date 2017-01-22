@@ -44,7 +44,7 @@ napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
-
+autodoc_member_order = 'bysource'
 
 # -- General Configuration ------------------------------------------------
 # Add any paths that contain templates here, relative to this directory.

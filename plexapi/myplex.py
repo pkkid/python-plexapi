@@ -10,7 +10,7 @@ from requests.status_codes import _codes as codes
 
 class MyPlexAccount(object):
     """ MyPlex account and profile information. The easiest way to build
-        this object is by calling the staticmethod :func:`~myplex.MyPlexAccount.signin`
+        this object is by calling the staticmethod :func:`~plexapi.myplex.MyPlexAccount.signin`
         with your username and password. This object represents the data found Account on
         the myplex.tv servers at the url https://plex.tv/users/account.
 
