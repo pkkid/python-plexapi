@@ -66,12 +66,11 @@ class MyPlexAccount(object):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
-
         # TODO: Complete these items!
-        self.subscriptionActive = None  # renamed on server
-        self.subscriptionStatus = None  # renamed on server
-        self.subscriptionPlan = None  # renmaed on server
-        self.subscriptionFeatures = None  # renamed on server
+        self.subscriptionActive = None      # renamed on server
+        self.subscriptionStatus = None      # renamed on server
+        self.subscriptionPlan = None        # renmaed on server
+        self.subscriptionFeatures = None    # renamed on server
         self.roles = None
         self.entitlements = None
 
@@ -79,69 +78,54 @@ class MyPlexAccount(object):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username.encode('utf8'))
 
     def device(self, name):
-        """ Returns the :class:`~myplex.MyPlexDevice` that matched the name specified.
-            
-            Attributes:
+        """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
+
+            Parameters:
                 name (str): Name to match against.
         """
         return _findItem(self.devices(), name)
 
     def devices(self):
-        """ Returns a list of all :class:`~myplex.MyPlexDevice` objects connected to the server. """
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
         return _listItems(MyPlexDevice.BASEURL, self.authenticationToken, MyPlexDevice)
 
     def resources(self):
-        """Resources.
-
-        Returns:
-            List: of MyPlexResource
-        """
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexResource` objects connected to the server. """
         return _listItems(MyPlexResource.BASEURL, self.authenticationToken, MyPlexResource)
 
     def resource(self, name):
-        """Find resource ny name.
+        """ Returns the :class:`~plexapi.myplex.MyPlexResource` that matches the name specified.
 
-        Args:
-            name (str): to find
-
-        Returns:
-            class: MyPlexResource
+            Parameters:
+                name (str): Name to match against.
         """
         return _findItem(self.resources(), name)
 
     def users(self):
-        """List of users.
-
-        Returns:
-            List: of MyPlexuser
-        """
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account. """
         return _listItems(MyPlexUser.BASEURL, self.authenticationToken, MyPlexUser)
 
     def user(self, email):
-        """Find a user by email.
+        """ Returns the :class:`~myplex.MyPlexUser` that matches the email or username specified.
 
-        Args:
-            email (str): Username to match against.
-
-        Returns:
-            class: User
+            Parameters:
+                email (str): Username or email to match against.
         """
         return _findItem(self.users(), email, ['username', 'email'])
 
     @classmethod
     def signin(cls, username, password):
-        """Summary
+        """ Returns a new :class:`~myplex.MyPlexAccount` object by connecting to MyPlex with the
+            specified username and password. This is essentially logging into MyPlex and often
+            the very first entry point to using this API.
 
-        Args:
-            username (str): username
-            password (str): password
+            Parameters:
+                username (str): Your MyPlex.tv username.
+                password (str): Your MyPlex.tv password.
 
-        Returns:
-            class: MyPlexAccount
-
-        Raises:
-            BadRequest: (HTTPCODE) http codename
-            Unauthorized: (HTTPCODE) http codename
+            Raises:
+                Unauthorized: (401) If the username or password are invalid.
+                BadRequest: If any other errors occured not allowing us to log into MyPlex.tv.
         """
         if 'X-Plex-Token' in plexapi.BASE_HEADERS:
             del plexapi.BASE_HEADERS['X-Plex-Token']
@@ -159,42 +143,35 @@ class MyPlexAccount(object):
         return cls(data, cls.SIGNIN)
 
 
-# Not to be confused with the MyPlexAccount, this represents
-# non-signed in users such as friends and linked accounts.
 class MyPlexUser(object):
-    """Class to other users.
+    """ This object represents non-signed in users such as friends and linked
+        accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
+        which is your specific account. The raw xml for the data presented here
+        can be found at: https://plex.tv/api/users/
 
-    Attributes:
-        allowCameraUpload (bool): True if this user can upload images
-        allowChannels (bool): True if this user has access to channels
-        allowSync (bool): True if this user can sync
-        BASEURL (str): Description
-        email (str): user@gmail.com
-        filterAll (str): Description
-        filterMovies (str): Description
-        filterMusic (str): Description
-        filterPhotos (str): Description
-        filterTelevision (str): Description
-        home (bool):
-        id (int): 1337
-        protected (False): Is this if ssl? check it
-        recommendationsPlaylistId (str): Description
-        restricted (str): fx 0
-        thumb (str): Link to the users avatar
-        title (str): Hellowlol
-        username (str): Hellowlol
+        Attributes:
+            allowCameraUpload (bool): True if this user can upload images
+            allowChannels (bool): True if this user has access to channels
+            allowSync (bool): True if this user can sync
+            email (str): User's email address (user@gmail.com)
+            filterAll (str): Unknown
+            filterMovies (str): Unknown
+            filterMusic (str): Unknown
+            filterPhotos (str): Unknown
+            filterTelevision (str): Unknown
+            home (bool): Unknown
+            id (int): User's Plex account ID.
+            protected (False): Unknown (possibly SSL enabled?)
+            recommendationsPlaylistId (str): Unknown
+            restricted (str): Unknown
+            thumb (str): Link to the users avatar
+            title (str): Seems to be an aliad for username
+            username (str): User's username
     """
     BASEURL = 'https://plex.tv/api/users/'
 
     def __init__(self, data, initpath=None):
-        """Summary
-
-        Args:
-            data (Element): XML repsonse as Element
-            initpath (None, optional): Relative url str
-        """
-        self.allowCameraUpload = utils.cast(
-            bool, data.attrib.get('allowCameraUpload'))
+        self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
         self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
         self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
         self.email = data.attrib.get('email')
@@ -206,48 +183,44 @@ class MyPlexUser(object):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.id = utils.cast(int, data.attrib.get('id'))
         self.protected = utils.cast(bool, data.attrib.get('protected'))
-        self.recommendationsPlaylistId = data.attrib.get(
-            'recommendationsPlaylistId')
+        self.recommendationsPlaylistId = data.attrib.get('recommendationsPlaylistId')
         self.restricted = data.attrib.get('restricted')
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
 
     def __repr__(self):
-        """Pretty repr."""
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username)
 
 
 class MyPlexResource(object):
-    """Summary
+    """ This object represents resources connected to your Plex server that can provide
+        content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
+        for the data presented here can be found at: https://plex.tv/api/resources?includeHttps=1
 
-    Attributes:
-        accessToken (str): This resource accesstoken.
-        BASEURL (TYPE): Description
-        clientIdentifier (str): 1f2fe128794fd...
-        connections (list): of ResourceConnection
-        createdAt (datetime): Description
-        device (str): pc
-        home (None): Dunno wtf this can me
-        lastSeenAt (datetime): Description
-        name (str): Pretty name fx S-PC
-        owned (bool): True if this is your own.
-        platform (str): Windows
-        platformVersion (str): fx. 6.1 (Build 7601)
-        presence (bool): True if online
-        product (str): Plex Media Server
-        productVersion (str): 1.3.3.3148-b38628e
-        provides (str): fx server
-        synced (bool): Description
+        Attributes:
+            accessToken (str): This resources accesstoken.
+            clientIdentifier (str): Unique ID for this resource.
+            connections (list): List of :class:`~myplex.ResourceConnection` objects
+                for this resource.
+            createdAt (datetime): Timestamp this resource first connected to your server.
+            device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
+            home (bool): Unknown
+            lastSeenAt (datetime): Timestamp this resource last connected.
+            name (str): Descriptive name of this resource.
+            owned (bool): True if this resource is one of your own (you logged into it).
+            platform (str): OS the resource is running (Linux, Windows, Chrome, etc.)
+            platformVersion (str): Version of the platform.
+            presence (bool): True if the resource is online
+            product (str): Plex product (Plex Media Server, Plex for iOS, Plex Web, etc.)
+            productVersion (str): Version of the product.
+            provides (str): List of services this resource provides (client, server,
+                player, pubsub-player, etc.)
+            synced (bool): Unknown (possibly True if the resource has synced content?)
     """
     BASEURL = 'https://plex.tv/api/resources?includeHttps=1'
 
     def __init__(self, data):
-        """Summary
-
-        Args:
-            data (Element): XML response as Element
-        """
         self.name = data.attrib.get('name')
         self.accessToken = data.attrib.get('accessToken')
         self.product = data.attrib.get('product')
@@ -263,34 +236,36 @@ class MyPlexResource(object):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = [ResourceConnection(
-            elem) for elem in data if elem.tag == 'Connection']
+        self.connections = [ResourceConnection(elem) for elem in data if elem.tag == 'Connection']
 
     def __repr__(self):
-        """Pretty repr."""
         return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))
 
     def connect(self, ssl=None):
-        """Connect.
+        """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
+            one address specified for a server or client. This function will prioritize local
+            connections before remote and HTTPS before HTTP. After trying to connect to all
+            available addresses for this resource and assuming at least one connection was
+            successful, the PlexServer object is built and returned.
 
-        Args:
-            ssl (None, optional): Use ssl.
+            Parameters:
+                ssl (optional): Set True to only connect to HTTPS connections. Set False to
+                    only connect to HTTP connections. Set None (default) to connect to any
+                    HTTP or HTTPS connection.
 
-        Returns:
-            class: Plexserver
-
-        Raises:
-            NotFound: Unable to connect to resource: name
+            Raises:
+                NotFound: When unable to connect to any addresses for this resource.
         """
-
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
         forcelocal = lambda c: self.owned or c.local
-        connections = sorted(
-            self.connections, key=lambda c: c.local, reverse=True)
+        connections = sorted(self.connections, key=lambda c: c.local, reverse=True)
         https = [c.uri for c in self.connections if forcelocal(c)]
         http = [c.httpuri for c in self.connections if forcelocal(c)]
-        connections = https + http
+        # Force ssl, no ssl, or any (default)
+        if ssl is True: connections = https
+        elif ssl is False: connections = http
+        else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
         listargs = [[c] for c in connections]
@@ -300,52 +275,33 @@ class MyPlexResource(object):
         # established.
         for url, token, result in results:
             okerr = 'OK' if result else 'ERR'
-            log.info(
-                'Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
-
+            log.info('Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
         if not results:
             raise NotFound('Unable to connect to resource: %s' % self.name)
-        log.info('Connecting to server: %s?X-Plex-Token=%s',
-                 results[0].baseurl, results[0].token)
-
+        log.info('Connecting to server: %s?X-Plex-Token=%s', results[0].baseurl, results[0].token)
         return results[0]
 
     def _connect(self, url, results, i):
-        """Connect.
-
-        Args:
-            url (str): url to the resource
-            results (TYPE): Description
-            i (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
         try:
-            results[i] = (url, self.accessToken,
-                          PlexServer(url, self.accessToken))
+            results[i] = (url, self.accessToken, PlexServer(url, self.accessToken))
         except NotFound:
             results[i] = (url, self.accessToken, None)
 
 
 class ResourceConnection(object):
-    """ResourceConnection.
+    """ Represents a Resource Connection object found within the
+        :class:`~myplex.MyPlexResource` objects.
 
-    Attributes:
-        address (str): Local ip adress
-        httpuri (str): Full local address
-        local (bool): True if local
-        port (int): 32400
-        protocol (str): http or https
-        uri (str): External adress
+        Attributes:
+            address (str): Local IP address
+            httpuri (str): Full local address
+            local (bool): True if local
+            port (int): 32400
+            protocol (str): HTTP or HTTPS
+            uri (str): External address
     """
     def __init__(self, data):
-        """Set attrs.
-
-        Args:
-            data (Element): XML response as Element from PMS.
-        """
         self.protocol = data.attrib.get('protocol')
         self.address = data.attrib.get('address')
         self.port = utils.cast(int, data.attrib.get('port'))
@@ -354,42 +310,39 @@ class ResourceConnection(object):
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
     def __repr__(self):
-        """Pretty repr."""
         return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
 
 
 class MyPlexDevice(object):
-    """Device connected.
+    """ This object represents resources connected to your Plex server that provide
+        playback ability from your Plex Server, iPhone or Android clients, Plex Web,
+        this API, etc. The raw xml for the data presented here can be found at:
+        https://plex.tv/devices.xml
 
-    Attributes:
-        BASEURL (str): Plex.tv XML device url
-        clientIdentifier (str): 0x685d43d...
-        connections (list):
-        device (str): fx Windows
-        id (str): 123
-        model (str):
-        name (str): fx Computername
-        platform (str): Windows
-        platformVersion (str): Fx 8
-        product (str): Fx PlexAPI
-        productVersion (string): 2.0.2
-        provides (str): fx controller
-        publicAddress (str): Public ip address
-        screenDensity (str): Description
-        screenResolution (str): Description
-        token (str): Auth token
-        vendor (str): Description
-        version (str): fx 2.0.2
+        Attributes:
+            clientIdentifier (str): Unique ID for this resource.
+            connections (list): List of connection URIs for the device.
+            device (str): Best guess on the type of device this is (Linux, iPad, AFTB, etc).
+            id (str): MyPlex ID of the device.
+            model (str): Model of the device (bueller, Linux, x86_64, etc.)
+            name (str): Hostname of the device.
+            platform (str): OS the resource is running (Linux, Windows, Chrome, etc.)
+            platformVersion (str): Version of the platform.
+            product (str): Plex product (Plex Media Server, Plex for iOS, Plex Web, etc.)
+            productVersion (string): Version of the product.
+            provides (str): List of services this resource provides (client, controller,
+                sync-target, player, pubsub-player).
+            publicAddress (str): Public IP address.
+            screenDensity (str): Unknown
+            screenResolution (str): Screen resolution (750x1334, 1242x2208, etc.)
+            token (str): Plex authentication token for the device.
+            vendor (str): Device vendor (ubuntu, etc).
+            version (str): Unknown (1, 2, 1.3.3.3148-b38628e, 1.3.15, etc.)
     """
 
     BASEURL = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
-        """Set attrs
-
-        Args:
-            data (Element): XML response as Element from PMS
-        """
         self.name = data.attrib.get('name')
         self.publicAddress = data.attrib.get('publicAddress')
         self.product = data.attrib.get('product')
@@ -406,24 +359,19 @@ class MyPlexDevice(object):
         self.token = data.attrib.get('token')
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
-        self.connections = [connection.attrib.get(
-            'uri') for connection in data.iter('Connection')]
+        self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
     def __repr__(self):
-        """Pretty repr."""
         return '<%s:%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'), self.product.encode('utf8'))
 
-    def connect(self, ssl=None):
-        """Connect to the first server.
+    def connect(self):
+        """ Returns a new :class:`~plexapi.client.PlexClient` object. Sometimes there is more than
+            one address specified for a server or client. After trying to connect to all
+            available addresses for this resource and assuming at least one connection was
+            successful, the PlexClient object is built and returned.
 
-        Args:
-            ssl (None, optional): Use SSL?
-
-        Returns:
-            TYPE: Plexserver
-
-        Raises:
-            NotFound: Unable to connect to resource: name
+            Raises:
+                NotFound: When unable to connect to any addresses for this device.
         """
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
@@ -434,46 +382,23 @@ class MyPlexDevice(object):
         # established.
         for url, token, result in results:
             okerr = 'OK' if result else 'ERR'
-            log.info('Testing device connection: %s?X-Plex-Token=%s %s',
-                     url, token, okerr)
+            log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
         if not results:
             raise NotFound('Unable to connect to resource: %s' % self.name)
-        log.info('Connecting to server: %s?X-Plex-Token=%s',
-                 results[0].baseurl, results[0].token)
-
+        log.info('Connecting to server: %s?X-Plex-Token=%s', results[0].baseurl, results[0].token)
         return results[0]
 
     def _connect(self, url, results, i):
-        """Summary
-
-        Args:
-            url (TYPE): Description
-            results (TYPE): Description
-            i (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
         try:
             results[i] = (url, self.token, PlexClient(url, self.token))
-        except NotFound as err:
+        except NotFound:
             results[i] = (url, self.token, None)
 
 
 def _findItem(items, value, attrs=None):
-    """Simple helper to find something using attrs
-
-    Args:
-        items (cls): list of Object to get the attrs from
-        value (str): value to match against
-        attrs (None, optional): attr to match against value.
-
-    Returns:
-        TYPE: Description
-
-    Raises:
-        NotFound: Description
+    """ This will return the first item in the list of items where value is
+        found in any of the specified attributes.
     """
     attrs = attrs or ['name']
     for item in items:
@@ -484,16 +409,7 @@ def _findItem(items, value, attrs=None):
 
 
 def _listItems(url, token, cls):
-    """Helper that builds list of classes from a XML response.
-
-    Args:
-        url (str): Description
-        token (str): Description
-        cls (class): Class to initate
-
-    Returns:
-        List: of classes
-    """
+    """ Builds list of classes from a XML response. """
     headers = plexapi.BASE_HEADERS
     headers['X-Plex-Token'] = token
     log.info('GET %s?X-Plex-Token=%s', url, token)
