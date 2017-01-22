@@ -1,23 +1,11 @@
 # -*- coding: utf-8 -*-
-import sys
-
-if sys.version_info <= (3, 3):
-    try:
-        from xml.etree import cElementTree as ElementTree
-    except ImportError:
-        from xml.etree import ElementTree
-else:
-    # py 3.3 and above selects the fastest automatically
-    from xml.etree import ElementTree
-
-from requests.status_codes import _codes as codes
-
-import plexapi
-import requests
+import plexapi, requests
 from plexapi import TIMEOUT, log, utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.client import PlexClient
+from plexapi.compat import ElementTree
 from plexapi.server import PlexServer
+from requests.status_codes import _codes as codes
 
 
 class MyPlexAccount(object):
@@ -90,16 +78,17 @@ class MyPlexAccount(object):
     def __repr__(self):
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username.encode('utf8'))
 
-    def devices(self):
-        """ Returns a list of all :class:`~myplex.MyPlexDevice` objects connected to the server. """
-        return _listItems(MyPlexDevice.BASEURL, self.authenticationToken, MyPlexDevice)
-
     def device(self, name):
         """ Returns the :class:`~myplex.MyPlexDevice` that matched the name specified.
             
-            * **name**: (str) Name to match against.
+            Attributes:
+                name (str): Name to match against.
         """
         return _findItem(self.devices(), name)
+
+    def devices(self):
+        """ Returns a list of all :class:`~myplex.MyPlexDevice` objects connected to the server. """
+        return _listItems(MyPlexDevice.BASEURL, self.authenticationToken, MyPlexDevice)
 
     def resources(self):
         """Resources.

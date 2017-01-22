@@ -1,5 +1,5 @@
-PlexAPI Introduction
-====================
+Introduction
+============
 
 .. |br| raw:: html
 

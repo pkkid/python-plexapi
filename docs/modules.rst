@@ -47,7 +47,6 @@ MyPlex (plexapi.myplex)
 -----------------------
 .. automodule:: plexapi.myplex
     :members:
-    :undoc-members:
     :show-inheritance:
 
 Photo (plexapi.photo)

@@ -4,6 +4,7 @@
 Python 2/3 compatability
 Always try Py3 first
 """
+import sys
 
 try:
     from urllib.parse import urlencode
@@ -20,8 +21,13 @@ try:
 except ImportError:
     from urllib import unquote
 
-
 try:
     from configparser import ConfigParser
 except ImportError:
     from ConfigParser import ConfigParser
+
+try:
+    from xml.etree import cElementTree as ElementTree
+except ImportError:
+    from xml.etree import ElementTree
+    

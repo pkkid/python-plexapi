@@ -1,6 +1,7 @@
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Table of Contents
 
+   self
    introduction
    modules

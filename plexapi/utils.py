@@ -5,7 +5,6 @@ from datetime import datetime
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
-from plexapi import log
 
 # Search Types - Plex uses these to filter specific media types when searching.
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3,
