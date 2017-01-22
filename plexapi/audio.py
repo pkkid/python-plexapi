@@ -158,10 +158,10 @@ class Album(Audio):
         if self.isFullObject():
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
-    def tracks(self, watched=None):
+    def tracks(self):
         """ Returns a list of :class:`plexapi.audio.Track` objects in this album. """
         path = '%s/children' % self.key
-        return utils.listItems(self.server, path, watched=watched)
+        return utils.listItems(self.server, path)
 
     def track(self, title):
         """ Returns the :class:`plexapi.audio.Track` that matches the specified title.
