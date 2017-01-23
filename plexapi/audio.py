@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from plexapi import media, utils
 from plexapi.utils import Playable, PlexPartialObject
 
@@ -9,6 +8,11 @@ NA = utils.NA
 class Audio(PlexPartialObject):
     """ Base class for audio :class:`~plexapi.audio.Artist`, :class:`~plexapi.audio.Album`
         and :class:`~plexapi.audio.Track` objects.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
@@ -67,6 +71,11 @@ class Audio(PlexPartialObject):
 class Artist(Audio):
     """ Represents a single audio artist.
 
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+
         Attributes:
             art (str): Artist artwork (/library/metadata/<ratingkey>/art/<artid>)
             countries (list): List of :class:`~plexapi.media.Country` objects this artist respresents.
@@ -76,7 +85,6 @@ class Artist(Audio):
             location (str): Filepath this artist is found on disk.
             similar (list): List of :class:`~plexapi.media.Similar` artists.
     """
-
     TYPE = 'artist'
 
     def _loadData(self, data):
@@ -128,19 +136,23 @@ class Artist(Audio):
 class Album(Audio):
     """ Represents a single audio album.
 
-    Attributes:
-        art (str): Album artwork (/library/metadata/<ratingkey>/art/<artid>)
-        genres (list): List of :class:`~plexapi.media.Genre` objects this album respresents.
-        key (str): API URL (/library/metadata/<ratingkey>).
-        originallyAvailableAt (datetime): Datetime this album was released.
-        parentKey (str): API URL of this artist.
-        parentRatingKey (int): Unique key identifying artist.
-        parentThumb (str): URL to artist thumbnail image.
-        parentTitle (str): Name of the artist for this album.
-        studio (str): Studio that released this album.
-        year (int): Year this album was released.
-    """
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
 
+        Attributes:
+            art (str): Album artwork (/library/metadata/<ratingkey>/art/<artid>)
+            genres (list): List of :class:`~plexapi.media.Genre` objects this album respresents.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            originallyAvailableAt (datetime): Datetime this album was released.
+            parentKey (str): API URL of this artist.
+            parentRatingKey (int): Unique key identifying artist.
+            parentThumb (str): URL to artist thumbnail image.
+            parentTitle (str): Name of the artist for this album.
+            studio (str): Studio that released this album.
+            year (int): Year this album was released.
+    """
     TYPE = 'album'
 
     def _loadData(self, data):
@@ -185,34 +197,39 @@ class Album(Audio):
 class Track(Audio, Playable):
     """ Represents a single audio track.
 
-    Attributes:
-        art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
-        chapterSource (TYPE): Unknown
-        duration (int): Length of this album in seconds.
-        grandparentArt (str): Artist artowrk.
-        grandparentKey (str): Artist API URL.
-        grandparentRatingKey (str): Unique key identifying artist.
-        grandparentThumb (str): URL to artist thumbnail image.
-        grandparentTitle (str): Name of the artist for this track.
-        guid (str): Unknown (unique ID).
-        media (list): List of :class:`~plexapi.media.Media` objects for this track.
-        moods (list): List of :class:`~plexapi.media.Mood` objects for this track.
-        originalTitle (str): Original track title (if translated).
-        parentIndex (int): Album index.
-        parentKey (str): Album API URL.
-        parentRatingKey (int): Unique key identifying album.
-        parentThumb (str): URL to album thumbnail image.
-        parentTitle (str): Name of the album for this track.
-        primaryExtraKey (str): Unknown
-        ratingCount (int): Rating of this track (1-10?)
-        viewOffset (int): Unknown
-        year (int): Year this track was released.
-        sessionKey (int): Session Key (active sessions only).
-        username (str): Username of person playing this track (active sessions only).
-        player (str): :class:`~plexapi.client.PlexClient` for playing track (active sessions only).
-        transcodeSession (None): :class:`~plexapi.media.TranscodeSession` for playing track (active sessions only).
-    """
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): XML response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
 
+        Attributes:
+            art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
+            chapterSource (TYPE): Unknown
+            duration (int): Length of this album in seconds.
+            grandparentArt (str): Artist artowrk.
+            grandparentKey (str): Artist API URL.
+            grandparentRatingKey (str): Unique key identifying artist.
+            grandparentThumb (str): URL to artist thumbnail image.
+            grandparentTitle (str): Name of the artist for this track.
+            guid (str): Unknown (unique ID).
+            media (list): List of :class:`~plexapi.media.Media` objects for this track.
+            moods (list): List of :class:`~plexapi.media.Mood` objects for this track.
+            originalTitle (str): Original track title (if translated).
+            parentIndex (int): Album index.
+            parentKey (str): Album API URL.
+            parentRatingKey (int): Unique key identifying album.
+            parentThumb (str): URL to album thumbnail image.
+            parentTitle (str): Name of the album for this track.
+            primaryExtraKey (str): Unknown
+            ratingCount (int): Rating of this track (1-10?)
+            viewOffset (int): Unknown
+            year (int): Year this track was released.
+            sessionKey (int): Session Key (active sessions only).
+            username (str): Username of person playing this track (active sessions only).
+            player (str): :class:`~plexapi.client.PlexClient` for playing track (active sessions only).
+            transcodeSession (None): :class:`~plexapi.media.TranscodeSession` for playing
+                track (active sessions only).
+    """
     TYPE = 'track'
 
     def _loadData(self, data):

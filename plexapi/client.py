@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-PlexAPI Client
-To understand how this works, read this page:
-https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
-"""
-
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, TIMEOUT, log, utils
@@ -13,40 +7,42 @@ from xml.etree import ElementTree
 
 
 class PlexClient(object):
-    """Main class for interacting with a client.
+    """ Main class for interacting with a Plex client. This class can connect
+        directly to the client and control it or proxy commands through your
+        Plex Server. To better understand the Plex client API's read this page:
+        https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 
-    Attributes:
-        baseurl (str): http adress for the client
-        device (None): Description
-        deviceClass (sting): pc, phone
-        machineIdentifier (str): uuid fx 5471D9EA-1467-4051-9BE7-FCBDF490ACE3
-        model (TYPE): Description
-        platform (TYPE): Description
-        platformVersion (TYPE): Description
-        product (str): plex for ios
-        protocol (str): plex
-        protocolCapabilities (list): List of what client can do
-        protocolVersion (str): 1
-        server (plexapi.server.Plexserver): PMS your connected to
-        session (None or requests.Session): Add your own session object to cache stuff
-        state (None): Description
-        title (str): fx Johns Iphone
-        token (str): X-Plex-Token, using for authenication with PMS
-        vendor (str): Description
-        version (str): fx. 4.6
+        Parameters:
+            baseurl (str): HTTP URL to connect dirrectly to this client.
+            token (str): X-Plex-Token used for authenication (optional).
+            session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+
+        Attributes:
+            baseurl (str): HTTP address of the client
+            device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
+            deviceClass (str): Device class (pc, phone, etc).
+            machineIdentifier (str): Unique ID for this device.
+            model (str): Unknown
+            platform (str): Unknown
+            platformVersion (str): Description
+            product (str): Client Product (Plex for iOS, etc).
+            protocol (str): Always seems ot be 'plex'.
+            protocolCapabilities (list<str>): List of client capabilities (navigation, playback,
+                timeline, mirror, playqueues).
+            protocolVersion (str): Protocol version (1, future proofing?)
+            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
+            session (:class:`~requests.Session`): Session object used for connection.
+            state (str): Unknown
+            title (str): Name of this client (Johns iPhone, etc).
+            token (str): X-Plex-Token used for authenication
+            vendor (str): Unknown
+            version (str): Device version (4.6.1, etc).
+            _proxyThroughServer (bool): Set to True after calling
+                :func:`~plexapi.client.PlexClient.proxyThroughServer()` (default False).
     """
-
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
-        """Kick shit off.
-
-        Args:
-            baseurl (sting): fx http://10.0.0.99:1111222
-            token (None, optional): X-Plex-Token, using for authenication with PMS
-            session (None, optional): requests.Session() or your own session
-            server (None, optional): PlexServer
-            data (None, optional): XML response from PMS as Element
-                                   or uses connect to get it
-        """
         self.baseurl = baseurl.strip('/')
         self.token = token
         self.session = session or requests.Session()
@@ -56,22 +52,17 @@ class PlexClient(object):
         self._commandId = 0
 
     def _loadData(self, data):
-        """Sets attrs to the class.
-
-        Args:
-            data (Element): XML response from PMS as a Element
-        """
+        """ Load attribute values from Plex XML response. """
         self.deviceClass = data.attrib.get('deviceClass')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
         self.product = data.attrib.get('product')
         self.protocol = data.attrib.get('protocol')
-        self.protocolCapabilities = data.attrib.get(
-            'protocolCapabilities', '').split(',')
+        self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
-        # active session details
+        # Active session details
         self.device = data.attrib.get('device')
         self.model = data.attrib.get('model')
         self.state = data.attrib.get('state')
@@ -79,7 +70,7 @@ class PlexClient(object):
         self.version = data.attrib.get('version')
 
     def connect(self):
-        """Connect"""
+        """ Connects to the client and reloads all class attributes. """
         try:
             data = self.query('/resources')[0]
             self._loadData(data)
@@ -88,43 +79,38 @@ class PlexClient(object):
             raise NotFound('No client found at: %s' % self.baseurl)
 
     def headers(self):
-        """Default headers
-
-        Returns:
-            dict: default headers
-        """
+        """ Returns a dict of all default headers for Client requests. """
         headers = BASE_HEADERS
         if self.token:
             headers['X-Plex-Token'] = self.token
         return headers
 
     def proxyThroughServer(self, value=True):
-        """Connect to the client via the server.
+        """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
+            Useful if you do not wish to connect directly to the Client device itself. 
 
-        Args:
-            value (bool, optional): Description
+            Parameters:
+                value (bool): Enable or disable proxying (optional, default True).
 
-        Raises:
-            Unsupported: Cannot use client proxy with unknown server.
+            Raises:
+                :class:`~plexapi.exceptions.Unsupported`: Cannot use client proxy with unknown server.
         """
         if value is True and not self.server:
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
     def query(self, path, method=None, headers=None, **kwargs):
-        """Used to fetch relative paths to pms.
+        """ Returns an :class:`ElementTree` object containing the response
+            from the specified request path.
 
-        Args:
-            path (str): Relative path
-            method (None, optional): requests.post etc
-            headers (None, optional): Set headers manually
-            **kwargs (TYPE): Passord to the http request used for filter, sorting.
+            Parameters:
+                path (str): Relative path to query.
+                method (func): `self.session.get` or `self.session.post`
+                headers (dict): Additional headers to include or override in the request.
+                **kwargs (TYPE): Additional arguments to inclde in the request.<method> call.
 
-        Returns:
-            Element
-
-        Raises:
-            BadRequest: Http error and code
+            Raises:
+                :class:`~plexapi.exceptions.BadRequest`: When the response is not in [200, 201]
         """
         url = self.url(path)
         method = method or self.session.get
@@ -138,24 +124,23 @@ class PlexClient(object):
         return ElementTree.fromstring(data) if data else None
 
     def sendCommand(self, command, proxy=None, **params):
-        """Send a command to the client
+        """ Convenience wrapper around :func:`~plexapi.client.PlexClient.query()` to more easily
+            send simple commands to the client. Returns an :class:`ElementTree` object containing
+            the response.
 
-        Args:
-            command (str): See the commands listed below
-            proxy (None, optional): Description
-            **params (dict): Description
+            Parameters:
+                command (str): Command to be sent in for format '<controller>/<command>'.
+                proxy (bool): Set True to proxy this command through the PlexServer.
+                **params (dict): Additional GET parameters to include with the command.
 
-        Returns:
-            Element
-
-        Raises:
-            Unsupported: Unsupported clients
+            Raises:
+                :class:`~plexapi.exceptions.Unsupported`: When we detect the client doesn't support this capability.
         """
         command = command.strip('/')
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
-            raise Unsupported(
-                'Client %s does not support the %s controller.' % (self.title, controller))
+            raise Unsupported('Client %s does not support the %s controller.' %
+                (self.title, controller))
         path = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
         self._commandId += 1
@@ -167,82 +152,87 @@ class PlexClient(object):
         return self.query(path, headers=headers)
 
     def url(self, path):
-        """Return a full url
+        """ Given a path, this retuns the full PlexClient the PlexServer URL to request.
 
-        Args:
-            path (str): Relative path
-
-        Returns:
-            string: full path to PMS
+            Parameters:
+                path (str): Relative path to be converted.
         """
         if self.token:
             delim = '&' if '?' in path else '?'
             return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
         return '%s%s' % (self.baseurl, path)
 
+    #---------------------
     # Navigation Commands
     # These commands navigate around the user-interface.
     def contextMenu(self):
-        """Open the context menu on the client."""
+        """ Open the context menu on the client. """
         self.sendCommand('navigation/contextMenu')
 
     def goBack(self):
-        """One step back"""
+        """ Navigate back one position. """
         self.sendCommand('navigation/back')
 
     def goToHome(self):
-        """Jump to home screen."""
+        """ Go directly to the home screen. """
         self.sendCommand('navigation/home')
 
     def goToMusic(self):
-        """Jump to music."""
+        """ Go directly to the playing music panel. """
         self.sendCommand('navigation/music')
 
     def moveDown(self):
-        """One step down."""
+        """ Move selection down a position. """
         self.sendCommand('navigation/moveDown')
 
     def moveLeft(self):
+        """ Move selection left a position. """
         self.sendCommand('navigation/moveLeft')
 
     def moveRight(self):
+        """ Move selection right a position. """
         self.sendCommand('navigation/moveRight')
 
     def moveUp(self):
+        """ Move selection up a position. """
         self.sendCommand('navigation/moveUp')
 
     def nextLetter(self):
-        """Jump to the next letter in the alphabeth."""
+        """ Jump to next letter in the alphabet. """
         self.sendCommand('navigation/nextLetter')
 
     def pageDown(self):
+        """ Move selection down a full page. """
         self.sendCommand('navigation/pageDown')
 
     def pageUp(self):
+        """ Move selection up a full page. """
         self.sendCommand('navigation/pageUp')
 
     def previousLetter(self):
+        """ Jump to previous letter in the alphabet. """
         self.sendCommand('navigation/previousLetter')
 
     def select(self):
+        """ Select element at the current position. """
         self.sendCommand('navigation/select')
 
     def toggleOSD(self):
+        """ Toggle the on screen display during playback. """
         self.sendCommand('navigation/toggleOSD')
 
     def goToMedia(self, media, **params):
-        """Go to a media on the client.
+        """ Navigate directly to the specified media page.
 
-        Args:
-            media (str): movie, music, photo
-            **params (TYPE): Description # todo
+            Parameters:
+                media (:class:`~plexapi.media.Media`): Media object to navigate to.
+                **params (dict): Additional GET parameters to include with the command.
 
-        Raises:
-            Unsupported: Description
+            Raises:
+                :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
         if not self.server:
-            raise Unsupported(
-                'A server must be specified before using this command.')
+            raise Unsupported('A server must be specified before using this command.')
         server_url = media.server.baseurl.split(':')
         self.sendCommand('mirror/details', **dict({
             'machineIdentifier': self.server.machineIdentifier,
@@ -251,170 +241,160 @@ class PlexClient(object):
             'key': media.key,
         }, **params))
 
+    #-------------------
     # Playback Commands
     # Most of the playback commands take a mandatory mtype {'music','photo','video'} argument,
     # to specify which media type to apply the command to, (except for playMedia). This
     # is in case there are multiple things happening (e.g. music in the background, photo
     # slideshow in the foreground).
-
     def pause(self, mtype):
-        """Pause playback
+        """ Pause the currently playing media type.
 
-        Args:
-            mtype (str): music, photo, video
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/pause', type=mtype)
 
     def play(self, mtype):
-        """Start playback
+        """ Start playback for the specified media type.
 
-        Args:
-            mtype (str): music, photo, video
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/play', type=mtype)
 
     def refreshPlayQueue(self, playQueueID, mtype=None):
-        """Summary
+        """ Refresh the specified Playqueue.
 
-        Args:
-            playQueueID (TYPE): Description
-            mtype (None, optional): photo, video, music
-
+            Parameters:
+                playQueueID (str): Playqueue ID.
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand(
             'playback/refreshPlayQueue', playQueueID=playQueueID, type=mtype)
 
     def seekTo(self, offset, mtype=None):
-        """Seek to a time in a plaback.
+        """ Seek to the specified offset (ms) during playback.
 
-        Args:
-            offset (int): in milliseconds
-            mtype (None, optional): photo, video, music
-
+            Parameters:
+                offset (int): Position to seek to (milliseconds).
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/seekTo', offset=offset, type=mtype)
 
     def skipNext(self, mtype=None):
-        """Skip to next
+        """ Skip to the next playback item.
 
-        Args:
-            mtype (None, string, optional): photo, video, music
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/skipNext', type=mtype)
 
     def skipPrevious(self, mtype=None):
-        """Skip to previous
+        """ Skip to previous playback item.
 
-        Args:
-            mtype (None, optional): Description
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/skipPrevious', type=mtype)
 
     def skipTo(self, key, mtype=None):
-        """Jump to
+        """ Skip to the playback item with the specified key.
 
-        Args:
-            key (TYPE): # what is this
-            mtype (None, optional): photo, video, music
-
-        Returns:
-            TYPE: Description
+            Parameters:
+                key (str): Key of the media item to skip to.
+                mtype (str): Media type to take action against (music, photo, video).
         """
-        # skips to item with matching key
         self.sendCommand('playback/skipTo', key=key, type=mtype)
 
     def stepBack(self, mtype=None):
-        """
+        """ Step backward a chunk of time in the current playback item.
 
-        Args:
-            mtype (None, optional): photo, video, music
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/stepBack', type=mtype)
 
     def stepForward(self, mtype):
-        """Summary
+        """ Step forward a chunk of time in the current playback item.
 
-        Args:
-            mtype (TYPE): Description
-
-        Returns:
-            TYPE: Description
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/stepForward', type=mtype)
 
     def stop(self, mtype):
-        """Stop playback
+        """ Stop the currently playing item.
 
-        Args:
-            mtype (str): video, music, photo
-
+            Parameters:
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.sendCommand('playback/stop', type=mtype)
 
     def setRepeat(self, repeat, mtype):
-        """Summary
+        """ Enable repeat for the specified playback items.
 
-        Args:
-            repeat (int): 0=off, 1=repeatone, 2=repeatall
-            mtype (TYPE): video, music, photo
+            Parameters:
+                repeat (int): Repeat mode (0=off, 1=repeatone, 2=repeatall).
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setParameters(repeat=repeat, mtype=mtype)
 
     def setShuffle(self, shuffle, mtype):
-        """Set shuffle
+        """ Enable shuffle for the specified playback items.
 
-        Args:
-            shuffle (int): 0=off, 1=on
-            mtype (TYPE): Description
+            Parameters:
+                shuffle (int): Shuffle mode (0=off, 1=on)
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setParameters(shuffle=shuffle, mtype=mtype)
 
     def setVolume(self, volume, mtype):
-        """Change volume
+        """ Enable volume for the current playback item.
 
-        Args:
-            volume (int): 0-100
-            mtype (TYPE): Description
+            Parameters:
+                volume (int): Volume level (0-100).
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setParameters(volume=volume, mtype=mtype)
 
     def setAudioStream(self, audioStreamID, mtype):
-        """Select a audio stream
+        """ Select the audio stream for the current playback item (only video).
 
-        Args:
-            audioStreamID (TYPE): Description
-            mtype (str): video, music, photo
+            Parameters:
+                audioStreamID (str): ID of the audio stream from the media object.
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setStreams(audioStreamID=audioStreamID, mtype=mtype)
 
     def setSubtitleStream(self, subtitleStreamID, mtype):
-        """Select a subtitle
+        """ Select the subtitle stream for the current playback item (only video).
 
-        Args:
-            subtitleStreamID (TYPE): Description
-            mtype (str): video, music, photo
+            Parameters:
+                subtitleStreamID (str): ID of the subtitle stream from the media object.
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setStreams(subtitleStreamID=subtitleStreamID, mtype=mtype)
 
     def setVideoStream(self, videoStreamID, mtype):
-        """Summary
+        """ Select the video stream for the current playback item (only video).
 
-        Args:
-            videoStreamID (TYPE): Description
-            mtype (str): video, music, photo
-
+            Parameters:
+                videoStreamID (str): ID of the video stream from the media object.
+                mtype (str): Media type to take action against (music, photo, video).
         """
         self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
 
     def playMedia(self, media, **params):
-        """Start playback on a media item.
+        """ Start playback of the specified media item.
 
-        Args:
-            media (str): movie, music, photo
-            **params (TYPE): Description
+            Parameters:
+                media (:class:`plexapi.media.Media`): Media item to be played back (movie, music, photo).
+                **params (TYPE): Additional parameters to include in the request. Useful
+                    to specify things such as offset, audio, or subtitle streams.
 
-        Raises:
-            Unsupported: Description
+            Raises:
+                :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
         if not self.server:
             raise Unsupported(
@@ -430,13 +410,13 @@ class PlexClient(object):
         }, **params))
 
     def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=None):
-        """Set params for the client
+        """ Set multiple playback parameters at once.
 
-        Args:
-            volume (None, optional): 0-100
-            shuffle (None, optional): 0=off, 1=on
-            repeat (None, optional): 0=off, 1=repeatone, 2=repeatall
-            mtype (None, optional): music,photo,video
+            Parameters:
+                volume (int): Volume level (0-100; optional).
+                shuffle (int): Shuffle mode (0=off, 1=on; optional).
+                repeat (int): Repeat mode (0=off, 1=repeatone, 2=repeatall; optional).
+                mtype (str): Media type to take action against (optional music, photo, video).
         """
         params = {}
         if repeat is not None:
@@ -449,15 +429,14 @@ class PlexClient(object):
             params['type'] = mtype
         self.sendCommand('playback/setParameters', **params)
 
-    def setStreams(self, audioStreamID=None, subtitleStreamID=None,
-                   videoStreamID=None, mtype=None):
-        """Select streams.
+    def setStreams(self, audioStreamID=None, subtitleStreamID=None, videoStreamID=None, mtype=None):
+        """ Select multiple playback streams at once.
 
-        Args:
-            audioStreamID (None, optional): Description
-            subtitleStreamID (None, optional): Description
-            videoStreamID (None, optional): Description
-            mtype (None, optional): music,photo,video
+            Parameters:
+                audioStreamID (str): ID of the audio stream from the media object.
+                subtitleStreamID (str): ID of the subtitle stream from the media object.
+                videoStreamID (str): ID of the video stream from the media object.
+                mtype (str): Media type to take action against (optional music, photo, video).
         """
         params = {}
         if audioStreamID is not None:
@@ -470,19 +449,18 @@ class PlexClient(object):
             params['type'] = mtype
         self.sendCommand('playback/setStreams', **params)
 
+    #-------------------
     # Timeline Commands
     def timeline(self):
-        """Timeline"""
+        """ Poll the current timeline and return the XML response. """
         return self.sendCommand('timeline/poll', **{'wait': 1, 'commandID': 4})
 
     def isPlayingMedia(self, includePaused=False):
-        """Check timeline if anything is playing
+        """ Returns True if any media is currently playing.
 
-        Args:
-            includePaused (bool, optional): Should paused be included
-
-        Returns:
-            bool
+            Parameters:
+                includePaused (bool): Set True to treat currently paused items
+                    as playing (optional; default True).
         """
         for mediatype in self.timeline():
             if mediatype.get('state') == 'playing':

@@ -1,5 +1,5 @@
-Introduction
-============
+Getting Started
+===============
 
 .. |br| raw:: html
 

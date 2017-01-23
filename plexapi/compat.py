@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-# flake8:noqa
-"""
-Python 2/3 compatability
-Always try Py3 first
-"""
+# Python 2/3 compatability
+# Always try Py3 first
 import sys
 
 try:

@@ -124,8 +124,8 @@ class MyPlexAccount(object):
                 password (str): Your MyPlex.tv password.
 
             Raises:
-                Unauthorized: (401) If the username or password are invalid.
-                BadRequest: If any other errors occured not allowing us to log into MyPlex.tv.
+                :class:`~plexapi.exceptions.Unauthorized`: (401) If the username or password are invalid.
+                :class:`~plexapi.exceptions.BadRequest`: If any other errors occured not allowing us to log into MyPlex.tv.
         """
         if 'X-Plex-Token' in plexapi.BASE_HEADERS:
             del plexapi.BASE_HEADERS['X-Plex-Token']
@@ -254,7 +254,7 @@ class MyPlexResource(object):
                     HTTP or HTTPS connection.
 
             Raises:
-                NotFound: When unable to connect to any addresses for this resource.
+                :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
@@ -371,7 +371,7 @@ class MyPlexDevice(object):
             successful, the PlexClient object is built and returned.
 
             Raises:
-                NotFound: When unable to connect to any addresses for this device.
+                :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.

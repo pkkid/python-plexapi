@@ -1,12 +1,14 @@
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Table of Contents
+   :titlesonly:
 
    self
    introduction
+   configuration
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Modules
 
    modules/audio
