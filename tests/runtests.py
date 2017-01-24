@@ -4,7 +4,7 @@
 You can run this test suite with the following command:
 >> python tests.py -u <USERNAME> -p <PASSWORD> -s <SERVERNAME>
 """
-import argparse, pkgutil, sys, time, traceback
+import argparse, os, pkgutil, sys, time, traceback
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
 
@@ -14,16 +14,20 @@ from utils import log, itertests
 
 
 def runtests(args):
+    # Get username and password from environment
+    username = args.username or os.environ.get('TEST_PLEX_USERNAME')
+    password = args.password or os.environ.get('TEST_PLEX_PASSWORD')
+    resource = args.resource or os.environ.get('TEST_PLEX_RESOURCE')
     # Register known tests
     for loader, name, ispkg in pkgutil.iter_modules([dirname(abspath(__file__))]):
         if name.startswith('test_'):
             log(0, 'Registering tests from %s.py' % name)
             loader.find_module(name).load_module(name)
     # Create Account and Plex objects
-    account = MyPlexAccount.signin(args.username, args.password)
+    account = MyPlexAccount.signin(username, password)
     log(0, 'Signed into MyPlex as %s (%s)' % (account.username, account.email))
-    if args.resource:
-        plex = account.resource(args.resource).connect()
+    if resource:
+        plex = account.resource(resource).connect()
         log(0, 'Connected to PlexServer resource %s' % plex.friendlyName)
     else:
         plex = PlexServer(args.baseurl, args.token)
