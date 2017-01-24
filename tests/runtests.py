@@ -15,10 +15,9 @@ from utils import log, itertests
 
 def runtests(args):
     # Get username and password from environment
-    username = args.username or os.environ.get('TEST_PLEX_USERNAME')
-    password = args.password or os.environ.get('TEST_PLEX_PASSWORD')
-    resource = args.resource or os.environ.get('TEST_PLEX_RESOURCE')
-
+    username = args.username or os.environ.get('PLEX_TEST_USERNAME')
+    password = args.password or os.environ.get('PLEX_TEST_PASSWORD')
+    resource = args.resource or os.environ.get('PLEX_TEST_RESOURCE')
     # Register known tests
     for loader, name, ispkg in pkgutil.iter_modules([dirname(abspath(__file__))]):
         if name.startswith('test_'):
