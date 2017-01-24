@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master)](https://travis-ci.org/mjs7231/python-plexapi)
+
 ## PlexAPI ##
 Python bindings for the Plex API.
 
