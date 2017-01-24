@@ -8,4 +8,4 @@ install:
   - pip install .
   - pip install -r requirements.pip
 
-script: python3 tests/runtests.py --query=test_core
+script: python tests/runtests.py --query=test_core
