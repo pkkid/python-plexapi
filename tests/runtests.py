@@ -18,12 +18,14 @@ def runtests(args):
     username = args.username or os.environ.get('TEST_PLEX_USERNAME')
     password = args.password or os.environ.get('TEST_PLEX_PASSWORD')
     resource = args.resource or os.environ.get('TEST_PLEX_RESOURCE')
+
     # Register known tests
     for loader, name, ispkg in pkgutil.iter_modules([dirname(abspath(__file__))]):
         if name.startswith('test_'):
             log(0, 'Registering tests from %s.py' % name)
             loader.find_module(name).load_module(name)
     # Create Account and Plex objects
+    log(0, 'Logging into MyPlex as %s' % username)
     account = MyPlexAccount.signin(username, password)
     log(0, 'Signed into MyPlex as %s (%s)' % (account.username, account.email))
     if resource:
