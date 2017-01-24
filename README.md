@@ -1,5 +1,4 @@
-<img style='float:right;' src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master">
-## PlexAPI ##
+## PlexAPI &nbsp; <img src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master"> ##
 Python bindings for the Plex API.
 
 * Navigate local or remote shared libraries.
