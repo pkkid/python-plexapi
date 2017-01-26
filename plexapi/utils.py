@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import re
+import logging, re
 from datetime import datetime
 from plexapi.compat import quote, urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
@@ -21,7 +21,7 @@ def register_libtype(cls):
     return cls
 
 
-class _NA(object):
+class NA(object):
     """ This used to be a simple variable equal to '__NA__'. There has been need to
         compare NA against None in some use cases. This object allows the internals
         of PlexAPI to distinguish between unfetched values and fetched, but non-existent
@@ -32,7 +32,7 @@ class _NA(object):
         return False
 
     def __eq__(self, other):
-        return isinstance(other, _NA) or other in [None, '__NA__']
+        return isinstance(other, NA) or other in [None, '__NA__']
 
     def __nonzero__(self):
         return False
@@ -40,7 +40,22 @@ class _NA(object):
     def __repr__(self):
         return '__NA__'
 
-NA = _NA()
+
+class SecretsFilter(logging.Filter):
+    """ Logging filter to hide secrets. """
+    def __init__(self, secrets=None):
+        self.secrets = secrets or set()
+
+    def add_secret(self, secret):
+        self.secrets.add(secret)
+
+    def filter(self, record):
+        cleanargs = list(record.args)
+        for i in range(len(cleanargs)):
+            for secret in self.secrets:
+                cleanargs[i] = cleanargs[i].replace(secret, '<hidden>')
+        record.args = tuple(cleanargs)
+        return True
 
 
 class PlexPartialObject(object):

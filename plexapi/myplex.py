@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import plexapi, requests
-from plexapi import TIMEOUT, log, utils
+from plexapi import TIMEOUT, log, logfilter, utils
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
@@ -47,6 +47,8 @@ class MyPlexAccount(object):
 
     def __init__(self, data, initpath=None):
         self.authenticationToken = data.attrib.get('authenticationToken')
+        if self.authenticationToken:
+            logfilter.add_secret(self.authenticationToken)
         self.certificateVersion = data.attrib.get('certificateVersion')
         self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
         self.email = data.attrib.get('email')
@@ -223,6 +225,8 @@ class MyPlexResource(object):
     def __init__(self, data):
         self.name = data.attrib.get('name')
         self.accessToken = data.attrib.get('accessToken')
+        if self.accessToken:
+            logfilter.add_secret(self.accessToken)
         self.product = data.attrib.get('product')
         self.productVersion = data.attrib.get('productVersion')
         self.platform = data.attrib.get('platform')
@@ -357,6 +361,8 @@ class MyPlexDevice(object):
         self.version = data.attrib.get('version')
         self.id = data.attrib.get('id')
         self.token = data.attrib.get('token')
+        if self.token:
+            logfilter.add_secret(self.token)
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]

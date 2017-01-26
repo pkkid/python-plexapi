@@ -14,7 +14,7 @@ import requests
 from requests.status_codes import _codes as codes
 
 from plexapi import BASE_HEADERS, TIMEOUT
-from plexapi import log, utils
+from plexapi import log, logfilter, utils
 from plexapi import audio, video, photo, playlist  # noqa; required # why is this needed?
 from plexapi.client import PlexClient
 from plexapi.compat import quote
@@ -64,6 +64,8 @@ class PlexServer(object):
         """
         self.baseurl = baseurl
         self.token = token
+        if self.token:
+            logfilter.add_secret(self.token)
         self.session = session or requests.Session()
         data = self._connect()
         self.friendlyName = data.attrib.get('friendlyName')
