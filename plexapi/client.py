@@ -70,7 +70,11 @@ class PlexClient(object):
         self.version = data.attrib.get('version')
 
     def connect(self):
-        """ Connects to the client and reloads all class attributes. """
+        """ Connects to the client and reloads all class attributes.
+            
+            Raises:
+                :class:`~plexapi.exceptions.NotFound`: No client found at the specified url.
+        """
         try:
             data = self.query('/resources')[0]
             self._loadData(data)

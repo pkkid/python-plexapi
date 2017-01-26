@@ -8,6 +8,16 @@ from plexapi.exceptions import BadRequest, NotFound
 
 
 class Library(object):
+    """ Represents a PlexServer library. This contains all sections of media defined
+        in your Plex server including video, shows and audio.
+
+        Attributes:
+            identifier (str): Unknown ('com.plexapp.plugins.library').
+            mediaTagVersion (str): Unknown (/system/bundle/media/flags/)
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
+            title1 (str): 'Plex Library' (not sure how useful this is).
+            title2 (str): Second title (this is blank on my setup).
+    """
 
     def __init__(self, server, data):
         self.identifier = data.attrib.get('identifier')
@@ -21,6 +31,10 @@ class Library(object):
         return '<Library:%s>' % self.title1.encode('utf8')
 
     def sections(self):
+        """ Returns a list of all media sections in this library. Library sections may be any of
+            :class:`~plexapi.library.MovieSection`, :class:`~plexapi.library.ShowSection`,
+            :class:`~plexapi.library.MusicSection`, :class:`~plexapi.library.PhotoSection`.
+        """
         items = []
         SECTION_TYPES = {
             MovieSection.TYPE: MovieSection,
@@ -39,40 +53,67 @@ class Library(object):
         return items
 
     def section(self, title=None):
+        """ Returns the :class:`plexapi.library.LibrarySection` that matches the specified title.
+
+            Parameters:
+                title (str): Title of the section to return.
+
+            Raises:
+                :class:`~plexapi.exceptions.NotFound`: Invalid library section title.
+        """
         for item in self.sections():
             if item.title == title:
                 return item
         raise NotFound('Invalid library section: %s' % title)
 
     def sectionByID(self, sectionID):
+        """ Returns the :class:`plexapi.library.LibrarySection` that matches the specified sectionID.
+            
+            Parameters:
+                sectionID (int): ID of the section to return.
+        """
         if not self._sectionsByID:
             self.sections()
         return self._sectionsByID[sectionID]
 
     def all(self):
-        return [item for section in self.sections()
-                for item in section.all()]
+        """ Returns a list of all media from all library sections.
+            This may be a very large dataset to retrieve.
+        """
+        return [item for section in self.sections() for item in section.all()]
 
     def onDeck(self):
+        """ Returns a list of all media items on deck. """
         return utils.listItems(self.server, '/library/onDeck')
 
     def recentlyAdded(self):
+        """ Returns a list of all media items recently added. """
         return utils.listItems(self.server, '/library/recentlyAdded')
 
     def get(self, title):
+        """ Return the first item from all items with the specified title. 
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
         return utils.findItem(self.server, '/library/all', title)
 
     def getByKey(self, key):
+        """ Return the first item from all items with the specified key. 
+
+            Parameters:
+                key (str): Key of the item to return.
+        """
         return utils.findKey(self.server, key)
 
     def search(self, title=None, libtype=None, **kwargs):
-        """ Searching within a library section is much more powerful. It seems certain attributes on the media
-            objects can be targeted to filter this search down a bit, but I havent found the documentation for
-            it.
+        """ Searching within a library section is much more powerful. It seems certain
+            attributes on the media objects can be targeted to filter this search down
+            a bit, but I havent found the documentation for it.
 
             Example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items
-                      such as actor=<id> seem to work, but require you already know the id of the actor.
-                      TLDR: This is untested but seems to work. Use library section search when you can.
+            such as actor=<id> seem to work, but require you already know the id of the actor.
+            TLDR: This is untested but seems to work. Use library section search when you can.
         """
         args = {}
         if title:
@@ -85,20 +126,60 @@ class Library(object):
         return utils.listItems(self.server, query)
 
     def cleanBundles(self):
+        """ Poster images and other metadata for items in your library are kept in "bundle"
+            packages. When you remove items from your library, these bundles aren't immediately
+            removed. Removing these old bundles can reduce the size of your install. By default, your
+            server will automatically clean up old bundles once a week as part of Scheduled Tasks.
+        """
         self.server.query('/library/clean/bundles')
 
     def emptyTrash(self):
+        """ If a library has items in the Library Trash, use this option to empty the Trash. """
         for section in self.sections():
             section.emptyTrash()
 
     def optimize(self):
+        """ The Optimize option cleans up the server database from unused or fragmented data.
+            For example, if you have deleted or added an entire library or many items in a
+            library, you may like to optimize the database.
+        """
         self.server.query('/library/optimize')
 
     def refresh(self):
+        """ Refresh the metadata for the entire library. This will fetch fresh metadata for
+            all contents in the library, including items that already have metadata.
+        """
         self.server.query('/library/sections/all/refresh')
 
 
 class LibrarySection(object):
+    """ Base class for a single library section.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
+            initpath (str): Path requested when building this object.
+            agent (str): Unknown (com.plexapp.agents.imdb, etc)
+            allowSync (bool): True if you allow syncing content from this section.
+            art (str): Wallpaper artwork used to respresent this section.
+            composite (str): Composit image used to represent this section.
+            createdAt (datetime): Datetime this library section was created.
+            filters (str): Unknown
+            key (str): Key (or ID) of this library section.
+            language (str): Language represented in this section (en, xn, etc).
+            locations (str): Paths on disk where section content is stored.
+            refreshing (str): True if this section is currently being refreshed.
+            scanner (str): Internal scanner used to find media (Plex Movie Scanner, Plex Premium Music Scanner, etc.)
+            thumb (str): Thumbnail image used to represent this section.
+            title (str): Title of this section.
+            type (str): Type of content section represents (movie, artist, photo, show).
+            updatedAt (datetime): Datetime this library section was last updated.
+            uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
+    """
     ALLOWED_FILTERS = ()
     ALLOWED_SORT = ()
     BOOLEAN_FILTERS = ('unwatched', 'duplicate')
@@ -114,7 +195,6 @@ class LibrarySection(object):
         self.filters = data.attrib.get('filters')
         self.key = data.attrib.get('key')
         self.language = data.attrib.get('language')
-        self.language = data.attrib.get('language')
         self.locations = utils.findLocations(data)
         self.refreshing = utils.cast(bool, data.attrib.get('refreshing'))
         self.scanner = data.attrib.get('scanner')
@@ -129,42 +209,66 @@ class LibrarySection(object):
         return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
     def get(self, title):
+        """ Returns the media item with the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
         path = '/library/sections/%s/all' % self.key
         return utils.findItem(self.server, path, title)
 
     def all(self):
+        """ Returns a list of media from this library section. """
         return utils.listItems(self.server, '/library/sections/%s/all' % self.key)
 
     def onDeck(self):
+        """ Returns a list of media items on deck from this library section. """
         return utils.listItems(self.server, '/library/sections/%s/onDeck' % self.key)
 
     def recentlyAdded(self, maxresults=50):
+        """ Returns a list of media items recently added from this library section.
+            
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
         return self.search(sort='addedAt:desc', maxresults=maxresults)
 
     def analyze(self):
+        """ Run an analysis on all of the items in this library section. """
         self.server.query('/library/sections/%s/analyze' % self.key)
 
     def emptyTrash(self):
+        """ If a section has items in the Trash, use this option to empty the Trash. """
         self.server.query('/library/sections/%s/emptyTrash' % self.key)
 
     def refresh(self):
+        """ Refresh the metadata for this library section. This will fetch fresh metadata for
+            all contents in the section, including items that already have metadata.
+        """
         self.server.query('/library/sections/%s/refresh' % self.key)
 
     def listChoices(self, category, libtype=None, **kwargs):
-        """ List choices for the specified filter category. kwargs can be any of the same
-            kwargs in self.search() to help narrow down the choices to only those that
-            matter in your current context.
+        """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the
+            specified category and libtype. kwargs can be any of the same kwargs in
+            :func:`plexapi.library.LibraySection.search()` to help narrow down the choices
+            to only those that matter in your current context.
+
+            Parameters:
+                category (str): Category to list choices for (genre, contentRating, etc).
+                libtype (int): Library type of item filter.
+                **kwargs (dict): Additional kwargs to narrow down the choices.
+
+            Raises:
+                :class:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
         """
         if category in kwargs:
-            raise BadRequest(
-                'Cannot include kwarg equal to specified category: %s' % category)
+            raise BadRequest('Cannot include kwarg equal to specified category: %s' % category)
         args = {}
         for subcategory, value in kwargs.items():
             args[category] = self._cleanSearchFilter(subcategory, value)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-        query = '/library/sections/%s/%s%s' % (
-            self.key, category, utils.joinArgs(args))
+        query = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return utils.listItems(self.server, query, bytag=True)
 
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
@@ -173,29 +277,29 @@ class LibrarySection(object):
             results, it would be wise to set the maxresults option to that amount so this functions
             doesn't iterate over all results on the server.
 
-            Args:
-                title (string, optional): General string query to search for.
-                sort (string): column:dir; column can be any of {addedAt, originallyAvailableAt, lastViewedAt,
-                      titleSort, rating, mediaHeight, duration}. dir can be asc or desc.
-                maxresults (int): Only return the specified number of results
-                libtype (string): Filter results to a spcifiec libtype {movie, show, episode, artist, album, track}
-                kwargs: Any of the available filters for the current library section. Partial string
+            Parameters:
+                title (str): General string query to search for (optional).
+                sort (str): column:dir; column can be any of {addedAt, originallyAvailableAt, lastViewedAt,
+                      titleSort, rating, mediaHeight, duration}. dir can be asc or desc (optional).
+                maxresults (int): Only return the specified number of results (optional).
+                libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist, album, track; optional).
+                **kwargs (dict): Any of the available filters for the current library section. Partial string
                         matches allowed. Multiple matches OR together. All inputs will be compared with the
                         available options and a warning logged if the option does not appear valid.
 
-                        'unwatched': Display or hide unwatched content (True, False). [all]
-                        'duplicate': Display or hide duplicate items (True, False). [movie]
-                        'actor': List of actors to search ([actor_or_id, ...]). [movie]
-                        'collection': List of collections to search within ([collection_or_id, ...]). [all]
-                        'contentRating': List of content ratings to search within ([rating_or_key, ...]). [movie,tv]
-                        'country': List of countries to search within ([country_or_key, ...]). [movie,music]
-                        'decade': List of decades to search within ([yyy0, ...]). [movie]
-                        'director': List of directors to search ([director_or_id, ...]). [movie]
-                        'genre': List Genres to search within ([genere_or_id, ...]). [all]
-                        'network': List of TV networks to search within ([resolution_or_key, ...]). [tv]
-                        'resolution': List of video resolutions to search within ([resolution_or_key, ...]). [movie]
-                        'studio': List of studios to search within ([studio_or_key, ...]). [music]
-                        'year': List of years to search within ([yyyy, ...]). [all]
+                        * unwatched: Display or hide unwatched content (True, False). [all]
+                        * duplicate: Display or hide duplicate items (True, False). [movie]
+                        * actor: List of actors to search ([actor_or_id, ...]). [movie]
+                        * collection: List of collections to search within ([collection_or_id, ...]). [all]
+                        * contentRating: List of content ratings to search within ([rating_or_key, ...]). [movie,tv]
+                        * country: List of countries to search within ([country_or_key, ...]). [movie,music]
+                        * decade: List of decades to search within ([yyy0, ...]). [movie]
+                        * director: List of directors to search ([director_or_id, ...]). [movie]
+                        * genre: List Genres to search within ([genere_or_id, ...]). [all]
+                        * network: List of TV networks to search within ([resolution_or_key, ...]). [tv]
+                        * resolution: List of video resolutions to search within ([resolution_or_key, ...]). [movie]
+                        * studio: List of studios to search within ([studio_or_key, ...]). [music]
+                        * year: List of years to search within ([yyyy, ...]). [all]
         """
         # Cleanup the core arguments
         args = {}
@@ -207,12 +311,10 @@ class LibrarySection(object):
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-
         # Iterate over the results
         results, subresults = [], '_init'
         args['X-Plex-Container-Start'] = 0
         args['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
-
         while subresults and maxresults > len(results):
             query = '/library/sections/%s/all%s' % (
                 self.key, utils.joinArgs(args))
@@ -229,13 +331,11 @@ class LibrarySection(object):
             return '1' if value else '0'
         if not isinstance(value, (list, tuple)):
             value = [value]
-
         # convert list of values to list of keys or ids
         result = set()
         choices = self.listChoices(category, libtype)
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
         allowed = set(c.key for c in choices)
-
         for item in value:
             item = str(item.id if isinstance(item, MediaTag) else item).lower()
             # find most logical choice(s) to use in url
@@ -250,8 +350,7 @@ class LibrarySection(object):
                 map(result.add, matches)
                 continue
             # nothing matched; use raw item value
-            log.warning(
-                'Filter value not listed, using raw item value: %s' % item)
+            log.warning('Filter value not listed, using raw item value: %s' % item)
             result.add(item)
         return ','.join(result)
 
@@ -267,62 +366,124 @@ class LibrarySection(object):
 
 
 class MovieSection(LibrarySection):
-    ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
-                       'director', 'actor', 'country', 'studio', 'resolution')
+    """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
+        
+        Attributes:
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
+                'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
+                'director', 'actor', 'country', 'studio', 'resolution')
+            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
+                'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
+                'mediaHeight', 'duration')
+            TYPE (str): 'movie'
+    """
+    ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
+        'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-                    'mediaHeight', 'duration')
+        'mediaHeight', 'duration')
     TYPE = 'movie'
 
 
 class ShowSection(LibrarySection):
-    ALLOWED_FILTERS = ('unwatched', 'year', 'genre',
-                       'contentRating', 'network', 'collection')
-    ALLOWED_SORT = ('addedAt', 'lastViewedAt',
-                    'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
+    """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
+        
+        Attributes:
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
+                'year', 'genre', 'contentRating', 'network', 'collection')
+            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
+                'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
+            TYPE (str): 'show'
+    """
+    ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
+    ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
+        'rating', 'unwatched')
     TYPE = 'show'
 
     def searchShows(self, **kwargs):
+        """ Search for a show. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='show', **kwargs)
 
     def searchEpisodes(self, **kwargs):
+        """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='episode', **kwargs)
 
     def recentlyAdded(self, libtype='episode', maxresults=50):
+        """ Returns a list of recently added episodes from this library section.
+            
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
         return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
 
 
 class MusicSection(LibrarySection):
+    """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
+        
+        Attributes:
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('genre',
+                'country', 'collection')
+            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
+                'lastViewedAt', 'viewCount', 'titleSort')
+            TYPE (str): 'artist'
+    """
     ALLOWED_FILTERS = ('genre', 'country', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TYPE = 'artist'
 
     def albums(self):
+        """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
         return utils.listItems(self.server, '/library/sections/%s/albums' % self.key)
 
     def searchArtists(self, **kwargs):
+        """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='artist', **kwargs)
 
     def searchAlbums(self, **kwargs):
+        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='album', **kwargs)
 
     def searchTracks(self, **kwargs):
+        """ Search for a track. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='track', **kwargs)
 
 
 class PhotoSection(LibrarySection):
+    """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
+        
+        Attributes:
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. <NONE>
+            ALLOWED_SORT (list<str>): List of allowed sorting keys. <NONE>
+            TYPE (str): 'photo'
+    """
     ALLOWED_FILTERS = ()
     ALLOWED_SORT = ()
     TYPE = 'photo'
 
     def searchAlbums(self, **kwargs):
+        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='photo', **kwargs)
 
     def searchPhotos(self, **kwargs):
+        """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='photo', **kwargs)
 
 
 @utils.register_libtype
 class FilterChoice(object):
+    """ Represents a single filter choice. These objects are gathered when using filters
+        while searching for library items and is the object returned in the result set of
+        :func:`~plexapi.library.LibrarySection.listChoices()`.
+
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+            fastKey (str): API path to quickly list all items in this filter
+                (/library/sections/<section>/all?genre=<key>)
+            key (str): Short key (id) of this filter option (used ad <key> in fastKey above).
+            thumb (str): Thumbnail used to represent this filter option. 
+            title (str): Human readable name for this filter option.
+            type (str): Filter type (genre, contentRating, etc).
+    """
     TYPE = 'Directory'
 
     def __init__(self, server, data, initpath):

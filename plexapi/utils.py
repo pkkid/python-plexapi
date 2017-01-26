@@ -14,46 +14,31 @@ LIBRARY_TYPES = {}
 
 
 def register_libtype(cls):
-    """Registry of library types we may come across when parsing XML.
-    This allows us to define a few helper functions to dynamically convery
-    the XML into objects. See buildItem() below for an example.
+    """ Registry of library types we may come across when parsing XML. This allows us to
+        define a few helper functions to dynamically convery the XML into objects. See
+        buildItem() below for an example.
     """
     LIBRARY_TYPES[cls.TYPE] = cls
     return cls
 
 
 class _NA(object):
-    """This used to be a simple variable equal to '__NA__'.
-    However, there has been need to compare NA against None in some use cases.
-    This object allows the internals of PlexAPI to distinguish between unfetched
-    values and fetched, but non-existent values.
-    (NA == None results to True; NA is None results to False)
+    """ This used to be a simple variable equal to '__NA__'. There has been need to
+        compare NA against None in some use cases. This object allows the internals
+        of PlexAPI to distinguish between unfetched values and fetched, but non-existent
+        values. (NA == None results to True; NA is None results to False)
     """
 
     def __bool__(self):
-        """Make sure Na always is False.
-
-        Returns:
-            bool: False
-        """
         return False
 
     def __eq__(self, other):
-        """Check eq.
-
-        Args:
-            other (str): Description
-
-        Returns:
-            bool: True is equal
-        """
         return isinstance(other, _NA) or other in [None, '__NA__']
 
     def __nonzero__(self):
         return False
 
     def __repr__(self):
-        """Pretty print."""
         return '__NA__'
 
 NA = _NA()
