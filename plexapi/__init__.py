@@ -5,9 +5,9 @@ from platform import uname
 from plexapi.config import PlexConfig, reset_base_headers
 from uuid import getnode
 
-
 # Load User Defined Config
-CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
+DEFAULT_CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
+CONFIG_PATH = os.environ.get('PLEX_CONFIG_PATH', DEFAULT_CONFIG_PATH)
 CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
