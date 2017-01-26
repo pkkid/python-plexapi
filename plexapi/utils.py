@@ -2,7 +2,7 @@
 
 import logging, re
 from datetime import datetime
-from plexapi.compat import quote, urlencode
+from plexapi.compat import quote, urlencode, string_type
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
 
@@ -52,8 +52,9 @@ class SecretsFilter(logging.Filter):
     def filter(self, record):
         cleanargs = list(record.args)
         for i in range(len(cleanargs)):
-            for secret in self.secrets:
-                cleanargs[i] = cleanargs[i].replace(secret, '<hidden>')
+            if isinstance(cleanargs[i], string_type):
+                for secret in self.secrets:
+                    cleanargs[i] = cleanargs[i].replace(secret, '<hidden>')
         record.args = tuple(cleanargs)
         return True
 

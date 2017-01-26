@@ -4,6 +4,11 @@
 import sys
 
 try:
+    string_type = basestring
+except NameError:
+    string_type = str
+
+try:
     from urllib.parse import urlencode
 except ImportError:
     from urllib import urlencode
