@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from plexapi import log, utils
 from plexapi import X_PLEX_CONTAINER_SIZE
 from plexapi.compat import unquote
@@ -156,7 +155,7 @@ class LibrarySection(object):
     """ Base class for a single library section.
 
         Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            server (:class:`~plexapi.server.PlexServer`): PlexServer object this library section is from.
             data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
