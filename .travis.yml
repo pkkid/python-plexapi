@@ -4,11 +4,14 @@ python:
   - "2.7"
   - "3.5"
 
+before_install:
+    - pip install pytest pytest-cov
+    - pip install coveralls
+
 install:
-  - pip install .
   - pip install -r requirements_dev.txt
 
-script: pytest tests/tests_pytest --cov-config .coveragerc --cov=plexapi --cov-report=html
+script: py.test tests/tests_pytest --cov-config .coveragerc --cov=plexapi --cov-report=html
 
 after_success:
     - coveralls
