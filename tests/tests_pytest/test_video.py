@@ -42,7 +42,7 @@ def test_video_Movie_isPartialObject(a_movie):
 def test_video_Movie_iterParts(a_movie):
     assert len(list(a_movie.iterParts())) == 1
 
-def test_video_Show_download(monkeydownload, tmpdir, a_movie):
+def test_video_Movie_download(monkeydownload, tmpdir, a_movie):
     downloaded_movie = a_movie.download(savepath=str(tmpdir))
     assert len(downloaded_movie) == 1
 
@@ -312,18 +312,18 @@ def test_video_Show_episodes(a_show):
     assert len(inc_watched) == 9
     assert len(ex_watched) == 8
 
-def test_video_Show_download(tmpdir, a_show):
+def test_video_Show_download(monkeydownload, tmpdir, a_show):
     f = a_show.download(savepath=str(tmpdir))
     assert len(f) == 9
 
 
-def _test_video_Season_download(tmpdir, a_show):
+def test_video_Season_download(monkeydownload, tmpdir, a_show):
     sn = a_show.season('Season 1')
 
     f = sn.download(savepath=str(tmpdir))
     assert len(f) == 8
 
-def test_video_Episode_download(tmpdir, a_episode):
+def test_video_Episode_download(monkeydownload, tmpdir, a_episode):
     f = a_episode.download(savepath=str(tmpdir))
     assert len(f) == 1
 
