@@ -4,3 +4,4 @@ pytest-cov
 betamax
 betamax_serializers
 pillow
+coveralls
