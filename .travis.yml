@@ -9,7 +9,7 @@ install:
   - pip install -r requirements_dev.txt
 
 
-script: py.test tests/tests_pytest --cov-config .coveragerc --cov=plexapi --cov-report=html
+script: pytest tests/tests_pytest --cov-config .coveragerc --cov=plexapi --cov-report=html
 
 after_success:
 	- coveralls
