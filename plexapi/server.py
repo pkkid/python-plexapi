@@ -206,7 +206,7 @@ class PlexServer(object):
         if headers:
             h.update(headers)
         response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
-        print(response.url)
+        #print(response.url)
         if response.status_code not in [200, 201]:
             codename = codes.get(response.status_code)[0]
             raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
