@@ -545,6 +545,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
 
     """
     session = session or requests.Session()
+    print('Mocked download %s' % mocked)
 
     if savepath is None:
         savepath = os.getcwd()

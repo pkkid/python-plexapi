@@ -40,10 +40,20 @@ def test_video_Movie_isPartialObject(a_movie):
 def test_video_Movie_iterParts(a_movie):
     assert len(list(a_movie.iterParts())) == 1
 
+def test_video_Show_download(monkeydownload, tmpdir, a_movie):
+    downloaded_movie = a_movie.download(savepath=str(tmpdir))
+    assert len(downloaded_movie) == 1
+
+    downloaded_movie2 = a_movie.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
+    assert len(downloaded_movie2) == 1
+
+
+
 
 def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
 
+    assert m.location == '/media/movies/cars/cars.mp4'
     assert str(m.addedAt.date()) == '2017-01-17'
     assert m.art == '/library/metadata/2/art/1484690715'
     assert m.audienceRating == 7.9
