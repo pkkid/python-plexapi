@@ -6,6 +6,10 @@ python:
 
 install:
   - pip install .
-  - pip install -r requirements.pip
+  - pip install -r requirements_dev.txt
 
-script: python tests/runtests.py --query=test_core/test_server
+
+script: py.test tests/tests_pytest --cov-config .coveragerc --cov=plexapi --cov-report=html
+
+after_success:
+	- coveralls
