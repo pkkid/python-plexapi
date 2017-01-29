@@ -5,6 +5,8 @@ import os
 
 import pytest
 
+from plexapi.exceptions import NotFound
+
 
 def test_video_Movie(a_movie_section):
     m = a_movie_section.get('Cars')
@@ -265,6 +267,7 @@ def test_video_Show_attrs(a_show):
     assert m.rating == 8.1
     assert m.ratingKey == 12
     assert [i.tag for i in m.roles][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
+    assert [i.tag for i in m.actors][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
     assert m.server.baseurl == 'http://138.68.157.5:32400'
     assert m.studio == 'The CW'
     assert m.summary == u"When nuclear Armageddon destroys civilization on Earth, the only survivors are those on the 12 international space stations in orbit at the time. Three generations later, the 4,000 survivors living on a space ark of linked stations see their resources dwindle and face draconian measures established to ensure humanity's future. Desperately looking for a solution, the ark's leaders send 100 juvenile prisoners back to the planet to test its habitability. Having always lived in space, the exiles find the planet fascinating and terrifying, but with the fate of the human race in their hands, they must forge a path into the unknown."
@@ -277,6 +280,14 @@ def test_video_Show_attrs(a_show):
     assert m.viewCount == 1
     assert m.viewedLeafCount == 1
     assert m.year == 2014
+
+
+def test_video_Show_watched(a_show):
+    watched = a_show.watched()
+    assert len(watched) == 1 and watched[0].title == 'Pilot'
+
+def test_video_Show_unwatched(a_show):
+    assert len(a_show.unwatched()) == 8
 
 def test_video_Show_location(pms):
     # This should be a part of test test_video_Show_attrs
@@ -363,6 +374,12 @@ def test_video_Episode(a_show):
     pilot = a_show.episode('Pilot')
     assert pilot == a_show.episode(season=1, episode=1)
 
+    with pytest.raises(TypeError):
+        a_show.episode()
+
+    with pytest.raises(NotFound):
+        a_show.episode(season=1337, episode=1337)
+
 def test_video_Episode_analyze(a_tv_section):
     ep = a_tv_section.get("Marvel's Daredevil").episode(season=1, episode=1)
     ep.analyze()
@@ -430,6 +447,7 @@ def test_video_Episode_attrs(a_episode):
     #assert par0.media == <Media:Pilot>
     assert par0.server.baseurl == 'http://138.68.157.5:32400'
     assert par0.size == 31491130
+    assert ep.isWatched is True
 
 
 def test_video_Season(a_show):
@@ -462,6 +480,7 @@ def test_video_Season_attrs(a_show):
     assert str(m.updatedAt.date()) == '2017-01-22'
     assert m.viewCount == 1
     assert m.viewedLeafCount == 1
+    assert m.seasonNumber == 1
 
 
 def test_video_Season_show(a_show):

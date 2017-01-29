@@ -6,6 +6,7 @@ from plexapi.compat import quote, urlencode, string_type
 import requests
 
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
+from plexapi.exceptions import NotFound, NotImplementedError, UnknownType, Unsupported
 from threading import Thread
 
 
@@ -101,14 +102,14 @@ class PlexPartialObject(object):
             self.__dict__[attr] = value
 
     def _loadData(self, data):
-        raise Exception('Abstract method not implemented.')
+        raise NotImplementedError('Abstract method not implemented.')
 
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie contain.
-        """ 
+        """
         return not self.key or self.key == self.initpath
 
     def isPartialObject(self):
@@ -130,7 +131,7 @@ class Playable(object):
 
         Attributes:
             player (:class:`~plexapi.client.PlexClient`): Client object playing this item (for active sessions).
-            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items). 
+            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             sessionKey (int): Active session key.
             transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
@@ -405,8 +406,13 @@ def joinArgs(args):
     return '?%s' % '&'.join(arglist)
 
 
+<<<<<<< HEAD
 def listChoices(server, path):
     """ Returns a dict of {title:key} for all simple choices in a search filter.
+=======
+def listChoices(server, path):  # pragma: no cover # Dont think its is used
+    """ListChoices is by _cleanSort etc.
+>>>>>>> more cov
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
@@ -417,7 +423,7 @@ def listChoices(server, path):
 
 def listItems(server, path, libtype=None, watched=None, bytag=False):
     """ Returns a list of object built from :func:`~plexapi.utils.buildItem()` found
-        within the specified path. 
+        within the specified path.
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
@@ -441,6 +447,7 @@ def listItems(server, path, libtype=None, watched=None, bytag=False):
     return items
 
 
+<<<<<<< HEAD
 def rget(obj, attrstr, default=None, delim='.'):
     """ Returns the value at the specified attrstr location within a nexted tree of
         dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
@@ -453,6 +460,9 @@ def rget(obj, attrstr, default=None, delim='.'):
             default (any): Default value to return if not found.
             delim (str): Delimiter separating keys in attrstr.
     """
+=======
+def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover # Dont think its is used
+>>>>>>> more cov
     try:
         parts = attrstr.split(delim, 1)
         attr = parts[0]
@@ -554,7 +564,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
         try:
             os.makedirs(savepath)
         except OSError:
-            if not os.path.isdir(savepath):
+            if not os.path.isdir(savepath):  # pragma: no cover
                 raise
 
     filename = os.path.basename(filename)
@@ -589,5 +599,5 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
 
         return fullpath
 
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

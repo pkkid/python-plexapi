@@ -538,35 +538,3 @@ class Episode(Video, Playable):
 
     def _prettyfilename(self):
         return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'), str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
-    '''
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
-        """Download a episode. If kwargs are passed your can download a trancoded file.
-
-           Args:
-                savepath (str): Abs path to savefolder
-                keep_orginal_name (bool): Use the mediafiles orginal name
-
-           kwargs:
-                See getStreamURL docs.
-
-        """
-        downloaded = []
-        locs = [i for i in self.iterParts() if i]
-        for loc in locs:
-            if keep_orginal_name is False:
-                name = '%s.%s' % (self._prettyfilename(), loc.container)
-            else:
-                name = loc.file
-
-            # So this seems to be a alot slower but allows transcode.
-            if kwargs:
-                download_url = self.getStreamURL(**kwargs)
-            else:
-                download_url = self.server.url('%s?download=1' % loc.key)
-
-            dl = utils.download(download_url, filename=name, savepath=savepath, session=self.server.session)
-            if dl:
-                downloaded.append(dl)
-
-        return downloaded
-    '''

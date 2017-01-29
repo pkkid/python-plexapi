@@ -23,3 +23,6 @@ class Unsupported(PlexApiException):
 class Unauthorized(PlexApiException):
     """ Invalid username or password. """
     pass
+
+class NotImplementedError(PlexApiException):
+    pass

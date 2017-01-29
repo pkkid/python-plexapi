@@ -17,6 +17,9 @@ def test_utils_searchType():
     st = utils.searchType('movie')
     assert st == 1
 
+    movie = utils.searchType(1)
+    assert movie == '1'
+
     with pytest.raises(NotFound):
         utils.searchType('kekekekeke')
 
@@ -54,8 +57,13 @@ def _test_utils_findLocations():
 def _test_utils_findItem():
     pass
 
-def _test_utils_findKey():
-    pass
+
+def test_utils_findKey(pms):
+    with pytest.raises(NotFound):
+        assert utils.findKey(pms, '9999999')
+
+    assert utils.findKey(pms, '1')
+
 
 def test_utils_cast():
     t_int_int = utils.cast(int, 1)
