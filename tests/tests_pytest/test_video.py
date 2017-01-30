@@ -518,3 +518,54 @@ def test_video_Season_episode(a_show):
 def test_video_Season_episodes(a_show):
     sn_eps = a_show.season(2).episodes()
     assert len(sn_eps) == 1
+
+
+
+#### MISC
+def test_that_reload_return_the_same_object(pms):
+    # we want to check this that all the urls are correct
+    movie_library_search = pms.library.section('Movies').search('16 Blocks')[0]
+    movie_search = pms.search('16 Blocks')[0]
+    movie_section_get = pms.library.section('Movies').get('16 Blocks')
+
+    movie_library_search_key = movie_library_search.key
+    movie_search_key = movie_search.key
+    movie_section_get_key = movie_section_get.key
+
+    assert movie_library_search_key == movie_library_search.reload().key == movie_search_key == movie_search.reload().key == movie_section_get_key == movie_section_get.reload().key
+
+    tvshow_library_search = pms.library.section('TV Shows').search('The 100')[0]
+    tvshow_search = pms.search('The 100')[0]
+    tvshow_section_get = pms.library.section('TV Shows').get('The 100')
+
+    tvshow_library_search_key = tvshow_library_search.key
+    tvshow_search_key = tvshow_search.key
+    tvshow_section_get_key = tvshow_section_get.key
+
+    assert tvshow_library_search_key == tvshow_library_search.reload().key == tvshow_search_key == tvshow_search.reload().key == tvshow_section_get_key == tvshow_section_get.reload().key
+
+    season_library_search = tvshow_library_search.season(1)
+    season_search = tvshow_search.season(1)
+    season_section_get = tvshow_section_get.season(1)
+
+    season_library_search_key = season_library_search.key
+    season_search_key = season_search.key
+    season_section_get_key = season_section_get.key
+
+    assert season_library_search_key == season_library_search.reload().key == season_search_key == season_search.reload().key == season_section_get_key == season_section_get.reload().key
+
+    episode_library_search = tvshow_library_search.episode(season=1, episode=1)
+    episode_search = tvshow_search.episode(season=1, episode=1)
+    episode_section_get = tvshow_section_get.episode(season=1, episode=1)
+
+    episode_library_search_key = episode_library_search.key
+    episode_search_key = episode_search.key
+    episode_section_get_key = episode_section_get.key
+
+    assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key
+
+
+
+
+
+

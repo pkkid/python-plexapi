@@ -122,6 +122,7 @@ class PlexPartialObject(object):
         self.initpath = self.key
         self._loadData(data[0])
         self._reloaded = True
+        return self
 
 
 class Playable(object):
