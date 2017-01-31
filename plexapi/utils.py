@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import logging, re
 from datetime import datetime
 from plexapi.compat import quote, urlencode, string_type
@@ -66,7 +65,7 @@ class PlexPartialObject(object):
         automatically and update itself.
 
         Attributes:
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
     """
@@ -287,7 +286,7 @@ def findPlayer(server, data):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            data (:class:`ElementTree`): XML data to find Player in.
+            data (ElementTree): XML data to find Player in.
     """
     elem = data.find('Player')
     if elem is not None:
@@ -319,7 +318,7 @@ def findTranscodeSession(server, data):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            data (:class:`ElementTree`): XML data to find TranscodeSession in.
+            data (ElementTree): XML data to find TranscodeSession in.
     """
 
     elem = data.find('TranscodeSession')
@@ -333,7 +332,7 @@ def findUsername(data):
     """ Returns the username if found in the specified XML data. Returns None if not found.
 
         Parameters:
-            data (:class:`ElementTree`): XML data to find username in.
+            data (ElementTree): XML data to find username in.
     """
     elem = data.find('User')
     if elem is not None:
@@ -452,12 +451,12 @@ def searchType(libtype):
 
 
 def threaded(callback, listargs):
-    """ Returns the result of <callback> for each set of *args in listargs. Each call
+    """ Returns the result of <callback> for each set of \*args in listargs. Each call
         to <callback. is called concurrently in their own separate threads.
 
         Parameters:
-            callback (func): Callback function to apply to each set of *args.
-            listargs (list): List of lists; *args to pass each thread.
+            callback (func): Callback function to apply to each set of \*args.
+            listargs (list): List of lists; \*args to pass each thread.
     """
     threads, results = [], []
     for args in listargs:

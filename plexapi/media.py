@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-PlexAPI Media
-"""
 from plexapi.utils import cast
 
 

@@ -11,7 +11,7 @@ class Audio(PlexPartialObject):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:
@@ -73,7 +73,7 @@ class Artist(Audio):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:
@@ -100,12 +100,12 @@ class Artist(Audio):
             self.similar = [media.Similar(self.server, e) for e in data if e.tag == media.Similar.TYPE]
 
     def albums(self):
-        """ Returns a list of :class:`plexapi.audio.Album` objects by this artist. """
+        """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
         path = '%s/children' % self.key
         return utils.listItems(self.server, path, Album.TYPE)
 
     def album(self, title):
-        """ Returns the :class:`plexapi.audio.Album` that matches the specified title.
+        """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
 
             Parameters:
                 title (str): Title of the album to return.
@@ -114,12 +114,12 @@ class Artist(Audio):
         return utils.findItem(self.server, path, title)
 
     def tracks(self):
-        """ Returns a list of :class:`plexapi.audio.Track` objects by this artist. """
+        """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
         path = '%s/allLeaves' % self.key
         return utils.listItems(self.server, path)
 
     def track(self, title):
-        """ Returns the :class:`plexapi.audio.Track` that matches the specified title.
+        """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
                 title (str): Title of the track to return.
@@ -138,7 +138,7 @@ class Album(Audio):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:
@@ -171,12 +171,12 @@ class Album(Audio):
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
     def tracks(self):
-        """ Returns a list of :class:`plexapi.audio.Track` objects in this album. """
+        """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
         path = '%s/children' % self.key
         return utils.listItems(self.server, path)
 
     def track(self, title):
-        """ Returns the :class:`plexapi.audio.Track` that matches the specified title.
+        """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
                 title (str): Title of the track to return.
@@ -199,7 +199,7 @@ class Track(Audio, Playable):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (:class:`ElementTree`): XML response from PlexServer used to build this object (optional).
+            data (ElementTree): XML response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:

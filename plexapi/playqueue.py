@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 import plexapi
 import requests
 from plexapi import utils

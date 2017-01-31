@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import requests
 from plexapi import utils
 from plexapi.exceptions import NotFound

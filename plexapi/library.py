@@ -156,7 +156,7 @@ class LibrarySection(object):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this library section is from.
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
 
         Attributes:

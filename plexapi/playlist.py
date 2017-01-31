@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-PlexPlaylist
-"""
 from plexapi import utils
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast, toDatetime

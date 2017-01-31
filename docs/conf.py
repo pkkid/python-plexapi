@@ -12,17 +12,13 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-import sys
+import copy, sys
 import sphinx_rtd_theme
 from os.path import abspath, dirname, join
 from recommonmark.parser import CommonMarkParser
-
 sys.path.insert(0, join(dirname(abspath('.')), 'plexapi'))
 import plexapi
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
@@ -30,8 +26,17 @@ extensions = [
     'sphinxcontrib.napoleon',
 ]
 
+# -- Monkey-patch docstring to not auto-link :ivars ------------------------
+from sphinx.domains.python import PythonDomain
+print('Monkey-patching PythonDomain.resolve_xref()')
+old_resolve_xref = copy.deepcopy(PythonDomain.resolve_xref)
+def new_resolve_xref(*args):
+    if '.' not in args[5]:  # target
+        return None
+    return old_resolve_xref(*args)
+PythonDomain.resolve_xref = new_resolve_xref
 
-# -- Napoleon Settings ------------------------------------------------
+# -- Napoleon Settings -----------------------------------------------------
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = False

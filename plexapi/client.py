@@ -17,7 +17,7 @@ class PlexClient(object):
             token (str): X-Plex-Token used for authenication (optional).
             session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (:class:`ElementTree`): Response from PlexServer used to build this object (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
 
         Attributes:
             baseurl (str): HTTP address of the client
@@ -104,7 +104,7 @@ class PlexClient(object):
         self._proxyThroughServer = value
 
     def query(self, path, method=None, headers=None, **kwargs):
-        """ Returns an :class:`ElementTree` object containing the response
+        """ Returns an ElementTree object containing the response
             from the specified request path.
 
             Parameters:
@@ -129,7 +129,7 @@ class PlexClient(object):
 
     def sendCommand(self, command, proxy=None, **params):
         """ Convenience wrapper around :func:`~plexapi.client.PlexClient.query()` to more easily
-            send simple commands to the client. Returns an :class:`ElementTree` object containing
+            send simple commands to the client. Returns an ElementTree object containing
             the response.
 
             Parameters:
