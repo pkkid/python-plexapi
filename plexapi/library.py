@@ -67,7 +67,7 @@ class Library(object):
 
     def sectionByID(self, sectionID):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
-            
+
             Parameters:
                 sectionID (int): ID of the section to return.
         """
@@ -89,7 +89,7 @@ class Library(object):
         return utils.listItems(self.server, '/library/recentlyAdded')
 
     def get(self, title):  # this should use hub search when its merged
-        """ Return the first item from all items with the specified title. 
+        """ Return the first item from all items with the specified title.
 
             Parameters:
                 title (str): Title of the item to return.
@@ -99,7 +99,7 @@ class Library(object):
                 reutrn i
 
     def getByKey(self, key):
-        """ Return the first item from all items with the specified key. 
+        """ Return the first item from all items with the specified key.
 
             Parameters:
                 key (str): Key of the item to return.
@@ -132,6 +132,9 @@ class Library(object):
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
         self.server.query('/library/clean/bundles')
+        # Should this return true or false?
+        # check element if if has the correct mediaprefix?
+
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -227,7 +230,7 @@ class LibrarySection(object):
 
     def recentlyAdded(self, maxresults=50):
         """ Returns a list of media items recently added from this library section.
-            
+
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
         """
@@ -235,7 +238,7 @@ class LibrarySection(object):
 
     def analyze(self):
         """ Run an analysis on all of the items in this library section. """
-        self.server.query('/library/sections/%s/analyze' % self.key)
+        self.server.query('/library/sections/%s/analyze' % self.key, method=self.server.session.put)
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
@@ -367,7 +370,7 @@ class LibrarySection(object):
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
-        
+
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
                 'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
@@ -386,7 +389,7 @@ class MovieSection(LibrarySection):
 
 class ShowSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
-        
+
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
                 'year', 'genre', 'contentRating', 'network', 'collection')
@@ -409,7 +412,7 @@ class ShowSection(LibrarySection):
 
     def recentlyAdded(self, libtype='episode', maxresults=50):
         """ Returns a list of recently added episodes from this library section.
-            
+
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
         """
@@ -418,7 +421,7 @@ class ShowSection(LibrarySection):
 
 class MusicSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
-        
+
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('genre',
                 'country', 'collection')
@@ -449,23 +452,26 @@ class MusicSection(LibrarySection):
 
 class PhotoSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
-        
+
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. <NONE>
             ALLOWED_SORT (list<str>): List of allowed sorting keys. <NONE>
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ()
+    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure')
     ALLOWED_SORT = ()
     TYPE = 'photo'
 
-    def searchAlbums(self, **kwargs):
+    def searchAlbums(self, title, **kwargs): # lets use this for now.
         """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        return self.search(libtype='photo', **kwargs)
+        albums = utils.listItems(self.server, '/library/sections/%s/all?type=14' % self.key)
+        return [i for i in albums if i.title.lower() == title.lower()]
 
-    def searchPhotos(self, **kwargs):
+    def searchPhotos(self, title, **kwargs):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        return self.search(libtype='photo', **kwargs)
+        photos = utils.listItems(self.server, '/library/sections/%s/all?type=13' % self.key)
+        return [i for i in photos if i.title.lower() == title.lower()]
+
 
 
 @utils.register_libtype
@@ -480,7 +486,7 @@ class FilterChoice(object):
             fastKey (str): API path to quickly list all items in this filter
                 (/library/sections/<section>/all?genre=<key>)
             key (str): Short key (id) of this filter option (used ad <key> in fastKey above).
-            thumb (str): Thumbnail used to represent this filter option. 
+            thumb (str): Thumbnail used to represent this filter option.
             title (str): Human readable name for this filter option.
             type (str): Filter type (genre, contentRating, etc).
     """

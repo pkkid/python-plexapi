@@ -11,8 +11,11 @@ from threading import Thread
 
 
 # Search Types - Plex uses these to filter specific media types when searching.
-SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
-    'artist': 8, 'album': 9, 'track': 10}
+SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3,
+               'episode': 4, 'artist': 8, 'album': 9, 'track': 10,
+               'photo': 14}
+
+
 LIBRARY_TYPES = {}
 
 
@@ -407,13 +410,8 @@ def joinArgs(args):
     return '?%s' % '&'.join(arglist)
 
 
-<<<<<<< HEAD
 def listChoices(server, path):
     """ Returns a dict of {title:key} for all simple choices in a search filter.
-=======
-def listChoices(server, path):  # pragma: no cover # Dont think its is used
-    """ListChoices is by _cleanSort etc.
->>>>>>> more cov
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.

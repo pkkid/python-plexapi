@@ -40,6 +40,20 @@ def pms(request):
     return pms
 
 
+@pytest.fixture()
+def freshpms():
+    from plexapi.server import PlexServer
+
+    sess = requests.Session()
+
+    url = 'http://138.68.157.5:32400'
+    assert test_token
+    assert url
+
+    pms = PlexServer(url, test_token, session=sess)
+    return pms
+
+
 def pytest_addoption(parser):
     parser.addoption("--req_client", action="store_true",
                      help="Run tests that interact with a client")
@@ -87,6 +101,12 @@ def a_movie_section(pms):
 @pytest.fixture()
 def a_music_section(pms):
     sec = pms.library.section('Music')
+    assert sec
+    return sec
+
+@pytest.fixture()
+def a_photo_section(pms):
+    sec = pms.library.section('Photos')
     assert sec
     return sec
 

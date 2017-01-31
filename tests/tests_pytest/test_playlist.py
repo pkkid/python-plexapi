@@ -4,10 +4,6 @@ import pytest
 
 
 
-def test_list_playlists(pms):
-    playlists = pms.playlists()
-    print(playlists)
-    assert len(playlists)
 
 
 def test_create_playlist(pms, a_show):

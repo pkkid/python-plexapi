@@ -1,6 +1,7 @@
 import pytest
 import os
 
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import download
 
 
@@ -82,22 +83,19 @@ def test_server_transcodeImage(tmpdir, pms, a_show):
 
 
 
-
-
-
-
-
-
-
-
 def test_server_search(pms):
     # basic search. see test_search.py
     assert pms.search('16 Blocks')
+
+    assert pms.search('16 blocks', mediatype='movie')
 
 
 def test_server_playlist(pms):
     pl = pms.playlist('some_playlist')
     assert pl.title == 'some_playlist'
+
+    with pytest.raises(NotFound):
+        pms.playlist('124xxx11y')
 
 
 def test_server_playlists(pms):
@@ -110,21 +108,48 @@ def test_server_history(pms):
     assert len(history)
 
 
+def test_server_Server_query(pms):
+    assert pms.query('/')
+
+    from plexapi.server import PlexServer
+
+    with pytest.raises(BadRequest):
+        assert pms.query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
+
+    with pytest.raises(NotFound):
+        # This is really requests.exceptions.HTTPError:
+        # 401 Client Error: Unauthorized for url:
+        PlexServer('http://138.68.157.5:32400', '1234')
+
+
+
+def test_server_Server_session():
+    from requests import Session
+    from plexapi.server import PlexServer
+
+    class MySession(Session):
+        def __init__(self):
+            super(self.__class__, self).__init__()
+            self.plexapi_session_test = True
+
+    plex = PlexServer('http://138.68.157.5:32400',
+                      os.environ.get('PLEX_TEST_TOKEN'),
+                      session=MySession())
+
+    assert hasattr(plex.session, 'plexapi_session_test')
+
+    pl = plex.playlists()
+    assert hasattr(pl[0].server.session, 'plexapi_session_test')
+
+    # check client
+    # check myplex.
+
+
+
 def test_server_token_in_headers(pms):
     h = pms.headers()
     assert 'X-Plex-Token' in h and len(h['X-Plex-Token'])
-    '''
-     {
-        'X-Plex-Platform': plexapi.X_PLEX_PLATFORM,
-        'X-Plex-Platform-Version': plexapi.X_PLEX_PLATFORM_VERSION,
-        'X-Plex-Provides': plexapi.X_PLEX_PROVIDES,
-        'X-Plex-Product': plexapi.X_PLEX_PRODUCT,
-        'X-Plex-Version': plexapi.X_PLEX_VERSION,
-        'X-Plex-Device': plexapi.X_PLEX_DEVICE,
-        'X-Plex-Device-Name': plexapi.X_PLEX_DEVICE_NAME,
-        'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,
-    }
-    '''
+
 
 def _test_server_createPlayQueue():
     # see test_playlists.py
@@ -134,9 +159,18 @@ def _test_server_createPlaylist():
     # see test_playlists.py
     pass
 
+
+def test_server_client_not_found(pms):
+    with pytest.raises(NotFound):
+        pms.client('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+
 @pytest.mark.req_client
 def test_server_client(pms):
     assert pms.client('Plex Web (Chrome)')
+
+def test_server_Server_sessions(pms):
+    assert len(pms.sessions()) == 0
 
 
 @pytest.mark.req_client
@@ -178,6 +212,5 @@ def test_server_account(pms):
     assert acc.subscriptionFeatures is None
     assert acc.subscriptionState == 'Unknown'
     assert acc.username == 'testplexapi@gmail.com'
-
 
 

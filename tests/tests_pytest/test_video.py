@@ -73,7 +73,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
     assert m.initpath == '/library/metadata/2'
     assert m.key == '/library/metadata/2'
-    assert str(m.lastViewedAt) == '__NA__'
+    assert str(m.lastViewedAt) == '2017-01-30 23:19:38'
     assert m.librarySectionID == '1'
     assert m.listType == 'video'
     # Assign 0 m.media
@@ -104,7 +104,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     # Assign 0 m.videoStreams
     vid0 = m.videoStreams[0]
     assert m.viewCount == 0
-    assert m.viewOffset == 0
+    assert m.viewOffset == 88870
     assert str(m.viewedAt) == '__NA__'
     assert [i.tag for i in m.writers] == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Kiel Murray', 'Phil Lorin', 'Jorgen Klubien']
     assert m.year == 2006
