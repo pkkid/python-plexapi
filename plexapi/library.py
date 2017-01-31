@@ -52,7 +52,7 @@ class Library(object):
         return items
 
     def section(self, title=None):
-        """ Returns the :class:`plexapi.library.LibrarySection` that matches the specified title.
+        """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified title.
 
             Parameters:
                 title (str): Title of the section to return.
@@ -66,7 +66,7 @@ class Library(object):
         raise NotFound('Invalid library section: %s' % title)
 
     def sectionByID(self, sectionID):
-        """ Returns the :class:`plexapi.library.LibrarySection` that matches the specified sectionID.
+        """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
             
             Parameters:
                 sectionID (int): ID of the section to return.

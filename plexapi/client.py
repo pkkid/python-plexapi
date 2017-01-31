@@ -393,7 +393,7 @@ class PlexClient(object):
         """ Start playback of the specified media item.
 
             Parameters:
-                media (:class:`plexapi.media.Media`): Media item to be played back (movie, music, photo).
+                media (:class:`~plexapi.media.Media`): Media item to be played back (movie, music, photo).
                 **params (TYPE): Additional parameters to include in the request. Useful
                     to specify things such as offset, audio, or subtitle streams.
 
