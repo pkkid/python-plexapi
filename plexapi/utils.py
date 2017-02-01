@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
-import logging, re
+import logging
 import os
+import re
 from datetime import datetime
-from plexapi.compat import quote, urlencode, string_type
+from threading import Thread
+
 import requests
 
-from plexapi.exceptions import NotFound, UnknownType, Unsupported
+
+from plexapi.compat import quote, string_type, urlencode
 from plexapi.exceptions import NotFound, NotImplementedError, UnknownType, Unsupported
-from threading import Thread
+#from plexapi import log
 
 
 # Search Types - Plex uses these to filter specific media types when searching.
@@ -28,7 +31,7 @@ def register_libtype(cls):
     return cls
 
 
-class NA(object):
+class _NA(object):
     """ This used to be a simple variable equal to '__NA__'. There has been need to
         compare NA against None in some use cases. This object allows the internals
         of PlexAPI to distinguish between unfetched values and fetched, but non-existent
@@ -39,13 +42,17 @@ class NA(object):
         return False
 
     def __eq__(self, other):
-        return isinstance(other, NA) or other in [None, '__NA__']
+        return isinstance(other, _NA) or other in [None, '__NA__']
 
     def __nonzero__(self):
         return False
 
     def __repr__(self):
         return '__NA__'
+
+
+# Lets do this for now.
+NA = _NA()
 
 
 class SecretsFilter(logging.Filter):
@@ -446,8 +453,7 @@ def listItems(server, path, libtype=None, watched=None, bytag=False):
     return items
 
 
-<<<<<<< HEAD
-def rget(obj, attrstr, default=None, delim='.'):
+def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
     """ Returns the value at the specified attrstr location within a nexted tree of
         dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
         for each key in attrstr (split by by the delimiter) This function is heavily
@@ -459,9 +465,6 @@ def rget(obj, attrstr, default=None, delim='.'):
             default (any): Default value to return if not found.
             delim (str): Delimiter separating keys in attrstr.
     """
-=======
-def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover # Dont think its is used
->>>>>>> more cov
     try:
         parts = attrstr.split(delim, 1)
         attr = parts[0]
@@ -594,9 +597,10 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
                 if chunk:
                     f.write(chunk)
 
-        log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
+        #log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
 
         return fullpath
 
     except Exception as e:  # pragma: no cover
-        log.exception('Failed to download %s to %s %s' % (url, fullpath, e))
+        print('e %s' % e)
+        #log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

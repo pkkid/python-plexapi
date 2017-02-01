@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils
-from plexapi import X_PLEX_CONTAINER_SIZE
+from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.compat import unquote
-from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import MediaTag
 
 
 class Library(object):
@@ -71,6 +70,7 @@ class Library(object):
             Parameters:
                 sectionID (int): ID of the section to return.
         """
+        if not self._sectionsByID or sectionID not in self._sectionsByID:
             self.sections()
         return self._sectionsByID[sectionID]
 
@@ -95,8 +95,8 @@ class Library(object):
                 title (str): Title of the item to return.
         """
         for i in self.all():
-            if i.title.lower() == tite.lower():
-                reutrn i
+            if i.title.lower() == title.lower():
+                return i
 
     def getByKey(self, key):
         """ Return the first item from all items with the specified key.
@@ -134,7 +134,6 @@ class Library(object):
         self.server.query('/library/clean/bundles')
         # Should this return true or false?
         # check element if if has the correct mediaprefix?
-
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -381,9 +380,9 @@ class MovieSection(LibrarySection):
             TYPE (str): 'movie'
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
-        'collection', 'director', 'actor', 'country', 'studio', 'resolution')
+                       'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-        'mediaHeight', 'duration')
+                    'mediaHeight', 'duration')
     TYPE = 'movie'
 
 
@@ -399,7 +398,7 @@ class ShowSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
-        'rating', 'unwatched')
+                    'rating', 'unwatched')
     TYPE = 'show'
 
     def searchShows(self, **kwargs):
@@ -471,7 +470,6 @@ class PhotoSection(LibrarySection):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         photos = utils.listItems(self.server, '/library/sections/%s/all?type=13' % self.key)
         return [i for i in photos if i.title.lower() == title.lower()]
-
 
 
 @utils.register_libtype

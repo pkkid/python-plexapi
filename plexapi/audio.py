@@ -279,8 +279,6 @@ class Track(Audio, Playable):
                       for e in data if e.tag == media.Media.TYPE]
         if self.isFullObject():  # check me
             self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
-            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
-
             #self.media = [media.Media(self.server, e, self.initpath, self)
             #              for e in data if e.tag == media.Media.TYPE]
         # data for active sessions and history
