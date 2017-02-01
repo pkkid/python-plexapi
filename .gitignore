@@ -20,3 +20,4 @@ pyvenv.cfg
 
 htmlcov
 .coverage
+*.orig

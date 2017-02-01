@@ -8,8 +8,7 @@ python:
   - "3.6"
 
 before_install:
-    - pip install -U pytest pytest-cov
-    - pip install -U coveralls
+    - pip install -U pytest pytest-cov coveralls
 
 install:
   - pip install -r requirements_dev.txt
