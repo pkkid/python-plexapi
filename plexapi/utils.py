@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
-import re
+import logging, os, re, requests
 from datetime import datetime
 from threading import Thread
-
-import requests
-
-
 from plexapi.compat import quote, string_type, urlencode
 from plexapi.exceptions import NotFound, NotImplementedError, UnknownType, Unsupported
-#from plexapi import log
-
 
 # Search Types - Plex uses these to filter specific media types when searching.
-SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3,
-               'episode': 4, 'artist': 8, 'album': 9, 'track': 10,
-               'photo': 14}
-
-
+SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
+    'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
 LIBRARY_TYPES = {}
 
 
@@ -50,9 +39,7 @@ class _NA(object):
     def __repr__(self):
         return '__NA__'
 
-
-# Lets do this for now.
-NA = _NA()
+NA = _NA()  # Keep this for now.
 
 
 class SecretsFilter(logging.Filter):
@@ -208,35 +195,35 @@ class Playable(object):
         client.playMedia(self)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
-        """Download a episode. If kwargs are passed your can download a trancoded file.
-
-           Args:
-                savepath (str): Abs path to savefolder
-                keep_orginal_name (bool): Use the mediafiles orginal name
-
-           kwargs:
-                See getStreamURL docs.
-
+        """ Downloads this items media to the specified location. Returns a list of
+            filepaths that have been saved to disk.
+            
+            Parameters:
+                savepath (str): Title of the track to return.
+                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                    the Plex server. False will create a new filename with the format
+                    "<Atrist> - <Album> <Track>".
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                    be returned and the additional arguments passed in will be sent to that
+                    function. If kwargs is not specified, the media items will be downloaded
+                    and saved to disk.
         """
-        downloaded = []
-        locs = [i for i in self.iterParts() if i]
-        for loc in locs:
+        filepaths = []
+        locations = [i for i in self.iterParts() if i]
+        for location in locations:
+            filename = location.file
             if keep_orginal_name is False:
-                name = '%s.%s' % (self._prettyfilename(), loc.container)
-            else:
-                name = loc.file
-
+                filename = '%s.%s' % (self._prettyfilename(), location.container)
             # So this seems to be a alot slower but allows transcode.
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self.server.url('%s?download=1' % loc.key)
-
-            dl = download(download_url, filename=name, savepath=savepath, session=self.server.session)
-            if dl:
-                downloaded.append(dl)
-
-        return downloaded
+                download_url = self.server.url('%s?download=1' % location.key)
+            filepath = download(download_url, filename=filename, savepath=savepath,
+                session=self.server.session)
+            if filepath:
+                filepaths.append(filepath)
+        return filepaths
 
 
 def buildItem(server, elem, initpath, bytag=False):
@@ -538,27 +525,22 @@ def toDatetime(value, format=None):
 
 
 def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
-    """Helper to download a thumb, videofile or something.
+    """ Helper to download a thumb, videofile or other media item. Returns the local
+        path to the downloaded file.
 
-       Args:
-            url (str): url where the content be reached
-            filename (str): Filename of the downloaded file, default None
-            savepath (str): Defaults to current working dir
-            chunksize (int): What chunksize read/write at the time
+       Parameters:
+            url (str): URL where the content be reached.
+            filename (str): Filename of the downloaded file, default None.
+            savepath (str): Defaults to current working dir.
+            chunksize (int): What chunksize read/write at the time.
             mocked (bool): Helper to do evertything except write the file.
 
         Example:
-
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
-
-        Returns:
-                /path/to/file or None
-
     """
     session = session or requests.Session()
     print('Mocked download %s' % mocked)
-
     if savepath is None:
         savepath = os.getcwd()
     else:
@@ -568,13 +550,10 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
         except OSError:
             if not os.path.isdir(savepath):  # pragma: no cover
                 raise
-
     filename = os.path.basename(filename)
     fullpath = os.path.join(savepath, filename)
-
     try:
         response = session.get(url, stream=True)
-
         # images dont have a extention so we try
         # to guess it from content-type
         ext = os.path.splitext(fullpath)[-1]
@@ -582,25 +561,18 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
             ext = ''
         else:
             cp = response.headers.get('content-type')
-
             if cp:
                 if 'image' in cp:
                     ext = '.%s' % cp.split('/')[1]
-
         fullpath = '%s%s' % (fullpath, ext)
-
         if mocked:
             return fullpath
-
         with open(fullpath, 'wb') as f:
             for chunk in response.iter_content(chunk_size=chunksize):
                 if chunk:
                     f.write(chunk)
-
         #log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
-
         return fullpath
-
-    except Exception as e:  # pragma: no cover
-        print('e %s' % e)
+    except Exception as err:  # pragma: no cover
+        print('Error downloading file: %s' % err)
         #log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

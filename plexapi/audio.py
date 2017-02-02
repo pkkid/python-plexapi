@@ -132,13 +132,24 @@ class Artist(Audio):
         return self.track(title)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """ Downloads all tracks for this artist to the specified location.
+            
+            Parameters:
+                savepath (str): Title of the track to return.
+                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                    the Plex server. False will create a new filename with the format
+                    "<Atrist> - <Album> <Track>".
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                    be returned and the additional arguments passed in will be sent to that
+                    function. If kwargs is not specified, the media items will be downloaded
+                    and saved to disk.
+        """
         downloaded = []
         for album in self.albums():
             for track in album.tracks():
                 dl = track.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
                 if dl:
                     downloaded.extend(dl)
-
         return downloaded
 
 
@@ -203,6 +214,18 @@ class Album(Audio):
         return utils.listItems(self.server, self.parentKey)[0]
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """ Downloads all tracks for this artist to the specified location.
+            
+            Parameters:
+                savepath (str): Title of the track to return.
+                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                    the Plex server. False will create a new filename with the format
+                    "<Atrist> - <Album> <Track>".
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                    be returned and the additional arguments passed in will be sent to that
+                    function. If kwargs is not specified, the media items will be downloaded
+                    and saved to disk.
+        """
         downloaded = []
         for ep in self.tracks():
             dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
@@ -276,7 +299,7 @@ class Track(Audio, Playable):
         self.year = utils.cast(int, data.attrib.get('year', NA))
         # media is included in /children
         self.media = [media.Media(self.server, e, self.initpath, self)
-                      for e in data if e.tag == media.Media.TYPE]
+            for e in data if e.tag == media.Media.TYPE]
         if self.isFullObject():  # check me
             self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
             #self.media = [media.Media(self.server, e, self.initpath, self)
@@ -302,37 +325,5 @@ class Track(Audio, Playable):
         return utils.listItems(self.server, self.grandparentKey)[0]
 
     def _prettyfilename(self):
+        """ Returns a filename for use in download. """
         return '%s - %s %s' % (self.grandparentTitle, self.parentTitle, self.title)
-
-    '''
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
-        """Download a episode. If kwargs are passed your can download a trancoded file.
-
-           Args:
-                savepath (str): Abs path to savefolder
-                keep_orginal_name (bool): Use the mediafiles orginal name
-
-           kwargs:
-                See getStreamURL docs.
-
-        """
-        downloaded = []
-        locs = [i for i in self.iterParts() if i]
-        for loc in locs:
-            if keep_orginal_name is False:
-                name = '%s.%s' % (self._prettyfilename(), loc.container)
-            else:
-                name = loc.file
-
-            # So this seems to be a alot slower but allows transcode.
-            if kwargs:
-                download_url = self.getStreamURL(**kwargs)
-            else:
-                download_url = self.server.url('%s?download=1' % loc.key)
-
-            dl = utils.download(download_url, filename=name, savepath=savepath, session=self.server.session)
-            if dl:
-                downloaded.append(dl)
-
-        return downloaded
-    '''

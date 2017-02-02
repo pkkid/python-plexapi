@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Python 2/3 compatability
 # Always try Py3 first
-import sys
 
 try:
     string_type = basestring

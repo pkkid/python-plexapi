@@ -47,10 +47,8 @@ class PlexClient(object):
         self.token = token
         self.server = server
         # session > server.session > requests.Session
-        if server:
-            self.session = session or server.session
-        else:
-            self.session = session or requests.Session()
+        _server_session = server.session if server else None
+        self.session = session or _server_session or requests.Session()
         self._loadData(data) if data is not None else self.connect()
         self._proxyThroughServer = False
         self._commandId = 0
@@ -405,8 +403,7 @@ class PlexClient(object):
                 :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
         if not self.server:
-            raise Unsupported(
-                'A server must be specified before using this command.')
+            raise Unsupported('A server must be specified before using this command.')
         server_url = media.server.baseurl.split(':')
         playqueue = self.server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({

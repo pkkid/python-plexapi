@@ -29,8 +29,7 @@ class Video(PlexPartialObject):
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.key = data.attrib.get('key', NA)
-        self.lastViewedAt = utils.toDatetime(
-            data.attrib.get('lastViewedAt', NA))
+        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
         self.librarySectionID = data.attrib.get('librarySectionID', NA)
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey', NA))
         self.summary = data.attrib.get('summary', NA)
@@ -110,24 +109,15 @@ class Movie(Video, Playable):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():  # check this
-            self.collections = [media.Collection(
-                self.server, e) for e in data if e.tag == media.Collection.TYPE]
-            self.countries = [media.Country(self.server, e)
-                              for e in data if e.tag == media.Country.TYPE]
-            self.directors = [media.Director(
-                self.server, e) for e in data if e.tag == media.Director.TYPE]
-            self.genres = [media.Genre(self.server, e)
-                           for e in data if e.tag == media.Genre.TYPE]
-            self.media = [media.Media(self.server, e, self.initpath, self)
-                          for e in data if e.tag == media.Media.TYPE]
-            self.producers = [media.Producer(
-                self.server, e) for e in data if e.tag == media.Producer.TYPE]
-            self.roles = [media.Role(self.server, e)
-                          for e in data if e.tag == media.Role.TYPE]
-            self.writers = [media.Writer(self.server, e)
-                            for e in data if e.tag == media.Writer.TYPE]
-            self.fields = [media.Field(e)
-                           for e in data if e.tag == media.Field.TYPE]
+            self.collections = [media.Collection(self.server, e) for e in data if e.tag == media.Collection.TYPE]
+            self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
+            self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
+            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+            self.producers = [media.Producer(self.server, e) for e in data if e.tag == media.Producer.TYPE]
+            self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
+            self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
+            self.fields = [media.Field(e) for e in data if e.tag == media.Field.TYPE]
             self.videoStreams = utils.findStreams(self.media, 'videostream')
             self.audioStreams = utils.findStreams(self.media, 'audiostream')
             self.subtitleStreams = utils.findStreams(
@@ -145,7 +135,6 @@ class Movie(Video, Playable):
     def location(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the location of the Movie/Show/Episode
-
         """
         files = [i.file for i in self.iterParts() if i]
         if len(files) == 1:
@@ -161,17 +150,14 @@ class Movie(Video, Playable):
                 name = '%s.%s' % (self.title.replace(' ', '.'), loc.container)
             else:
                 name = loc.file
-
             # So this seems to be a alot slower but allows transcode.
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self.server.url('%s?download=1' % loc.key)
-
             dl = utils.download(download_url, filename=name, savepath=savepath, session=self.server.session)
             if dl:
                 downloaded.append(dl)
-
         return downloaded
 
 
@@ -313,10 +299,8 @@ class Show(Video):
         downloaded = []
         for ep in self.episodes():
             dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
-
             if dl:
                 downloaded.extend(dl)
-
         return downloaded
 
 
@@ -389,18 +373,14 @@ class Season(Video):
         """
         if not title and not episode:
             raise TypeError('Missing argument, you need to use title or episode.')
-
         if title:
             path = '/library/metadata/%s/children' % self.ratingKey
             return utils.findItem(self.server, path, title)
-
         elif episode:
-            results = [i for i in self.episodes()
-                       if i.seasonNumber == self.index and i.index == episode]
+            results = [i for i in self.episodes() if i.seasonNumber == self.index and i.index == episode]
             if results:
                 return results[0]
-            else:
-                raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
+            raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
 
     def get(self, title):
         """Get a episode with a matching title.
@@ -437,7 +417,6 @@ class Season(Video):
             dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
             if dl:
                 downloaded.extend(dl)
-
         return downloaded
 
 
@@ -465,8 +444,7 @@ class Episode(Video, Playable):
         self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
         self.guid = data.attrib.get('guid', NA)
         self.index = utils.cast(int, data.attrib.get('index', NA))
-        self.originallyAvailableAt = utils.toDatetime(
-            data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.parentIndex = data.attrib.get('parentIndex', NA)
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey', NA))
@@ -474,12 +452,9 @@ class Episode(Video, Playable):
         self.rating = utils.cast(float, data.attrib.get('rating', NA))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        self.directors = [media.Director(self.server, e)
-                          for e in data if e.tag == media.Director.TYPE]
-        self.media = [media.Media(self.server, e, self.initpath, self)
-                      for e in data if e.tag == media.Media.TYPE]
-        self.writers = [media.Writer(self.server, e)
-                        for e in data if e.tag == media.Writer.TYPE]
+        self.directors = [media.Director(self.server, e) for e in data if e.tag == media.Director.TYPE]
+        self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+        self.writers = [media.Writer(self.server, e) for e in data if e.tag == media.Writer.TYPE]
         self.videoStreams = utils.findStreams(self.media, 'videostream')
         self.audioStreams = utils.findStreams(self.media, 'audiostream')
         self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
@@ -527,14 +502,13 @@ class Episode(Video, Playable):
     def location(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the location of the Movie/Show
-
         """
         # Note this should probably belong to some parent.
         files = [i.file for i in self.iterParts() if i]
         if len(files) == 1:
             files = files[0]
-
         return files
 
     def _prettyfilename(self):
-        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'), str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
+        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'),
+            str(self.seasonNumber).zfill(2), str(self.index).zfill(2))

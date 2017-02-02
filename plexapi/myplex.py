@@ -72,7 +72,7 @@ class MyPlexAccount(object):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
-        # TODO: Complete these items!
+        # TODO: Fetch missing MyPlexAccount attributes
         self.subscriptionActive = None      # renamed on server
         self.subscriptionStatus = None      # renamed on server
         self.subscriptionPlan = None        # renmaed on server
@@ -143,8 +143,7 @@ class MyPlexAccount(object):
         if response.status_code != requests.codes.created:
             codename = codes.get(response.status_code)[0]
             if response.status_code == 401:
-                raise Unauthorized('(%s) %s' %
-                                   (response.status_code, codename))
+                raise Unauthorized('(%s) %s' % (response.status_code, codename))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = ElementTree.fromstring(response.text.encode('utf8'))
         return MyPlexAccount(data, cls.SIGNIN, session=sess)
@@ -348,7 +347,6 @@ class MyPlexDevice(object):
             vendor (str): Device vendor (ubuntu, etc).
             version (str): Unknown (1, 2, 1.3.3.3148-b38628e, 1.3.15, etc.)
     """
-
     BASEURL = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):

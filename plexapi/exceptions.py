@@ -25,4 +25,5 @@ class Unauthorized(PlexApiException):
     pass
 
 class NotImplementedError(PlexApiException):
+    """ Feature is not yet implemented. """
     pass

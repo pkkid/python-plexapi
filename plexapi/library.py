@@ -23,7 +23,7 @@ class Library(object):
         self.server = server
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
-        self._sectionsByID = {}  # cached section UUIDs
+        self._sectionsByID = {}  # cached Section UUIDs
 
     def __repr__(self):
         return '<Library:%s>' % self.title1.encode('utf8')
@@ -131,9 +131,8 @@ class Library(object):
             removed. Removing these old bundles can reduce the size of your install. By default, your
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
+        # TODO: Should this check the response for success or the correct mediaprefix?
         self.server.query('/library/clean/bundles')
-        # Should this return true or false?
-        # check element if if has the correct mediaprefix?
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -380,9 +379,9 @@ class MovieSection(LibrarySection):
             TYPE (str): 'movie'
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
-                       'collection', 'director', 'actor', 'country', 'studio', 'resolution')
+        'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-                    'mediaHeight', 'duration')
+        'mediaHeight', 'duration')
     TYPE = 'movie'
 
 
@@ -398,7 +397,7 @@ class ShowSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
-                    'rating', 'unwatched')
+        'rating', 'unwatched')
     TYPE = 'show'
 
     def searchShows(self, **kwargs):

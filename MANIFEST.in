@@ -1,2 +1,2 @@
 include README.md
-include requirements.pip
+include requirements.txt

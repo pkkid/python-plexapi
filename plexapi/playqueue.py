@@ -34,10 +34,8 @@ class PlayQueue(object):
         self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
         self.playQueueID = data.attrib.get('playQueueID')
-        self.playQueueSelectedItemID = data.attrib.get(
-            'playQueueSelectedItemID')
-        self.playQueueSelectedItemOffset = data.attrib.get(
-            'playQueueSelectedItemOffset')
+        self.playQueueSelectedItemID = data.attrib.get('playQueueSelectedItemID')
+        self.playQueueSelectedItemOffset = data.attrib.get('playQueueSelectedItemOffset')
         self.playQueueTotalCount = data.attrib.get('playQueueTotalCount')
         self.playQueueVersion = data.attrib.get('playQueueVersion')
         self.items = [utils.buildItem(server, elem, initpath) for elem in data]
