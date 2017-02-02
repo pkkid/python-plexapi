@@ -1,6 +1,5 @@
-import pytest
-import os
-
+# -*- coding: utf-8 -*-
+import os, pytest
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import download
 
@@ -38,62 +37,52 @@ def test_server_url(pms):
 
 def test_server_transcodeImage(tmpdir, pms, a_show):
     # Ideally we should also test the black white but this has to do for now.
-    height = 500
-    width = 500
+    from PIL import Image
+    width, height = 500, 500
     img_url_resize = pms.transcodeImage(a_show.banner, height, width)
     gray = img_url_resize = pms.transcodeImage(a_show.banner, height, width, saturation=0)
-
     resized_image = download(img_url_resize, savepath=str(tmpdir), filename='resize_image')
     org_image = download(a_show.server.url(a_show.banner), savepath=str(tmpdir), filename='org_image')
     gray_image = download(gray, savepath=str(tmpdir), filename='gray_image')
-
-
-    from PIL import Image, ImageStat
-
     with Image.open(resized_image) as im:
         assert width, height == im.size
-
     with Image.open(org_image) as im:
         assert width, height != im.size
+    assert _detect_color_image(gray_image, thumb_size=150) == 'grayscale'
 
 
-
-    def detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=True):
-        #from http://stackoverflow.com/questions/20068945/detect-if-image-is-color-grayscale-or-black-and-white-with-python-pil
-        pil_img = Image.open(file)
-        bands = pil_img.getbands()
-        if bands == ('R', 'G', 'B') or bands == ('R', 'G', 'B', 'A'):
-            thumb = pil_img.resize((thumb_size, thumb_size))
-            SSE, bias = 0, [0, 0, 0]
-            if adjust_color_bias:
-                bias = ImageStat.Stat(thumb).mean[:3]
-                bias = [b - sum(bias) / 3 for b in bias]
-            for pixel in thumb.getdata():
-                mu = sum(pixel) / 3
-                SSE += sum((pixel[i] - mu - bias[i]) * (pixel[i] - mu - bias[i]) for i in [0, 1, 2])
-            MSE = float(SSE) / (thumb_size * thumb_size)
-            if MSE <= MSE_cutoff:
-                return 'grayscale'
-            else:
-                return 'color'
-        elif len(bands) == 1:
-            return 'blackandwhite'
-
-    assert detect_color_image(gray_image, thumb_size=150) == 'grayscale'
-
+def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=True):
+    # from http://stackoverflow.com/questions/20068945/detect-if-image-is-color-grayscale-or-black-and-white-with-python-pil
+    from PIL import Image, ImageStat
+    pil_img = Image.open(file)
+    bands = pil_img.getbands()
+    if bands == ('R', 'G', 'B') or bands == ('R', 'G', 'B', 'A'):
+        thumb = pil_img.resize((thumb_size, thumb_size))
+        SSE, bias = 0, [0, 0, 0]
+        if adjust_color_bias:
+            bias = ImageStat.Stat(thumb).mean[:3]
+            bias = [b - sum(bias) / 3 for b in bias]
+        for pixel in thumb.getdata():
+            mu = sum(pixel) / 3
+            SSE += sum((pixel[i] - mu - bias[i]) * (pixel[i] - mu - bias[i]) for i in [0, 1, 2])
+        MSE = float(SSE) / (thumb_size * thumb_size)
+        if MSE <= MSE_cutoff:
+            return 'grayscale'
+        else:
+            return 'color'
+    elif len(bands) == 1:
+        return 'blackandwhite'
 
 
 def test_server_search(pms):
     # basic search. see test_search.py
     assert pms.search('16 Blocks')
-
     assert pms.search('16 blocks', mediatype='movie')
 
 
 def test_server_playlist(pms):
     pl = pms.playlist('some_playlist')
     assert pl.title == 'some_playlist'
-
     with pytest.raises(NotFound):
         pms.playlist('124xxx11y')
 
@@ -110,17 +99,13 @@ def test_server_history(pms):
 
 def test_server_Server_query(pms):
     assert pms.query('/')
-
     from plexapi.server import PlexServer
-
     with pytest.raises(BadRequest):
         assert pms.query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
-
     with pytest.raises(NotFound):
         # This is really requests.exceptions.HTTPError:
         # 401 Client Error: Unauthorized for url:
         PlexServer('http://138.68.157.5:32400', '1234')
-
 
 
 def test_server_Server_session():
@@ -133,17 +118,12 @@ def test_server_Server_session():
             self.plexapi_session_test = True
 
     plex = PlexServer('http://138.68.157.5:32400',
-                      os.environ.get('PLEX_TEST_TOKEN'),
-                      session=MySession())
-
+        os.environ.get('PLEX_TEST_TOKEN'), session=MySession())
     assert hasattr(plex.session, 'plexapi_session_test')
-
     pl = plex.playlists()
     assert hasattr(pl[0].server.session, 'plexapi_session_test')
-
-    # check client
-    # check myplex.
-
+    # TODO: Check client in test_server_Server_session.
+    # TODO: Check myplex in test_server_Server_session.
 
 
 def test_server_token_in_headers(pms):
@@ -155,6 +135,7 @@ def _test_server_createPlayQueue():
     # see test_playlists.py
     pass
 
+
 def _test_server_createPlaylist():
     # see test_playlists.py
     pass
@@ -162,12 +143,13 @@ def _test_server_createPlaylist():
 
 def test_server_client_not_found(pms):
     with pytest.raises(NotFound):
-        pms.client('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+        pms.client('<This-client-should-not-be-found>')
 
 
 @pytest.mark.req_client
 def test_server_client(pms):
     assert pms.client('Plex Web (Chrome)')
+
 
 def test_server_Server_sessions(pms):
     assert len(pms.sessions()) == 0
@@ -189,7 +171,6 @@ def test_server_clients(pms):
     assert m.protocolCapabilities == ['timeline', 'playback', 'navigation', 'mirror', 'playqueues']
     assert m.protocolVersion == '1'
     assert m.server.baseurl == 'http://138.68.157.5:32400'
-    #assert m.session == <requests.sessions.Session object at 0x02945E10>
     assert m.state is None
     assert m.title == 'Plex Web (Chrome)'
     assert m.token is None
@@ -200,7 +181,8 @@ def test_server_clients(pms):
 def test_server_account(pms):
     acc = pms.account()
     assert acc.authToken
-    #assert acc.mappingError == 'publisherror' # this is missing from time to time.. why?
+    # TODO: Figure out why this is missing from time to time.
+    #assert acc.mappingError == 'publisherror'
     assert acc.mappingErrorMessage is None
     assert acc.mappingState == 'mapped'
     assert acc.privateAddress == '138.68.157.5'
@@ -212,5 +194,3 @@ def test_server_account(pms):
     assert acc.subscriptionFeatures is None
     assert acc.subscriptionState == 'Unknown'
     assert acc.username == 'testplexapi@gmail.com'
-
-

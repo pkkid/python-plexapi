@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 def test_audio_Artist_attr(a_artist):
     m = a_artist
     m.reload()
@@ -48,10 +47,6 @@ def test_audio_Artist_album(a_artist):
 def test_audio_Artist_albums(a_artist):
     albums = a_artist.albums()
     assert len(albums) == 1 and albums[0].title == 'Unmastered Impulses'
-
-
-
-
 
 
 def test_audio_Album_attrs(a_music_album):
@@ -113,11 +108,9 @@ def test_audio_Album_tracks(a_music_album):
     assert tracks[0].viewOffset == 0
 
 
-
 def test_audio_Album_track(a_music_album):
     # this is not reloaded. its not that much info missing.
     track = a_music_album.track('Holy Moment')
-
     assert str(track.addedAt.date()) == '2017-01-17'
     assert track.duration == 298606
     assert track.grandparentKey == '/library/metadata/20'
@@ -176,11 +169,10 @@ def test_audio_Album_track(a_music_album):
     assert par0.size == 14360402
 
 
-
-
 def test_audio_Album_get():
-    """ just a alias for track, lets skip it"""
+    """ Just a alias for track(); skip it. """
     pass
+
 
 def test_audio_Album_artist(a_music_album):
     artist = a_music_album.artist()
@@ -190,7 +182,6 @@ def test_audio_Album_artist(a_music_album):
 def test_audio_Track_attrs(a_music_album):
     track = a_music_album.get('Holy Moment')
     track.reload()
-
     assert str(track.addedAt.date()) == '2017-01-17'
     assert str(track.art) == '__NA__'
     assert str(track.chapterSource) == '__NA__'
@@ -286,9 +277,9 @@ def test_audio_Track_attrs(a_music_album):
     assert str0.type == 2
 
 
-
 def test_audio_Track_album(a_music_album):
     assert a_music_album.tracks()[0].album() == a_music_album
+
 
 def test_audio_Track_artist(a_music_album, a_artist):
     assert a_music_album.tracks()[0].artist() == a_artist
@@ -298,7 +289,6 @@ def test_audio_Audio_section(a_artist, a_music_album, a_track):
     assert a_artist.section()
     assert a_music_album.section()
     assert a_track.section()
-
     assert a_track.section() == a_music_album.section() == a_artist.section()
 
 
@@ -315,16 +305,3 @@ def test_audio_album_download(monkeydownload, a_music_album, tmpdir):
 def test_audio_Artist_download(monkeydownload, a_artist, tmpdir):
     f = a_artist.download(savepath=str(tmpdir))
     assert len(f) == 14
-
-
-
-
-
-
-
-
-
-
-
-
-

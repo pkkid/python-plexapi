@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import pytest
-
 
 def test_myplex_accounts(plex_account, pms):
     account = plex_account
     assert account, 'Must specify username, password & resource to run this test.'
     print('MyPlexAccount:')
     print('username: %s' % account.username)
-    #print('authenticationToken: %s' % account.authenticationToken)
     print('email: %s' % account.email)
     print('home: %s' % account.home)
     print('queueEmail: %s' % account.queueEmail)
@@ -57,7 +54,7 @@ def test_myplex_devices(plex_account):
     assert devices, 'No devices found for account: %s' % account.name
 
 
-#@pytest.mark.req_client # this need to be recorded?
+#@pytest.mark.req_client  # this need to be recorded?
 def _test_myplex_connect_to_device(plex_account):
     account = plex_account
     devices = account.devices()

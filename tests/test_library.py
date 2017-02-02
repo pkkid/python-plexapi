@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 import pytest
-
 from plexapi.exceptions import NotFound
-
-# func naming should follow:
-# tests_file_class_method_some_description
 
 
 def test_library_Library_section(pms):
     sections = pms.library.sections()
     assert len(sections) == 4
-
     lfs = 'TV Shows'
     section_name = pms.library.section(lfs)
     assert section_name.title == lfs
-
     with pytest.raises(NotFound):
         assert pms.library.section('gfdsas')
 
@@ -23,9 +17,7 @@ def test_library_Library_sectionByID_is_equal_section(pms, freshpms):
     # test that sctionmyID refreshes the section if the key is missing
     # this is needed if there isnt any cached sections
     assert freshpms.library.sectionByID('1')
-
     assert pms.library.sectionByID('1').uuid == pms.library.section('Movies').uuid
-
 
 
 def test_library_sectionByID_with_attrs(pms):
@@ -72,6 +64,7 @@ def test_library_get(pms):
     m = pms.library.get('16 blocks')
     assert m.title == '16 Blocks'
 
+
 def test_library_Library_cleanBundle(pms):
     pms.library.cleanBundles()
 
@@ -79,8 +72,10 @@ def test_library_Library_cleanBundle(pms):
 def test_library_Library_optimize(pms):
     pms.library.optimize()
 
+
 def test_library_Library_emptyTrash(pms):
     pms.library.emptyTrash()
+
 
 def _test_library_Library_refresh(pms):
     pms.library.refresh()  # fix mangle and proof the sections attrs
@@ -134,18 +129,11 @@ def test_library_PhotoSection_searchAlbums(a_photo_section):
     print([i.TYPE for i in albums])
 
 
-
 def test_library_PhotoSection_searchPhotos(a_photo_section):
     assert len(a_photo_section.searchPhotos('lolcat2'))
 
 
-
-
-
-
-
-#### Start on library search
-
+# Start on library search
 def test_library_and_section_search_for_movie(pms):
     find = '16 blocks'
     l_search = pms.library.search(find)
@@ -157,7 +145,6 @@ def test_search_with_apostrophe(pms):
     show_title = "Marvel's Daredevil"  # Test ' in show title
     result_server = pms.search(show_title)
     result_shows = pms.library.section('TV Shows').search(show_title)
-
     assert result_server
     assert result_shows
     assert result_server == result_shows
@@ -166,7 +153,6 @@ def test_search_with_apostrophe(pms):
 def test_crazy_search(pms, a_movie):
     movie = a_movie
     movies = pms.library.section('Movies')
-
     assert movie in pms.library.search(genre=29, libtype='movie')
     assert movie in movies.search(actor=movie.actors[0], sort='titleSort'), 'Unable to search movie by actor.'
     assert movie in movies.search(director=movie.directors[0]), 'Unable to search movie by director.'

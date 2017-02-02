@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-import time
-import pytest
-
-
-
+import pytest, time
 
 
 def test_create_playlist(pms, a_show):
@@ -68,13 +64,10 @@ def test_playlist_play(pms):
     pl_name = 'test_play_playlist'
     playlist = plex.createPlaylist(pl_name, album)
     try:
-        #print('Playing playlist: %s' % playlist)
         client.playMedia(playlist); time.sleep(5)
-        #print('stop..')
         client.stop('music'); time.sleep(1)
     finally:
         playlist.delete()
-
     assert pl_name not in [i.title for i in pms.playlists()]
 
 
@@ -83,12 +76,10 @@ def test_playlist_photos(pms, a_photo_album):
     photos = album.photos()
     pl_name = 'test_playlist_photos'
     playlist = pms.createPlaylist(pl_name, photos)
-
     try:
         assert len(playlist.items()) == 4
     finally:
         playlist.delete()
-
     assert pl_name not in [i.title for i in pms.playlists()]
 
 

@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-#test_the_file_class_method
-
-import os
-
-import pytest
-
+import os, pytest
 from plexapi.exceptions import NotFound
 
 
@@ -12,21 +7,21 @@ def test_video_Movie(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.title == 'Cars'
 
+
 def test_video_Movie_getStreamURL(a_movie):
     assert a_movie.getStreamURL() == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&X-Plex-Token={0}".format(os.environ.get('PLEX_TEST_TOKEN'))
     assert a_movie.getStreamURL(videoResolution='800x600') == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&videoResolution=800x600&X-Plex-Token={0}".format(os.environ.get('PLEX_TEST_TOKEN'))
+
 
 def test_video_Movie_isFullObject_and_reload(pms):
     movie = pms.library.section('Movies').get('16 Blocks')
     assert movie.isFullObject() is False
     movie.reload()
     assert movie.isFullObject() is True
-
     movie_via_search = pms.library.search('16 Blocks')[0]
     assert movie_via_search.isFullObject() is False
     movie_via_search.reload()
     assert movie_via_search.isFullObject() is True
-
     movie_via_section_search = pms.library.section('Movies').search('16 Blocks')[0]
     assert movie_via_section_search.isFullObject() is False
     movie_via_section_search.reload()
@@ -42,19 +37,16 @@ def test_video_Movie_isPartialObject(a_movie):
 def test_video_Movie_iterParts(a_movie):
     assert len(list(a_movie.iterParts())) == 1
 
+
 def test_video_Movie_download(monkeydownload, tmpdir, a_movie):
     downloaded_movie = a_movie.download(savepath=str(tmpdir))
     assert len(downloaded_movie) == 1
-
     downloaded_movie2 = a_movie.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
     assert len(downloaded_movie2) == 1
 
 
-
-
 def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
-
     assert m.location == '/media/movies/cars/cars.mp4'
     assert str(m.addedAt.date()) == '2017-01-17'
     assert m.art == '/library/metadata/2/art/1484690715'
@@ -239,7 +231,6 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert str1.type == 2
 
 
-
 def test_video_Show(a_show):
     assert a_show.title == 'The 100'
 
@@ -286,8 +277,10 @@ def test_video_Show_watched(a_show):
     watched = a_show.watched()
     assert len(watched) == 1 and watched[0].title == 'Pilot'
 
+
 def test_video_Show_unwatched(a_show):
     assert len(a_show.unwatched()) == 8
+
 
 def test_video_Show_location(pms):
     # This should be a part of test test_video_Show_attrs
@@ -305,12 +298,12 @@ def test_video_Show_reload(pms):
     assert len(s.roles) > 3
 
 
-
 def test_video_Show_episodes(a_show):
     inc_watched = a_show.episodes()
     ex_watched = a_show.episodes(watched=False)
     assert len(inc_watched) == 9
     assert len(ex_watched) == 8
+
 
 def test_video_Show_download(monkeydownload, tmpdir, a_show):
     f = a_show.download(savepath=str(tmpdir))
@@ -319,26 +312,25 @@ def test_video_Show_download(monkeydownload, tmpdir, a_show):
 
 def test_video_Season_download(monkeydownload, tmpdir, a_show):
     sn = a_show.season('Season 1')
-
     f = sn.download(savepath=str(tmpdir))
     assert len(f) == 8
+
 
 def test_video_Episode_download(monkeydownload, tmpdir, a_episode):
     f = a_episode.download(savepath=str(tmpdir))
     assert len(f) == 1
-
     with_sceen_size = a_episode.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
     assert len(with_sceen_size) == 1
-
-
 
 
 def test_video_Show_thumbUrl(a_show):
     assert 'http://138.68.157.5:32400/library/metadata/12/thumb/' in a_show.thumbUrl
 
+
 @pytest.mark.xfail
 def test_video_Show_analyze(a_show):
     show = a_show.analyze()  # this isnt possble.. should it even be available?
+
 
 def test_video_Show_markWatched(a_tv_section):
     show = a_tv_section.get("Marvel's Daredevil")
@@ -373,12 +365,11 @@ def test_video_Show_section(a_show):  # BROKEN!
 def test_video_Episode(a_show):
     pilot = a_show.episode('Pilot')
     assert pilot == a_show.episode(season=1, episode=1)
-
     with pytest.raises(TypeError):
         a_show.episode()
-
     with pytest.raises(NotFound):
         a_show.episode(season=1337, episode=1337)
+
 
 def test_video_Episode_analyze(a_tv_section):
     ep = a_tv_section.get("Marvel's Daredevil").episode(season=1, episode=1)
@@ -520,52 +511,33 @@ def test_video_Season_episodes(a_show):
     assert len(sn_eps) == 1
 
 
-
-#### MISC
 def test_that_reload_return_the_same_object(pms):
     # we want to check this that all the urls are correct
     movie_library_search = pms.library.section('Movies').search('16 Blocks')[0]
     movie_search = pms.search('16 Blocks')[0]
     movie_section_get = pms.library.section('Movies').get('16 Blocks')
-
     movie_library_search_key = movie_library_search.key
     movie_search_key = movie_search.key
     movie_section_get_key = movie_section_get.key
-
     assert movie_library_search_key == movie_library_search.reload().key == movie_search_key == movie_search.reload().key == movie_section_get_key == movie_section_get.reload().key
-
     tvshow_library_search = pms.library.section('TV Shows').search('The 100')[0]
     tvshow_search = pms.search('The 100')[0]
     tvshow_section_get = pms.library.section('TV Shows').get('The 100')
-
     tvshow_library_search_key = tvshow_library_search.key
     tvshow_search_key = tvshow_search.key
     tvshow_section_get_key = tvshow_section_get.key
-
     assert tvshow_library_search_key == tvshow_library_search.reload().key == tvshow_search_key == tvshow_search.reload().key == tvshow_section_get_key == tvshow_section_get.reload().key
-
     season_library_search = tvshow_library_search.season(1)
     season_search = tvshow_search.season(1)
     season_section_get = tvshow_section_get.season(1)
-
     season_library_search_key = season_library_search.key
     season_search_key = season_search.key
     season_section_get_key = season_section_get.key
-
     assert season_library_search_key == season_library_search.reload().key == season_search_key == season_search.reload().key == season_section_get_key == season_section_get.reload().key
-
     episode_library_search = tvshow_library_search.episode(season=1, episode=1)
     episode_search = tvshow_search.episode(season=1, episode=1)
     episode_section_get = tvshow_section_get.episode(season=1, episode=1)
-
     episode_library_search_key = episode_library_search.key
     episode_search_key = episode_search.key
     episode_section_get_key = episode_section_get.key
-
     assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key
-
-
-
-
-
-

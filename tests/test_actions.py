@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def test_mark_movie_watched(a_movie):
     a_movie.markUnwatched()
     print('Marking movie watched: %s' % a_movie)

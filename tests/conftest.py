@@ -1,11 +1,8 @@
-from functools import partial
-import os
-import betamax
+# -*- coding: utf-8 -*-
+import betamax, os, plexapi
+import pytest, requests
 from betamax_serializers import pretty_json
-import pytest
-import requests
-
-import plexapi
+from functools import partial
 
 token = os.environ.get('PLEX_TOKEN')
 test_token = os.environ.get('PLEX_TEST_TOKEN')
@@ -16,25 +13,18 @@ test_password = os.environ.get('PLEX_TEST_PASSWORD')
 @pytest.fixture(scope='session')
 def pms(request):
     from plexapi.server import PlexServer
-
     sess = requests.Session()
-
-    """
-    CASSETTE_LIBRARY_DIR = 'response/'
-
-    betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
-    config = betamax.Betamax.configure()
-    config.define_cassette_placeholder('MASKED', token)
-    config.define_cassette_placeholder('MASKED', test_token)
-
-    recorder = betamax.Betamax(sess, cassette_library_dir=CASSETTE_LIBRARY_DIR)
-    recorder.use_cassette('http_responses', serialize_with='prettyjson') # record='new_episodes'
-    recorder.start()
-    """
+    # CASSETTE_LIBRARY_DIR = 'response/'
+    # betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
+    # config = betamax.Betamax.configure()
+    # config.define_cassette_placeholder('MASKED', token)
+    # config.define_cassette_placeholder('MASKED', test_token)
+    # recorder = betamax.Betamax(sess, cassette_library_dir=CASSETTE_LIBRARY_DIR)
+    # recorder.use_cassette('http_responses', serialize_with='prettyjson') # record='new_episodes'
+    # recorder.start()
     url = 'http://138.68.157.5:32400'
     assert test_token
     assert url
-
     pms = PlexServer(url, test_token, session=sess)
     #request.addfinalizer(recorder.stop)
     return pms
@@ -43,20 +33,17 @@ def pms(request):
 @pytest.fixture()
 def freshpms():
     from plexapi.server import PlexServer
-
     sess = requests.Session()
-
     url = 'http://138.68.157.5:32400'
     assert test_token
     assert url
-
     pms = PlexServer(url, test_token, session=sess)
     return pms
 
 
 def pytest_addoption(parser):
     parser.addoption("--req_client", action="store_true",
-                     help="Run tests that interact with a client")
+        help="Run tests that interact with a client")
 
 
 def pytest_runtest_setup(item):
@@ -81,7 +68,6 @@ def a_movie(pms):
     m = pms.library.search('16 blocks')
     assert m
     return m[0]
-
 
 
 @pytest.fixture()
@@ -144,7 +130,6 @@ def a_episode(a_show):
     ep = a_show.get('Pilot')
     assert ep
     return ep
-
 
 
 @pytest.fixture()
