@@ -1,5 +1,8 @@
 ## PlexAPI ##
-<img align="right" src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master">
+<a href="https://travis-ci.org/mjs7231/python-plexapi">
+  <img align="right" src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master"/></a>
+<a href="https://badge.fury.io/py/PlexAPI">
+  <img align="right" src="https://badge.fury.io/py/PlexAPI.svg"/></a>
 Python bindings for the Plex API.
 
 * Navigate local or remote shared libraries.
