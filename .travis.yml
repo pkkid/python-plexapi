@@ -16,4 +16,4 @@ install:
 script: py.test tests --cov-config .coveragerc --cov=plexapi --cov-report=html
 
 after_success:
-    - coveralls
+  - coveralls
