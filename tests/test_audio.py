@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
-import pytest
 
 
 def test_audio_Artist_attr(a_artist):
-    print(os.environ.get('PLEX_TEST_USERNAME', '<NA>'))
     m = a_artist
     m.reload()
     assert str(m.addedAt.date()) == '2017-01-17'
@@ -24,7 +21,7 @@ def test_audio_Artist_attr(a_artist):
     assert m.title == 'Infinite State'
     assert m.titleSort == 'Infinite State'
     assert m.type == 'artist'
-    assert str(m.updatedAt.date()) == '2017-01-25'
+    assert str(m.updatedAt.date()) == '2017-02-02'
     assert m.viewCount == 0
 
 
