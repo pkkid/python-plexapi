@@ -131,6 +131,16 @@ class Artist(Audio):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
         return self.track(title)
 
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        downloaded = []
+        for album in self.albums():
+            for track in album.tracks():
+                dl = track.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
+                if dl:
+                    downloaded.extend(dl)
+
+        return downloaded
+
 
 @utils.register_libtype
 class Album(Audio):
@@ -191,6 +201,15 @@ class Album(Audio):
     def artist(self):
         """ Return :func:`~plexapi.audio.Artist` of this album. """
         return utils.listItems(self.server, self.parentKey)[0]
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        downloaded = []
+        for ep in self.tracks():
+            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
+            if dl:
+                downloaded.extend(dl)
+
+        return downloaded
 
 
 @utils.register_libtype
@@ -255,9 +274,13 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount', NA))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year', NA))
+        # media is included in /children
+        self.media = [media.Media(self.server, e, self.initpath, self)
+                      for e in data if e.tag == media.Media.TYPE]
         if self.isFullObject():  # check me
             self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
-            self.media = [media.Media(self.server, e, self.initpath, self) for e in data if e.tag == media.Media.TYPE]
+            #self.media = [media.Media(self.server, e, self.initpath, self)
+            #              for e in data if e.tag == media.Media.TYPE]
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
         self.username = utils.findUsername(data)
@@ -277,3 +300,39 @@ class Track(Audio, Playable):
     def artist(self):
         """ Return this track's :class:`~plexapi.audio.Artist`. """
         return utils.listItems(self.server, self.grandparentKey)[0]
+
+    def _prettyfilename(self):
+        return '%s - %s %s' % (self.grandparentTitle, self.parentTitle, self.title)
+
+    '''
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """Download a episode. If kwargs are passed your can download a trancoded file.
+
+           Args:
+                savepath (str): Abs path to savefolder
+                keep_orginal_name (bool): Use the mediafiles orginal name
+
+           kwargs:
+                See getStreamURL docs.
+
+        """
+        downloaded = []
+        locs = [i for i in self.iterParts() if i]
+        for loc in locs:
+            if keep_orginal_name is False:
+                name = '%s.%s' % (self._prettyfilename(), loc.container)
+            else:
+                name = loc.file
+
+            # So this seems to be a alot slower but allows transcode.
+            if kwargs:
+                download_url = self.getStreamURL(**kwargs)
+            else:
+                download_url = self.server.url('%s?download=1' % loc.key)
+
+            dl = utils.download(download_url, filename=name, savepath=savepath, session=self.server.session)
+            if dl:
+                downloaded.append(dl)
+
+        return downloaded
+    '''

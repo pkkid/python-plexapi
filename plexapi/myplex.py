@@ -45,7 +45,11 @@ class MyPlexAccount(object):
     BASEURL = 'https://plex.tv/users/account'
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
 
-    def __init__(self, data, initpath=None):
+    def __init__(self, data=None, initpath=None, username=None, password=None, session=None):
+        if data is None and username and password:
+            self.Signin(username, password)#
+
+        self._session = session or requests.Session()
         self.authenticationToken = data.attrib.get('authenticationToken')
         if self.authenticationToken:
             logfilter.add_secret(self.authenticationToken)
@@ -116,7 +120,7 @@ class MyPlexAccount(object):
         return _findItem(self.users(), email, ['username', 'email'])
 
     @classmethod
-    def signin(cls, username, password):
+    def signin(cls, username, password, session=None):
         """ Returns a new :class:`~myplex.MyPlexAccount` object by connecting to MyPlex with the
             specified username and password. This is essentially logging into MyPlex and often
             the very first entry point to using this API.
@@ -133,7 +137,8 @@ class MyPlexAccount(object):
             del plexapi.BASE_HEADERS['X-Plex-Token']
         auth = (username, password)
         log.info('POST %s', cls.SIGNIN)
-        response = requests.post(
+        sess = session or requests.Session()
+        response = sess.post(
             cls.SIGNIN, headers=plexapi.BASE_HEADERS, auth=auth, timeout=TIMEOUT)
         if response.status_code != requests.codes.created:
             codename = codes.get(response.status_code)[0]
@@ -142,7 +147,7 @@ class MyPlexAccount(object):
                                    (response.status_code, codename))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = ElementTree.fromstring(response.text.encode('utf8'))
-        return cls(data, cls.SIGNIN)
+        return MyPlexAccount(data, cls.SIGNIN, session=sess)
 
 
 class MyPlexUser(object):

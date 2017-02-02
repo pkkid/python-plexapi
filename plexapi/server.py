@@ -206,9 +206,10 @@ class PlexServer(object):
         if headers:
             h.update(headers)
         response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
-        if response.status_code not in [200, 201]:
+        #print(response.url)
+        if response.status_code not in [200, 201]:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 

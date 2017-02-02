@@ -17,3 +17,7 @@ include/
 lib/
 pip-selfcheck.json
 pyvenv.cfg
+
+htmlcov
+.coverage
+*.orig

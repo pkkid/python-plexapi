@@ -1,13 +1,24 @@
 # -*- coding: utf-8 -*-
-import logging, re
+import logging
+import os
+import re
 from datetime import datetime
-from plexapi.compat import quote, urlencode, string_type
-from plexapi.exceptions import NotFound, UnknownType, Unsupported
 from threading import Thread
 
+import requests
+
+
+from plexapi.compat import quote, string_type, urlencode
+from plexapi.exceptions import NotFound, NotImplementedError, UnknownType, Unsupported
+#from plexapi import log
+
+
 # Search Types - Plex uses these to filter specific media types when searching.
-SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
-    'artist': 8, 'album': 9, 'track': 10}
+SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3,
+               'episode': 4, 'artist': 8, 'album': 9, 'track': 10,
+               'photo': 14}
+
+
 LIBRARY_TYPES = {}
 
 
@@ -20,7 +31,7 @@ def register_libtype(cls):
     return cls
 
 
-class NA(object):
+class _NA(object):
     """ This used to be a simple variable equal to '__NA__'. There has been need to
         compare NA against None in some use cases. This object allows the internals
         of PlexAPI to distinguish between unfetched values and fetched, but non-existent
@@ -31,13 +42,17 @@ class NA(object):
         return False
 
     def __eq__(self, other):
-        return isinstance(other, NA) or other in [None, '__NA__']
+        return isinstance(other, _NA) or other in [None, '__NA__']
 
     def __nonzero__(self):
         return False
 
     def __repr__(self):
         return '__NA__'
+
+
+# Lets do this for now.
+NA = _NA()
 
 
 class SecretsFilter(logging.Filter):
@@ -73,6 +88,7 @@ class PlexPartialObject(object):
         self.server = server
         self.initpath = initpath
         self._loadData(data)
+        self._reloaded = False
 
     def __eq__(self, other):
         return other is not None and self.key == other.key
@@ -87,6 +103,7 @@ class PlexPartialObject(object):
         # Auto reload self, from the full key (path) when needed.
         if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
             return self.__dict__.get(attr, NA)
+        print('reload because of %s' % attr)
         self.reload()
         return self.__dict__.get(attr, NA)
 
@@ -95,14 +112,14 @@ class PlexPartialObject(object):
             self.__dict__[attr] = value
 
     def _loadData(self, data):
-        raise Exception('Abstract method not implemented.')
+        raise NotImplementedError('Abstract method not implemented.')
 
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie contain.
-        """ 
+        """
         return not self.key or self.key == self.initpath
 
     def isPartialObject(self):
@@ -114,6 +131,8 @@ class PlexPartialObject(object):
         data = self.server.query(self.key)
         self.initpath = self.key
         self._loadData(data[0])
+        self._reloaded = True
+        return self
 
 
 class Playable(object):
@@ -123,7 +142,7 @@ class Playable(object):
 
         Attributes:
             player (:class:`~plexapi.client.PlexClient`): Client object playing this item (for active sessions).
-            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items). 
+            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             sessionKey (int): Active session key.
             transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
@@ -170,7 +189,9 @@ class Playable(object):
         # remove None values
         params = {k: v for k, v in params.items() if v is not None}
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
-        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(params)))
+        # sort the keys since the randomness fucks with my tests..
+        sorted_params = sorted(params.items(), key=lambda val: val[0])
+        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' % (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
         """ Iterates over the parts of this media item. """
@@ -185,6 +206,37 @@ class Playable(object):
                 client (:class:`~plexapi.client.PlexClient`): Client to start playing on.
         """
         client.playMedia(self)
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """Download a episode. If kwargs are passed your can download a trancoded file.
+
+           Args:
+                savepath (str): Abs path to savefolder
+                keep_orginal_name (bool): Use the mediafiles orginal name
+
+           kwargs:
+                See getStreamURL docs.
+
+        """
+        downloaded = []
+        locs = [i for i in self.iterParts() if i]
+        for loc in locs:
+            if keep_orginal_name is False:
+                name = '%s.%s' % (self._prettyfilename(), loc.container)
+            else:
+                name = loc.file
+
+            # So this seems to be a alot slower but allows transcode.
+            if kwargs:
+                download_url = self.getStreamURL(**kwargs)
+            else:
+                download_url = self.server.url('%s?download=1' % loc.key)
+
+            dl = download(download_url, filename=name, savepath=savepath, session=self.server.session)
+            if dl:
+                downloaded.append(dl)
+
+        return downloaded
 
 
 def buildItem(server, elem, initpath, bytag=False):
@@ -377,7 +429,7 @@ def listChoices(server, path):
 
 def listItems(server, path, libtype=None, watched=None, bytag=False):
     """ Returns a list of object built from :func:`~plexapi.utils.buildItem()` found
-        within the specified path. 
+        within the specified path.
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
@@ -401,7 +453,7 @@ def listItems(server, path, libtype=None, watched=None, bytag=False):
     return items
 
 
-def rget(obj, attrstr, default=None, delim='.'):
+def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
     """ Returns the value at the specified attrstr location within a nexted tree of
         dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
         for each key in attrstr (split by by the delimiter) This function is heavily
@@ -466,6 +518,7 @@ def threaded(callback, listargs):
         threads[-1].start()
     for thread in threads:
         thread.join()
+
     return results
 
 
@@ -482,3 +535,72 @@ def toDatetime(value, format=None):
         else:
             value = datetime.fromtimestamp(int(value))
     return value
+
+
+def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
+    """Helper to download a thumb, videofile or something.
+
+       Args:
+            url (str): url where the content be reached
+            filename (str): Filename of the downloaded file, default None
+            savepath (str): Defaults to current working dir
+            chunksize (int): What chunksize read/write at the time
+            mocked (bool): Helper to do evertything except write the file.
+
+        Example:
+
+            >>> download(a_episode.getStreamURL(), a_episode.location)
+            /path/to/file
+
+        Returns:
+                /path/to/file or None
+
+    """
+    session = session or requests.Session()
+    print('Mocked download %s' % mocked)
+
+    if savepath is None:
+        savepath = os.getcwd()
+    else:
+        # Make sure the user supplied path exists
+        try:
+            os.makedirs(savepath)
+        except OSError:
+            if not os.path.isdir(savepath):  # pragma: no cover
+                raise
+
+    filename = os.path.basename(filename)
+    fullpath = os.path.join(savepath, filename)
+
+    try:
+        response = session.get(url, stream=True)
+
+        # images dont have a extention so we try
+        # to guess it from content-type
+        ext = os.path.splitext(fullpath)[-1]
+        if ext:
+            ext = ''
+        else:
+            cp = response.headers.get('content-type')
+
+            if cp:
+                if 'image' in cp:
+                    ext = '.%s' % cp.split('/')[1]
+
+        fullpath = '%s%s' % (fullpath, ext)
+
+        if mocked:
+            return fullpath
+
+        with open(fullpath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunksize):
+                if chunk:
+                    f.write(chunk)
+
+        #log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
+
+        return fullpath
+
+    except Exception as e:  # pragma: no cover
+        print('e %s' % e)
+        #log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

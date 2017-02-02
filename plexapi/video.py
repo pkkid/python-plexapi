@@ -53,7 +53,7 @@ class Video(PlexPartialObject):
         that are useful to know–whether it's a video file,
         a music track, or one of your photos.
         """
-        self.server.query('/%s/analyze' % self.key)
+        self.server.query('/%s/analyze' % self.key.lstrip('/'), method=self.server.session.put)
 
     def markWatched(self):
         """Mark a items as watched."""
@@ -141,6 +141,39 @@ class Movie(Video, Playable):
     def isWatched(self):
         return bool(self.viewCount > 0)
 
+    @property
+    def location(self):
+        """ This does not exist in plex xml response but is added to have a common
+            interface to get the location of the Movie/Show/Episode
+
+        """
+        files = [i.file for i in self.iterParts() if i]
+        if len(files) == 1:
+            files = files[0]
+
+        return files
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        downloaded = []
+        locs = [i for i in self.iterParts() if i]
+        for loc in locs:
+            if keep_orginal_name is False:
+                name = '%s.%s' % (self.title.replace(' ', '.'), loc.container)
+            else:
+                name = loc.file
+
+            # So this seems to be a alot slower but allows transcode.
+            if kwargs:
+                download_url = self.getStreamURL(**kwargs)
+            else:
+                download_url = self.server.url('%s?download=1' % loc.key)
+
+            dl = utils.download(download_url, filename=name, savepath=savepath, session=self.server.session)
+            if dl:
+                downloaded.append(dl)
+
+        return downloaded
+
 
 @utils.register_libtype
 class Show(Video):
@@ -153,6 +186,8 @@ class Show(Video):
             data (Element): Usually built from server.query
         """
         Video._loadData(self, data)
+        # Incase this was loaded from search etc
+        self.key = self.key.replace('/children', '')
         self.art = data.attrib.get('art', NA)
         self.banner = data.attrib.get('banner', NA)
         self.childCount = utils.cast(int, data.attrib.get('childCount', NA))
@@ -161,7 +196,7 @@ class Show(Video):
         self.guid = data.attrib.get('guid', NA)
         self.index = data.attrib.get('index', NA)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
-        self.location = utils.findLocations(data, single=True)
+        self.location = utils.findLocations(data, single=True) or NA
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating', NA))
@@ -170,11 +205,11 @@ class Show(Video):
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
         self.year = utils.cast(int, data.attrib.get('year', NA))
-        #if self.isFullObject(): # will be fixed with docs.
-        self.genres = [media.Genre(self.server, e)
-                       for e in data if e.tag == media.Genre.TYPE]
-        self.roles = [media.Role(self.server, e)
-                      for e in data if e.tag == media.Role.TYPE]
+        if self.isFullObject():  # will be fixed with docs.
+            self.genres = [media.Genre(self.server, e)
+                           for e in data if e.tag == media.Genre.TYPE]
+            self.roles = [media.Role(self.server, e)
+                          for e in data if e.tag == media.Role.TYPE]
 
     @property
     def actors(self):
@@ -266,9 +301,23 @@ class Show(Video):
         """
         return self.episode(title)
 
+    def analyze(self):
+        """ """
+        raise 'Cant analyse a show'  # fix me
+
     def refresh(self):
         """Refresh the metadata."""
-        self.server.query('/library/metadata/%s/refresh' % self.ratingKey)
+        self.server.query('/library/metadata/%s/refresh' % self.ratingKey, method=self.server.session.put)
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        downloaded = []
+        for ep in self.episodes():
+            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
+
+            if dl:
+                downloaded.extend(dl)
+
+        return downloaded
 
 
 @utils.register_libtype
@@ -282,11 +331,12 @@ class Season(Video):
             data (Element): Usually built from server.query
         """
         Video._loadData(self, data)
+        self.key = self.key.replace('/children', '')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount', NA))
         self.index = utils.cast(int, data.attrib.get('index', NA))
         self.parentKey = data.attrib.get('parentKey', NA)
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey', NA))
-        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
+        self.parentTitle = data.attrib.get('parentTitle', NA)
         self.viewedLeafCount = utils.cast(
             int, data.attrib.get('viewedLeafCount', NA))
 
@@ -296,7 +346,7 @@ class Season(Video):
 
     @property
     def seasonNumber(self):
-        """Reurns season number."""
+        """Returns season number."""
         return self.index
 
     def episodes(self, watched=None):
@@ -352,7 +402,6 @@ class Season(Video):
             else:
                 raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
 
-
     def get(self, title):
         """Get a episode with a matching title.
 
@@ -380,7 +429,16 @@ class Season(Video):
         clsname = self.__class__.__name__
         key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
         title = self.title.replace(' ', '.')[0:20].encode('utf8')
-        return '<%s:%s:%s:%s>' % (clsname, key, self.grandparentTitle, title)
+        return '<%s:%s:%s:%s>' % (clsname, key, self.parentTitle, title)
+
+    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        downloaded = []
+        for ep in self.episodes():
+            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
+            if dl:
+                downloaded.extend(dl)
+
+        return downloaded
 
 
 @utils.register_libtype
@@ -464,3 +522,19 @@ class Episode(Video, Playable):
     def show(self):
         """Return this episodes Show"""
         return utils.listItems(self.server, self.grandparentKey)[0]
+
+    @property
+    def location(self):
+        """ This does not exist in plex xml response but is added to have a common
+            interface to get the location of the Movie/Show
+
+        """
+        # Note this should probably belong to some parent.
+        files = [i.file for i in self.iterParts() if i]
+        if len(files) == 1:
+            files = files[0]
+
+        return files
+
+    def _prettyfilename(self):
+        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'), str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
