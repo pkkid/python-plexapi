@@ -59,7 +59,7 @@ class Playlist(PlexPartialObject, Playable):
                 raise BadRequest('Can not mix media types when building a playlist: %s and %s' % (self.playlistType, item.listType))
             ratingKeys.append(str(item.ratingKey))
         uuid = items[0].section().uuid
-        ratingKeys = ','.join(str(ratingKeys))
+        ratingKeys = ','.join(ratingKeys)
         path = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys),
         }))
