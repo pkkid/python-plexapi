@@ -1,65 +1,37 @@
 # -*- coding: utf-8 -*-
-from utils import log, register
-from plexapi import CONFIG
+
+import pytest
 
 
-# TODO: test_navigation/test_navigate_to_movie
-# FAIL: (500) internal_server_error
-# @register()
-def test_navigate_to_movie(account, plex):
-    result_library = plex.library.get(CONFIG.movie_title)
-    result_movies = plex.library.section(CONFIG.movie_section).get(CONFIG.movie_title)
-    log(2, 'Navigating to: %s' % CONFIG.movie_title)
-    log(2, 'Result Library: %s' % result_library)
-    log(2, 'Result Movies: %s' % result_movies)
-    assert result_movies, 'Movie navigation not working.'
-    assert result_library == result_movies, 'Movie navigation not consistent.'
-
-
-@register()
-def test_navigate_to_show(account, plex):
-    result_shows = plex.library.section(CONFIG.show_section).get(CONFIG.show_title)
-    log(2, 'Navigating to: %s' % CONFIG.show_title)
-    log(2, 'Result Shows: %s' % result_shows)
-    assert result_shows, 'Show navigation not working.'
-
-
-# TODO: Fix test_navigation/test_navigate_around_show
-# FAIL: Unable to list season: Season 1
-# @register()
-def test_navigate_around_show(account, plex):
-    show = plex.library.section(CONFIG.show_section).get(CONFIG.show_title)
+def test_navigate_around_show(plex_account, pms):
+    show = pms.library.section('TV Shows').get('The 100')
     seasons = show.seasons()
-    season = show.season(CONFIG.show_season)
+    season = show.season('Season 1')
+
     episodes = show.episodes()
-    episode = show.episode(CONFIG.show_episode)
-    log(2, 'Navigating around show: %s' % show)
-    log(2, 'Seasons: %s...' % seasons[:3])
-    log(2, 'Season: %s' % season)
-    log(2, 'Episodes: %s...' % episodes[:3])
-    log(2, 'Episode: %s' % episode)
-    assert CONFIG.show_season in [s.title for s in seasons], 'Unable to list season: %s' % CONFIG.show_season
-    assert CONFIG.show_episode in [e.title for e in episodes], 'Unable to list episode: %s' % CONFIG.show_episode
-    assert show.season(CONFIG.show_season) == season, 'Unable to get show season: %s' % CONFIG.show_season
-    assert show.episode(CONFIG.show_episode) == episode, 'Unable to get show episode: %s' % CONFIG.show_episode
-    assert season.episode(CONFIG.show_episode) == episode, 'Unable to get season episode: %s' % CONFIG.show_episode
+    episode = show.episode('Pilot')
+
+    assert 'Season 1' in [s.title for s in seasons], 'Unable to list season:'
+    assert 'Pilot' in [e.title for e in episodes], 'Unable to list episode:'
+    assert show.season(1) == season
+    assert show.episode('Pilot') == episode, 'Unable to get show episode:'
+    assert season.episode('Pilot') == episode, 'Unable to get season episode:'
     assert season.show() == show, 'season.show() doesnt match expected show.'
     assert episode.show() == show, 'episode.show() doesnt match expected show.'
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
 
 
-@register()
-def test_navigate_around_artist(account, plex):
-    artist = plex.library.section(CONFIG.audio_section).get(CONFIG.audio_artist)
+def _test_navigate_around_artist(plex_account, pms):
+    artist = pms.library.section(CONFIG.audio_section).get(CONFIG.audio_artist)
     albums = artist.albums()
     album = artist.album(CONFIG.audio_album)
     tracks = artist.tracks()
     track = artist.track(CONFIG.audio_track)
-    log(2, 'Navigating around artist: %s' % artist)
-    log(2, 'Albums: %s...' % albums[:3])
-    log(2, 'Album: %s' % album)
-    log(2, 'Tracks: %s...' % tracks[:3])
-    log(2, 'Track: %s' % track)
+    print('Navigating around artist: %s' % artist)
+    print('Albums: %s...' % albums[:3])
+    print('Album: %s' % album)
+    print('Tracks: %s...' % tracks[:3])
+    print('Track: %s' % track)
     assert CONFIG.audio_album in [a.title for a in albums], 'Unable to list album: %s' % CONFIG.audio_album
     assert CONFIG.audio_track in [e.title for e in tracks], 'Unable to list track: %s' % CONFIG.audio_track
     assert artist.album(CONFIG.audio_album) == album, 'Unable to get artist album: %s' % CONFIG.audio_album
