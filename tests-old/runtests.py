@@ -4,10 +4,10 @@
 You can run this test suite with the following command:
 >> python tests.py -u <USERNAME> -p <PASSWORD> -s <SERVERNAME>
 """
-import argparse, os, pkgutil, sys, time, traceback
+import argparse, pkgutil, sys, time, traceback
 from os.path import dirname, abspath
 sys.path.append(dirname(dirname(abspath(__file__))))
-
+from plexapi import CONFIG
 from plexapi.server import PlexServer
 from plexapi.myplex import MyPlexAccount
 from utils import log, itertests
@@ -15,9 +15,9 @@ from utils import log, itertests
 
 def runtests(args):
     # Get username and password from environment
-    username = args.username or os.environ.get('PLEX_TEST_USERNAME')
-    password = args.password or os.environ.get('PLEX_TEST_PASSWORD')
-    resource = args.resource or os.environ.get('PLEX_TEST_RESOURCE')
+    username = args.username or CONFIG.get('authentication.username')
+    password = args.password or CONFIG.get('authentication.password')
+    resource = args.resource or CONFIG.get('authentication.resource')
     # Register known tests
     for loader, name, ispkg in pkgutil.iter_modules([dirname(abspath(__file__))]):
         if name.startswith('test_'):

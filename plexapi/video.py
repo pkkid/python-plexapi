@@ -192,10 +192,8 @@ class Show(Video):
             int, data.attrib.get('viewedLeafCount', NA))
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():  # will be fixed with docs.
-            self.genres = [media.Genre(self.server, e)
-                           for e in data if e.tag == media.Genre.TYPE]
-            self.roles = [media.Role(self.server, e)
-                          for e in data if e.tag == media.Role.TYPE]
+            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
+            self.roles = [media.Role(self.server, e) for e in data if e.tag == media.Role.TYPE]
 
     @property
     def actors(self):

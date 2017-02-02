@@ -391,13 +391,15 @@ class PlexClient(object):
         """
         self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
 
-    def playMedia(self, media, **params):
-        """ Start playback of the specified media item.
-
+    def playMedia(self, media, offset=0, **params):
+        """ Start playback of the specified media item. See also:
+            
             Parameters:
                 media (:class:`~plexapi.media.Media`): Media item to be played back (movie, music, photo).
-                **params (TYPE): Additional parameters to include in the request. Useful
-                    to specify things such as offset, audio, or subtitle streams.
+                offset (int): Number of milliseconds at which to start playing with zero representing
+                    the beginning (default 0).
+                **params (dict): Optional additional parameters to include in the playback request. See
+                    also: https://github.com/plexinc/plex-media-player/wiki/Remote-control-API#modified-commands
 
             Raises:
                 :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
@@ -410,6 +412,7 @@ class PlexClient(object):
             'machineIdentifier': self.server.machineIdentifier,
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
+            'offset': offset,
             'key': media.key,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
