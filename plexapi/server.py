@@ -13,7 +13,7 @@ else:
 import requests
 from requests.status_codes import _codes as codes
 
-from plexapi import BASE_HEADERS, TIMEOUT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi import audio, video, photo, playlist  # noqa; required # why is this needed?
 from plexapi.client import PlexClient
@@ -62,8 +62,8 @@ class PlexServer(object):
             session (requests.Session, optional): Use your own session object if you want
                                                   to cache the http responses from PMS
         """
-        self.baseurl = baseurl
-        self.token = token
+        self.baseurl = baseurl or CONFIG.get('authentication.baseurl')
+        self.token = token or CONFIG.get('authentication.token')
         if self.token:
             logfilter.add_secret(self.token)
         self.session = session or requests.Session()

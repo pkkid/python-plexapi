@@ -6,6 +6,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
 from plexapi.server import PlexServer
 from requests.status_codes import _codes as codes
+CONFIG = plexapi.CONFIG
 
 
 class MyPlexAccount(object):
@@ -45,10 +46,7 @@ class MyPlexAccount(object):
     BASEURL = 'https://plex.tv/users/account'
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
 
-    def __init__(self, data=None, initpath=None, username=None, password=None, session=None):
-        if data is None and username and password:
-            self.Signin(username, password)#
-
+    def __init__(self, data=None, initpath=None, session=None):
         self._session = session or requests.Session()
         self.authenticationToken = data.attrib.get('authenticationToken')
         if self.authenticationToken:
@@ -120,14 +118,14 @@ class MyPlexAccount(object):
         return _findItem(self.users(), email, ['username', 'email'])
 
     @classmethod
-    def signin(cls, username, password, session=None):
+    def signin(cls, username=None, password=None, session=None):
         """ Returns a new :class:`~myplex.MyPlexAccount` object by connecting to MyPlex with the
             specified username and password. This is essentially logging into MyPlex and often
             the very first entry point to using this API.
 
             Parameters:
-                username (str): Your MyPlex.tv username.
-                password (str): Your MyPlex.tv password.
+                username (str): Your MyPlex.tv username. If not specified, it will check the config.ini file.
+                password (str): Your MyPlex.tv password. If not specified, it will check the config.ini file.
 
             Raises:
                 :class:`~plexapi.exceptions.Unauthorized`: (401) If the username or password are invalid.
@@ -135,6 +133,8 @@ class MyPlexAccount(object):
         """
         if 'X-Plex-Token' in plexapi.BASE_HEADERS:
             del plexapi.BASE_HEADERS['X-Plex-Token']
+        username = username or CONFIG.get('authentication.username')
+        password = password or CONFIG.get('authentication.password')
         auth = (username, password)
         log.info('POST %s', cls.SIGNIN)
         sess = session or requests.Session()

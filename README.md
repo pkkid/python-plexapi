@@ -49,11 +49,10 @@ plex = PlexServer(baseurl, token)
 #### Usage Examples ####
 
 ```python
-# Example 1: List all unwatched content in library.
-for section in plex.library.sections():
-    print('Unwatched content in %s:' % section.title)
-    for video in section.unwatched():
-        print('  %s' % video.title)
+# Example 1: List all unwatched movies.
+movies = plex.library.section('Movies')
+for video in movies.search(unwatched=True):
+    print(video.title)
 ```
 ```python
 # Example 2: Mark all Conan episodes watched.

@@ -12,7 +12,6 @@ class PlexConfig(ConfigParser):
         Parameters:
             path (str): Path of the configuration file to load.
     """
-
     def __init__(self, path):
         ConfigParser.__init__(self)
         self.read(path)
