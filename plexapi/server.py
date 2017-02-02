@@ -115,8 +115,7 @@ class PlexServer(object):
         """
         items = []
         for elem in self.query('/clients'):
-            baseurl = 'http://%s:%s' % (elem.attrib['address'],
-                                        elem.attrib['port'])
+            baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
         return items
 
@@ -135,8 +134,7 @@ class PlexServer(object):
         """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                baseurl = 'http://%s:%s' % (
-                    elem.attrib['address'], elem.attrib['port'])
+                baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
                 return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
