@@ -525,6 +525,19 @@ def toDatetime(value, format=None):
     return value
 
 
+def toList(value, itemcast=None, delim=','):
+    """ Returns a list of strings from the specified value.
+        
+        Parameters:
+            value (str): comma delimited string to convert to list.
+            itemcast (func): Function to cast each list item to (default str).
+            delim (str): string delimiter (optional; default ',').
+    """
+    value = value or ''
+    itemcast = itemcast or str
+    return [itemcast(item) for item in value.split(delim) if item != '']
+
+
 def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
