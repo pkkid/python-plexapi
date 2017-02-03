@@ -256,16 +256,16 @@ def cast(func, value):
             func (func): Calback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
-    if not value:
-        return None
-    if func in (int, float):
-        try:
-            return func(value)
-        except ValueError:
-            return float('nan')
-    if func == bool:
-        return bool(int(value))
-    raise TypeError('Cast only allows int, float and bool')
+    if value not in (None, NA):
+        if func == bool:
+            return bool(int(value))
+        elif func in (int, float):
+            try:
+                return func(value)
+            except ValueError:
+                return float('nan')
+        return func(value)
+    return value
 
 
 def findKey(server, key):
