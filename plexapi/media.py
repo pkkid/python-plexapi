@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from plexapi.utils import cast
+from plexapi.exceptions import BadRequest
+from plexapi.utils import cast, listItems
 
 
 class Media(object):
@@ -161,6 +162,31 @@ class TranscodeSession(object):
 
 
 class MediaTag(object):
+    """ Base class for media tags used for filtering and searching your library
+        items or navigating the metadata of media items in your library. Tags are
+        the construct used for things such as Country, Director, Genre, etc.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
+            id (id): Tag ID (This seems meaningless except to use it as a unique id).
+            role (str): Unknown
+            tag (str): Name of the tag. This will be Animation, SciFi etc for Genres. The name of
+                person for Directors and Roles (ex: Animation, Stephen Graham, etc).
+            <Hub_Search_Attributes>: Attributes only applicable in search results from
+                PlexServer :func:`~plexapi.server.PlexServer.search()`. They provide details of which 
+                library section the tag was found as well as the url to dig deeper into the results.
+            
+                * key (str): API URL to dig deeper into this tag (ex: /library/sections/1/all?actor=9081).
+                * librarySectionID (int): Section ID this tag was generated from.
+                * librarySectionTitle (str): Library section title this tag was found.
+                * librarySectionType (str): Media type of the library section this tag was found.
+                * tagType (int): Tag type ID.
+                * thumb (str): URL to thumbnail image.
+    """
     TYPE = None
 
     def __init__(self, server, data):
@@ -168,10 +194,27 @@ class MediaTag(object):
         self.id = cast(int, data.attrib.get('id'))
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
+        # additional attributes only from hub search
+        self.key = data.attrib.get('key')
+        self.librarySectionID = cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionType = data.attrib.get('librarySectionType')
+        self.tagType = cast(int, data.attrib.get('tagType'))
+        self.thumb = data.attrib.get('thumb')
 
     def __repr__(self):
         tag = self.tag.replace(' ', '.')[0:20].encode('utf-8')
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
+        if self.librarySectionTitle:
+            return u'<%s:%s:%s:%s>' % (self.__class__.__name__, self.id, tag, self.librarySectionTitle)
+        return u'<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
+
+    def items(self, *args, **kwargs):
+        """ Return the list of items within this tag. This function is only applicable
+            in search results from PlexServer :func:`~plexapi.server.PlexServer.search()`.
+        """
+        if not self.key:
+            raise BadRequest('Key is not defined for this tag: %s' % self.tag)
+        return listItems(self.server, self.key)
 
 
 class Collection(MediaTag):

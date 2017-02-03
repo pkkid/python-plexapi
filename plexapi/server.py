@@ -4,14 +4,14 @@ from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.client import PlexClient
-from plexapi.compat import ElementTree, quote, urlencode
+from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import NA, cast
 # import media to populate utils.LIBRARY_TYPES.
-from plexapi import audio, video, photo, playlist
+from plexapi import audio, video, photo, playlist as _pl
 
 
 class PlexServer(object):
