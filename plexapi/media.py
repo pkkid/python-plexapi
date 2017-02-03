@@ -170,7 +170,7 @@ class MediaTag(object):
         self.tag = data.attrib.get('tag')
 
     def __repr__(self):
-        tag = self.tag.replace(' ','.')[0:20]
+        tag = self.tag.replace(' ', '.')[0:20].encode('utf-8')
         return '<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
 
 
