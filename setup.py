@@ -5,7 +5,6 @@ Install PlexAPI
 """
 import re
 from distutils.core import setup
-from setuptools import find_packages
 
 # Convert markdown readme to rst
 try:
@@ -29,7 +28,7 @@ setup(
     author='Michael Shepanski',
     author_email='mjs7231@gmail.com',
     url='https://github.com/mjs7231/plexapi',
-    packages=find_packages(),
+    packages=['plexapi'],
     install_requires=['requests'],
     long_description=read_md('README.md'),
     keywords=['plex', 'api'],

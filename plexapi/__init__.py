@@ -3,11 +3,12 @@ import logging, os
 from logging.handlers import RotatingFileHandler
 from platform import uname
 from plexapi.config import PlexConfig, reset_base_headers
+from plexapi.utils import SecretsFilter
 from uuid import getnode
 
-
 # Load User Defined Config
-CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
+DEFAULT_CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
+CONFIG_PATH = os.environ.get('PLEX_CONFIG_PATH', DEFAULT_CONFIG_PATH)
 CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
@@ -40,3 +41,6 @@ if logfile:
 loghandler.setFormatter(logging.Formatter(logformat))
 log.addHandler(loghandler)
 log.setLevel(loglevel)
+logfilter = SecretsFilter()
+if CONFIG.get('logging.show_secrets') != 'true':
+    log.addFilter(logfilter)

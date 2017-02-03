@@ -13,8 +13,8 @@ else:
 import requests
 from requests.status_codes import _codes as codes
 
-from plexapi import BASE_HEADERS, TIMEOUT
-from plexapi import log, utils
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import log, logfilter, utils
 from plexapi import audio, video, photo, playlist  # noqa; required # why is this needed?
 from plexapi.client import PlexClient
 from plexapi.compat import quote, urlencode
@@ -62,8 +62,10 @@ class PlexServer(object):
             session (requests.Session, optional): Use your own session object if you want
                                                   to cache the http responses from PMS
         """
-        self.baseurl = baseurl
-        self.token = token
+        self.baseurl = baseurl or CONFIG.get('authentication.baseurl')
+        self.token = token or CONFIG.get('authentication.token')
+        if self.token:
+            logfilter.add_secret(self.token)
         self.session = session or requests.Session()
         data = self._connect()
         self.friendlyName = data.attrib.get('friendlyName')
@@ -113,8 +115,7 @@ class PlexServer(object):
         """
         items = []
         for elem in self.query('/clients'):
-            baseurl = 'http://%s:%s' % (elem.attrib['address'],
-                                        elem.attrib['port'])
+            baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
         return items
 
@@ -133,8 +134,7 @@ class PlexServer(object):
         """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                baseurl = 'http://%s:%s' % (
-                    elem.attrib['address'], elem.attrib['port'])
+                baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
                 return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
@@ -204,9 +204,10 @@ class PlexServer(object):
         if headers:
             h.update(headers)
         response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
-        if response.status_code not in [200, 201]:
+        #print(response.url)
+        if response.status_code not in [200, 201]:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 

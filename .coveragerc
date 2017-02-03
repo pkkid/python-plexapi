@@ -1,0 +1,9 @@
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    raise Unsupported
+    except ImportError
+    def __repr__
+    def __bool__
+    if __name__ == .__main__.:

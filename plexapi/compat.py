@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-# flake8:noqa
-"""
-Python 2/3 compatability
-Always try Py3 first
-"""
+# Python 2/3 compatability
+# Always try Py3 first
+
+try:
+    string_type = basestring
+except NameError:
+    string_type = str
 
 try:
     from urllib.parse import urlencode
@@ -20,8 +22,13 @@ try:
 except ImportError:
     from urllib import unquote
 
-
 try:
     from configparser import ConfigParser
 except ImportError:
     from ConfigParser import ConfigParser
+
+try:
+    from xml.etree import cElementTree as ElementTree
+except ImportError:
+    from xml.etree import ElementTree
+    

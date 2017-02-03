@@ -1,0 +1,28 @@
+#---------------------------------------------------------
+# Travis CI Build Environment
+# https://docs.travis-ci.com/user/customizing-the-build
+#---------------------------------------------------------
+language:
+  - python
+
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+before_install:
+  - pip install -U pytest pytest-cov coveralls
+
+install:
+  - pip install -r requirements_dev.txt
+
+script:
+  - py.test tests --cov-config .coveragerc --cov=plexapi --cov-report=html
+
+after_success:
+  - coveralls
+
+matrix:
+  fast_finish: true

@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-PlexPhoto
-
-Attributes:
-    NA (TYPE): Description
-"""
 from plexapi import media, utils
 from plexapi.utils import PlexPartialObject
 NA = utils.NA
@@ -12,46 +6,36 @@ NA = utils.NA
 
 @utils.register_libtype
 class Photoalbum(PlexPartialObject):
-    """Summary
+    """ Represents a photoalbum (collection of photos).
 
-    Attributes:
-        addedAt (TYPE): Description
-        art (TYPE): Description
-        composite (TYPE): Description
-        guid (TYPE): Description
-        index (TYPE): Description
-        key (TYPE): Description
-        librarySectionID (TYPE): Description
-        listType (str): Description
-        ratingKey (TYPE): Description
-        summary (TYPE): Description
-        thumb (TYPE): Description
-        title (TYPE): Description
-        TYPE (str): Description
-        type (TYPE): Description
-        updatedAt (TYPE): Description
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+
+        Attributes:
+            addedAt (datetime): Datetime this item was added to the library.
+            art (str): Photo art (/library/metadata/<ratingkey>/art/<artid>)
+            composite (str): Unknown
+            guid (str): Unknown (unique ID)
+            index (sting): Index number of this album.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            listType (str): Hardcoded as 'photo' (useful for search filters).
+            ratingKey (int): Unique key identifying this item.
+            summary (str): Summary of the photoalbum.
+            thumb (str): URL to thumbnail image.
+            title (str): Photoalbum title. (Trip to Disney World)
+            type (str): Unknown
+            updatedAt (datatime): Datetime this item was updated.
     """
     TYPE = 'photoalbum'
 
     def __init__(self, server, data, initpath):
-        """Summary
-
-        Args:
-            server (TYPE): Description
-            data (TYPE): Description
-            initpath (TYPE): Description
-        """
         super(Photoalbum, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
-        """Summary
-
-        Args:
-            data (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.art = data.attrib.get('art', NA)
@@ -68,78 +52,53 @@ class Photoalbum(PlexPartialObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
 
     def photos(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.listItems(self.server, path, Photo.TYPE)
 
     def photo(self, title):
-        """Summary
-
-        Args:
-            title (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
         path = '/library/metadata/%s/children' % self.ratingKey
         return utils.findItem(self.server, path, title)
 
     def section(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
         return self.server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
 class Photo(PlexPartialObject):
-    """Summary
+    """ Represents a single photo.
 
-    Attributes:
-        addedAt (TYPE): Description
-        index (TYPE): Description
-        key (TYPE): Description
-        listType (str): Description
-        media (TYPE): Description
-        originallyAvailableAt (TYPE): Description
-        parentKey (TYPE): Description
-        parentRatingKey (TYPE): Description
-        ratingKey (TYPE): Description
-        summary (TYPE): Description
-        thumb (TYPE): Description
-        title (TYPE): Description
-        TYPE (str): Description
-        type (TYPE): Description
-        updatedAt (TYPE): Description
-        year (TYPE): Description
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+
+        Attributes:
+            addedAt (datetime): Datetime this item was added to the library.
+            index (sting): Index number of this photo.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            listType (str): Hardcoded as 'photo' (useful for search filters).
+            media (TYPE): Unknown
+            originallyAvailableAt (datetime): Datetime this photo was added to Plex.
+            parentKey (str): Photoalbum API URL.
+            parentRatingKey (int): Unique key identifying the photoalbum.
+            ratingKey (int): Unique key identifying this item.
+            summary (str): Summary of the photo.
+            thumb (str): URL to thumbnail image.
+            title (str): Photo title.
+            type (str): Unknown
+            updatedAt (datatime): Datetime this item was updated.
+            year (int): Year this photo was taken.
     """
     TYPE = 'photo'
 
     def __init__(self, server, data, initpath):
-        """Summary
-
-        Args:
-            server (TYPE): Description
-            data (TYPE): Description
-            initpath (TYPE): Description
-        """
         super(Photo, self).__init__(data, initpath, server)
 
     def _loadData(self, data):
-        """Summary
-
-        Args:
-            data (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
+        """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
         self.index = utils.cast(int, data.attrib.get('index', NA))
@@ -157,20 +116,12 @@ class Photo(PlexPartialObject):
         self.year = utils.cast(int, data.attrib.get('year', NA))
         if self.isFullObject():
             self.media = [media.Media(self.server, e, self.initpath, self)
-                          for e in data if e.tag == media.Media.TYPE]
+                for e in data if e.tag == media.Media.TYPE]
 
     def photoalbum(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
         return utils.listItems(self.server, self.parentKey)[0]
 
     def section(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
+        """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
         return self.server.library.sectionByID(self.photoalbum().librarySectionID)
