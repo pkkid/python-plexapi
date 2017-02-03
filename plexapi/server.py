@@ -1,117 +1,159 @@
 # -*- coding: utf-8 -*-
-import sys
-
-if sys.version_info <= (3, 3):
-    try:
-        from xml.etree import cElementTree as ElementTree
-    except ImportError:
-        from xml.etree import ElementTree
-else:
-    # py 3.3 and above selects the fastest automatically
-    from xml.etree import ElementTree
-
 import requests
 from requests.status_codes import _codes as codes
-
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
-from plexapi import audio, video, photo, playlist  # noqa; required # why is this needed?
 from plexapi.client import PlexClient
-from plexapi.compat import quote, urlencode
+from plexapi.compat import ElementTree, quote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
+from plexapi.utils import NA, cast
+# import media to populate utils.LIBRARY_TYPES.
+from plexapi import audio, video, photo, playlist
 
 
 class PlexServer(object):
-    """Main class to interact with plexapi.
+    """ This is the main entry point to interacting with a Plex server. It allows you to
+        list connected clients, browse your library sections and perform actions such as
+        emptying trash. If you do not know the auth token required to access your Plex
+        server, or simply want to access your server with your username and password, you
+        can also create an PlexServer instance from :class:`~plexapi.myplex.MyPlexAccount`.
 
-    Examples:
-             >>>> plex = PlexServer(token=12345)
-             >>>> for client in plex.clients():
-             >>>>     print(client.title)
+        Parameters:
+            baseurl (str): Base url for to access the Plex Media Server (default: 'http://localhost:32400').
+            token (str): Required Plex authentication token to access the server.
+            session (requests.Session, optional): Use your own session object if you want to
+                cache the http responses from PMS
 
-     Note:
-         See test/example.py for more examples
-
-    Attributes:
-        baseurl (str): Base url for PMS. Fx http://10.0.0.97:32400
-        friendlyName (str): Pretty name for PMS fx s-PC
-        machineIdentifier (str): uuid for PMS
-        myPlex (bool): Description
-        myPlexMappingState (str): fx mapped
-        myPlexSigninState (str): fx ok
-        myPlexSubscription (str): 1
-        myPlexUsername (str): username@email.com
-        platform (str): The platform PMS is running on.
-        platformVersion (str): fx 6.1 (Build 7601)
-        session (requests.Session, optinal): Add your own session object for caching
-        token (str): X-Plex-Token, using for authenication with PMS
-        transcoderActiveVideoSessions (int): How any active video sessions
-        updatedAt (int): Last updated at as epoch
-        version (str): fx 1.3.2.3112-1751929
-
+        Attributes:
+            allowCameraUpload (bool): True if server allows camera upload.
+            allowChannelAccess (bool): True if server allows channel access (iTunes?).
+            allowMediaDeletion (bool): True is server allows media to be deleted.
+            allowSharing (bool): True is server allows sharing.
+            allowSync (bool): True is server allows sync.
+            backgroundProcessing (bool): Unknown
+            baseurl (str): Base url for the Plex Media Server to access.
+            certificate (bool): True if server has an HTTPS certificate.
+            companionProxy (bool): Unknown
+            diagnostics (bool): Unknown
+            eventStream (bool): Unknown
+            friendlyName (str): Human friendly name for this server.
+            hubSearch (bool): True if `Hub Search <https://www.plex.tv/blog
+                /seek-plex-shall-find-leveling-web-app/>`_ is enabled. I believe this
+                is enabled for everyone
+            machineIdentifier (str): Unique ID for this server (looks like an md5).
+            multiuser (bool): True if `multiusers <https://support.plex.tv/hc/en-us/articles
+                /200250367-Multi-User-Support>`_ are enabled.
+            myPlex (bool): Unknown (True if logged into myPlex?).
+            myPlexMappingState (str): Unknown (ex: mapped).
+            myPlexSigninState (str): Unknown (ex: ok).
+            myPlexSubscription (str): True if you have a myPlex subscription.
+            myPlexUsername (str): Email address if signed into myPlex (user@example.com)
+            ownerFeatures (bool): List of features allowed by the server owner. This may be based
+                on your PlexPass subscription. Features include: camera_upload, cloudsync,
+                content_filter, dvr, hardware_transcoding, home, lyrics, music_videos, pass,
+                photo_autotags, premium_music_metadata, session_bandwidth_restrictions, sync,
+                trailers, webhooks (and maybe more).
+            photoAutoTag (bool): True if photo `auto-tagging <https://support.plex.tv/hc/en-us
+                /articles/234976627-Auto-Tagging-of-Photos>`_ is enabled.
+            platform (str): Platform the server is hosted on (ex: Linux)
+            platformVersion (str): Platform version (ex: '6.1 (Build 7601)', '4.4.0-59-generic').
+            pluginHost (bool): Unknown
+            readOnlyLibraries (bool): Unknown
+            requestParametersInCookie (bool): Unknown
+            session (Session): Requests session used for object caching.
+            streamingBrainVersion (bool): Current `Streaming Brain <https://www.plex.tv/blog
+                /mcstreamy-brain-take-world-two-easy-steps/>`_ version.
+            sync (bool): True if `syncing to a device <https://support.plex.tv/hc/en-us/articles
+                /201053678-Sync-Media-to-a-Device>`_ is enabled.
+            token (str): Plex authentication token to access the server.
+            transcoderActiveVideoSessions (int): Number of active video transcoding sessions.
+            transcoderAudio (bool): True if audio transcoding audio is available.
+            transcoderLyrics (bool): True if audio transcoding lyrics is available.
+            transcoderPhoto (bool): True if audio transcoding photos is available.
+            transcoderSubtitles (bool): True if audio transcoding subtitles is available.
+            transcoderVideo (bool): True if audio transcoding video is available.
+            transcoderVideoBitrates (bool): List of video bitrates.
+            transcoderVideoQualities (bool): List of video qualities.
+            transcoderVideoResolutions (bool): List of video resolutions.
+            updatedAt (int): Datetime the server was updated.
+            updater (bool): Unknown
+            version (str): Current Plex version (ex: 1.3.2.3112-1751929)
+            voiceSearch (bool): True if voice search is enabled. (is this Google Voice search?)
     """
-
     def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
-        """
-        Args:
-            baseurl (str): Base url for PMS
-            token (str): X-Plex-Token, using for authenication with PMS
-            session (requests.Session, optional): Use your own session object if you want
-                                                  to cache the http responses from PMS
-        """
         self.baseurl = baseurl or CONFIG.get('authentication.baseurl')
         self.token = token or CONFIG.get('authentication.token')
         if self.token:
             logfilter.add_secret(self.token)
         self.session = session or requests.Session()
-        data = self._connect()
+        self._library = None  # cached library
+        self.reload()
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self.allowCameraUpload = cast(bool, data.attrib.get('allowCameraUpload'))
+        self.allowChannelAccess = cast(bool, data.attrib.get('allowChannelAccess'))
+        self.allowMediaDeletion = cast(bool, data.attrib.get('allowMediaDeletion'))
+        self.allowSharing = cast(bool, data.attrib.get('allowSharing'))
+        self.allowSync = cast(bool, data.attrib.get('allowSync'))
+        self.backgroundProcessing = cast(bool, data.attrib.get('backgroundProcessing'))
+        self.certificate = cast(bool, data.attrib.get('certificate'))
+        self.companionProxy = cast(bool, data.attrib.get('companionProxy'))
+        self.diagnostics = data.attrib.get('diagnostics', '').split(',')
+        self.eventStream = cast(bool, data.attrib.get('eventStream'))
         self.friendlyName = data.attrib.get('friendlyName')
+        self.hubSearch = cast(bool, data.attrib.get('hubSearch'))
         self.machineIdentifier = data.attrib.get('machineIdentifier')
-        self.myPlex = bool(data.attrib.get('myPlex'))
+        self.multiuser = cast(bool, data.attrib.get('multiuser'))
+        self.myPlex = cast(bool, data.attrib.get('myPlex'))
         self.myPlexMappingState = data.attrib.get('myPlexMappingState')
         self.myPlexSigninState = data.attrib.get('myPlexSigninState')
         self.myPlexSubscription = data.attrib.get('myPlexSubscription')
         self.myPlexUsername = data.attrib.get('myPlexUsername')
+        self.ownerFeatures = data.attrib.get('ownerFeatures', '').split(',')
+        self.photoAutoTag = cast(bool, data.attrib.get('photoAutoTag'))
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
+        self.pluginHost = cast(bool, data.attrib.get('pluginHost'))
+        self.readOnlyLibraries = cast(int, data.attrib.get('readOnlyLibraries'))
+        self.requestParametersInCookie = cast(bool, data.attrib.get('requestParametersInCookie'))
+        self.streamingBrainVersion = data.attrib.get('streamingBrainVersion')
+        self.sync = cast(bool, data.attrib.get('sync'))
         self.transcoderActiveVideoSessions = int(data.attrib.get('transcoderActiveVideoSessions', 0))
-        self.updatedAt = int(data.attrib.get('updatedAt', 0))
+        self.transcoderAudio = cast(bool, data.attrib.get('transcoderAudio'))
+        self.transcoderLyrics = cast(bool, data.attrib.get('transcoderLyrics'))
+        self.transcoderPhoto = cast(bool, data.attrib.get('transcoderPhoto'))
+        self.transcoderSubtitles = cast(bool, data.attrib.get('transcoderSubtitles'))
+        self.transcoderVideo = cast(bool, data.attrib.get('transcoderVideo'))
+        self.transcoderVideoBitrates = data.attrib.get('transcoderVideoBitrates', '').split(',')
+        self.transcoderVideoQualities = data.attrib.get('transcoderVideoQualities', '').split(',')
+        self.transcoderVideoResolutions = data.attrib.get('transcoderVideoResolutions', '').split(',')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.updater = cast(bool, data.attrib.get('updater'))
         self.version = data.attrib.get('version')
-        self._library = None  # cached library
+        self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
 
     def __repr__(self):
-        """Make repr prettier."""
         return '<%s:%s>' % (self.__class__.__name__, self.baseurl)
-
-    def _connect(self):
-        """Used for fetching the attributes for __init__."""
-        try:
-            return self.query('/')
-        except Exception as err:
-            log.error('%s: %s', self.baseurl, err)
-            raise NotFound('No server found at: %s' % self.baseurl)
 
     @property
     def library(self):
-        """Library to browse or search your media."""
+        """ Library to browse or search your media. """
         if not self._library:
             self._library = Library(self, self.query('/library/'))
         return self._library
 
     def account(self):
-        """Returns Account."""
+        """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query('/myplex/account')
         return Account(self, data)
 
     def clients(self):
-        """Query PMS for all clients connected to PMS.
-
-        Returns:
-            list: of Plexclient connnected to PMS
-
+        """ Returns a list of all :class:`~plexapi.client.PlexClient` objects
+            connected  to this server.
         """
         items = []
         for elem in self.query('/clients'):
@@ -120,17 +162,13 @@ class PlexServer(object):
         return items
 
     def client(self, name):
-        """Querys PMS for all clients connected to PMS.
+        """ Returns the :class:`~plexapi.client.PlexClient` that matches the specified name.
 
-        Returns:
-            Plexclient
+            Parameters:
+                name (str): Name of the client to return.
 
-        Args:
-            name (str): client title, John's Iphone
-
-        Raises:
-            NotFound: Unknown client name Betty
-
+            Raises:
+                :class:`~plexapi.exceptions.NotFound`: Unknown client name
         """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
@@ -139,41 +177,47 @@ class PlexServer(object):
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlaylist(self, title, items):
-        """Create a playlist.
-
-           Returns:
-                Playlist
+        """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
+            
+            Parameters:
+                title (str): Title of the playlist to be created.
+                items (list<Media>): List of media items to include in the playlist.
         """
         return Playlist.create(self, title, items)
 
     def createPlayQueue(self, item):
+        """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.
+
+            Parameters:
+                item (Media or Playlist): Media or playlist to add to PlayQueue.
+        """
         return PlayQueue.create(self, item)
 
     def headers(self):
-        """Headers given to PMS."""
+        """ Returns a dict containing base headers to include in all requests to the server. """
         headers = BASE_HEADERS
         if self.token:
             headers['X-Plex-Token'] = self.token
         return headers
 
     def history(self):
-        """List watched history.
-        """
+        """ Returns a list of media items from watched history. """
         return utils.listItems(self, '/status/sessions/history/all')
 
     def playlists(self):
+        """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
         # TODO: Add sort and type options?
         # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
         return utils.listItems(self, '/playlists')
 
-    def playlist(self, title):  # noqa
-        """Returns a playlist with a given name or raise NotFound.
+    def playlist(self, title):
+        """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.
 
-        Args:
-            title (str): title of the playlist
+            Parameters:
+                title (str): Title of the playlist to return.
 
-        Raises:
-            NotFound: Invalid playlist title: title
+            Raises:
+                :class:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
         for item in self.playlists():
             if item.title == title:
@@ -181,21 +225,20 @@ class PlexServer(object):
         raise NotFound('Invalid playlist title: %s' % title)
 
     def query(self, path, method=None, headers=None, **kwargs):
-        """Main method used to handle http connection to PMS.
-           encodes the response to utf-8 and parses the xml returned
-           from PMS into a Element
+        """ Main method used to handle HTTPS requests to the Plex server. This method helps
+            by encoding the response to utf-8 and parsing the returned XML into and
+            ElementTree object. Returns None if no data exists in the response.
 
-        Args:
-            path (str): relative path to PMS, fx /search?query=HELLO
-            method (None, optional): requests.method, requests.put
-            headers (None, optional): Headers that will be passed to PMS
-            **kwargs (dict): Used for filter and sorting.
+            Parameters:
+                path (str): Relative path to query on the server api (ex: '/search?query=HELLO')
+                method (func): requests.method to use for this query (request.get or
+                    requests.put; defaults to get)
+                headers (dict): Optionally include additional headers for this request.
+                **kwargs (dict): Optionally include additional kwargs for in the specified
+                    reuqest method. These kwargs are simply passed through to method().
 
-        Raises:
-            BadRequest: fx (404) Not Found
-
-        Returns:
-            xml.etree.ElementTree.Element or None
+            Raises:
+                :class:`~plexapi.exceptions.BadRequest`: Raised when response is not in (200, 201).
         """
         url = self.url(path)
         method = method or self.session.get
@@ -211,118 +254,103 @@ class PlexServer(object):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def search(self, query, mediatype=None, limit=None, **kwargs):
-        """Searching within a library section is much more powerful.
+    def reload(self):
+        """ Reload attribute values from Plex XML response.  """
+        try:
+            data = self.query('/')
+            self._loadData(data)
+        except Exception as err:
+            log.error('%s: %s', self.baseurl, err)
+            raise NotFound('No server found at: %s' % self.baseurl)
 
-        Args:
-            query (str): Search str
-            mediatype (str, optional): Limit your search to a media type.
-            kwargs (dict): #TODO
+    def search(self, query, mediatype=None, limit=None):
+        """ Returns a list of media items or filter categories from the resulting
+            `Hub Search <https://www.plex.tv/blog/seek-plex-shall-find-leveling-web-app/>`_
+            against all items in your Plex library. This searches genres, actors, directors,
+            playlists, as well as all the obvious media titles. It performs spell-checking
+            against your search terms (because KUROSAWA is hard to spell). It also provides
+            contextual search results. So for example, if you search for 'Pernice', it’ll
+            return 'Pernice Brothers' as the artist result, but we’ll also go ahead and
+            return your most-listened to albums and tracks from the artist. If you type
+            'Arnold' you’ll get a result for the actor, but also the most recently added
+            movies he’s in.
 
-        Returns:
-            List
+            Parameters:
+                query (str): Query to use when searching your library.
+                mediatype (str): Optionally limit your search to the specified media type.
+                limit (int): Optionally limit to the specified number of results per Hub.
         """
-        if query and not kwargs:
-            items = []
-            for item in self.hubs(query, mediatype=mediatype, limit=limit):
-                items.extend(item.all())
-            return items
-
-        else:
-            items = utils.listItems(self, '/search?query=%s' % quote(query))
-            if mediatype:
-                return [item for item in items if item.type == mediatype]
-            else:
-                return items
-
-    def hubs(self, query, mediatype=None, limit=None):
-        """Searching within a library section is much more powerful.
-
-        Args:
-            query (str): Search str
-            mediatype (str, optional): Limit your search to a media type.
-            limit (int) Default to None, limit your results to x results
-
-        Returns:
-            List: of Hub
-        """
-        p = {}
-
-        if query:
-            p['query'] = query
+        results = []
+        params = {'query': query}
         if mediatype:
-            p['section'] = utils.SEARCHTYPES[mediatype]
+            params['section'] = utils.SEARCHTYPES[mediatype]
         if limit:
-            p['limit'] = limit
-
-        u = '/hubs/search?%s' % urlencode(p)
-
-        hubs = utils.listItems(self, u, bytag=True)
-
-        return [i for i in hubs if i]
+            params['limit'] = limit
+        url = '/hubs/search?%s' % urlencode(params)
+        for hub in utils.listItems(self, url, bytag=True):
+            results += hub.items
+        return results
 
     def sessions(self):
-        """List all active sessions."""
+        """ Returns a list of all active session (currently playing) media objects. """
         return utils.listItems(self, '/status/sessions')
 
     def url(self, path):
-        """Build a full for PMS."""
+        """ Utility function to help build proper URL strings as well as always include
+            the requred authentication token for all api requests to the server.
+        """
         if self.token:
             delim = '&' if '?' in path else '?'
             return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
         return '%s%s' % (self.baseurl, path)
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
-        """Transcode a image.
+        """ Returns the URL for a transcoded image from the specified media object.
+            Returns None if no media specified (needed to prevent transcoding NA, or
+            user tries to pass thumb, or art directly).
 
-           Args:
-                height (int): height off image
-                width (int): width off image
-                opacity (int): Dont seems to be in use anymore # check it
-                saturation (int): transparency
-
-            Returns:
-                transcoded_image_url or None
-
+            Parameters:
+                height (int): Height to transcode the image to.
+                width (int): Width to transcode the image to.
+                opacity (int): Opacity of the resulting image (possibly deprecated).
+                saturation (int): Saturating of the resulting image.
         """
-        # check for NA incase any tries to pass thumb, or art directly.
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
-                            height, width, opacity, saturation, media)
-
+                height, width, opacity, saturation, media)
             return self.url(transcode_url)
 
 
 class Account(object):
-    """This is the locally cached MyPlex account information.
-    The properties provided don't matchthe myplex.MyPlexAccount object very well.
-    I believe this is here because access to myplexis not required
-    to get basic plex information.
+    """ Contains the locally cached MyPlex account information. The properties provided don't
+        match the :class:`~plexapi.myplex.MyPlexAccount` object very well. I believe this exists
+        because access to myplex is not required to get basic plex information. I can't imagine
+        object is terribly useful except unless you were needed this information while offline.
 
-    Attributes:
-        authToken (sting): X-Plex-Token, using for authenication with PMS
-        mappingError (str):
-        mappingErrorMessage (None, str): Description
-        mappingState (TYPE): Description
-        privateAddress (str): Local ip
-        privatePort (str): Local port
-        publicAddress (str): Public ip
-        publicPort (str): Public port
-        signInState (str): ok
-        subscriptionActive (str): is returned as it
-        subscriptionFeatures (str): What feature your account has access to.
-                                    Fx: camera_upload,cloudsync,content_filter
-        subscriptionState (str): Active
-        username (str): You username
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this account is connected to (optional)
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+
+        Attributes:
+            authToken (str): Plex authentication token to access the server.
+            mappingError (str): Unknown
+            mappingErrorMessage (str): Unknown
+            mappingState (str): Unknown
+            privateAddress (str): Local IP address of the Plex server.
+            privatePort (str): Local port of the Plex server.
+            publicAddress (str): Public IP address of the Plex server.
+            publicPort (str): Public port of the Plex server.
+            signInState (str): Signin state for this account (ex: ok).
+            subscriptionActive (str): True if the account subscription is active.
+            subscriptionFeatures (str): List of features allowed by the server for this account.
+                This may be based on your PlexPass subscription. Features include: camera_upload,
+                cloudsync, content_filter, dvr, hardware_transcoding, home, lyrics, music_videos,
+                pass, photo_autotags, premium_music_metadata, session_bandwidth_restrictions,
+                sync, trailers, webhooks' (and maybe more).
+            subscriptionState (str): 'Active' if this subscription is active.
+            username (str): Plex account username (user@example.com).
     """
-
     def __init__(self, server, data):
-        """Set attrs.
-
-        Args:
-            server (Plexclient):
-            data (xml.etree.ElementTree.Element): used to set the class attributes.
-        """
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')
         self.mappingState = data.attrib.get('mappingState')
@@ -333,6 +361,6 @@ class Account(object):
         self.publicPort = data.attrib.get('publicPort')
         self.privateAddress = data.attrib.get('privateAddress')
         self.privatePort = data.attrib.get('privatePort')
-        self.subscriptionFeatures = data.attrib.get('subscriptionFeatures')
-        self.subscriptionActive = data.attrib.get('subscriptionActive')
+        self.subscriptionFeatures = data.attrib.get('subscriptionFeatures', '').split(',')
+        self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')

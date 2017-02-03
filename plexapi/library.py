@@ -480,28 +480,20 @@ class PhotoSection(LibrarySection):
 @utils.register_libtype
 class Hub(object):
     TYPE = 'Hub'
+    HUBTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
 
     def __init__(self, server, data, initpath):
         self.server = server
         self.initpath = initpath
-        self.type = data.attrib.get('type')
         self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.size = utils.cast(int, data.attrib.get('size'))
         self.title = data.attrib.get('title')
-        self._items = []
-        self.size = utils.cast(int, data.attrib.get('title'), 0)
-
-        if self.type == 'genre':
-            self._items = [Genre(self.server, elem) for elem in data]
-        elif self.type == 'director':
-            self._items = [Director(self.server, elem) for elem in data]
-        elif self.type == 'actor':
-            self._items = [Role(self.server, elem) for elem in data]
+        self.type = data.attrib.get('type')
+        if self.type in self.HUBTYPES:
+            mediacls = self.HUBTYPES[self.type]
+            self.items = [mediacls(self.server, elem) for elem in data]
         else:
-            for elem in data:
-                try:
-                    self._items.append(utils.buildItem(self.server, elem, '/hubs'))
-                except Exception as e:
-                    logging.exception('Failed %s to build %s' % (self.type, self.title))
+            self.items = self._safe_builditems(data)
 
     def __repr__(self):
         return '<Hub:%s>' % self.title.encode('utf8')
@@ -509,8 +501,14 @@ class Hub(object):
     def __len__(self):
         return self.size
 
-    def all(self):
-        return self._items
+    def _safe_builditems(self, data):
+        items = []
+        for elem in data:
+            try:
+                items.append(utils.buildItem(self.server, elem, '/hubs'))
+            except Exception as err:
+                logging.warn('Failed %s to build %s; Error: %s' % (self.type, self.title, err))
+        return items
 
 
 @utils.register_libtype

@@ -249,25 +249,23 @@ def buildItem(server, elem, initpath, bytag=False):
 
 
 def cast(func, value):
-    """ Cast the specified value to the specified type (returned by func).
+    """ Cast the specified value to the specified type (returned by func). Currently this
+        only support int, float, bool. Should be extended if needed.
 
         Parameters:
-            func (func): Calback function to used cast to type (int, bool, float, etc).
+            func (func): Calback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
     if not value:
-        return
-
+        return None
     if func in (int, float):
         try:
             return func(value)
         except ValueError:
             return float('nan')
-
-    elif func == bool:
+    if func == bool:
         return bool(int(value))
-    else:
-        raise TypeError('Cast only allows int, float and bool')
+    raise TypeError('Cast only allows int, float and bool')
 
 
 def findKey(server, key):
