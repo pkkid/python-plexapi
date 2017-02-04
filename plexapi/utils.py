@@ -256,16 +256,16 @@ def cast(func, value):
             func (func): Calback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
-    if not value:
-        return None
-    if func in (int, float):
-        try:
-            return func(value)
-        except ValueError:
-            return float('nan')
-    if func == bool:
-        return bool(int(value))
-    raise TypeError('Cast only allows int, float and bool')
+    if value not in (None, NA):
+        if func == bool:
+            return bool(int(value))
+        elif func in (int, float):
+            try:
+                return func(value)
+            except ValueError:
+                return float('nan')
+        return func(value)
+    return value
 
 
 def findKey(server, key):
@@ -523,6 +523,19 @@ def toDatetime(value, format=None):
         else:
             value = datetime.fromtimestamp(int(value))
     return value
+
+
+def toList(value, itemcast=None, delim=','):
+    """ Returns a list of strings from the specified value.
+        
+        Parameters:
+            value (str): comma delimited string to convert to list.
+            itemcast (func): Function to cast each list item to (default str).
+            delim (str): string delimiter (optional; default ',').
+    """
+    value = value or ''
+    itemcast = itemcast or str
+    return [itemcast(item) for item in value.split(delim) if item != '']
 
 
 def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
