@@ -20,28 +20,6 @@ def register_libtype(cls):
     return cls
 
 
-class _NA(object):
-    """ This used to be a simple variable equal to '__NA__'. There has been need to
-        compare NA against None in some use cases. This object allows the internals
-        of PlexAPI to distinguish between unfetched values and fetched, but non-existent
-        values. (NA == None results to True; NA is None results to False)
-    """
-
-    def __bool__(self):
-        return False
-
-    def __eq__(self, other):
-        return isinstance(other, _NA) or other in [None, '__NA__']
-
-    def __nonzero__(self):
-        return False
-
-    def __repr__(self):
-        return '__NA__'
-
-NA = _NA()  # Keep this for now.
-
-
 class SecretsFilter(logging.Filter):
     """ Logging filter to hide secrets. """
     def __init__(self, secrets=None):
@@ -89,13 +67,13 @@ class PlexPartialObject(object):
     def __getattr__(self, attr):
         # Auto reload self, from the full key (path) when needed.
         if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
-            return self.__dict__.get(attr, NA)
+            return self.__dict__.get(attr)
         print('reload because of %s' % attr)
         self.reload()
-        return self.__dict__.get(attr, NA)
+        return self.__dict__.get(attr)
 
     def __setattr__(self, attr, value):
-        if value != NA or self.isFullObject():
+        if value is not None or self.isFullObject():
             self.__dict__[attr] = value
 
     def _loadData(self, data):
@@ -139,14 +117,14 @@ class Playable(object):
 
     def _loadData(self, data):
         # Load data for active sessions (/status/sessions)
-        self.sessionKey = cast(int, data.attrib.get('sessionKey', NA))
+        self.sessionKey = cast(int, data.attrib.get('sessionKey'))
         self.username = findUsername(data)
         self.player = findPlayer(self.server, data)
         self.transcodeSession = findTranscodeSession(self.server, data)
         # Load data for history details (/status/sessions/history/all)
-        self.viewedAt = toDatetime(data.attrib.get('viewedAt', NA))
+        self.viewedAt = toDatetime(data.attrib.get('viewedAt'))
         # Load data for playlist items
-        self.playlistItemID = cast(int, data.attrib.get('playlistItemID', NA))
+        self.playlistItemID = cast(int, data.attrib.get('playlistItemID'))
 
     def getStreamURL(self, **params):
         """ Returns a stream url that may be used by external applications such as VLC.
@@ -256,7 +234,7 @@ def cast(func, value):
             func (func): Calback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
-    if value not in (None, NA):
+    if value is not None:
         if func == bool:
             return bool(int(value))
         elif func in (int, float):
@@ -517,7 +495,7 @@ def toDatetime(value, format=None):
             value (str): value to return as a datetime
             format (str): Format to pass strftime (optional; if value is a str).
     """
-    if value and value != NA:
+    if value and value is not None:
         if format:
             value = datetime.strptime(value, format)
         else:

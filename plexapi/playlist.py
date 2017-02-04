@@ -3,7 +3,6 @@ from plexapi import utils
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast, toDatetime
 from plexapi.utils import PlexPartialObject, Playable
-NA = utils.NA
 
 
 @utils.register_libtype
@@ -28,21 +27,21 @@ class Playlist(PlexPartialObject, Playable):
             data (Element): Usually built from server.query
         """
         Playable._loadData(self, data)
-        self.addedAt = toDatetime(data.attrib.get('addedAt', NA))
-        self.composite = data.attrib.get('composite', NA)  # url to thumbnail
-        self.duration = cast(int, data.attrib.get('duration', NA))
-        self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds', NA))
-        self.guid = data.attrib.get('guid', NA)
-        self.key = data.attrib.get('key', NA)
+        self.addedAt = toDatetime(data.attrib.get('addedAt'))
+        self.composite = data.attrib.get('composite')  # url to thumbnail
+        self.duration = cast(int, data.attrib.get('duration'))
+        self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds'))
+        self.guid = data.attrib.get('guid')
+        self.key = data.attrib.get('key')
         self.key = self.key.replace('/items', '') if self.key else self.key  # FIX_BUG_50
-        self.leafCount = cast(int, data.attrib.get('leafCount', NA))
-        self.playlistType = data.attrib.get('playlistType', NA)
-        self.ratingKey = cast(int, data.attrib.get('ratingKey', NA))
-        self.smart = cast(bool, data.attrib.get('smart', NA))
-        self.summary = data.attrib.get('summary', NA)
-        self.title = data.attrib.get('title', NA)
-        self.type = data.attrib.get('type', NA)
-        self.updatedAt = toDatetime(data.attrib.get('updatedAt', NA))
+        self.leafCount = cast(int, data.attrib.get('leafCount'))
+        self.playlistType = data.attrib.get('playlistType')
+        self.ratingKey = cast(int, data.attrib.get('ratingKey'))
+        self.smart = cast(bool, data.attrib.get('smart'))
+        self.summary = data.attrib.get('summary')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
 
     def items(self):
         """Return all items in the playlist."""

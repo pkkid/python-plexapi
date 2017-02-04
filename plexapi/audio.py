@@ -2,8 +2,6 @@
 from plexapi import media, utils
 from plexapi.utils import Playable, PlexPartialObject
 
-NA = utils.NA
-
 
 class Audio(PlexPartialObject):
     """ Base class for audio :class:`~plexapi.audio.Artist`, :class:`~plexapi.audio.Album`
@@ -38,18 +36,18 @@ class Audio(PlexPartialObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self.listType = 'audio'
-        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
-        self.index = data.attrib.get('index', NA)
-        self.key = data.attrib.get('key', NA)
-        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt', NA))
-        self.librarySectionID = data.attrib.get('librarySectionID', NA)
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey', NA))
-        self.summary = data.attrib.get('summary', NA)
-        self.thumb = data.attrib.get('thumb', NA)
-        self.title = data.attrib.get('title', NA)
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.index = data.attrib.get('index')
+        self.key = data.attrib.get('key')
+        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
         self.titleSort = data.attrib.get('titleSort', self.title)
-        self.type = data.attrib.get('type', NA)
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
     @property
@@ -90,8 +88,8 @@ class Artist(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art', NA)
-        self.guid = data.attrib.get('guid', NA)
+        self.art = data.attrib.get('art')
+        self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
         if self.isFullObject():  # check if this is needed
@@ -179,15 +177,15 @@ class Album(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art', NA)
+        self.art = data.attrib.get('art')
         self.key = self.key.replace('/children', '')  # fixes bug #50
-        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.parentKey = data.attrib.get('parentKey', NA)
-        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
-        self.parentThumb = data.attrib.get('parentThumb', NA)
-        self.parentTitle = data.attrib.get('parentTitle', NA)
-        self.studio = data.attrib.get('studio', NA)
-        self.year = utils.cast(int, data.attrib.get('year', NA))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.parentKey = data.attrib.get('parentKey')
+        self.parentRatingKey = data.attrib.get('parentRatingKey')
+        self.parentThumb = data.attrib.get('parentThumb')
+        self.parentTitle = data.attrib.get('parentTitle')
+        self.studio = data.attrib.get('studio')
+        self.year = utils.cast(int, data.attrib.get('year'))
         if self.isFullObject():
             self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
 
@@ -278,25 +276,25 @@ class Track(Audio, Playable):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
-        self.art = data.attrib.get('art', NA)
-        self.chapterSource = data.attrib.get('chapterSource', NA)
-        self.duration = utils.cast(int, data.attrib.get('duration', NA))
-        self.grandparentArt = data.attrib.get('grandparentArt', NA)
-        self.grandparentKey = data.attrib.get('grandparentKey', NA)
-        self.grandparentRatingKey = data.attrib.get('grandparentRatingKey', NA)
-        self.grandparentThumb = data.attrib.get('grandparentThumb', NA)
-        self.grandparentTitle = data.attrib.get('grandparentTitle', NA)
-        self.guid = data.attrib.get('guid', NA)
-        self.originalTitle = data.attrib.get('originalTitle', NA)
-        self.parentIndex = data.attrib.get('parentIndex', NA)
-        self.parentKey = data.attrib.get('parentKey', NA)
-        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
-        self.parentThumb = data.attrib.get('parentThumb', NA)
-        self.parentTitle = data.attrib.get('parentTitle', NA)
-        self.primaryExtraKey = data.attrib.get('primaryExtraKey', NA)
-        self.ratingCount = utils.cast(int, data.attrib.get('ratingCount', NA))
+        self.art = data.attrib.get('art')
+        self.chapterSource = data.attrib.get('chapterSource')
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.grandparentArt = data.attrib.get('grandparentArt')
+        self.grandparentKey = data.attrib.get('grandparentKey')
+        self.grandparentRatingKey = data.attrib.get('grandparentRatingKey')
+        self.grandparentThumb = data.attrib.get('grandparentThumb')
+        self.grandparentTitle = data.attrib.get('grandparentTitle')
+        self.guid = data.attrib.get('guid')
+        self.originalTitle = data.attrib.get('originalTitle')
+        self.parentIndex = data.attrib.get('parentIndex')
+        self.parentKey = data.attrib.get('parentKey')
+        self.parentRatingKey = data.attrib.get('parentRatingKey')
+        self.parentThumb = data.attrib.get('parentThumb')
+        self.parentTitle = data.attrib.get('parentTitle')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
+        self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
-        self.year = utils.cast(int, data.attrib.get('year', NA))
+        self.year = utils.cast(int, data.attrib.get('year'))
         # media is included in /children
         self.media = [media.Media(self.server, e, self.initpath, self)
             for e in data if e.tag == media.Media.TYPE]
@@ -305,7 +303,7 @@ class Track(Audio, Playable):
             #self.media = [media.Media(self.server, e, self.initpath, self)
             #              for e in data if e.tag == media.Media.TYPE]
         # data for active sessions and history
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey', NA))
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
         self.player = utils.findPlayer(self.server, data)
         self.transcodeSession = utils.findTranscodeSession(self.server, data)

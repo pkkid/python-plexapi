@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.utils import PlexPartialObject
-NA = utils.NA
 
 
 @utils.register_libtype
@@ -37,19 +36,19 @@ class Photoalbum(PlexPartialObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
-        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
-        self.art = data.attrib.get('art', NA)
-        self.composite = data.attrib.get('composite', NA)
-        self.guid = data.attrib.get('guid', NA)
-        self.index = utils.cast(int, data.attrib.get('index', NA))
-        self.key = data.attrib.get('key', NA)
-        self.librarySectionID = data.attrib.get('librarySectionID', NA)
-        self.ratingKey = data.attrib.get('ratingKey', NA)
-        self.summary = data.attrib.get('summary', NA)
-        self.thumb = data.attrib.get('thumb', NA)
-        self.title = data.attrib.get('title', NA)
-        self.type = data.attrib.get('type', NA)
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
+        self.composite = data.attrib.get('composite')
+        self.guid = data.attrib.get('guid')
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.key = data.attrib.get('key')
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     def photos(self):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
@@ -100,20 +99,20 @@ class Photo(PlexPartialObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
-        self.addedAt = utils.toDatetime(data.attrib.get('addedAt', NA))
-        self.index = utils.cast(int, data.attrib.get('index', NA))
-        self.key = data.attrib.get('key', NA)
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.key = data.attrib.get('key')
         self.originallyAvailableAt = utils.toDatetime(
-            data.attrib.get('originallyAvailableAt', NA), '%Y-%m-%d')
-        self.parentKey = data.attrib.get('parentKey', NA)
-        self.parentRatingKey = data.attrib.get('parentRatingKey', NA)
-        self.ratingKey = data.attrib.get('ratingKey', NA)
-        self.summary = data.attrib.get('summary', NA)
-        self.thumb = data.attrib.get('thumb', NA)
-        self.title = data.attrib.get('title', NA)
-        self.type = data.attrib.get('type', NA)
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
-        self.year = utils.cast(int, data.attrib.get('year', NA))
+            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.parentKey = data.attrib.get('parentKey')
+        self.parentRatingKey = data.attrib.get('parentRatingKey')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.year = utils.cast(int, data.attrib.get('year'))
         if self.isFullObject():
             self.media = [media.Media(self.server, e, self.initpath, self)
                 for e in data if e.tag == media.Media.TYPE]

@@ -9,7 +9,7 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
-from plexapi.utils import NA, cast
+from plexapi.utils import cast
 # import media to populate utils.LIBRARY_TYPES.
 from plexapi import audio, video, photo, playlist as _pl
 
@@ -132,7 +132,7 @@ class PlexServer(object):
         self.transcoderVideoBitrates = utils.toList(data.attrib.get('transcoderVideoBitrates'))
         self.transcoderVideoQualities = utils.toList(data.attrib.get('transcoderVideoQualities'))
         self.transcoderVideoResolutions = utils.toList(data.attrib.get('transcoderVideoResolutions'))
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt', NA))
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.updater = cast(bool, data.attrib.get('updater'))
         self.version = data.attrib.get('version')
         self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
@@ -307,8 +307,8 @@ class PlexServer(object):
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
         """ Returns the URL for a transcoded image from the specified media object.
-            Returns None if no media specified (needed to prevent transcoding NA, or
-            user tries to pass thumb, or art directly).
+            Returns None if no media specified (needed if user tries to pass thumb
+            or art directly).
 
             Parameters:
                 height (int): Height to transcode the image to.
