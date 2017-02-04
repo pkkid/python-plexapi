@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
-from plexapi.utils import PlexPartialObject
+from plexapi.base import PlexPartialObject
 
 
 @utils.register_libtype

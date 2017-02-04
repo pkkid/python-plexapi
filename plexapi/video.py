@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.exceptions import NotFound
-from plexapi.utils import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject
 
 
 class Video(PlexPartialObject):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from plexapi import utils
+from plexapi.base import PlexPartialObject, Playable
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast, toDatetime
-from plexapi.utils import PlexPartialObject, Playable
 
 
 @utils.register_libtype

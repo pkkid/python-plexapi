@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
-from plexapi.utils import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject
 
 
 class Audio(PlexPartialObject):
