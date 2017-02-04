@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import logging
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.compat import unquote
 from plexapi.media import MediaTag, Genre, Role, Director
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.media import MediaTag
 
 
 class Library(object):
@@ -19,8 +17,8 @@ class Library(object):
             title1 (str): 'Plex Library' (not sure how useful this is).
             title2 (str): Second title (this is blank on my setup).
     """
-
     def __init__(self, server, data):
+        self._data = data
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
         self.server = server
@@ -192,6 +190,7 @@ class LibrarySection(object):
     BOOLEAN_FILTERS = ('unwatched', 'duplicate')
 
     def __init__(self, server, data, initpath):
+        self._data = data
         self.server = server
         self.initpath = initpath
         self.agent = data.attrib.get('agent')
@@ -309,6 +308,7 @@ class LibrarySection(object):
                         * year: List of years to search within ([yyyy, ...]). [all]
         """
         # Cleanup the core arguments
+        # TODO: maxresults is raising a 500 error here.
         args = {}
         for category, value in kwargs.items():
             args[category] = self._cleanSearchFilter(category, value, libtype)
@@ -483,6 +483,7 @@ class Hub(object):
     HUBTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
 
     def __init__(self, server, data, initpath):
+        self._data = data
         self.server = server
         self.initpath = initpath
         self.hubIdentifier = data.attrib.get('hubIdentifier')
@@ -530,6 +531,7 @@ class FilterChoice(object):
     TYPE = 'Directory'
 
     def __init__(self, server, data, initpath):
+        self._data = data
         self.server = server
         self.initpath = initpath
         self.fastKey = data.attrib.get('fastKey')

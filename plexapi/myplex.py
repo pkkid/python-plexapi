@@ -47,6 +47,7 @@ class MyPlexAccount(object):
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
 
     def __init__(self, data=None, initpath=None, session=None):
+        self._data = data
         self._session = session or requests.Session()
         self.authenticationToken = data.attrib.get('authenticationToken')
         if self.authenticationToken:
@@ -177,6 +178,7 @@ class MyPlexUser(object):
     BASEURL = 'https://plex.tv/api/users/'
 
     def __init__(self, data, initpath=None):
+        self._data = data
         self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
         self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
         self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
@@ -227,6 +229,7 @@ class MyPlexResource(object):
     BASEURL = 'https://plex.tv/api/resources?includeHttps=1'
 
     def __init__(self, data):
+        self._data = data
         self.name = data.attrib.get('name')
         self.accessToken = data.attrib.get('accessToken')
         if self.accessToken:
@@ -310,6 +313,7 @@ class ResourceConnection(object):
             uri (str): External address
     """
     def __init__(self, data):
+        self._data = data
         self.protocol = data.attrib.get('protocol')
         self.address = data.attrib.get('address')
         self.port = utils.cast(int, data.attrib.get('port'))
@@ -350,6 +354,7 @@ class MyPlexDevice(object):
     BASEURL = 'https://plex.tv/devices.xml'
 
     def __init__(self, data):
+        self._data = data
         self.name = data.attrib.get('name')
         self.publicAddress = data.attrib.get('publicAddress')
         self.product = data.attrib.get('product')

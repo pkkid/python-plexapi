@@ -94,6 +94,7 @@ class PlexServer(object):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
+        self._data = data
         self.allowCameraUpload = cast(bool, data.attrib.get('allowCameraUpload'))
         self.allowChannelAccess = cast(bool, data.attrib.get('allowChannelAccess'))
         self.allowMediaDeletion = cast(bool, data.attrib.get('allowMediaDeletion'))
@@ -351,6 +352,7 @@ class Account(object):
             username (str): Plex account username (user@example.com).
     """
     def __init__(self, server, data):
+        self._data = data
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')
         self.mappingState = data.attrib.get('mappingState')

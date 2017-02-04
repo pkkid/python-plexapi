@@ -55,6 +55,7 @@ class PlexClient(object):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
+        self._data = data
         self.deviceClass = data.attrib.get('deviceClass')
         self.machineIdentifier = data.attrib.get('machineIdentifier')
         self.product = data.attrib.get('product')

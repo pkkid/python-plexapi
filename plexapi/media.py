@@ -4,6 +4,35 @@ from plexapi.utils import cast, listItems
 
 
 class Media(object):
+    """ Container object for all MediaPart objects. Provides useful data about the
+        video this media belong to such as video framerate, resolution, etc.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
+            data (ElementTree): Response from PlexServer used to build this object.
+            initpath (str): Relative path requested when retrieving specified `data`.
+            video (:class:`~plexapi.video.Video`): Video this media belongs to.
+
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
+            initpath (str): Relative path requested when retrieving specified data.
+            video (str): Video this media belongs to.
+            aspectRatio (float): Aspect ratio of the video (ex: 2.35).
+            audioChannels (int): Number of audio channels for this video (ex: 6).
+            audioCodec (str): Audio codec used within the video (ex: ac3).
+            bitrate (int): Bitrate of the video (ex: 1624)
+            container (str): Container this video is in (ex: avi).
+            duration (int): Length of the video in milliseconds (ex: 6990483).
+            height (int): Height of the video in pixels (ex: 256).
+            id (int): Plex ID of this media item (ex: 46184).
+            has64bitOffsets (bool): True if video has 64 bit offsets (?).
+            optimizedForStreaming (bool): True if video is optimized for streaming.
+            videoCodec (str): Video codec used within the video (ex: ac3).
+            videoFrameRate (str): Video frame rate (ex: 24p).
+            videoResolution (str): Video resolution (ex: sd).
+            width (int): Width of the video in pixels (ex: 608).
+            parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
+    """
     TYPE = 'Media'
 
     def __init__(self, server, data, initpath, video):
@@ -18,7 +47,7 @@ class Media(object):
         self.duration = cast(int, data.attrib.get('duration'))
         self.height = cast(int, data.attrib.get('height'))
         self.id = cast(int, data.attrib.get('id'))
-        self.optimizedForStreaming = cast(bool, data.attrib.get('has64bitOffsets'))
+        self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoFrameRate = data.attrib.get('videoFrameRate')
@@ -32,6 +61,20 @@ class Media(object):
 
 
 class MediaPart(object):
+    """ Represents a single media part (often a single file) for the media this belongs to.
+        
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
+            initpath (str): Relative path requested when retrieving specified data.
+            media (:class:`~plexapi.media.Media`): Media object this part belongs to.
+            container (str): Container type of this media part (ex: avi).
+            duration (int): Length of this media part in milliseconds.
+            file (str): Path to this file on disk (ex: /media/Movies/Cars.(2006)/Cars.cd2.avi)
+            id (int): Unique ID of this media part.
+            key (str): Key used to access this media part (ex: /library/parts/46618/1389985872/file.avi).
+            size (int): Size of this file in bytes (ex: 733884416).
+            streams (list<:class:`~plexapi.media.MediaPartStream`>): List of streams in this media part.
+    """
     TYPE = 'Part'
 
     def __init__(self, server, data, initpath, media):
@@ -50,6 +93,13 @@ class MediaPart(object):
         return '<%s:%s>' % (self.__class__.__name__, self.id)
 
     def selectedStream(self, stream_type):
+        """ Return the selected stream for the specified stream_type.
+            
+            Paramters:
+                stream_type (int): Specify which stream type you want the result for. This value
+                    should be one of (1=:class:`~plexapi.media.VideoStream`,
+                    2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
+        """
         streams = filter(lambda x: stream_type == x.type, self.streams)
         selected = list(filter(lambda x: x.selected is True, streams))
         if len(selected) == 0:
@@ -58,6 +108,23 @@ class MediaPart(object):
 
 
 class MediaPartStream(object):
+    """ Base class for media streams. These consist of video, audio and subtitles.
+        
+        Attributes:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
+            initpath (str): Relative path requested when retrieving specified data.
+            part (:class:`~plexapi.media.MediaPart`): Media part this stream belongs to.
+            codec (str): Codec of this stream (ex: srt, ac3, mpeg4).
+            codecID (str): Codec ID (ex: XVID).
+            id (int): Unique stream ID on this server.
+            index (int): Unknown
+            language (str): Stream language (ex: English, ไทย).
+            languageCode (str): Ascii code for language (ex: eng, tha).
+            selected (bool): True if this stream is selected.
+            streamType (int): Stream type (1=:class:`~plexapi.media.VideoStream`,
+                2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
+            type (int): Alias for streamType.
+    """
     TYPE = None
     STREAMTYPE = None
 
@@ -77,6 +144,7 @@ class MediaPartStream(object):
 
     @staticmethod
     def parse(server, data, initpath, part):
+        """ Factory method returns a new MediaPartStream from xml data. """
         STREAMCLS = {1:VideoStream, 2:AudioStream, 3:SubtitleStream}
         stype = cast(int, data.attrib.get('streamType'))
         cls = STREAMCLS.get(stype, MediaPartStream)
@@ -87,6 +155,26 @@ class MediaPartStream(object):
 
 
 class VideoStream(MediaPartStream):
+    """ Respresents a video stream within a :class:`~plexapi.media.MediaPart`.
+
+        Attributes:
+            bitDepth (int): Bit depth (ex: 8).
+            bitrate (int): Bitrate (ex: 1169)
+            cabac (int): Unknown
+            chromaSubsampling (str): Chroma Subsampling (ex: 4:2:0).
+            colorSpace (str): Unknown
+            duration (int): Duration of video stream in milliseconds.
+            frameRate (float): Frame rate (ex: 23.976)
+            frameRateMode (str): Unknown
+            hasScallingMatrix (bool): True if video stream has a scaling matrix.
+            height (int): Height of video stream.
+            level (int): Videl stream level (?).
+            profile (str): Video stream profile (ex: asp).
+            refFrames (int): Unknown
+            scanType (str): Video stream scan type (ex: progressive).
+            title (str): Title of this video stream.
+            width (int): Width of video stream.
+    """
     TYPE = 'videostream'
     STREAMTYPE = 1
 
@@ -111,6 +199,19 @@ class VideoStream(MediaPartStream):
 
 
 class AudioStream(MediaPartStream):
+    """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
+
+        Attributes:
+            audioChannelLayout (str): Audio channel layout (ex: 5.1(side)).
+            bitDepth (int): Bit depth (ex: 16).
+            bitrate (int): Audio bitrate (ex: 448).
+            bitrateMode (str): Bitrate mode (ex: cbr).
+            channels (int): number of channels in this stream (ex: 6).
+            dialogNorm (int): Unknown (ex: -27).
+            duration (int): Duration of audio stream in milliseconds.
+            samplingRate (int): Sampling rate (ex: xxx)
+            title (str): Title of this audio stream.
+    """
     TYPE = 'audiostream'
     STREAMTYPE = 2
 
@@ -128,6 +229,13 @@ class AudioStream(MediaPartStream):
 
 
 class SubtitleStream(MediaPartStream):
+    """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
+        
+        Attributes:
+            format (str): Subtitle format (ex: srt).
+            key (str): Key of this subtitle stream (ex: /library/streams/212284).
+            title (str): Title of this subtitle stream.
+    """
     TYPE = 'subtitlestream'
     STREAMTYPE = 3
 
@@ -139,6 +247,9 @@ class SubtitleStream(MediaPartStream):
 
 
 class TranscodeSession(object):
+    """ Represents a current transcode session. 
+        TODO: Document this.
+    """
     TYPE = 'TranscodeSession'
 
     def __init__(self, server, data):
@@ -190,6 +301,7 @@ class MediaTag(object):
     TYPE = None
 
     def __init__(self, server, data):
+        self._data = data
         self.server = server
         self.id = cast(int, data.attrib.get('id'))
         self.role = data.attrib.get('role')
