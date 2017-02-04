@@ -70,18 +70,18 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.listType == 'video'
     # Assign 0 m.media
     med0 = m.media[0]
-    assert str(m.originalTitle) == '__NA__'
+    assert m.originalTitle is None
     assert str(m.originallyAvailableAt.date()) == '2006-06-09'
     assert m.player is None
-    assert str(m.playlistItemID) == '__NA__'
-    assert str(m.primaryExtraKey) == '__NA__'
+    assert m.playlistItemID is None
+    assert m.primaryExtraKey is None
     #assert m.producers == [<Producer:130:Darla.K..Anderson>]
     assert m.rating == '7.4'
     assert m.ratingImage == 'rottentomatoes://image.rating.certified'
     assert m.ratingKey == 2
     assert [i.tag for i in m.roles] == ['Owen Wilson', 'Paul Newman', 'Bonnie Hunt', 'Larry the Cable Guy', 'Cheech Marin', 'Tony Shalhoub', 'Guido Quaroni', 'Jenifer Lewis', 'Paul Dooley', 'Michael Wallis', 'George Carlin', 'Katherine Helmond', 'John Ratzenberger', 'Michael Keaton', 'Joe Ranft', 'Richard Petty', 'Jeremy Piven', 'Bob Costas', 'Darrell Waltrip', 'Richard Kind', 'Edie McClurg', 'Humpy Wheeler', 'Tom Magliozzi', 'Ray Magliozzi', 'Lynda Petty', 'Andrew Stanton', 'Dale Earnhardt Jr.', 'Michael Schumacher', 'Jay Leno', 'Sarah Clark', 'Mike Nelson', 'Joe Ranft', 'Jonas Rivera', 'Lou Romano', 'Adrian Ochoa', 'E.J. Holowicki', 'Elissa Knight', 'Lindsey Collins', 'Larry Benton', 'Douglas Keever', 'Tom Hanks', 'Tim Allen', 'John Ratzenberger', 'Billy Crystal', 'John Goodman', 'John Ratzenberger', 'Dave Foley', 'John Ratzenberger', 'Vanness Wu']
     assert m.server.baseurl == 'http://138.68.157.5:32400'
-    assert str(m.sessionKey) == '__NA__'
+    assert m.sessionKey is None
     assert m.studio == 'Walt Disney Pictures'
     assert m.summary == u"Lightning McQueen, a hotshot rookie race car driven to succeed, discovers that life is about the journey, not the finish line, when he finds himself unexpectedly detoured in the sleepy Route 66 town of Radiator Springs. On route across the country to the big Piston Cup Championship in California to compete against two seasoned pros, McQueen gets to know the town's offbeat characters."
     assert m.tagline == "Ahhh... it's got that new movie smell."
@@ -91,13 +91,13 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.transcodeSession is None
     assert m.type == 'movie'
     assert str(m.updatedAt.date()) == '2017-01-17'
-    assert str(m.userRating) == '__NA__'
+    assert m.userRating is None
     assert m.username is None
     # Assign 0 m.videoStreams
     vid0 = m.videoStreams[0]
     assert m.viewCount == 0
     assert m.viewOffset == 88870
-    assert str(m.viewedAt) == '__NA__'
+    assert m.viewedAt is None
     assert [i.tag for i in m.writers] == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Kiel Murray', 'Phil Lorin', 'Jorgen Klubien']
     assert m.year == 2006
     assert aud0.audioChannelLayout == '5.1'

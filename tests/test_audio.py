@@ -62,11 +62,11 @@ def test_audio_Album_attrs(a_music_album):
     assert str(m.originallyAvailableAt.date()) == '2016-01-01'
     assert m.parentKey == '/library/metadata/20'
     assert m.parentRatingKey == '20'
-    assert str(m.parentThumb) == '__NA__'
+    assert m.parentThumb is None
     assert m.parentTitle == 'Infinite State'
     assert m.ratingKey == 21
     assert m.server.baseurl == 'http://138.68.157.5:32400'
-    assert str(m.studio) == '__NA__'
+    assert m.studio is None
     assert m.summary == ''
     assert m.thumb == '/library/metadata/21/thumb/1484693407'
     assert m.title == 'Unmastered Impulses'
@@ -184,19 +184,19 @@ def test_audio_Track_attrs(a_music_album):
     track = a_music_album.get('Holy Moment')
     track.reload()
     assert str(track.addedAt.date()) == '2017-01-17'
-    assert str(track.art) == '__NA__'
-    assert str(track.chapterSource) == '__NA__'
+    assert track.art is None
+    assert track.chapterSource is None
     assert track.duration == 298606
-    assert str(track.grandparentArt) == '__NA__'
+    assert track.grandparentArt is None
     assert track.grandparentKey == '/library/metadata/20'
     assert track.grandparentRatingKey == '20'
-    assert str(track.grandparentThumb) == '__NA__'
+    assert track.grandparentThumb is None
     assert track.grandparentTitle == 'Infinite State'
     assert track.guid == 'local://22'
     assert track.index == '1'
     assert track.initpath == '/library/metadata/22'
     assert track.key == '/library/metadata/22'
-    assert str(track.lastViewedAt) == '__NA__'
+    assert track.lastViewedAt is None
     assert track.librarySectionID == '3'
     assert track.listType == 'audio'
     # Assign 0 track.media
@@ -209,12 +209,12 @@ def test_audio_Track_attrs(a_music_album):
     assert track.parentThumb == '/library/metadata/21/thumb/1484693407'
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
-    assert str(track.playlistItemID) == '__NA__'
-    assert str(track.primaryExtraKey) == '__NA__'
+    assert track.playlistItemID is None
+    assert track.primaryExtraKey is None
     assert track.ratingCount == 9
     assert track.ratingKey == 22
     assert track.server.baseurl == 'http://138.68.157.5:32400'
-    assert str(track.sessionKey) == '__NA__'
+    assert track.sessionKey is None
     assert track.summary == ''
     assert track.thumb == '/library/metadata/21/thumb/1484693407'
     assert track.title == 'Holy Moment'
@@ -225,8 +225,8 @@ def test_audio_Track_attrs(a_music_album):
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
-    assert str(track.viewedAt) == '__NA__'
-    assert str(track.year) == '__NA__'
+    assert track.viewedAt is None
+    assert track.year is None
     assert med0.aspectRatio is None
     assert med0.audioChannels == 2
     assert med0.audioCodec == 'mp3'

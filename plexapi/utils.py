@@ -6,6 +6,7 @@ from plexapi.compat import quote, string_type, urlencode
 from plexapi.exceptions import NotFound, NotImplementedError, UnknownType, Unsupported
 
 # Search Types - Plex uses these to filter specific media types when searching.
+# Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
     'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
 LIBRARY_TYPES = {}
@@ -65,10 +66,16 @@ class PlexPartialObject(object):
         return '<%s:%s:%s>' % (clsname, key, title)
 
     def __getattr__(self, attr):
-        # Auto reload self, from the full key (path) when needed.
-        if attr == 'key' or self.__dict__.get(attr) or self.isFullObject():
+        from plexapi import log
+        # Auto reload from the full key (path) when needed.
+        if attr == 'key' or self.__dict__.get(attr) or self.isFullObject() or attr.startswith('_'):
             return self.__dict__.get(attr)
-        print('reload because of %s' % attr)
+        # Log warning about reloading the objects
+        clsname = self.__class__.__name__
+        title = self.__dict__.get('title') or self.__dict__.get('name')
+        objname = "%s '%s'" % (clsname, title) if title else clsname
+        log.warn("Reloading %s for attr '%s'" % (objname, attr))
+        # Reload the object
         self.reload()
         return self.__dict__.get(attr)
 
