@@ -9,23 +9,7 @@ from plexapi.utils import cast, toDatetime
 class Playlist(PlexPartialObject, Playable):
     TYPE = 'playlist'
 
-    def __init__(self, server, data, initpath):
-        """Playlist stuff.
-
-        Args:
-            server (Plexserver): The PMS server your connected to
-            data (Element): Element built from server.query
-            initpath (str): Relativ path fx /library/sections/1/all
-
-        """
-        super(Playlist, self).__init__(data, initpath, server)
-
     def _loadData(self, data):
-        """Used to set the attributes
-
-        Args:
-            data (Element): Usually built from server.query
-        """
         Playable._loadData(self, data)
         self.addedAt = toDatetime(data.attrib.get('addedAt'))
         self.composite = data.attrib.get('composite')  # url to thumbnail
@@ -44,9 +28,9 @@ class Playlist(PlexPartialObject, Playable):
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
 
     def items(self):
-        """Return all items in the playlist."""
-        path = '%s/items' % self.key
-        return utils.listItems(self.server, path)
+        """ Returns a list of all items in the playlist. """
+        key = '%s/items' % self.key
+        return self._fetchItems(key)
 
     def addItems(self, items):
         """Add items to a playlist."""
@@ -62,28 +46,28 @@ class Playlist(PlexPartialObject, Playable):
         path = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys),
         }))
-        return self.server.query(path, method=self.server.session.put)
+        return self._root._query(path, method=self._root._session.put)
 
     def removeItem(self, item):
         """Remove a file from a playlist."""
         path = '%s/items/%s' % (self.key, item.playlistItemID)
-        return self.server.query(path, method=self.server.session.delete)
+        return self._root._query(path, method=self._root._session.delete)
 
     def moveItem(self, item, after=None):
         """Move a to a new position in playlist."""
         path = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
             path += '?after=%s' % after.playlistItemID
-        return self.server.query(path, method=self.server.session.put)
+        return self._root._query(path, method=self._root._session.put)
 
     def edit(self, title=None, summary=None):
         """Edit playlist."""
         path = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
-        return self.server.query(path, method=self.server.session.put)
+        return self._root._query(path, method=self._root._session.put)
 
     def delete(self):
         """Delete playlist."""
-        return self.server.query(self.key, method=self.server.session.delete)
+        return self._root._query(self.key, method=self._root._session.delete)
 
     @classmethod
     def create(cls, server, title, items):
@@ -91,12 +75,10 @@ class Playlist(PlexPartialObject, Playable):
         if not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
-
         for item in items:
             if item.listType != items[0].listType:
                 raise BadRequest('Can not mix media types when building a playlist')
             ratingKeys.append(str(item.ratingKey))
-
         ratingKeys = ','.join(ratingKeys)
         uuid = items[0].section().uuid
         path = '/playlists%s' % utils.joinArgs({
@@ -105,6 +87,5 @@ class Playlist(PlexPartialObject, Playable):
             'title': title,
             'smart': 0
         })
-
-        data = server.query(path, method=server.session.post)[0]
+        data = server._query(path, method=server._session.post)[0]
         return cls(server, data, initpath=path)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
+from plexapi.exceptions import NotFound
 
 
 class Audio(PlexPartialObject):
@@ -30,11 +31,9 @@ class Audio(PlexPartialObject):
     """
     TYPE = None
 
-    def __init__(self, server, data, initpath):
-        super(Audio, self).__init__(data, initpath, server)
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
+        self._data = data
         self.listType = 'audio'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.index = data.attrib.get('index')
@@ -54,15 +53,15 @@ class Audio(PlexPartialObject):
     def thumbUrl(self):
         """ Returns the URL to this items thumbnail image. """
         if self.thumb:
-            return self.server.url(self.thumb)
+            return self._root.url(self.thumb)
 
     def refresh(self):
         """ Tells Plex to refresh the metadata for this and all subitems. """
-        self.server.query('%s/refresh' % self.key, method=self.server.session.put)
+        self._root.query('%s/refresh' % self.key, method=self._root.session.put)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self.server.library.sectionByID(self.librarySectionID)
+        return self._root.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
@@ -92,15 +91,9 @@ class Artist(Audio):
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
-        if self.isFullObject():  # check if this is needed
-            self.countries = [media.Country(self.server, e) for e in data if e.tag == media.Country.TYPE]
-            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
-            self.similar = [media.Similar(self.server, e) for e in data if e.tag == media.Similar.TYPE]
-
-    def albums(self):
-        """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
-        path = '%s/children' % self.key
-        return utils.listItems(self.server, path, Album.TYPE)
+        self.countries = self._buildSubitems(data, media.Country)
+        self.genres = self._buildSubitems(data, media.Genre)
+        self.similar = self._buildSubitems(data, media.Similar)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -108,13 +101,15 @@ class Artist(Audio):
             Parameters:
                 title (str): Title of the album to return.
         """
-        path = '%s/children' % self.key
-        return utils.findItem(self.server, path, title)
+        for album in self.albums():
+            if album.title.lower() == title.lower():
+                return album
+        raise NotFound('Unable to find album %s' % title)
 
-    def tracks(self):
-        """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
-        path = '%s/allLeaves' % self.key
-        return utils.listItems(self.server, path)
+    def albums(self):
+        """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
+        key = '%s/children' % self.key
+        return self._fetchItems(key, Album.TYPE)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -122,8 +117,15 @@ class Artist(Audio):
             Parameters:
                 title (str): Title of the track to return.
         """
-        path = '%s/allLeaves' % self.key
-        return utils.findItem(self.server, path, title)
+        for track in self.tracks():
+            if track.title.lower() == title.lower():
+                return track
+        raise NotFound('Unable to find track %s' % title)
+
+    def tracks(self):
+        """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
+        key = '%s/allLeaves' % self.key
+        return self._fetchItems(key)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -142,13 +144,11 @@ class Artist(Audio):
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
         """
-        downloaded = []
+        filepaths = []
         for album in self.albums():
             for track in album.tracks():
-                dl = track.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
-                if dl:
-                    downloaded.extend(dl)
-        return downloaded
+                filepaths += track.download(savepath, keep_orginal_name, **kwargs)
+        return filepaths
 
 
 @utils.register_libtype
@@ -186,13 +186,7 @@ class Album(Audio):
         self.parentTitle = data.attrib.get('parentTitle')
         self.studio = data.attrib.get('studio')
         self.year = utils.cast(int, data.attrib.get('year'))
-        if self.isFullObject():
-            self.genres = [media.Genre(self.server, e) for e in data if e.tag == media.Genre.TYPE]
-
-    def tracks(self):
-        """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
-        path = '%s/children' % self.key
-        return utils.listItems(self.server, path)
+        self.genres = self._buildSubitems(data, media.Genre)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -200,8 +194,15 @@ class Album(Audio):
             Parameters:
                 title (str): Title of the track to return.
         """
-        path = '%s/children' % self.key
-        return utils.findItem(self.server, path, title)
+        for track in self.tracks():
+            if track.title.lower() == title.lower():
+                return track
+        raise NotFound('Unable to find track %s' % title)
+
+    def tracks(self):
+        """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
+        key = '%s/children' % self.key
+        return self._fetchItems(key)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
@@ -209,7 +210,7 @@ class Album(Audio):
 
     def artist(self):
         """ Return :func:`~plexapi.audio.Artist` of this album. """
-        return utils.listItems(self.server, self.parentKey)[0]
+        return self._fetchItems(self.parentKey)[0]
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
@@ -224,13 +225,10 @@ class Album(Audio):
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
         """
-        downloaded = []
-        for ep in self.tracks():
-            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
-            if dl:
-                downloaded.extend(dl)
-
-        return downloaded
+        filepaths = []
+        for track in self.tracks():
+            filepaths += track.download(savepath, keep_orginal_name, **kwargs)
+        return filepaths
 
 
 @utils.register_libtype
@@ -295,33 +293,28 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        # media is included in /children
-        self.media = [media.Media(self.server, e, self.initpath, self)
-            for e in data if e.tag == media.Media.TYPE]
-        if self.isFullObject():  # check me
-            self.moods = [media.Mood(self.server, e) for e in data if e.tag == media.Mood.TYPE]
-            #self.media = [media.Media(self.server, e, self.initpath, self)
-            #              for e in data if e.tag == media.Media.TYPE]
+        self.media = self._buildSubitems(data, media.Media)
+        self.moods = self._buildSubitems(data, media.Mood)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self.server, data)
-        self.transcodeSession = utils.findTranscodeSession(self.server, data)
+        self.player = utils.findPlayer(self._root, data)
+        self.transcodeSession = utils.findTranscodeSession(self._root, data)
+
+    def _prettyfilename(self):
+        """ Returns a filename for use in download. """
+        return '%s - %s %s' % (self.grandparentTitle, self.parentTitle, self.title)
 
     @property
     def thumbUrl(self):
         """ Returns the URL thumbnail image for this track's album. """
         if self.parentThumb:
-            return self.server.url(self.parentThumb)
+            return self._root.url(self.parentThumb)
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """
-        return utils.listItems(self.server, self.parentKey)[0]
+        return self._fetchItems(self.parentKey)[0]
 
     def artist(self):
         """ Return this track's :class:`~plexapi.audio.Artist`. """
-        return utils.listItems(self.server, self.grandparentKey)[0]
-
-    def _prettyfilename(self):
-        """ Returns a filename for use in download. """
-        return '%s - %s %s' % (self.grandparentTitle, self.parentTitle, self.title)
+        return self._fetchItems(self.grandparentKey)[0]

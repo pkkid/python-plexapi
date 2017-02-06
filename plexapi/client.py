@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, TIMEOUT, log, utils
-from plexapi.exceptions import BadRequest, NotFound, Unsupported
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import log, logfilter, utils
+from plexapi.base import PlexObject
+from plexapi.exceptions import BadRequest, Unsupported
 from xml.etree import ElementTree
 
 
-class PlexClient(object):
+class PlexClient(PlexObject):
     """ Main class for interacting with a Plex client. This class can connect
         directly to the client and control it or proxy commands through your
         Plex Server. To better understand the Plex client API's read this page:
@@ -42,16 +44,31 @@ class PlexClient(object):
             _proxyThroughServer (bool): Set to True after calling
                 :func:`~plexapi.client.PlexClient.proxyThroughServer()` (default False).
     """
+    key = '/resources'
+
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
-        self.baseurl = baseurl.strip('/')
-        self.token = token
-        self.server = server
+        self._baseurl = baseurl or CONFIG.get('authentication.client_baseurl')
+        self._token = token or CONFIG.get('authentication.client_token')
+        if self._token:
+            logfilter.add_secret(self._token)
+        self._server = server
         # session > server.session > requests.Session
-        _server_session = server.session if server else None
-        self.session = session or _server_session or requests.Session()
-        self._loadData(data) if data is not None else self.connect()
+        _server_session = server._session if server else None
+        self._session = session or _server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
+        data = data if data is not None else self._query('/resources')[0]
+        super(PlexClient, self).__init__(self, data, self.key)
+
+    def connect(self, safe=False):
+        """ Alias of reload as any subsequent requests to this client will be
+            made directly to the device even if the object attributes were initially 
+            populated from a PlexServer.
+        """
+        try:
+            self.reload()
+        except Exception:
+            if not safe: raise
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -72,25 +89,40 @@ class PlexClient(object):
         self.vendor = data.attrib.get('vendor')
         self.version = data.attrib.get('version')
 
-    def connect(self):
-        """ Connects to the client and reloads all class attributes.
-            
-            Raises:
-                :class:`~plexapi.exceptions.NotFound`: No client found at the specified url.
-        """
-        try:
-            data = self.query('/resources')[0]
-            self._loadData(data)
-        except Exception as err:
-            log.error('%s: %s', self.baseurl, err)
-            raise NotFound('No client found at: %s' % self.baseurl)
+    def __repr__(self):
+        return '<%s:%s>' % (self.__class__.__name__, self._baseurl)
 
-    def headers(self):
+    def _query(self, path, method=None, headers=None, **kwargs):
+        """ Main method used to handle HTTPS requests to the Plex client. This method helps
+            by encoding the response to utf-8 and parsing the returned XML into and
+            ElementTree object. Returns None if no data exists in the response.
+        """
+        url = self._url(path)
+        method = method or self._session.get
+        log.info('%s %s', method.__name__.upper(), url)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        if response.status_code not in (200, 201):
+            codename = codes.get(response.status_code)[0]
+            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data else None
+
+    def _headers(self, **kwargs):
         """ Returns a dict of all default headers for Client requests. """
         headers = BASE_HEADERS
-        if self.token:
-            headers['X-Plex-Token'] = self.token
+        if self._token:
+            headers['X-Plex-Token'] = self._token
+        headers.update(kwargs)
         return headers
+
+    def _url(self, key):
+        """ Build a URL string with proper token argument. """
+        if self._token:
+            delim = '&' if '?' in key else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
+        return '%s%s' % (self._baseurl, key)
 
     def proxyThroughServer(self, value=True):
         """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
@@ -105,30 +137,6 @@ class PlexClient(object):
         if value is True and not self.server:
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
-
-    def query(self, path, method=None, headers=None, **kwargs):
-        """ Returns an ElementTree object containing the response
-            from the specified request path.
-
-            Parameters:
-                path (str): Relative path to query.
-                method (func): `self.session.get` or `self.session.post`
-                headers (dict): Additional headers to include or override in the request.
-                **kwargs (TYPE): Additional arguments to inclde in the request.<method> call.
-
-            Raises:
-                :class:`~plexapi.exceptions.BadRequest`: When the response is not in [200, 201]
-        """
-        url = self.url(path)
-        method = method or self.session.get
-        log.info('%s %s', method.__name__.upper(), url)
-        headers = dict(self.headers(), **(headers or {})) # remove hack
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
-        if response.status_code not in [200, 201]:
-            codename = codes.get(response.status_code)[0]
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
-        data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data else None
 
     def sendCommand(self, command, proxy=None, **params):
         """ Convenience wrapper around :func:`~plexapi.client.PlexClient.query()` to more easily
@@ -156,18 +164,7 @@ class PlexClient(object):
         if proxy:
             return self.server.query(path, headers=headers)
         path = '/player/%s%s' % (command, utils.joinArgs(params))
-        return self.query(path, headers=headers)
-
-    def url(self, path):
-        """ Given a path, this retuns the full PlexClient the PlexServer URL to request.
-
-            Parameters:
-                path (str): Relative path to be converted.
-        """
-        if self.token:
-            delim = '&' if '?' in path else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
-        return '%s%s' % (self.baseurl, path)
+        return self._query(path, headers=headers)
 
     #---------------------
     # Navigation Commands
@@ -240,7 +237,7 @@ class PlexClient(object):
         """
         if not self.server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media.server.baseurl.split(':')
+        server_url = media.server._baseurl.split(':')
         self.sendCommand('mirror/details', **dict({
             'machineIdentifier': self.server.machineIdentifier,
             'address': server_url[1].strip('/'),
@@ -407,7 +404,7 @@ class PlexClient(object):
         """
         if not self.server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media.server.baseurl.split(':')
+        server_url = media.server._baseurl.split(':')
         playqueue = self.server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self.server.machineIdentifier,

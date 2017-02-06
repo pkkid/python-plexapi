@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
+from plexapi.base import PlexObject
 from plexapi.compat import unquote
 from plexapi.media import MediaTag, Genre, Role, Director
 from plexapi.exceptions import BadRequest, NotFound
 
 
-class Library(object):
+class Library(PlexObject):
     """ Represents a PlexServer library. This contains all sections of media defined
         in your Plex server including video, shows and audio.
 
@@ -17,14 +18,15 @@ class Library(object):
             title1 (str): 'Plex Library' (not sure how useful this is).
             title2 (str): Second title (this is blank on my setup).
     """
-    def __init__(self, server, data):
+    key = '/library'
+
+    def _loadData(self, data):
         self._data = data
+        self._sectionsByID = {}  # cached Section UUIDs
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
-        self.server = server
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
-        self._sectionsByID = {}  # cached Section UUIDs
 
     def __repr__(self):
         return '<Library:%s>' % self.title1.encode('utf8')
@@ -34,19 +36,15 @@ class Library(object):
             :class:`~plexapi.library.MovieSection`, :class:`~plexapi.library.ShowSection`,
             :class:`~plexapi.library.MusicSection`, :class:`~plexapi.library.PhotoSection`.
         """
+        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection,
+            MusicSection.TYPE: MusicSection, PhotoSection.TYPE: PhotoSection}
         items = []
-        SECTION_TYPES = {
-            MovieSection.TYPE: MovieSection,
-            ShowSection.TYPE: ShowSection,
-            MusicSection.TYPE: MusicSection,
-            PhotoSection.TYPE: PhotoSection,
-        }
-        path = '/library/sections'
-        for elem in self.server.query(path):
+        key = '/library/sections'
+        for elem in self._root._query(key):
             stype = elem.attrib['type']
             if stype in SECTION_TYPES:
                 cls = SECTION_TYPES[stype]
-                section = cls(self.server, elem, path)
+                section = cls(self._root, elem, key)
                 self._sectionsByID[section.key] = section
                 items.append(section)
         return items
@@ -157,7 +155,7 @@ class Library(object):
         return len(self.sections())
 
 
-class LibrarySection(object):
+class LibrarySection(PlexObject):
     """ Base class for a single library section.
 
         Parameters:
@@ -189,17 +187,15 @@ class LibrarySection(object):
     ALLOWED_SORT = ()
     BOOLEAN_FILTERS = ('unwatched', 'duplicate')
 
-    def __init__(self, server, data, initpath):
+    def _loadData(self, data):
         self._data = data
-        self.server = server
-        self.initpath = initpath
         self.agent = data.attrib.get('agent')
         self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
         self.art = data.attrib.get('art')
         self.composite = data.attrib.get('composite')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
         self.filters = data.attrib.get('filters')
-        self.key = data.attrib.get('key')
+        self.key = data.attrib.get('key')  # invalid key from plex
         self.language = data.attrib.get('language')
         self.locations = utils.findLocations(data)
         self.refreshing = utils.cast(bool, data.attrib.get('refreshing'))
@@ -220,12 +216,13 @@ class LibrarySection(object):
             Parameters:
                 title (str): Title of the item to return.
         """
-        path = '/library/sections/%s/all' % self.key
-        return utils.findItem(self.server, path, title)
+        key = '/library/sections/%s/all' % self.key
+        return utils.findItem(self.server, key, title)
 
     def all(self):
         """ Returns a list of media from this library section. """
-        return utils.listItems(self.server, '/library/sections/%s/all' % self.key)
+        key = '/library/sections/%s/all' % self.key
+        return self._fetchItems(key)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """

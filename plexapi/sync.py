@@ -5,32 +5,29 @@ from plexapi.exceptions import NotFound
 
 
 class SyncItem(object):
-    """Summary
+    """ Sync Item (NOT WORKING?)
 
-    Attributes:
-        device (TYPE): Description
-        id (TYPE): Description
-        location (TYPE): Description
-        machineIdentifier (TYPE): Description
-        MediaSettings (TYPE): Description
-        metadataType (TYPE): Description
-        policy (TYPE): Description
-        rootTitle (TYPE): Description
-        servers (TYPE): Description
-        status (TYPE): Description
-        title (TYPE): Description
-        version (TYPE): Description
+        Attributes:
+            device (TYPE): Description
+            id (TYPE): Description
+            location (TYPE): Description
+            machineIdentifier (TYPE): Description
+            MediaSettings (TYPE): Description
+            metadataType (TYPE): Description
+            policy (TYPE): Description
+            rootTitle (TYPE): Description
+            servers (TYPE): Description
+            status (TYPE): Description
+            title (TYPE): Description
+            version (TYPE): Description
     """
     def __init__(self, device, data, servers=None):
-        """Summary
+        self._device = device
+        self._servers = servers
+        self._loadData(data)
 
-        Args:
-            device (TYPE): Description
-            data (TYPE): Description
-            servers (None, optional): Description
-        """
-        self.device = device
-        self.servers = servers
+    def _loadData(self, data):
+        self._data = data
         self.id = utils.cast(int, data.attrib.get('id'))
         self.version = utils.cast(int, data.attrib.get('version'))
         self.rootTitle = data.attrib.get('rootTitle')
@@ -43,49 +40,21 @@ class SyncItem(object):
         self.location = data.find('Location').attrib.copy()
 
     def __repr__(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
         return '<%s:%s>' % (self.__class__.__name__, self.id)
 
     def server(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-
-        Raises:
-            NotFound: Description
-        """
-        server = list(filter(lambda x: x.machineIdentifier ==
-                             self.machineIdentifier, self.servers))
+        server = list(filter(lambda x: x.machineIdentifier == self.machineIdentifier, self._servers))
         if 0 == len(server):
-            raise NotFound('Unable to find server with uuid %s' %
-                           self.machineIdentifier)
+            raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
         return server[0]
 
     def getMedia(self):
-        """Summary
-
-        Returns:
-            TYPE: Description
-        """
         server = self.server().connect()
         items = utils.listItems(server, '/sync/items/%s' % self.id)
         return items
 
     def markAsDone(self, sync_id):
-        """Summary
-
-        Args:
-            sync_id (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
         server = self.server().connect()
         url = '/sync/%s/%s/files/%s/downloaded' % (
-            self.device.clientIdentifier, server.machineIdentifier, sync_id)
+            self._device.clientIdentifier, server.machineIdentifier, sync_id)
         server.query(url, method=requests.put)

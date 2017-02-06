@@ -1,35 +1,27 @@
 # -*- coding: utf-8 -*-
-import plexapi
 import requests
 from plexapi import utils
+from plexapi.base import PlexObject
 
 
-class PlayQueue(object):
-    """Summary
+class PlayQueue(PlexObject):
+    """ Summary
 
-    Attributes:
-        identifier (TYPE): Description
-        initpath (TYPE): Description
-        items (TYPE): Description
-        mediaTagPrefix (TYPE): Description
-        mediaTagVersion (TYPE): Description
-        playQueueID (TYPE): Description
-        playQueueSelectedItemID (TYPE): Description
-        playQueueSelectedItemOffset (TYPE): Description
-        playQueueTotalCount (TYPE): Description
-        playQueueVersion (TYPE): Description
-        server (TYPE): Description
-    """
-    def __init__(self, server, data, initpath):
-        """Summary
-
-        Args:
-            server (TYPE): Description
-            data (TYPE): Description
+        Attributes:
+            identifier (TYPE): Description
             initpath (TYPE): Description
-        """
-        self.server = server
-        self.initpath = initpath
+            items (TYPE): Description
+            mediaTagPrefix (TYPE): Description
+            mediaTagVersion (TYPE): Description
+            playQueueID (TYPE): Description
+            playQueueSelectedItemID (TYPE): Description
+            playQueueSelectedItemOffset (TYPE): Description
+            playQueueTotalCount (TYPE): Description
+            playQueueVersion (TYPE): Description
+            server (TYPE): Description
+    """ 
+    def _loadData(self, data):
+        self._data = data
         self.identifier = data.attrib.get('identifier')
         self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
@@ -38,22 +30,22 @@ class PlayQueue(object):
         self.playQueueSelectedItemOffset = data.attrib.get('playQueueSelectedItemOffset')
         self.playQueueTotalCount = data.attrib.get('playQueueTotalCount')
         self.playQueueVersion = data.attrib.get('playQueueVersion')
-        self.items = [utils.buildItem(server, elem, initpath) for elem in data]
+        self.items = [self._buildItem(elem, self._initpath) for elem in data]
 
     @classmethod
     def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):
-        """Summary
+        """ Create a new playqueue
 
-        Args:
-            server (TYPE): Description
-            item (TYPE): Description
-            shuffle (int, optional): Description
-            repeat (int, optional): Description
-            includeChapters (int, optional): Description
-            includeRelated (int, optional): Description
+            Paramaters:
+                server (TYPE): Description
+                item (TYPE): Description
+                shuffle (int, optional): Description
+                repeat (int, optional): Description
+                includeChapters (int, optional): Description
+                includeRelated (int, optional): Description
 
-        Returns:
-            TYPE: Description
+            Returns:
+                TYPE: Description
         """
         args = {}
         args['includeChapters'] = includeChapters
@@ -69,5 +61,5 @@ class PlayQueue(object):
             args['type'] = item.listType
             args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
         path = '/playQueues%s' % utils.joinArgs(args)
-        data = server.query(path, method=requests.post)
+        data = server._query(path, method=requests.post)
         return cls(server, data, initpath=path)

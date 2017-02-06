@@ -3,6 +3,7 @@ import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
+from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
@@ -10,11 +11,11 @@ from plexapi.library import Library
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
-# import media to populate utils.LIBRARY_TYPES.
+# We import media to populate utils.LIBRARY_TYPES
 from plexapi import audio, video, photo, playlist as _pl
 
 
-class PlexServer(object):
+class PlexServer(PlexObject):
     """ This is the main entry point to interacting with a Plex server. It allows you to
         list connected clients, browse your library sections and perform actions such as
         emptying trash. If you do not know the auth token required to access your Plex
@@ -83,14 +84,16 @@ class PlexServer(object):
             version (str): Current Plex version (ex: 1.3.2.3112-1751929)
             voiceSearch (bool): True if voice search is enabled. (is this Google Voice search?)
     """
+    key = '/'
+
     def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
-        self.baseurl = baseurl or CONFIG.get('authentication.baseurl')
-        self.token = token or CONFIG.get('authentication.token')
-        if self.token:
-            logfilter.add_secret(self.token)
-        self.session = session or requests.Session()
+        self._baseurl = baseurl or CONFIG.get('authentication.server_baseurl')
+        self._token = token or CONFIG.get('authentication.server_token')
+        if self._token:
+            logfilter.add_secret(self._token)
+        self._session = session or requests.Session()
         self._library = None  # cached library
-        self.reload()
+        super(PlexServer, self).__init__(self, self._query(self.key), self.key)
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -138,18 +141,51 @@ class PlexServer(object):
         self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
 
     def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.baseurl)
+        return '<%s:%s>' % (self.__class__.__name__, self._baseurl)
+
+    def _query(self, key, method=None, headers=None, **kwargs):
+        """ Main method used to handle HTTPS requests to the Plex server. This method helps
+            by encoding the response to utf-8 and parsing the returned XML into and
+            ElementTree object. Returns None if no data exists in the response.
+        """
+        url = self._url(key)
+        method = method or self._session.get
+        log.info('%s %s', method.__name__.upper(), url)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        if response.status_code not in (200, 201):
+            codename = codes.get(response.status_code)[0]
+            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data else None
+
+    def _headers(self, **kwargs):
+        """ Returns dict containing base headers for all requests to the server. """
+        headers = BASE_HEADERS.copy()
+        if self._token:
+            headers['X-Plex-Token'] = self._token
+        headers.update(kwargs)
+        return headers
+
+    def _url(self, key):
+        """ Build a URL string with proper token argument. """
+        if self._token:
+            delim = '&' if '?' in key else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
+        return '%s%s' % (self._baseurl, key)
 
     @property
     def library(self):
         """ Library to browse or search your media. """
         if not self._library:
-            self._library = Library(self, self.query('/library/'))
+            data = self._query(Library.key)
+            self._library = Library(self, data)
         return self._library
 
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
-        data = self.query('/myplex/account')
+        data = self._query(Account.key)
         return Account(self, data)
 
     def clients(self):
@@ -157,7 +193,8 @@ class PlexServer(object):
             connected  to this server.
         """
         items = []
-        for elem in self.query('/clients'):
+        for elem in self._query('/clients'):
+            print(elem.attrib)
             baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
         return items
@@ -171,7 +208,7 @@ class PlexServer(object):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: Unknown client name
         """
-        for elem in self.query('/clients'):
+        for elem in self._query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
                 baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
                 return PlexClient(baseurl, server=self, data=elem)
@@ -194,22 +231,16 @@ class PlexServer(object):
         """
         return PlayQueue.create(self, item)
 
-    def headers(self):
-        """ Returns a dict containing base headers to include in all requests to the server. """
-        headers = BASE_HEADERS
-        if self.token:
-            headers['X-Plex-Token'] = self.token
-        return headers
-
     def history(self):
         """ Returns a list of media items from watched history. """
-        return utils.listItems(self, '/status/sessions/history/all')
+        #return utils.listItems(self, '/status/sessions/history/all')
+        return self._fetchItems('/status/sessions/history/all')
 
     def playlists(self):
         """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
         # TODO: Add sort and type options?
         # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
-        return utils.listItems(self, '/playlists')
+        return self._fetchItems('/playlists')
 
     def playlist(self, title):
         """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.
@@ -224,45 +255,6 @@ class PlexServer(object):
             if item.title == title:
                 return item
         raise NotFound('Invalid playlist title: %s' % title)
-
-    def query(self, path, method=None, headers=None, **kwargs):
-        """ Main method used to handle HTTPS requests to the Plex server. This method helps
-            by encoding the response to utf-8 and parsing the returned XML into and
-            ElementTree object. Returns None if no data exists in the response.
-
-            Parameters:
-                path (str): Relative path to query on the server api (ex: '/search?query=HELLO')
-                method (func): requests.method to use for this query (request.get or
-                    requests.put; defaults to get)
-                headers (dict): Optionally include additional headers for this request.
-                **kwargs (dict): Optionally include additional kwargs for in the specified
-                    reuqest method. These kwargs are simply passed through to method().
-
-            Raises:
-                :class:`~plexapi.exceptions.BadRequest`: Raised when response is not in (200, 201).
-        """
-        url = self.url(path)
-        method = method or self.session.get
-        log.info('%s %s', method.__name__.upper(), url)
-        h = self.headers().copy()
-        if headers:
-            h.update(headers)
-        response = method(url, headers=h, timeout=TIMEOUT, **kwargs)
-        #print(response.url)
-        if response.status_code not in [200, 201]:  # pragma: no cover
-            codename = codes.get(response.status_code)[0]
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
-        data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data else None
-
-    def reload(self):
-        """ Reload attribute values from Plex XML response.  """
-        try:
-            data = self.query('/')
-            self._loadData(data)
-        except Exception as err:
-            log.error('%s: %s', self.baseurl, err)
-            raise NotFound('No server found at: %s' % self.baseurl)
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
@@ -294,16 +286,8 @@ class PlexServer(object):
 
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
-        return utils.listItems(self, '/status/sessions')
-
-    def url(self, path):
-        """ Utility function to help build proper URL strings as well as always include
-            the requred authentication token for all api requests to the server.
-        """
-        if self.token:
-            delim = '&' if '?' in path else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self.baseurl, path, delim, self.token)
-        return '%s%s' % (self.baseurl, path)
+        return self._fetchItems('/status/sessions')
+        #return utils.listItems(self, '/status/sessions')
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
         """ Returns the URL for a transcoded image from the specified media object.
@@ -322,7 +306,7 @@ class PlexServer(object):
             return self.url(transcode_url)
 
 
-class Account(object):
+class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
         match the :class:`~plexapi.myplex.MyPlexAccount` object very well. I believe this exists
         because access to myplex is not required to get basic plex information. I can't imagine
@@ -351,7 +335,9 @@ class Account(object):
             subscriptionState (str): 'Active' if this subscription is active.
             username (str): Plex account username (user@example.com).
     """
-    def __init__(self, server, data):
+    key = '/myplex/account'
+
+    def _loadData(self, data):
         self._data = data
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast, listItems
 
 
-class Media(object):
+class Media(PlexObject):
     """ Container object for all MediaPart objects. Provides useful data about the
         video this media belong to such as video framerate, resolution, etc.
 
@@ -35,10 +36,8 @@ class Media(object):
     """
     TYPE = 'Media'
 
-    def __init__(self, server, data, initpath, video):
-        self.server = server
-        self.initpath = initpath
-        self.video = video
+    def _loadData(self, data):
+        self._data = data
         self.aspectRatio = cast(float, data.attrib.get('aspectRatio'))
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
@@ -53,14 +52,14 @@ class Media(object):
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
-        self.parts = [MediaPart(server, e, initpath, self) for e in data]
+        self.parts = self._buildSubitems(data, MediaPart)
 
     def __repr__(self):
         title = self.video.title.replace(' ','.')[0:20]
         return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
 
 
-class MediaPart(object):
+class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
         
         Attributes:
@@ -77,37 +76,23 @@ class MediaPart(object):
     """
     TYPE = 'Part'
 
-    def __init__(self, server, data, initpath, media):
-        self.server = server
-        self.initpath = initpath
-        self.media = media
+    def _loadData(self, data):
+        self._data = data
         self.container = data.attrib.get('container')
         self.duration = cast(int, data.attrib.get('duration'))
         self.file = data.attrib.get('file')
         self.id = cast(int, data.attrib.get('id'))
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
-        self.streams = [MediaPartStream.parse(self.server, e, self.initpath, self) for e in data if e.tag == 'Stream']
+        self.videoStreams = self._buildSubitems(data, VideoStream, 'Stream', {'streamType':VideoStream.STREAMTYPE})
+        self.audioStreams = self._buildSubitems(data, AudioStream, 'Stream', {'streamType':AudioStream.STREAMTYPE})
+        self.subtitleStreams = self._buildSubitems(data, SubtitleStream, 'Stream', {'streamType':SubtitleStream.STREAMTYPE})
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.id)
 
-    def selectedStream(self, stream_type):
-        """ Return the selected stream for the specified stream_type.
-            
-            Paramters:
-                stream_type (int): Specify which stream type you want the result for. This value
-                    should be one of (1=:class:`~plexapi.media.VideoStream`,
-                    2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
-        """
-        streams = filter(lambda x: stream_type == x.type, self.streams)
-        selected = list(filter(lambda x: x.selected is True, streams))
-        if len(selected) == 0:
-            return None
-        return selected[0]
 
-
-class MediaPartStream(object):
+class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
         
         Attributes:
@@ -128,10 +113,8 @@ class MediaPartStream(object):
     TYPE = None
     STREAMTYPE = None
 
-    def __init__(self, server, data, initpath, part):
-        self.server = server
-        self.initpath = initpath
-        self.part = part
+    def _loadData(self, data):
+        self._data = data
         self.codec = data.attrib.get('codec')
         self.codecID = data.attrib.get('codecID')
         self.id = cast(int, data.attrib.get('id'))
@@ -143,12 +126,12 @@ class MediaPartStream(object):
         self.type = cast(int, data.attrib.get('streamType'))
 
     @staticmethod
-    def parse(server, data, initpath, part):
+    def parse(server, data, initpath):
         """ Factory method returns a new MediaPartStream from xml data. """
         STREAMCLS = {1:VideoStream, 2:AudioStream, 3:SubtitleStream}
         stype = cast(int, data.attrib.get('streamType'))
         cls = STREAMCLS.get(stype, MediaPartStream)
-        return cls(server, data, initpath, part)
+        return cls(server, data, initpath)
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.id)
@@ -178,8 +161,8 @@ class VideoStream(MediaPartStream):
     TYPE = 'videostream'
     STREAMTYPE = 1
 
-    def __init__(self, server, data, initpath, part):
-        super(VideoStream, self).__init__(server, data, initpath, part)
+    def _loadData(self, data):
+        super(VideoStream, self)._loadData(data)
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.cabac = cast(int, data.attrib.get('cabac'))
@@ -215,8 +198,8 @@ class AudioStream(MediaPartStream):
     TYPE = 'audiostream'
     STREAMTYPE = 2
 
-    def __init__(self, server, data, initpath, part):
-        super(AudioStream, self).__init__(server, data, initpath, part)
+    def _loadData(self, data):
+        super(AudioStream, self)._loadData(data)
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrate = cast(int, data.attrib.get('bitrate'))
@@ -239,21 +222,21 @@ class SubtitleStream(MediaPartStream):
     TYPE = 'subtitlestream'
     STREAMTYPE = 3
 
-    def __init__(self, server, data, initpath, part):
-        super(SubtitleStream, self).__init__(server, data, initpath, part)
+    def _loadData(self, data):
+        super(SubtitleStream, self)._loadData(data)
         self.format = data.attrib.get('format')
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
 
 
-class TranscodeSession(object):
+class TranscodeSession(PlexObject):
     """ Represents a current transcode session. 
         TODO: Document this.
     """
     TYPE = 'TranscodeSession'
 
-    def __init__(self, server, data):
-        self.server = server
+    def _loadData(self, data):
+        self._data = data
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
         self.audioDecision = data.attrib.get('audioDecision')
@@ -272,7 +255,7 @@ class TranscodeSession(object):
         self.width = cast(int, data.attrib.get('width'))
 
 
-class MediaTag(object):
+class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
         items or navigating the metadata of media items in your library. Tags are
         the construct used for things such as Country, Director, Genre, etc.
@@ -300,9 +283,8 @@ class MediaTag(object):
     """
     TYPE = None
 
-    def __init__(self, server, data):
+    def _loadData(self, data):
         self._data = data
-        self.server = server
         self.id = cast(int, data.attrib.get('id'))
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
@@ -333,51 +315,44 @@ class Collection(MediaTag):
     TYPE = 'Collection'
     FILTER = 'collection'
 
-
 class Country(MediaTag):
     TYPE = 'Country'
     FILTER = 'country'
-
 
 class Director(MediaTag):
     TYPE = 'Director'
     FILTER = 'director'
 
-
 class Genre(MediaTag):
     TYPE = 'Genre'
     FILTER = 'genre'
-
 
 class Mood(MediaTag):
     TYPE = 'Mood'
     FILTER = 'mood'
 
-
 class Producer(MediaTag):
     TYPE = 'Producer'
     FILTER = 'producer'
-
 
 class Role(MediaTag):
     TYPE = 'Role'
     FILTER = 'role'
 
-
 class Similar(MediaTag):
     TYPE = 'Similar'
     FILTER = 'similar'
-
 
 class Writer(MediaTag):
     TYPE = 'Writer'
     FILTER = 'writer'
 
 
-class Field(object):
+class Field(PlexObject):
     TYPE = 'Field'
 
-    def __init__(self, data):
+    def _loadData(self, data):
+        self._data = data
         self.name = data.attrib.get('name')
         self.locked = cast(bool, data.attrib.get('locked'))
 

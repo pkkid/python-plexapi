@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
-from plexapi import utils
+from plexapi import log, utils
 from plexapi.compat import urlencode
-from plexapi.exceptions import Unsupported
+from plexapi.exceptions import NotFound, UnknownType, Unsupported
 
 
 class Playable(object):
@@ -23,8 +23,8 @@ class Playable(object):
         # Load data for active sessions (/status/sessions)
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self.server, data)
-        self.transcodeSession = utils.findTranscodeSession(self.server, data)
+        self.player = utils.findPlayer(self._root, data)
+        self.transcodeSession = utils.findTranscodeSession(self._root, data)
         # Load data for history details (/status/sessions/history/all)
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))
         # Load data for playlist items
@@ -60,7 +60,7 @@ class Playable(object):
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
-        return self.server.url('/%s/:/transcode/universal/start.m3u8?%s' %
+        return self._root.url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
@@ -101,15 +101,86 @@ class Playable(object):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self.server.url('%s?download=1' % location.key)
+                download_url = self._root.url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
-                savepath=savepath, session=self.server.session)
+                savepath=savepath, session=self._root.session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
 
 
-class PlexPartialObject(object):
+class PlexObject(object):
+    """ Base class for all Plex objects.
+        TODO: Finish documenting this.
+    """
+    key = None
+
+    def __init__(self, root, data, initpath=None):
+        self._root = root                       # Root MyPlexAccount or PlexServer
+        self._data = data                       # XML data needed to build object
+        self._initpath = initpath or self.key   # Request path used to fetch data
+        self._loadData(data)
+
+    def __setattr__(self, attr, value):
+        if value is not None or attr.startswith('_'):
+            self.__dict__[attr] = value
+
+    def _buildItem(self, elem, initpath, bytag=False):
+        """ Factory function to build objects based on registered LIBRARY_TYPES. """
+        libtype = elem.tag if bytag else elem.attrib.get('type')
+        if libtype == 'photo' and elem.tag == 'Directory':
+            libtype = 'photoalbum'
+        if libtype in utils.LIBRARY_TYPES:
+            cls = utils.LIBRARY_TYPES[libtype]
+            return cls(self._root, elem, initpath)
+        raise UnknownType('Unknown library type: %s' % libtype)
+
+    def _buildSubitems(self, data, cls, tag=None, filters=None, *args):
+        """ Build and return a list of items (optionally filtered by tag). """
+        items = []
+        tag = tag or cls.TYPE
+        filters = filters or {}
+        for elem in data:
+            if elem.tag == tag:
+                for attr, value in filters.items():
+                    if elem.attrib.get(attr) != str(value):
+                        continue
+                items.append(cls(self._root, elem, self._initpath, *args))
+        return items
+
+    def _fetchItem(self, key, title=None, name=None):
+        for elem in self._root._query(key):
+            if title and elem.attrib.get('title').lower() == title.lower():
+                return self._buildItem(elem, key)
+            if name and elem.attrib.get('name').lower() == name.lower():
+                return self._buildItem(elem, key)
+        raise NotFound('Unable to find item: %s' % (title or name))
+
+    def _fetchItems(self, key, libtype=None, bytag=False):
+        """ Fetch and build items from the specified key. """
+        items = []
+        for elem in self._root._query(key):
+            try:
+                if not libtype or elem.attrib.get('type') == libtype:
+                    items.append(self._buildItem(elem, key, bytag))
+            except UnknownType:
+                pass
+        return items
+
+    def _loadData(self, data):
+        raise NotImplemented('Abstract method not implemented.')
+
+    def reload(self, safe=False):
+        """ Reload the data for this object from self.key. """
+        if not self.key:
+            if safe: return None
+            raise Unsupported('Cannot reload an object not built from a URL.')
+        self._initpath = self.key
+        data = self._root._query(self.key)
+        self._loadData(data[0])
+
+
+class PlexPartialObject(PlexObject):
     """ Not all objects in the Plex listings return the complete list of elements
         for the object. This object will allow you to assume each object is complete,
         and if the specified value you request is None it will fetch the full object
@@ -120,12 +191,6 @@ class PlexPartialObject(object):
             initpath (str): Relative path requested when retrieving specified `data` (optional).
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
     """
-    def __init__(self, data, initpath, server=None):
-        self.server = server
-        self.initpath = initpath
-        self._loadData(data)
-        self._reloaded = False
-
     def __eq__(self, other):
         return other is not None and self.key == other.key
 
@@ -135,26 +200,20 @@ class PlexPartialObject(object):
         title = self.title.replace(' ', '.')[0:20].encode('utf8')
         return '<%s:%s:%s>' % (clsname, key, title)
 
-    def __getattr__(self, attr):
-        from plexapi import log
-        # Auto reload from the full key (path) when needed.
-        if attr == 'key' or self.__dict__.get(attr) or self.isFullObject() or attr.startswith('_'):
-            return self.__dict__.get(attr)
-        # Log warning about reloading the objects
+    def __getattribute__(self, attr):
+        # Check a few cases where we dont want to reload
+        value = super(PlexPartialObject, self).__getattribute__(attr)
+        if attr == 'key' or attr.startswith('_'): return value
+        if value not in (None, []): return value
+        if self.isFullObject(): return value
+        # Log warning that were reloading the object
         clsname = self.__class__.__name__
-        title = self.__dict__.get('title') or self.__dict__.get('name')
+        title = self.__dict__.get('title', self.__dict__.get('name'))
         objname = "%s '%s'" % (clsname, title) if title else clsname
         log.warn("Reloading %s for attr '%s'" % (objname, attr))
-        # Reload the object
+        # Reload and return the value
         self.reload()
-        return self.__dict__.get(attr)
-
-    def __setattr__(self, attr, value):
-        if value is not None or self.isFullObject():
-            self.__dict__[attr] = value
-
-    def _loadData(self, data):
-        raise NotImplemented('Abstract method not implemented.')
+        return super(PlexPartialObject, self).__getattribute__(attr)
 
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
@@ -162,16 +221,8 @@ class PlexPartialObject(object):
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie contain.
         """
-        return not self.key or self.key == self.initpath
+        return not self.key or self.key == self._initpath
 
     def isPartialObject(self):
-        """ Returns True if this is NOT a full object. """
+        """ Returns True if this is not a full object. """
         return not self.isFullObject()
-
-    def reload(self):
-        """ Reload the data for this object from PlexServer XML. """
-        data = self.server.query(self.key)
-        self.initpath = self.key
-        self._loadData(data[0])
-        self._reloaded = True
-        return self

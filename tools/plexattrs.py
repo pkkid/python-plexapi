@@ -5,120 +5,250 @@ This script loops through all media items to build a collection of attributes on
 each media type. The resulting list can be compared with the current object 
 implementation in python-plex api to track new attributes and depricate old ones.
 """
-import argparse, copy, pickle, plexapi, os, sys
+import argparse, copy, pickle, plexapi, os, sys, time
 from collections import defaultdict
 from datetime import datetime
+from plexapi import library
+from plexapi.base import PlexObject
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
-from plexapi.utils import NA
+from plexapi.playqueue import PlayQueue
 
 CACHEPATH = '/tmp/findattrs.pickle'
 NAMESPACE =  {
     'xml': defaultdict(int),
     'obj': defaultdict(int),
     'examples': defaultdict(set),
-    'total': 0
+    'categories': defaultdict(set),
+    'total': 0,
+    'old': 0,
+    'new': 0,
 }
 IGNORES = {
     'server.PlexServer': ['baseurl', 'token', 'session'],
     'myplex.ResourceConnection': ['httpuri'],
     'client.PlexClient': ['baseurl'],
 }
+DONT_RELOAD = (
+    'library.MovieSection',
+    'library.MusicSection',
+    'library.PhotoSection',
+    'library.ShowSection',
+    'media.MediaPart',      # tries to download the file
+    'media.VideoStream',
+    'media.AudioStream',
+    'media.SubtitleStream',
+    'myplex.MyPlexAccount',
+    'myplex.MyPlexUser',
+    'myplex.MyPlexResource',
+    'myplex.ResourceConnection',
+    'myplex.MyPlexDevice',
+    'photo.Photoalbum',
+    'server.Account',
+    'client.PlexClient',  # we dont have the token to reload.
+    #'server.PlexServer',  # setting version to None? :(
+)
+STOP_RECURSING_AT = (
+    #'media.MediaPart',
+)
 
 class PlexAttributes():
 
     def __init__(self, opts):
         self.opts = opts                                            # command line options
         self.clsnames = [c for c in opts.clsnames.split(',') if c]  # list of clsnames to report (blank=all)
-        self.account = MyPlexAccount.signin()                       # MyPlexAccount instance
+        self.account = MyPlexAccount()                              # MyPlexAccount instance
         self.plex = PlexServer()                                    # PlexServer instance
+        self.total = 0                                              # Total objects parsed
         self.attrs = defaultdict(dict)                              # Attrs result set
 
     def run(self):
-        # MyPlex
-        self._load_attrs(self.account)
-        self._load_attrs(self.account.devices())
-        for resource in self.account.resources():
-            self._load_attrs(resource)
-            self._load_attrs(resource.connections)
-        self._load_attrs(self.account.users())
-        # Server
-        self._load_attrs(self.plex)
-        self._load_attrs(self.plex.account())
-        self._load_attrs(self.plex.history()[:20])
-        self._load_attrs(self.plex.playlists())
-        for search in ('cre', 'ani', 'mik', 'she'):
-            self._load_attrs(self.plex.search('cre'))
-        self._load_attrs(self.plex.sessions())
-        # Library
-        self._load_attrs(self.plex.library)
-        self._load_attrs(self.plex.library.sections())
-        self._load_attrs(self.plex.library.all()[:20])
-        self._load_attrs(self.plex.library.onDeck()[:20])
-        self._load_attrs(self.plex.library.recentlyAdded()[:20])
-        for search in ('cat', 'dog', 'rat'):
-            self._load_attrs(self.plex.library.search(search)[:20])
-        # Client
-        self._load_attrs(self.plex.clients())
+        starttime = time.time()
+        # self._parse_myplex()
+        # self._parse_server()
+        # self._parse_library()
+        # self._parse_audio()
+        # self._parse_photo()
+        # self._parse_movie()
+        # self._parse_show()
+        # self._parse_client()
+        # self._parse_playlist()
+        # self._parse_sync()
+        self.runtime = round((time.time() - starttime) / 60.0, 1)
         return self
 
-    def _load_attrs(self, obj):
-        if isinstance(obj, (list, tuple)):
-            return [self._parse_objects(x) for x in obj]
-        return self._parse_objects(obj)
+    def _parse_myplex(self):
+        self._load_attrs(self.account, 'myplex')
+        self._load_attrs(self.account.devices(), 'myplex')
+        for resource in self.account.resources():
+            self._load_attrs(resource, 'myplex')
+            self._load_attrs(resource.connections, 'myplex')
+        self._load_attrs(self.account.users(), 'myplex')
 
-    def _parse_objects(self, obj):
+    def _parse_server(self):
+        self._load_attrs(self.plex, 'serv')
+        self._load_attrs(self.plex.account(), 'serv')
+        self._load_attrs(self.plex.history()[:20], 'hist')
+        # self._load_attrs(self.plex.playlists())
+        # for search in ('cre', 'ani', 'mik', 'she'):
+        #     self._load_attrs(self.plex.search('cre'))
+        # self._load_attrs(self.plex.sessions(), 'sess')
+
+    def _parse_library(self):
+        cat = 'lib'
+        self._load_attrs(self.plex.library, cat)
+        # self._load_attrs(self.plex.library.sections())
+        # self._load_attrs(self.plex.library.all()[:20])
+        # self._load_attrs(self.plex.library.onDeck()[:20])
+        # self._load_attrs(self.plex.library.recentlyAdded()[:20])
+        # for search in ('cat', 'dog', 'rat'):
+        #     self._load_attrs(self.plex.library.search(search)[:20])
+
+    def _parse_audio(self):
+        cat = 'lib'
+        for musicsection in self.plex.library.sections():
+            if musicsection.TYPE == library.MusicSection.TYPE:
+                self._load_attrs(musicsection, cat)
+                for artist in musicsection.all():
+                    self._load_attrs(artist, cat)
+                    for album in artist.albums():
+                        self._load_attrs(album, cat)
+                        for track in album.tracks():
+                            self._load_attrs(track, cat)
+
+    def _parse_photo(self):
+        cat = 'lib'
+        for photosection in self.plex.library.sections():
+            if photosection.TYPE == library.PhotoSection.TYPE:
+                self._load_attrs(photosection, cat)
+                for photoalbum in photosection.all():
+                    self._load_attrs(photoalbum, cat)
+                    for photo in photoalbum.photos():
+                        self._load_attrs(photo, cat)
+
+    def _parse_movie(self):
+        cat = 'lib'
+        for moviesection in self.plex.library.sections():
+            if moviesection.TYPE == library.MovieSection.TYPE:
+                self._load_attrs(moviesection, cat)
+                for movie in moviesection.all():
+                    self._load_attrs(movie, cat)
+
+    def _parse_show(self):
+        cat = 'lib'
+        for showsection in self.plex.library.sections():
+            if showsection.TYPE == library.ShowSection.TYPE:
+                self._load_attrs(showsection, cat)
+                for show in showsection.all():
+                    self._load_attrs(show, cat)
+                    for season in show.seasons():
+                        self._load_attrs(show, cat)
+                        for episode in season.episodes():
+                            self._load_attrs(episode, cat)
+
+    def _parse_client(self):
+        for device in self.account.devices():
+            client = device.connect(safe=True)
+            if client is not None:
+                self._load_attrs(client, 'myplex')
+        for client in self.plex.clients():
+            client.connect(safe=True)
+            self._load_attrs(client, 'client')
+
+    def _parse_playlist(self):
+        for playlist in self.plex.playlists():
+            self._load_attrs(playlist, 'pl')
+            for item in playlist.items():
+                self._load_attrs(item, 'pl')
+            playqueue = PlayQueue.create(self.plex, playlist)
+            self._load_attrs(playqueue, 'pq')
+
+    def _parse_sync(self):
+        # TODO: Get this working..
+        pass
+
+    def _load_attrs(self, obj, cat=None):
+        if isinstance(obj, (list, tuple)):
+            return [self._parse_objects(item, cat) for item in obj]
+        self._parse_objects(obj, cat)
+
+    def _parse_objects(self, obj, cat=None):
         clsname = '%s.%s' % (obj.__module__, obj.__class__.__name__)
         clsname = clsname.replace('plexapi.', '')
         if self.clsnames and clsname not in self.clsnames:
             return None
-        sys.stdout.write('.'); sys.stdout.flush()
+        self._print_the_little_dot()
         if clsname not in self.attrs:
             self.attrs[clsname] = copy.deepcopy(NAMESPACE)
         self.attrs[clsname]['total'] += 1
-        self._load_xml_attrs(clsname, obj._data, self.attrs[clsname]['xml'], self.attrs[clsname]['examples'])
+        self._load_xml_attrs(clsname, obj._data, self.attrs[clsname]['xml'],
+            self.attrs[clsname]['examples'], self.attrs[clsname]['categories'], cat)
         self._load_obj_attrs(clsname, obj, self.attrs[clsname]['obj'])
 
-    def _load_xml_attrs(self, clsname, elem, attrs, examples):
-        if elem in (None, NA): return None
+    def _print_the_little_dot(self):
+        self.total += 1
+        if not self.total % 100:
+            sys.stdout.write('.')
+            if not self.total % 8000:
+                sys.stdout.write('\n')
+            sys.stdout.flush()
+
+    def _load_xml_attrs(self, clsname, elem, attrs, examples, categories, cat):
+        if elem is None: return None
         for attr in sorted(elem.attrib.keys()):
             attrs[attr] += 1
+            if cat: categories[attr].add(cat)
             if elem.attrib[attr] and len(examples[attr]) <= self.opts.examples:
                 examples[attr].add(elem.attrib[attr])
 
     def _load_obj_attrs(self, clsname, obj, attrs):
+        if clsname in STOP_RECURSING_AT: return None
+        if isinstance(obj, PlexObject) and clsname not in DONT_RELOAD: obj.reload(safe=True)
         for attr, value in obj.__dict__.items():
-            if value in (None, NA) or isinstance(value, (str, bool, float, int, datetime)):
+            if value is None or isinstance(value, (str, bool, float, int, datetime)):
                 if not attr.startswith('_') and attr not in IGNORES.get(clsname, []):
                     attrs[attr] += 1
+            if isinstance(value, list):
+                if not attr.startswith('_') and attr not in IGNORES.get(clsname, []):
+                    if value and isinstance(value[0], PlexObject):
+                        attrs['%s[]' % attr] += 1
+                        [self._parse_objects(obj) for obj in value]
 
     def print_report(self):
         total_attrs = 0
         for clsname in sorted(self.attrs.keys()):
             meta = self.attrs[clsname]
             count = meta['total']
-            print(_('\n%s (%s)\n%s' % (clsname, count, '-'*(len(clsname)+8)), 'yellow'))
+            print(_('\n%s (%s)\n%s' % (clsname, count, '-'*30), 'yellow'))
             attrs = sorted(set(list(meta['xml'].keys()) + list(meta['obj'].keys())))
             for attr in attrs:
-                state = self._attr_state(attr, meta)
+                state = self._attr_state(clsname, attr, meta)
                 count = meta['xml'].get(attr, 0)
-                example = list(meta['examples'].get(attr, ['--']))[0][:80]
-                print('%-4s %4s  %-30s  %s' % (state, count, attr, example))
+                categories = ','.join(meta['categories'].get(attr, ['--']))
+                examples = '; '.join(list(meta['examples'].get(attr, ['--']))[:3])[:80]
+                print('%7s  %3s  %-30s  %-20s  %s' % (count, state, attr, categories, examples))
                 total_attrs += count
-        print(_('\nSUMMARY\n------------', 'yellow'))
-        print('Plex Version     %s' % self.plex.version)
-        print('PlexAPI Version  %s' % plexapi.VERSION)
-        print('Total Objects    %s\n' % sum([x['total'] for x in self.attrs.values()]))
+        print(_('\nSUMMARY\n%s' % ('-'*30), 'yellow'))
+        print('%7s  %3s  %3s  %-20s  %s' % ('total', 'new', 'old', 'categories', 'clsname'))
         for clsname in sorted(self.attrs.keys()):
-            print('%-34s %s' % (clsname, self.attrs[clsname]['total']))
-        print()
+            print('%7s  %12s  %12s  %s' % (self.attrs[clsname]['total'],
+                _(self.attrs[clsname]['new'] or '', 'cyan'),
+                _(self.attrs[clsname]['old'] or '', 'red'),
+                clsname))
+        print('\nPlex Version     %s' % self.plex.version)
+        print('PlexAPI Version  %s' % plexapi.VERSION)
+        print('Total Objects    %s' % sum([x['total'] for x in self.attrs.values()]))
+        print('Runtime          %s min\n' % self.runtime)
 
-    def _attr_state(self, attr, meta):
-        if attr in meta['xml'].keys() and attr not in meta['obj'].keys(): return _('new', 'blue')
-        if attr not in meta['xml'].keys() and attr in meta['obj'].keys(): return _('old', 'red')
+    def _attr_state(self, clsname, attr, meta):
+        if attr in meta['xml'].keys() and attr not in meta['obj'].keys():
+            self.attrs[clsname]['new'] += 1
+            return _('new', 'blue')
+        if attr not in meta['xml'].keys() and attr in meta['obj'].keys():
+            self.attrs[clsname]['old'] += 1
+            return _('old', 'red')
         return _('   ', 'green')
 
-    
 
 def _(text, color):
     FMTSTR = '\033[%dm%s\033[0m'
@@ -144,102 +274,3 @@ if __name__ == '__main__':
             pickle.dump(plexattrs, handle)
     # Print Report
     plexattrs.print_report()
-
-
-
-
-
-# MAX_SEEN = 9999
-# MAX_EXAMPLES = 10
-# PICKLE_PATH = '/tmp/findattrs.pickle'
-# ETYPES = ['artist', 'album', 'track', 'movie', 'show', 'season', 'episode']
-# COLORS = {'blue':34, 'cyan':36, 'green':32, 'grey':30, 'magenta':35, 'red':31, 'white':37, 'yellow':33}
-# RESET = '\033[0m'
-
-# def color(text, color=None):
-#     """ Colorize text {red, green, yellow, blue, magenta, cyan, white}. """
-#     fmt_str = '\033[%dm%s'
-#     if color is not None:
-#         text = fmt_str % (COLORS[color], text)
-#     text += RESET
-#     return text
-
-# def find_attrs(plex, key, result, examples, seen, indent=0):
-#     for elem in plex.query(key):
-#         attrs = sorted(elem.attrib.keys())
-#         etype = elem.attrib.get('type')
-#         if not etype or seen[etype] >= MAX_SEEN:
-#             continue
-#         seen[etype] += 1
-#         sys.stdout.write('.'); sys.stdout.flush()
-#         # find all attriutes in this element
-#         for attr in attrs:                
-#             result[attr].add(etype)
-#             if elem.attrib[attr] and len(examples[attr]) <= MAX_EXAMPLES:
-#                 examples[attr].add(elem.attrib[attr])
-#         # iterate all subelements
-#         for subelem in elem:
-#             if subelem.tag not in ETYPES:
-#                 subattr = subelem.tag + '[]'
-#                 result[subattr].add(etype)
-#                 if len(examples[subattr]) <= MAX_EXAMPLES:
-#                     xmlstr = ElementTree.tostring(subelem, encoding='utf8').split('\n')[1]
-#                     examples[subattr].add(xmlstr)
-#         # recurse into the main element (loading its key)
-#         if etype in ETYPES:
-#             subkey = elem.attrib['key']
-#             if key != subkey and seen[etype] < MAX_SEEN:
-#                 find_attrs(plex, subkey, result, examples, seen, indent+2)
-#     return result
-
-# def find_all_attrs():
-#     try:
-#         result = defaultdict(set)
-#         examples = defaultdict(set)
-#         seen = defaultdict(int)
-#         plex = PlexServer()
-#         find_attrs(plex, '/status/sessions', result, examples, seen)
-#         for section in plex.library.sections():
-#             for elem in section.all():
-#                 # check weve seen too many of this type of elem
-#                 if seen[elem.type] >= MAX_SEEN:
-#                     continue
-#                 seen[elem.type] += 1
-#                 # fetch the xml for this elem
-#                 key = elem.key.replace('/children', '')
-#                 find_attrs(plex, key, result, examples, seen)
-#     except KeyboardInterrupt:
-#         pass
-#     return result, examples, seen
-    
-# def print_results(result, examples, seen):
-#     print_general_summary(result, examples)
-#     print_summary_by_etype(result, examples)
-#     print_seen_etypes(seen)
-    
-# def print_general_summary(result, examples):
-#     print(color('\n--- general summary ---', 'cyan'))
-#     for attr, etypes in sorted(result.items(), key=lambda x: x[0].lower()):
-#         args = [attr]
-#         args += [etype if etype in etypes else '--' for etype in ETYPES]
-#         args.append(list(examples[attr])[0][:30] if examples[attr] else '_NA_')
-#         print('%-23s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %-8s  %s' % tuple(args))
-
-# def print_summary_by_etype(result, examples):
-#     # find super attributes (in all etypes)
-#     result['super'] = set(['librarySectionID', 'index', 'titleSort'])
-#     for attr, etypes in result.items():
-#         if len(etypes) == 7:
-#             result['super'].add(attr)
-#     # print the summary
-#     for etype in ['super'] + ETYPES:
-#         print(color('\n--- %s ---' % etype, 'cyan'))
-#         for attr in sorted(result.keys(), key=lambda x:x[0].lower()):
-#             if (etype in result[attr] and attr not in result['super']) or (etype == 'super' and attr in result['super']):
-#                 example = list(examples[attr])[0][:80] if examples[attr] else '_NA_'
-#                 print('%-23s  %s' % (attr, example))
-        
-# def print_seen_etypes(seen):
-#     print('\n')
-#     for etype, count in seen.items():
-#         print('%-8s %s' % (etype, count))

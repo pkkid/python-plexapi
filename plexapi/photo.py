@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
+from plexapi.exceptions import NotFound
 
 
 @utils.register_libtype
@@ -30,9 +31,6 @@ class Photoalbum(PlexPartialObject):
     """
     TYPE = 'photoalbum'
 
-    def __init__(self, server, data, initpath):
-        super(Photoalbum, self).__init__(data, initpath, server)
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
@@ -52,17 +50,19 @@ class Photoalbum(PlexPartialObject):
 
     def photos(self):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
-        path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.listItems(self.server, path, Photo.TYPE)
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self._fetchItems(key)
 
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
-        path = '/library/metadata/%s/children' % self.ratingKey
-        return utils.findItem(self.server, path, title)
+        for photo in self.photos():
+            if photo.attrib.get('title').lower() == title.lower():
+                return photo
+        raise NotFound('Unable to find photo: %s' % title)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self.server.library.sectionByID(self.librarySectionID)
+        return self._root.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
@@ -93,9 +93,6 @@ class Photo(PlexPartialObject):
     """
     TYPE = 'photo'
 
-    def __init__(self, server, data, initpath):
-        super(Photo, self).__init__(data, initpath, server)
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
@@ -113,14 +110,12 @@ class Photo(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        if self.isFullObject():
-            self.media = [media.Media(self.server, e, self.initpath, self)
-                for e in data if e.tag == media.Media.TYPE]
+        self.media = self._buildSubitems(data, media.Media)
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
-        return utils.listItems(self.server, self.parentKey)[0]
+        return utils.listItems(self._root, self.parentKey)[0]
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self.server.library.sectionByID(self.photoalbum().librarySectionID)
+        return self._root.library.sectionByID(self.photoalbum().librarySectionID)

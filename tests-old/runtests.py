@@ -15,9 +15,9 @@ from utils import log, itertests
 
 def runtests(args):
     # Get username and password from environment
-    username = args.username or CONFIG.get('authentication.username')
-    password = args.password or CONFIG.get('authentication.password')
-    resource = args.resource or CONFIG.get('authentication.resource')
+    username = args.username or CONFIG.get('authentication.myplex_username')
+    password = args.password or CONFIG.get('authentication.myplex_password')
+    resource = args.resource or CONFIG.get('authentication.server_resource')
     # Register known tests
     for loader, name, ispkg in pkgutil.iter_modules([dirname(abspath(__file__))]):
         if name.startswith('test_'):

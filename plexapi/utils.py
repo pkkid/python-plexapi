@@ -39,26 +39,26 @@ def register_libtype(cls):
     return cls
 
 
-def buildItem(server, elem, initpath, bytag=False):
-    """ Factory function to build the objects used within the PlexAPI.
+# def buildItem(server, elem, initpath, bytag=False):
+#     """ Factory function to build the objects used within the PlexAPI.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            elem (ElementTree): XML data needed to build the object.
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-            bytag (bool): Creates the object from the name specified by the tag instead of the
-                default which builds the object specified by the type attribute. <tag type='foo' />
+#         Parameters:
+#             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
+#             elem (ElementTree): XML data needed to build the object.
+#             initpath (str): Relative path requested when retrieving specified `data` (optional).
+#             bytag (bool): Creates the object from the name specified by the tag instead of the
+#                 default which builds the object specified by the type attribute. <tag type='foo' />
 
-        Raises:
-            UnknownType: Unknown library type.
-    """
-    libtype = elem.tag if bytag else elem.attrib.get('type')
-    if libtype == 'photo' and elem.tag == 'Directory':
-        libtype = 'photoalbum'
-    if libtype in LIBRARY_TYPES:
-        cls = LIBRARY_TYPES[libtype]
-        return cls(server, elem, initpath)
-    raise UnknownType('Unknown library type: %s' % libtype)
+#         Raises:
+#             UnknownType: Unknown library type.
+#     """
+#     libtype = elem.tag if bytag else elem.attrib.get('type')
+#     if libtype == 'photo' and elem.tag == 'Directory':
+#         libtype = 'photoalbum'
+#     if libtype in LIBRARY_TYPES:
+#         cls = LIBRARY_TYPES[libtype]
+#         return cls(server, elem, initpath)
+#     raise UnknownType('Unknown library type: %s' % libtype)
 
 
 def cast(func, value):
@@ -319,7 +319,6 @@ def threaded(callback, listargs):
         threads[-1].start()
     for thread in threads:
         thread.join()
-
     return results
 
 
@@ -366,6 +365,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
     """
+    # TODO: Review this; It should be properly logging and raising exceptions..
     session = session or requests.Session()
     print('Mocked download %s' % mocked)
     if savepath is None:

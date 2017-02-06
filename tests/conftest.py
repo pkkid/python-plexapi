@@ -58,7 +58,7 @@ def plex_account():
     username = test_username
     password = test_password
     assert username and password
-    account = MyPlexAccount.signin(username, password)
+    account = MyPlexAccount(username, password)
     assert account
     return account
 
