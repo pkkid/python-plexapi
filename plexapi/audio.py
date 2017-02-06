@@ -91,9 +91,9 @@ class Artist(Audio):
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
-        self.countries = self._buildSubitems(data, media.Country)
-        self.genres = self._buildSubitems(data, media.Genre)
-        self.similar = self._buildSubitems(data, media.Similar)
+        self.countries = self._buildItems(data, media.Country)
+        self.genres = self._buildItems(data, media.Genre)
+        self.similar = self._buildItems(data, media.Similar)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -186,7 +186,7 @@ class Album(Audio):
         self.parentTitle = data.attrib.get('parentTitle')
         self.studio = data.attrib.get('studio')
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildSubitems(data, media.Genre)
+        self.genres = self._buildItems(data, media.Genre)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -293,8 +293,8 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.media = self._buildSubitems(data, media.Media)
-        self.moods = self._buildSubitems(data, media.Mood)
+        self.media = self._buildItems(data, media.Media)
+        self.moods = self._buildItems(data, media.Mood)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)

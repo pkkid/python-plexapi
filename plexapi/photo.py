@@ -110,7 +110,7 @@ class Photo(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.media = self._buildSubitems(data, media.Media)
+        self.media = self._buildItems(data, media.Media)
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """

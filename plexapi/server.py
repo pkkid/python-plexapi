@@ -279,8 +279,8 @@ class PlexServer(PlexObject):
             params['section'] = utils.SEARCHTYPES[mediatype]
         if limit:
             params['limit'] = limit
-        url = '/hubs/search?%s' % urlencode(params)
-        for hub in utils.listItems(self, url, bytag=True):
+        key = '/hubs/search?%s' % urlencode(params)
+        for hub in self._fetchItems(key, bytag=True):
             results += hub.items
         return results
 

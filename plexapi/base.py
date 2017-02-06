@@ -135,17 +135,37 @@ class PlexObject(object):
             return cls(self._root, elem, initpath)
         raise UnknownType('Unknown library type: %s' % libtype)
 
-    def _buildSubitems(self, data, cls, tag=None, filters=None, *args):
-        """ Build and return a list of items (optionally filtered by tag). """
+    def _buildItems(self, data, cls=None, tag=None, attrs=None, safe=False):
+        """ Build and return a list of items (optionally filtered by tag).
+
+            Parameters:
+                data (ElementTree): XML data to search for items.
+                cls (PlexObject): Optionally specify the PlexObject to be built. If not specified
+                    _buildItem will be called and the best guess item will be built.
+                tag (str): Only build items with the specified tag. If not specified and 
+                    cls is specified, tag will be set to cls.TYPE.
+                attrs (dict): Dict containing attributes to filter the elements by. If not
+                    specified, all elements will be considered.
+                safe (bool): If True, dont raise an exception when unable to build an object.
+        """
         items = []
-        tag = tag or cls.TYPE
-        filters = filters or {}
+        tag = cls.TYPE if not tag and cls else tag
+        attrs = attrs or {}
         for elem in data:
-            if elem.tag == tag:
-                for attr, value in filters.items():
-                    if elem.attrib.get(attr) != str(value):
-                        continue
-                items.append(cls(self._root, elem, self._initpath, *args))
+            try:
+                if not tag or elem.tag == tag:
+                    for attr, value in attrs.items():
+                        if elem.attrib.get(attr) != str(value):
+                            continue
+                    if cls is not None:
+                        items.append(cls(self._root, elem, self._initpath))
+                    else:
+                        items.append(self._buildItem(elem, self._initpath))
+            except Exception as err:
+                if safe:
+                    log.warn('Failed to build %s (type=%s); %s' % (elem.tag, elem.attrib.get('type', 'NA'), err))
+                    continue
+                raise
         return items
 
     def _fetchItem(self, key, title=None, name=None):

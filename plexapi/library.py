@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
 from plexapi.compat import unquote
@@ -81,11 +80,11 @@ class Library(PlexObject):
 
     def onDeck(self):
         """ Returns a list of all media items on deck. """
-        return utils.listItems(self.server, '/library/onDeck')
+        return self._fetchItems('/library/onDeck')
 
     def recentlyAdded(self):
         """ Returns a list of all media items recently added. """
-        return utils.listItems(self.server, '/library/recentlyAdded')
+        return self._fetchItems('/library/recentlyAdded')
 
     def get(self, title):  # this should use hub search when its merged
         """ Return the first item from all items with the specified title.
@@ -121,8 +120,8 @@ class Library(PlexObject):
             args['type'] = utils.searchType(libtype)
         for attr, value in kwargs.items():
             args[attr] = value
-        query = '/library/all%s' % utils.joinArgs(args)
-        return utils.listItems(self.server, query)
+        key = '/library/all%s' % utils.joinArgs(args)
+        return self._fetchItems(key)
 
     def cleanBundles(self):
         """ Poster images and other metadata for items in your library are kept in "bundle"
@@ -475,23 +474,17 @@ class PhotoSection(LibrarySection):
 
 
 @utils.register_libtype
-class Hub(object):
+class Hub(PlexObject):
     TYPE = 'Hub'
-    HUBTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
+    FILTERTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
 
-    def __init__(self, server, data, initpath):
+    def _loadData(self, data):
         self._data = data
-        self.server = server
-        self.initpath = initpath
         self.hubIdentifier = data.attrib.get('hubIdentifier')
         self.size = utils.cast(int, data.attrib.get('size'))
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        if self.type in self.HUBTYPES:
-            mediacls = self.HUBTYPES[self.type]
-            self.items = [mediacls(self.server, elem) for elem in data]
-        else:
-            self.items = self._safe_builditems(data)
+        self.items = self._buildItems(data)
 
     def __repr__(self):
         return '<Hub:%s>' % self.title.encode('utf8')
@@ -499,14 +492,11 @@ class Hub(object):
     def __len__(self):
         return self.size
 
-    def _safe_builditems(self, data):
-        items = []
-        for elem in data:
-            try:
-                items.append(utils.buildItem(self.server, elem, '/hubs'))
-            except Exception as err:
-                logging.warn('Failed %s to build %s; Error: %s' % (self.type, self.title, err))
-        return items
+    def _buildItems(self, data):
+        if self.type in self.FILTERTYPES:
+            cls = self.FILTERTYPES[self.type]
+            return [cls(self._root, elem, self._initpath) for elem in data]
+        return super(Hub, self)._buildItems(data, safe=True)
 
 
 @utils.register_libtype

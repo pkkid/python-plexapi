@@ -252,7 +252,7 @@ class MyPlexResource(PlexObject):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = self._buildSubitems(data, ResourceConnection)
+        self.connections = self._buildItems(data, ResourceConnection)
 
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))

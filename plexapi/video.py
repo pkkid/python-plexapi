@@ -92,15 +92,15 @@ class Movie(Video, Playable):
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.collections = self._buildSubitems(data, media.Collection)
-        self.countries = self._buildSubitems(data, media.Country)
-        self.directors = self._buildSubitems(data, media.Director)
-        self.fields = self._buildSubitems(data, media.Field)
-        self.genres = self._buildSubitems(data, media.Genre)
-        self.media = self._buildSubitems(data, media.Media)
-        self.producers = self._buildSubitems(data, media.Producer)
-        self.roles = self._buildSubitems(data, media.Role)
-        self.writers = self._buildSubitems(data, media.Writer)
+        self.collections = self._buildItems(data, media.Collection)
+        self.countries = self._buildItems(data, media.Country)
+        self.directors = self._buildItems(data, media.Director)
+        self.fields = self._buildItems(data, media.Field)
+        self.genres = self._buildItems(data, media.Genre)
+        self.media = self._buildItems(data, media.Media)
+        self.producers = self._buildItems(data, media.Producer)
+        self.roles = self._buildItems(data, media.Role)
+        self.writers = self._buildItems(data, media.Writer)
         # self.videoStreams = utils.findStreams(self.media, 'videostream')  # these dont go here
         # self.audioStreams = utils.findStreams(self.media, 'audiostream')  # these dont go here
         # self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')  # these dont go here
@@ -167,8 +167,8 @@ class Show(Video):
         self.theme = data.attrib.get('theme')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildSubitems(data, media.Genre)
-        self.roles = self._buildSubitems(data, media.Role)
+        self.genres = self._buildItems(data, media.Genre)
+        self.roles = self._buildItems(data, media.Role)
 
     @property
     def actors(self):
@@ -417,12 +417,9 @@ class Episode(Video, Playable):
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.directors = self._buildSubitems(data, media.Director)
-        self.media = self._buildSubitems(data, media.Media)
-        self.writers = self._buildSubitems(data, media.Writer)
-        # self.videoStreams = utils.findStreams(self.media, 'videostream')
-        # self.audioStreams = utils.findStreams(self.media, 'audiostream')
-        # self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')
+        self.directors = self._buildItems(data, media.Director)
+        self.media = self._buildItems(data, media.Media)
+        self.writers = self._buildItems(data, media.Writer)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)

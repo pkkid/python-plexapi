@@ -48,6 +48,11 @@ DONT_RELOAD = (
     'client.PlexClient',  # we dont have the token to reload.
     #'server.PlexServer',  # setting version to None? :(
 )
+TAGATTRS = {
+    'Media': 'media',
+    'Country': 'countries',
+
+}
 STOP_RECURSING_AT = (
     #'media.MediaPart',
 )
@@ -64,16 +69,17 @@ class PlexAttributes():
 
     def run(self):
         starttime = time.time()
-        # self._parse_myplex()
-        # self._parse_server()
-        # self._parse_library()
-        # self._parse_audio()
-        # self._parse_photo()
-        # self._parse_movie()
-        # self._parse_show()
-        # self._parse_client()
-        # self._parse_playlist()
-        # self._parse_sync()
+        self._parse_myplex()
+        self._parse_server()
+        self._parse_search()
+        self._parse_library()
+        self._parse_audio()
+        self._parse_photo()
+        self._parse_movie()
+        self._parse_show()
+        self._parse_client()
+        self._parse_playlist()
+        self._parse_sync()
         self.runtime = round((time.time() - starttime) / 60.0, 1)
         return self
 
@@ -88,21 +94,24 @@ class PlexAttributes():
     def _parse_server(self):
         self._load_attrs(self.plex, 'serv')
         self._load_attrs(self.plex.account(), 'serv')
-        self._load_attrs(self.plex.history()[:20], 'hist')
-        # self._load_attrs(self.plex.playlists())
-        # for search in ('cre', 'ani', 'mik', 'she'):
-        #     self._load_attrs(self.plex.search('cre'))
-        # self._load_attrs(self.plex.sessions(), 'sess')
+        self._load_attrs(self.plex.history()[:50], 'hist')
+        self._load_attrs(self.plex.history()[50:], 'hist')
+        self._load_attrs(self.plex.sessions(), 'sess')
+
+    def _parse_search(self):
+        for search in ('cre', 'ani', 'mik', 'she', 'bea'):
+            self._load_attrs(self.plex.search(search), 'hub')
 
     def _parse_library(self):
         cat = 'lib'
         self._load_attrs(self.plex.library, cat)
-        # self._load_attrs(self.plex.library.sections())
-        # self._load_attrs(self.plex.library.all()[:20])
-        # self._load_attrs(self.plex.library.onDeck()[:20])
-        # self._load_attrs(self.plex.library.recentlyAdded()[:20])
-        # for search in ('cat', 'dog', 'rat'):
-        #     self._load_attrs(self.plex.library.search(search)[:20])
+        #self._load_attrs(self.plex.library.all()[:50], 'all')
+        self._load_attrs(self.plex.library.onDeck()[:50], 'deck')
+        self._load_attrs(self.plex.library.recentlyAdded()[:50], 'add')
+        for search in ('cat', 'dog', 'rat', 'gir', 'mou'):
+            self._load_attrs(self.plex.library.search(search)[:50], 'srch')
+        # TODO: Implement section search (remove library search?)
+        # TODO: Implement section search filters
 
     def _parse_audio(self):
         cat = 'lib'
@@ -142,7 +151,7 @@ class PlexAttributes():
                 for show in showsection.all():
                     self._load_attrs(show, cat)
                     for season in show.seasons():
-                        self._load_attrs(show, cat)
+                        self._load_attrs(season, cat)
                         for episode in season.episodes():
                             self._load_attrs(episode, cat)
 
@@ -200,6 +209,9 @@ class PlexAttributes():
             if cat: categories[attr].add(cat)
             if elem.attrib[attr] and len(examples[attr]) <= self.opts.examples:
                 examples[attr].add(elem.attrib[attr])
+            for subelem in elem:
+                attrname = TAGATTRS.get(subelem.tag, '%ss' % subelem.tag.lower())
+                attrs['%s[]' % attrname] += 1
 
     def _load_obj_attrs(self, clsname, obj, attrs):
         if clsname in STOP_RECURSING_AT: return None

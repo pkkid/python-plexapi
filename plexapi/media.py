@@ -52,7 +52,7 @@ class Media(PlexObject):
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
-        self.parts = self._buildSubitems(data, MediaPart)
+        self.parts = self._buildItems(data, MediaPart)
 
     def __repr__(self):
         title = self.video.title.replace(' ','.')[0:20]
@@ -84,12 +84,30 @@ class MediaPart(PlexObject):
         self.id = cast(int, data.attrib.get('id'))
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
-        self.videoStreams = self._buildSubitems(data, VideoStream, 'Stream', {'streamType':VideoStream.STREAMTYPE})
-        self.audioStreams = self._buildSubitems(data, AudioStream, 'Stream', {'streamType':AudioStream.STREAMTYPE})
-        self.subtitleStreams = self._buildSubitems(data, SubtitleStream, 'Stream', {'streamType':SubtitleStream.STREAMTYPE})
-
+        self.streams = self._buildStreams(data)
+    
     def __repr__(self):
         return '<%s:%s>' % (self.__class__.__name__, self.id)
+
+    def _buildStreams(self, data):
+        streams = []
+        for elem in data:
+            for cls in (VideoStream, AudioStream, SubtitleStream):
+                if elem.attrib.get('streamType') == str(cls.STREAMTYPE):
+                    streams.append(cls(self._root, elem, self._initpath))
+        return streams
+
+    @property
+    def videoStreams(self):
+        return [s for s in self.streams if s.streamType == VideoStream.STREAMTYPE]
+
+    @property
+    def audioStreams(self):
+        return [s for s in self.streams if s.streamType == AudioStream.STREAMTYPE]
+
+    @property
+    def subtitleStreams(self):
+        return [s for s in self.streams if s.streamType == SubtitleStream.STREAMTYPE]
 
 
 class MediaPartStream(PlexObject):
