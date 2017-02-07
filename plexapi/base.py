@@ -20,7 +20,7 @@ class PlexObject(object):
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
-            self.__firstattr('_baseurl', 'key', 'id', 'uri'),
+            self.__firstattr('_baseurl', 'key', 'id', 'playQueueID', 'uri'),
             self.__firstattr('title', 'name', 'username', 'librarySectionTitle', 'product')
         ] if p])
 
@@ -34,26 +34,28 @@ class PlexObject(object):
             value = value.replace('/library/metadata/','').replace('/children','')
             if value: return value[:20]
 
-    def _buildItem(self, elem, initpath, cls=None, bytag=False):
+    def _buildItem(self, elem, cls=None, initpath=None, bytag=False):
         """ Factory function to build objects based on registered LIBRARY_TYPES. """
+        initpath = initpath or self._initpath
+        if cls: return cls(self._root, elem, initpath)
         libtype = elem.tag if bytag else elem.attrib.get('type')
         if libtype == 'photo' and elem.tag == 'Directory':
             libtype = 'photoalbum'
         if libtype in utils.LIBRARY_TYPES:
-            cls = cls or utils.LIBRARY_TYPES[libtype]
+            cls = utils.LIBRARY_TYPES[libtype]
             return cls(self._root, elem, initpath)
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, libtype))
 
-    def _buildItemOrNone(self, elem, initpath, cls=None, bytag=False):
+    def _buildItemOrNone(self, elem, cls=None, initpath=None, bytag=False):
         """ Calls :func:`~plexapi.base.PlexObject._buildItem()` but returns
             None if elem is an unknown type.
         """
         try:
-            return self._buildItem(elem, initpath, cls, bytag)
+            return self._buildItem(elem, cls, initpath, bytag)
         except UnknownType:
             return None
 
-    def _buildItems(self, data, cls=None):
+    def _buildItems(self, data, cls=None, initpath=None, bytag=False):
         """ Build and return a list of items (optionally filtered by tag).
 
             Parameters:
@@ -63,10 +65,8 @@ class PlexObject(object):
                     guess item will be built.
         """
         items = []
-        tag = cls.TYPE if cls else None
         for elem in data:
-            if elem.tag == tag:
-                items.append(self._buildItemOrNone(elem, self._initpath, cls))
+            items.append(self._buildItemOrNone(elem, cls, initpath, bytag))
         return [item for item in items if item]
 
     def fetchItem(self, key, cls=None, bytag=False, tag=None, **attrs):
@@ -79,7 +79,7 @@ class PlexObject(object):
                 continue
             if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
                 continue
-            return self._buildItem(elem, key, cls, bytag)
+            return self._buildItem(elem, cls, key, bytag)
         raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, attrs))
 
     def fetchItems(self, key, cls=None, bytag=False, tag=None, **attrs):
@@ -92,7 +92,7 @@ class PlexObject(object):
                 continue
             if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
                 continue
-            items.append(self._buildItemOrNone(elem, key, cls, bytag))
+            items.append(self._buildItemOrNone(elem, cls, key, bytag))
         return [item for item in items if item]
 
     def _loadData(self, data):

@@ -246,7 +246,7 @@ class MyPlexResource(PlexObject):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = self._buildItems(data, ResourceConnection)
+        self.connections = self._buildItems(data, ResourceConnection, bytag=True)
 
     def connect(self, ssl=None, safe=False):
         """ Returns a new :class:`~server.PlexServer` object. Often times there is more than

@@ -2,6 +2,7 @@
 from plexapi import utils
 from plexapi.base import PlexPartialObject, Playable
 from plexapi.exceptions import BadRequest
+from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
 
 
@@ -68,6 +69,10 @@ class Playlist(PlexPartialObject, Playable):
     def delete(self):
         """Delete playlist."""
         return self._root._query(self.key, method=self._root._session.delete)
+
+    def playQueue(self, *args, **kwargs):
+        """ Create a playqueue from this playlist. """
+        return PlayQueue.create(self._root, self, *args, **kwargs)
 
     @classmethod
     def create(cls, server, title, items):
