@@ -5,7 +5,7 @@ from plexapi.utils import download
 
 
 def test_server_attr(pms):
-    assert pms.baseurl == 'http://138.68.157.5:32400'
+    assert pms._baseurl == 'http://138.68.157.5:32400'
     assert pms.friendlyName == 'PMS_API_TEST_SERVER'
     assert pms.machineIdentifier == 'e42470b5c527c7e5ebbdc017b5a32c8c683f6f8b'
     assert pms.myPlex is True
@@ -32,7 +32,7 @@ def test_server_library(pms):
 
 
 def test_server_url(pms):
-    assert 'ohno' in pms.url('ohno')
+    assert 'ohno' in pms._url('ohno')
 
 
 def test_server_transcodeImage(tmpdir, pms, a_show):
@@ -42,7 +42,7 @@ def test_server_transcodeImage(tmpdir, pms, a_show):
     img_url_resize = pms.transcodeImage(a_show.banner, height, width)
     gray = img_url_resize = pms.transcodeImage(a_show.banner, height, width, saturation=0)
     resized_image = download(img_url_resize, savepath=str(tmpdir), filename='resize_image')
-    org_image = download(a_show.server.url(a_show.banner), savepath=str(tmpdir), filename='org_image')
+    org_image = download(a_show._root._url(a_show.banner), savepath=str(tmpdir), filename='org_image')
     gray_image = download(gray, savepath=str(tmpdir), filename='gray_image')
     with Image.open(resized_image) as im:
         assert width, height == im.size
@@ -121,7 +121,7 @@ def test_server_Server_session():
         os.environ.get('PLEX_TEST_TOKEN'), session=MySession())
     assert hasattr(plex.session, 'plexapi_session_test')
     pl = plex.playlists()
-    assert hasattr(pl[0].server.session, 'plexapi_session_test')
+    assert hasattr(pl[0]._root._session, 'plexapi_session_test')
     # TODO: Check client in test_server_Server_session.
     # TODO: Check myplex in test_server_Server_session.
 
@@ -159,7 +159,7 @@ def test_server_Server_sessions(pms):
 def test_server_clients(pms):
     assert len(pms.clients())
     m = pms.clients()[0]
-    assert m.baseurl == 'http://127.0.0.1:32400'
+    assert m._baseurl == 'http://127.0.0.1:32400'
     assert m.device is None
     assert m.deviceClass == 'pc'
     assert m.machineIdentifier == '89hgkrbqxaxmf45o1q2949ru'
@@ -170,7 +170,7 @@ def test_server_clients(pms):
     assert m.protocol == 'plex'
     assert m.protocolCapabilities == ['timeline', 'playback', 'navigation', 'mirror', 'playqueues']
     assert m.protocolVersion == '1'
-    assert m.server.baseurl == 'http://138.68.157.5:32400'
+    assert m._root._baseurl == 'http://138.68.157.5:32400'
     assert m.state is None
     assert m.title == 'Plex Web (Chrome)'
     assert m.token is None

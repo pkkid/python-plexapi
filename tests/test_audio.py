@@ -8,13 +8,13 @@ def test_audio_Artist_attr(a_artist):
     assert [i.tag for i in m.genres] == ['Electronic']
     assert m.guid == 'com.plexapp.agents.lastfm://Infinite%20State?lang=en'
     assert m.index == '1'
-    assert m.initpath == '/library/metadata/20'
+    assert m._initpath == '/library/metadata/20'
     assert m.key == '/library/metadata/20'
     assert m.librarySectionID == '3'
     assert m.listType == 'audio'
     assert m.location == '/media/music/unmastered_impulses'
     assert m.ratingKey == 20
-    assert m.server.baseurl == 'http://138.68.157.5:32400'
+    assert m._root._baseurl == 'http://138.68.157.5:32400'
     assert m.similar == []
     assert m.summary == ""
     assert m.title == 'Infinite State'
@@ -55,7 +55,7 @@ def test_audio_Album_attrs(a_music_album):
     assert str(m.addedAt.date()) == '2017-01-17'
     assert [i.tag for i in m.genres] == ['Electronic']
     assert m.index == '1'
-    assert m.initpath == '/library/metadata/21'
+    assert m._initpath == '/library/metadata/21'
     assert m.key == '/library/metadata/21'
     assert m.librarySectionID == '3'
     assert m.listType == 'audio'
@@ -65,7 +65,7 @@ def test_audio_Album_attrs(a_music_album):
     assert m.parentThumb is None
     assert m.parentTitle == 'Infinite State'
     assert m.ratingKey == 21
-    assert m.server.baseurl == 'http://138.68.157.5:32400'
+    assert m._root._baseurl == 'http://138.68.157.5:32400'
     assert m.studio is None
     assert m.summary == ''
     assert m.thumb == '/library/metadata/21/thumb/1484693407'
@@ -84,7 +84,7 @@ def test_audio_Album_tracks(a_music_album):
     assert tracks[0].grandparentRatingKey == '20'
     assert tracks[0].grandparentTitle == 'Infinite State'
     assert tracks[0].index == '1'
-    assert tracks[0].initpath == '/library/metadata/21/children'
+    assert tracks[0]._initpath == '/library/metadata/21/children'
     assert tracks[0].key == '/library/metadata/22'
     assert tracks[0].listType == 'audio'
     assert tracks[0].originalTitle == 'Kenneth Reitz'
@@ -96,7 +96,7 @@ def test_audio_Album_tracks(a_music_album):
     assert tracks[0].player is None
     assert tracks[0].ratingCount == 9
     assert tracks[0].ratingKey == 22
-    assert tracks[0].server.baseurl == 'http://138.68.157.5:32400'
+    assert tracks[0]._root._baseurl == 'http://138.68.157.5:32400'
     assert tracks[0].summary == ""
     assert tracks[0].thumb == '/library/metadata/21/thumb/1484693407'
     assert tracks[0].title == 'Holy Moment'
@@ -118,7 +118,7 @@ def test_audio_Album_track(a_music_album):
     assert track.grandparentRatingKey == '20'
     assert track.grandparentTitle == 'Infinite State'
     assert track.index == '1'
-    assert track.initpath == '/library/metadata/21/children'
+    assert track._initpath == '/library/metadata/21/children'
     assert track.key == '/library/metadata/22'
     assert track.listType == 'audio'
     # Assign 0 track.media
@@ -132,7 +132,7 @@ def test_audio_Album_track(a_music_album):
     assert track.player is None
     assert track.ratingCount == 9
     assert track.ratingKey == 22
-    assert track.server.baseurl == 'http://138.68.157.5:32400'
+    assert track._root._baseurl == 'http://138.68.157.5:32400'
     assert track.summary == ''
     assert track.thumb == '/library/metadata/21/thumb/1484693407'
     assert track.title == 'Holy Moment'
@@ -151,11 +151,11 @@ def test_audio_Album_track(a_music_album):
     assert med0.duration == 298606
     assert med0.height is None
     assert med0.id == 22
-    assert med0.initpath == '/library/metadata/21/children'
+    assert med0._initpath == '/library/metadata/21/children'
     assert med0.optimizedForStreaming is None
     # Assign 0 med0.parts
     par0 = med0.parts[0]
-    assert med0.server.baseurl == 'http://138.68.157.5:32400'
+    assert med0._root._baseurl == 'http://138.68.157.5:32400'
     assert med0.videoCodec is None
     assert med0.videoFrameRate is None
     assert med0.videoResolution is None
@@ -164,9 +164,9 @@ def test_audio_Album_track(a_music_album):
     assert par0.duration == 298606
     assert par0.file == '/media/music/unmastered_impulses/01-Holy_Moment.mp3'
     assert par0.id == 22
-    assert par0.initpath == '/library/metadata/21/children'
+    assert par0._initpath == '/library/metadata/21/children'
     assert par0.key == '/library/parts/22/1484693136/file.mp3'
-    assert par0.server.baseurl == 'http://138.68.157.5:32400'
+    assert par0._root._baseurl == 'http://138.68.157.5:32400'
     assert par0.size == 14360402
 
 
@@ -194,7 +194,7 @@ def test_audio_Track_attrs(a_music_album):
     assert track.grandparentTitle == 'Infinite State'
     assert track.guid == 'local://22'
     assert track.index == '1'
-    assert track.initpath == '/library/metadata/22'
+    assert track._initpath == '/library/metadata/22'
     assert track.key == '/library/metadata/22'
     assert track.lastViewedAt is None
     assert track.librarySectionID == '3'
@@ -213,7 +213,7 @@ def test_audio_Track_attrs(a_music_album):
     assert track.primaryExtraKey is None
     assert track.ratingCount == 9
     assert track.ratingKey == 22
-    assert track.server.baseurl == 'http://138.68.157.5:32400'
+    assert track._root._baseurl == 'http://138.68.157.5:32400'
     assert track.sessionKey is None
     assert track.summary == ''
     assert track.thumb == '/library/metadata/21/thumb/1484693407'
@@ -235,11 +235,11 @@ def test_audio_Track_attrs(a_music_album):
     assert med0.duration == 298606
     assert med0.height is None
     assert med0.id == 22
-    assert med0.initpath == '/library/metadata/22'
+    assert med0._initpath == '/library/metadata/22'
     assert med0.optimizedForStreaming is None
     # Assign 0 med0.parts
     par0 = med0.parts[0]
-    assert med0.server.baseurl == 'http://138.68.157.5:32400'
+    assert med0._root._baseurl == 'http://138.68.157.5:32400'
     assert med0.videoCodec is None
     assert med0.videoFrameRate is None
     assert med0.videoResolution is None
@@ -248,10 +248,10 @@ def test_audio_Track_attrs(a_music_album):
     assert par0.duration == 298606
     assert par0.file == '/media/music/unmastered_impulses/01-Holy_Moment.mp3'
     assert par0.id == 22
-    assert par0.initpath == '/library/metadata/22'
+    assert par0._initpath == '/library/metadata/22'
     assert par0.key == '/library/parts/22/1484693136/file.mp3'
     #assert par0.media == <Media:Holy.Moment>
-    assert par0.server.baseurl == 'http://138.68.157.5:32400'
+    assert par0._root._baseurl == 'http://138.68.157.5:32400'
     assert par0.size == 14360402
     # Assign 0 par0.streams
     str0 = par0.streams[0]
@@ -266,13 +266,13 @@ def test_audio_Track_attrs(a_music_album):
     assert str0.duration is None
     assert str0.id == 44
     assert str0.index == 0
-    assert str0.initpath == '/library/metadata/22'
+    assert str0._initpath == '/library/metadata/22'
     assert str0.language is None
     assert str0.languageCode is None
     #assert str0.part == <MediaPart:22>
     assert str0.samplingRate == 44100
     assert str0.selected is True
-    assert str0.server.baseurl == 'http://138.68.157.5:32400'
+    assert str0._root._baseurl == 'http://138.68.157.5:32400'
     assert str0.streamType == 2
     assert str0.title is None
     assert str0.type == 2

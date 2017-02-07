@@ -28,13 +28,13 @@ def test_library_sectionByID_with_attrs(pms):
     assert m.composite == '/library/sections/1/composite/1484690696'
     assert str(m.createdAt.date()) == '2017-01-17'
     assert m.filters == '1'
-    assert m.initpath == '/library/sections'
+    assert m._initpath == '/library/sections'
     assert m.key == '1'
     assert m.language == 'en'
     assert m.locations == ['/media/movies']
     assert m.refreshing is False
     assert m.scanner == 'Plex Movie Scanner'
-    assert m.server.baseurl == 'http://138.68.157.5:32400'
+    assert m._root._baseurl == 'http://138.68.157.5:32400'
     assert m.thumb == '/:/resources/movie.png'
     assert m.title == 'Movies'
     assert m.type == 'movie'
@@ -143,11 +143,11 @@ def test_library_and_section_search_for_movie(pms):
 
 def test_search_with_apostrophe(pms):
     show_title = "Marvel's Daredevil"  # Test ' in show title
-    result_server = pms.search(show_title)
+    result_root = pms.search(show_title)
     result_shows = pms.library.section('TV Shows').search(show_title)
-    assert result_server
+    assert result_root
     assert result_shows
-    assert result_server == result_shows
+    assert result_root == result_shows
 
 
 def test_crazy_search(pms, a_movie):
