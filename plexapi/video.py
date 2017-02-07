@@ -225,7 +225,7 @@ class Show(Video):
             raise TypeError('Missing argument: title or season and episode are required')
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
-            return self._findItem(key, title)
+            return self._fetchItem(key, title=title)
         elif season and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
@@ -332,8 +332,8 @@ class Season(Video):
         
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
-            return self._findItem(key, title=title)
-        return self._findItem(key, seasonNumber=self.index, index=num)
+            return self._fetchItem(key, title=title)
+        return self._fetchItem(key, seasonNumber=self.index, index=num)
 
     def get(self, title):
         """ Alias for self.episode. """
