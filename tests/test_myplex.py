@@ -40,7 +40,7 @@ def test_myplex_connect_to_resource(plex_account):
         if resource.name == 'PMS_API_TEST_SERVER':
             break
     server = resource.connect()
-    assert 'Ohno' in server.url('Ohno')
+    assert 'Ohno' in server._url('Ohno')
     assert server
 
 
