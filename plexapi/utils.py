@@ -39,28 +39,6 @@ def register_libtype(cls):
     return cls
 
 
-# def buildItem(server, elem, initpath, bytag=False):
-#     """ Factory function to build the objects used within the PlexAPI.
-
-#         Parameters:
-#             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-#             elem (ElementTree): XML data needed to build the object.
-#             initpath (str): Relative path requested when retrieving specified `data` (optional).
-#             bytag (bool): Creates the object from the name specified by the tag instead of the
-#                 default which builds the object specified by the type attribute. <tag type='foo' />
-
-#         Raises:
-#             UnknownType: Unknown library type.
-#     """
-#     libtype = elem.tag if bytag else elem.attrib.get('type')
-#     if libtype == 'photo' and elem.tag == 'Directory':
-#         libtype = 'photoalbum'
-#     if libtype in LIBRARY_TYPES:
-#         cls = LIBRARY_TYPES[libtype]
-#         return cls(server, elem, initpath)
-#     raise UnknownType('Unknown library type: %s' % libtype)
-
-
 def cast(func, value):
     """ Cast the specified value to the specified type (returned by func). Currently this
         only support int, float, bool. Should be extended if needed.
@@ -79,42 +57,6 @@ def cast(func, value):
                 return float('nan')
         return func(value)
     return value
-
-
-def findKey(server, key):
-    """ Finds and builds a object based on ratingKey.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            key (int): ratingKey to find and return.
-
-        Raises:
-            NotFound: Unable to find key
-    """
-    path = '/library/metadata/{0}'.format(key)
-    try:
-        # Item seems to be the first sub element
-        elem = server.query(path)[0]
-        return buildItem(server, elem, path)
-    except:
-        raise NotFound('Unable to find key: %s' % key)
-
-
-def findItem(server, path, title):
-    """ Finds and builds a object based on title.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            path (str): API path that returns item to search title for.
-            title (str): Title of the item to find and return.
-
-        Raises:
-            NotFound: Unable to find item.
-    """
-    for elem in server.query(path):
-        if elem.attrib.get('title').lower() == title.lower():
-            return buildItem(server, elem, path)
-    raise NotFound('Unable to find item: %s' % title)
 
 
 def findLocations(data, single=False):
@@ -225,33 +167,7 @@ def listChoices(server, path):
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             path (str): Relative path to request XML data from.
     """
-    return {c.attrib['title']: c.attrib['key'] for c in server.query(path)}
-
-
-def listItems(server, path, libtype=None, watched=None, bytag=False):
-    """ Returns a list of object built from :func:`~plexapi.utils.buildItem()` found
-        within the specified path.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            path (str): Relative path to request XML data from.
-            libtype (str): Optionally return only the specified library type.
-            watched (bool): Optionally return only watched or unwatched items.
-            bytag (bool): Set true if libtype is found in the XML tag (and not the 'type' attribute).
-    """
-    items = []
-    for elem in server.query(path):
-        if libtype and elem.attrib.get('type') != libtype:
-            continue
-        if watched is True and int(elem.attrib.get('viewCount', 0)) == 0:
-            continue
-        if watched is False and int(elem.attrib.get('viewCount', 0)) >= 1:
-            continue
-        try:
-            items.append(buildItem(server, elem, path, bytag))
-        except UnknownType:
-            pass
-    return items
+    return {c.attrib['title']: c.attrib['key'] for c in server._query(path)}
 
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover

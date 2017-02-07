@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 
 
@@ -36,24 +36,25 @@ class Video(PlexPartialObject):
         that are useful to know–whether it's a video file,
         a music track, or one of your photos.
         """
-        self._root.query('/%s/analyze' % self.key.lstrip('/'), method=self._root._session.put)
+        key = '/%s/analyze' % self.key.lstrip('/')
+        self._root._query(key, method=self._root._session.put)
 
     def markWatched(self):
         """Mark a items as watched."""
-        path = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._root.query(path)
+        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
+        self._root._query(key)
         self.reload()
 
     def markUnwatched(self):
         """Mark a item as unwatched."""
-        path = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._root.query(path)
+        key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
+        self._root._query(key)
         self.reload()
 
     def refresh(self):
         """Refresh a item."""
-        self._root.query('%s/refresh' %
-                          self.key, method=self._root._session.put)
+        key = '%s/refresh' % self.key
+        self._root._query(key, method=self._root._session.put)
 
     def section(self):
         """Library section."""
@@ -69,13 +70,12 @@ class Movie(Video, Playable):
 
         Args:
             data (Element): XML reponse from PMS as Element
-                            normally built from server.query
+                normally built from server._query
         """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.art = data.attrib.get('art')
-        self.audienceRating = utils.cast(
-            float, data.attrib.get('audienceRating'))
+        self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
         self.chapterSource = data.attrib.get('chapterSource')
         self.contentRating = data.attrib.get('contentRating')
@@ -101,9 +101,6 @@ class Movie(Video, Playable):
         self.producers = self._buildItems(data, media.Producer)
         self.roles = self._buildItems(data, media.Role)
         self.writers = self._buildItems(data, media.Writer)
-        # self.videoStreams = utils.findStreams(self.media, 'videostream')  # these dont go here
-        # self.audioStreams = utils.findStreams(self.media, 'audiostream')  # these dont go here
-        # self.subtitleStreams = utils.findStreams(self.media, 'subtitlestream')  # these dont go here
 
     @property
     def actors(self):
@@ -181,7 +178,7 @@ class Show(Video):
     def seasons(self):
         """Returns a list of Season."""
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self._fetchItems(key, Season.TYPE)
+        return self.fetchItems(key, type=Season.TYPE)
 
     def season(self, title=None):
         """ Returns the season with the specified title or number.
@@ -192,16 +189,12 @@ class Show(Video):
         if isinstance(title, int):
             title = 'Season %s' % title
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self._fetchItem(key, title)
+        return self.fetchItem(key, tag='Directory', title=title)
 
-    def episodes(self, watched=None):
-        """Returs a list of Episode
-
-           Args:
-                watched (bool): Defaults to None. Exclude watched episodes
-        """
-        leavesKey = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return utils.listItems(self._root, leavesKey, watched=watched)
+    def episodes(self):
+        """ Returs a list of Episode """
+        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        return self.fetchItems(key)
 
     def episode(self, title=None, season=None, episode=None):
         """Find a episode using a title or season and episode.
@@ -231,8 +224,8 @@ class Show(Video):
         if not title and (not season or not episode):
             raise TypeError('Missing argument: title or season and episode are required')
         if title:
-            path = '/library/metadata/%s/allLeaves' % self.ratingKey
-            return utils.findItem(self._root, path, title)
+            key = '/library/metadata/%s/allLeaves' % self.ratingKey
+            return self._findItem(key, title)
         elif season and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
@@ -261,7 +254,7 @@ class Show(Video):
 
     def refresh(self):
         """Refresh the metadata."""
-        self._root.query('/library/metadata/%s/refresh' % self.ratingKey, method=self._root._session.put)
+        self._root._query('/library/metadata/%s/refresh' % self.ratingKey, method=self._root._session.put)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -280,7 +273,7 @@ class Season(Video):
         """Used to set the attributes
 
         Args:
-            data (Element): Usually built from server.query
+            data (Element): Usually built from server._query
         """
         Video._loadData(self, data)
         self.key = self.key.replace('/children', '')
@@ -290,6 +283,13 @@ class Season(Video):
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
         self.parentTitle = data.attrib.get('parentTitle')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
+
+    def __repr__(self):
+        return '<%s>' % ':'.join([p for p in [
+            self.__class__.__name__,
+            self.key.replace('/library/metadata/', '').replace('/children', ''),
+            '%s-s%s' % (self.parentTitle.replace(' ','-')[:20], self.seasonNumber),
+        ] if p])
 
     @property
     def isWatched(self):
@@ -307,26 +307,18 @@ class Season(Video):
                 watched (bool): Defaults to None. Exclude watched episodes
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self._fetchItems(key, Episode.TYPE)
-        # childrenKey = '/library/metadata/%s/children' % self.ratingKey
-        # return utils.listItems(self._root, childrenKey, watched=watched)
+        return self.fetchItems(key, type=Episode.TYPE)
 
-    def episode(self, title=None, episode=None):
-        """Find a episode using a title or season and episode.
+    def episode(self, title=None, num=None):
+        """ Returns the episode with the given title or number.
 
-           Note:
-                episode is required if title is missing.
-
-           Args:
-                title (str): Default None
-                episode (int): Episode number, default None
+           Parameters:
+                title (str): Title of the episode to return.
+                num (int): Number of the episode to return (if title not specified).
 
            Raises:
                 TypeError: If title and episode is missing.
                 NotFound: If that episode cant be found.
-
-           Returns:
-                Episode
 
            Examples:
                 >>> plex.search('The blacklist').season(1).episode(episode=1)
@@ -335,31 +327,21 @@ class Season(Video):
                 <Episode:116263:The.Freelancer>
 
         """
-        if not title and not episode:
-            raise TypeError('Missing argument, you need to use title or episode.')
+        if not title and not num:
+            raise BadRequest('Missing argument, you need to use title or episode.')
+        
+        key = '/library/metadata/%s/children' % self.ratingKey
         if title:
-            path = '/library/metadata/%s/children' % self.ratingKey
-            return utils.findItem(self._root, path, title)
-        elif episode:
-            results = [i for i in self.episodes() if i.seasonNumber == self.index and i.index == episode]
-            if results:
-                return results[0]
-            raise NotFound('Couldnt find %s.Season %s Episode %s.' % (self.grandparentTitle, self.index. episode))
+            return self._findItem(key, title=title)
+        return self._findItem(key, seasonNumber=self.index, index=num)
 
     def get(self, title):
-        """Get a episode with a matching title.
-
-           Args:
-                title (str): fx Secret santa
-
-            Returns:
-                Episode
-        """
+        """ Alias for self.episode. """
         return self.episode(title)
 
     def show(self):
         """Return this seasons show."""
-        return utils.listItems(self._root, self.parentKey)[0]
+        return self.fetchItem(self.parentKey)
 
     def watched(self):
         """Returns a list of watched Episode"""
@@ -368,12 +350,6 @@ class Season(Video):
     def unwatched(self):
         """Returns a list of unwatched Episode"""
         return self.episodes(watched=False)
-
-    def __repr__(self):
-        clsname = self.__class__.__name__
-        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
-        title = self.title.replace(' ', '.')[0:20].encode('utf8')
-        return '<%s:%s:%s:%s>' % (clsname, key, self.parentTitle, title)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -392,7 +368,7 @@ class Episode(Video, Playable):
         """Used to set the attributes
 
             Args:
-                data (Element): Usually built from server.query
+                data (Element): Usually built from server._query
         """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -427,10 +403,11 @@ class Episode(Video, Playable):
         self.transcodeSession = utils.findTranscodeSession(self._root, data)
 
     def __repr__(self):
-        clsname = self.__class__.__name__
-        key = self.key.replace('/library/metadata/', '').replace('/children', '') if self.key else 'NA'
-        title = self.title.replace(' ', '.')[0:20].encode('utf8')
-        return '<%s:%s:%s:S%s:E%s:%s>' % (clsname, key, self.grandparentTitle, self.seasonNumber, self.index, title)
+        return '<%s>' % ':'.join([p for p in [
+            self.__class__.__name__,
+            self.key.replace('/library/metadata/', '').replace('/children', ''),
+            '%s-s%se%s' % (self.grandparentTitle.replace(' ','-')[:20], self.seasonNumber, self.index),
+        ] if p])
 
     @property
     def isWatched(self):
@@ -452,11 +429,11 @@ class Episode(Video, Playable):
 
     def season(self):
         """Return this episode Season"""
-        return utils.listItems(self._root, self.parentKey)[0]
+        return self.fetchItem(self.parentKey)
 
     def show(self):
         """Return this episodes Show"""
-        return utils.listItems(self._root, self.grandparentKey)[0]
+        return self.fetchItem(self.grandparentKey)
 
     @property
     def location(self):

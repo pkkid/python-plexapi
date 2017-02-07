@@ -30,7 +30,7 @@ class Playlist(PlexPartialObject, Playable):
     def items(self):
         """ Returns a list of all items in the playlist. """
         key = '%s/items' % self.key
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def addItems(self, items):
         """Add items to a playlist."""
@@ -43,27 +43,27 @@ class Playlist(PlexPartialObject, Playable):
             ratingKeys.append(str(item.ratingKey))
         uuid = items[0].section().uuid
         ratingKeys = ','.join(ratingKeys)
-        path = '%s/items%s' % (self.key, utils.joinArgs({
-            'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys),
+        key = '%s/items%s' % (self.key, utils.joinArgs({
+            'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys)
         }))
-        return self._root._query(path, method=self._root._session.put)
+        return self._root._query(key, method=self._root._session.put)
 
     def removeItem(self, item):
         """Remove a file from a playlist."""
-        path = '%s/items/%s' % (self.key, item.playlistItemID)
-        return self._root._query(path, method=self._root._session.delete)
+        key = '%s/items/%s' % (self.key, item.playlistItemID)
+        return self._root._query(key, method=self._root._session.delete)
 
     def moveItem(self, item, after=None):
         """Move a to a new position in playlist."""
-        path = '%s/items/%s/move' % (self.key, item.playlistItemID)
+        key = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
-            path += '?after=%s' % after.playlistItemID
-        return self._root._query(path, method=self._root._session.put)
+            key += '?after=%s' % after.playlistItemID
+        return self._root._query(key, method=self._root._session.put)
 
     def edit(self, title=None, summary=None):
         """Edit playlist."""
-        path = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
-        return self._root._query(path, method=self._root._session.put)
+        key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
+        return self._root._query(key, method=self._root._session.put)
 
     def delete(self):
         """Delete playlist."""
@@ -81,11 +81,11 @@ class Playlist(PlexPartialObject, Playable):
             ratingKeys.append(str(item.ratingKey))
         ratingKeys = ','.join(ratingKeys)
         uuid = items[0].section().uuid
-        path = '/playlists%s' % utils.joinArgs({
+        key = '/playlists%s' % utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys),
             'type': items[0].listType,
             'title': title,
             'smart': 0
         })
-        data = server._query(path, method=server._session.post)[0]
-        return cls(server, data, initpath=path)
+        data = server._query(key, method=server._session.post)[0]
+        return cls(server, data, initpath=key)

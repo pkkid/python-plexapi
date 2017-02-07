@@ -51,7 +51,7 @@ class Photoalbum(PlexPartialObject):
     def photos(self):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
@@ -114,7 +114,7 @@ class Photo(PlexPartialObject):
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
-        return utils.listItems(self._root, self.parentKey)[0]
+        return self.fetchItem(self.parentKey)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """

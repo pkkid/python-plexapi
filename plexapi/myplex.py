@@ -55,9 +55,6 @@ class MyPlexAccount(PlexObject):
         data = self._query(self.SIGNIN, method=self._session.post, auth=(username, password))
         super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
 
-    def __repr__(self):
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username.encode('utf8'))
-
     def _loadData(self, data):
         self._data = data
         self._token = data.attrib.get('authenticationToken')
@@ -202,9 +199,6 @@ class MyPlexUser(PlexObject):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
 
-    def __repr__(self):
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.id, self.username)
-
 
 class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
@@ -253,9 +247,6 @@ class MyPlexResource(PlexObject):
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
         self.connections = self._buildItems(data, ResourceConnection)
-
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'))
 
     def connect(self, ssl=None, safe=False):
         """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
@@ -332,9 +323,6 @@ class ResourceConnection(PlexObject):
         self.local = utils.cast(bool, data.attrib.get('local'))
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.uri.encode('utf8'))
-
 
 class MyPlexDevice(PlexObject):
     """ This object represents resources connected to your Plex server that provide
@@ -385,9 +373,6 @@ class MyPlexDevice(PlexObject):
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
-
-    def __repr__(self):
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.name.encode('utf8'), self.product.encode('utf8'))
 
     def connect(self, safe=False):
         """ Returns a new :class:`~plexapi.client.PlexClient` object. Sometimes there is more than

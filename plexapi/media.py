@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
-from plexapi.utils import cast, listItems
+from plexapi.utils import cast
 
 
 class Media(PlexObject):
@@ -54,10 +54,6 @@ class Media(PlexObject):
         self.width = cast(int, data.attrib.get('width'))
         self.parts = self._buildItems(data, MediaPart)
 
-    def __repr__(self):
-        title = self.video.title.replace(' ','.')[0:20]
-        return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
-
 
 class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
@@ -85,9 +81,6 @@ class MediaPart(PlexObject):
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
-    
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.id)
 
     def _buildStreams(self, data):
         streams = []
@@ -150,9 +143,6 @@ class MediaPartStream(PlexObject):
         stype = cast(int, data.attrib.get('streamType'))
         cls = STREAMCLS.get(stype, MediaPartStream)
         return cls(server, data, initpath)
-
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.id)
 
 
 class VideoStream(MediaPartStream):
@@ -314,19 +304,13 @@ class MediaTag(PlexObject):
         self.tagType = cast(int, data.attrib.get('tagType'))
         self.thumb = data.attrib.get('thumb')
 
-    def __repr__(self):
-        tag = self.tag.replace(' ', '.')[0:20].encode('utf-8')
-        if self.librarySectionTitle:
-            return u'<%s:%s:%s:%s>' % (self.__class__.__name__, self.id, tag, self.librarySectionTitle)
-        return u'<%s:%s:%s>' % (self.__class__.__name__, self.id, tag)
-
     def items(self, *args, **kwargs):
         """ Return the list of items within this tag. This function is only applicable
             in search results from PlexServer :func:`~plexapi.server.PlexServer.search()`.
         """
         if not self.key:
             raise BadRequest('Key is not defined for this tag: %s' % self.tag)
-        return listItems(self.server, self.key)
+        return self.fetchItems(self.key)
 
 
 class Collection(MediaTag):
@@ -373,7 +357,3 @@ class Field(PlexObject):
         self._data = data
         self.name = data.attrib.get('name')
         self.locked = cast(bool, data.attrib.get('locked'))
-
-    def __repr__(self):
-        name = self.name.replace(' ', '.')[0:20]
-        return '<%s:%s:%s>' % (self.__class__.__name__, name, self.locked)

@@ -140,9 +140,6 @@ class PlexServer(PlexObject):
         self.version = data.attrib.get('version')
         self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
 
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self._baseurl)
-
     def _query(self, key, method=None, headers=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
             by encoding the response to utf-8 and parsing the returned XML into and
@@ -233,14 +230,13 @@ class PlexServer(PlexObject):
 
     def history(self):
         """ Returns a list of media items from watched history. """
-        #return utils.listItems(self, '/status/sessions/history/all')
-        return self._fetchItems('/status/sessions/history/all')
+        return self.fetchItems('/status/sessions/history/all')
 
     def playlists(self):
         """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
         # TODO: Add sort and type options?
         # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
-        return self._fetchItems('/playlists')
+        return self.fetchItems('/playlists')
 
     def playlist(self, title):
         """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.
@@ -251,10 +247,7 @@ class PlexServer(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
-        for item in self.playlists():
-            if item.title == title:
-                return item
-        raise NotFound('Invalid playlist title: %s' % title)
+        return self.fetchItem('/playlists', title=title)
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
@@ -280,14 +273,13 @@ class PlexServer(PlexObject):
         if limit:
             params['limit'] = limit
         key = '/hubs/search?%s' % urlencode(params)
-        for hub in self._fetchItems(key, bytag=True):
+        for hub in self.fetchItems(key, bytag=True):
             results += hub.items
         return results
 
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
-        return self._fetchItems('/status/sessions')
-        #return utils.listItems(self, '/status/sessions')
+        return self.fetchItems('/status/sessions')
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
         """ Returns the URL for a transcoded image from the specified media object.
@@ -300,6 +292,7 @@ class PlexServer(PlexObject):
                 opacity (int): Opacity of the resulting image (possibly deprecated).
                 saturation (int): Saturating of the resulting image.
         """
+        # TODO: Does this function really belong here?
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
                 height, width, opacity, saturation, media)

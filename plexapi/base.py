@@ -5,6 +5,151 @@ from plexapi.compat import urlencode
 from plexapi.exceptions import NotFound, UnknownType, Unsupported
 
 
+class PlexObject(object):
+    """ Base class for all Plex objects.
+        TODO: Finish documenting this.
+    """
+    key = None
+
+    def __init__(self, root, data, initpath=None):
+        self._root = root                       # Root MyPlexAccount or PlexServer
+        self._data = data                       # XML data needed to build object
+        self._initpath = initpath or self.key   # Request path used to fetch data
+        self._loadData(data)
+
+    def __repr__(self):
+        return '<%s>' % ':'.join([p for p in [
+            self.__class__.__name__,
+            self.__firstattr('_baseurl', 'key', 'id', 'uri'),
+            self.__firstattr('title', 'name', 'username', 'librarySectionTitle', 'product')
+        ] if p])
+
+    def __setattr__(self, attr, value):
+        if value is not None or attr.startswith('_'):
+            self.__dict__[attr] = value
+
+    def __firstattr(self, *attrs):
+        for attr in attrs:
+            value = str(self.__dict__.get(attr,'')).replace(' ','-')
+            value = value.replace('/library/metadata/','').replace('/children','')
+            if value: return value[:20]
+
+    def _buildItem(self, elem, initpath, cls=None, bytag=False):
+        """ Factory function to build objects based on registered LIBRARY_TYPES. """
+        libtype = elem.tag if bytag else elem.attrib.get('type')
+        if libtype == 'photo' and elem.tag == 'Directory':
+            libtype = 'photoalbum'
+        if libtype in utils.LIBRARY_TYPES:
+            cls = cls or utils.LIBRARY_TYPES[libtype]
+            return cls(self._root, elem, initpath)
+        raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, libtype))
+
+    def _buildItemOrNone(self, elem, initpath, cls=None, bytag=False):
+        """ Calls :func:`~plexapi.base.PlexObject._buildItem()` but returns
+            None if elem is an unknown type.
+        """
+        try:
+            return self._buildItem(elem, initpath, cls, bytag)
+        except UnknownType:
+            return None
+
+    def _buildItems(self, data, cls=None):
+        """ Build and return a list of items (optionally filtered by tag).
+
+            Parameters:
+                data (ElementTree): XML data to search for items.
+                cls (:class:`plexapi.base.PlexObject`): Optionally specify the PlexObject
+                    to be built. If not specified _buildItem will be called and the best
+                    guess item will be built.
+        """
+        items = []
+        tag = cls.TYPE if cls else None
+        for elem in data:
+            if elem.tag == tag:
+                items.append(self._buildItemOrNone(elem, self._initpath, cls))
+        return [item for item in items if item]
+
+    def fetchItem(self, key, cls=None, bytag=False, tag=None, **attrs):
+        """ Load the specified key to find and build the first item with the
+            specified tag and attrs. If no tag or attrs are specified then
+            the first item in the result set is returned.
+        """
+        for elem in self._root._query(key):
+            if tag and elem.tag != tag:
+                continue
+            if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+                continue
+            return self._buildItem(elem, key, cls, bytag)
+        raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, attrs))
+
+    def fetchItems(self, key, cls=None, bytag=False, tag=None, **attrs):
+        """ Load the specified key to find and build all items with the
+            specified tag and attrs.
+        """
+        items = []
+        for elem in self._root._query(key):
+            if tag and elem.tag != tag:
+                continue
+            if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+                continue
+            items.append(self._buildItemOrNone(elem, key, cls, bytag))
+        return [item for item in items if item]
+
+    def _loadData(self, data):
+        raise NotImplemented('Abstract method not implemented.')
+
+    def reload(self, safe=False):
+        """ Reload the data for this object from self.key. """
+        if not self.key:
+            if safe: return None
+            raise Unsupported('Cannot reload an object not built from a URL.')
+        self._initpath = self.key
+        data = self._root._query(self.key)
+        self._loadData(data[0])
+
+
+class PlexPartialObject(PlexObject):
+    """ Not all objects in the Plex listings return the complete list of elements
+        for the object. This object will allow you to assume each object is complete,
+        and if the specified value you request is None it will fetch the full object
+        automatically and update itself.
+
+        Attributes:
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
+    """
+    def __eq__(self, other):
+        return other is not None and self.key == other.key
+
+    def __getattribute__(self, attr):
+        # Check a few cases where we dont want to reload
+        value = super(PlexPartialObject, self).__getattribute__(attr)
+        if attr == 'key' or attr.startswith('_'): return value
+        if value not in (None, []): return value
+        if self.isFullObject(): return value
+        # Log warning that were reloading the object
+        clsname = self.__class__.__name__
+        title = self.__dict__.get('title', self.__dict__.get('name'))
+        objname = "%s '%s'" % (clsname, title) if title else clsname
+        log.warn("Reloading %s for attr '%s'" % (objname, attr))
+        # Reload and return the value
+        self.reload()
+        return super(PlexPartialObject, self).__getattribute__(attr)
+
+    def isFullObject(self):
+        """ Retruns True if this is already a full object. A full object means all attributes
+            were populated from the api path representing only this item. For example, the
+            search result for a movie often only contain a portion of the attributes a full
+            object (main url) for that movie contain.
+        """
+        return not self.key or self.key == self._initpath
+
+    def isPartialObject(self):
+        """ Returns True if this is not a full object. """
+        return not self.isFullObject()
+
+
 class Playable(object):
     """ This is a general place to store functions specific to media that is Playable.
         Things were getting mixed up a bit when dealing with Shows, Season, Artists,
@@ -107,142 +252,3 @@ class Playable(object):
             if filepath:
                 filepaths.append(filepath)
         return filepaths
-
-
-class PlexObject(object):
-    """ Base class for all Plex objects.
-        TODO: Finish documenting this.
-    """
-    key = None
-
-    def __init__(self, root, data, initpath=None):
-        self._root = root                       # Root MyPlexAccount or PlexServer
-        self._data = data                       # XML data needed to build object
-        self._initpath = initpath or self.key   # Request path used to fetch data
-        self._loadData(data)
-
-    def __setattr__(self, attr, value):
-        if value is not None or attr.startswith('_'):
-            self.__dict__[attr] = value
-
-    def _buildItem(self, elem, initpath, bytag=False):
-        """ Factory function to build objects based on registered LIBRARY_TYPES. """
-        libtype = elem.tag if bytag else elem.attrib.get('type')
-        if libtype == 'photo' and elem.tag == 'Directory':
-            libtype = 'photoalbum'
-        if libtype in utils.LIBRARY_TYPES:
-            cls = utils.LIBRARY_TYPES[libtype]
-            return cls(self._root, elem, initpath)
-        raise UnknownType('Unknown library type: %s' % libtype)
-
-    def _buildItems(self, data, cls=None, tag=None, attrs=None, safe=False):
-        """ Build and return a list of items (optionally filtered by tag).
-
-            Parameters:
-                data (ElementTree): XML data to search for items.
-                cls (PlexObject): Optionally specify the PlexObject to be built. If not specified
-                    _buildItem will be called and the best guess item will be built.
-                tag (str): Only build items with the specified tag. If not specified and 
-                    cls is specified, tag will be set to cls.TYPE.
-                attrs (dict): Dict containing attributes to filter the elements by. If not
-                    specified, all elements will be considered.
-                safe (bool): If True, dont raise an exception when unable to build an object.
-        """
-        items = []
-        tag = cls.TYPE if not tag and cls else tag
-        attrs = attrs or {}
-        for elem in data:
-            try:
-                if not tag or elem.tag == tag:
-                    for attr, value in attrs.items():
-                        if elem.attrib.get(attr) != str(value):
-                            continue
-                    if cls is not None:
-                        items.append(cls(self._root, elem, self._initpath))
-                    else:
-                        items.append(self._buildItem(elem, self._initpath))
-            except Exception as err:
-                if safe:
-                    log.warn('Failed to build %s (type=%s); %s' % (elem.tag, elem.attrib.get('type', 'NA'), err))
-                    continue
-                raise
-        return items
-
-    def _fetchItem(self, key, title=None, name=None):
-        for elem in self._root._query(key):
-            if title and elem.attrib.get('title').lower() == title.lower():
-                return self._buildItem(elem, key)
-            if name and elem.attrib.get('name').lower() == name.lower():
-                return self._buildItem(elem, key)
-        raise NotFound('Unable to find item: %s' % (title or name))
-
-    def _fetchItems(self, key, libtype=None, bytag=False):
-        """ Fetch and build items from the specified key. """
-        items = []
-        for elem in self._root._query(key):
-            try:
-                if not libtype or elem.attrib.get('type') == libtype:
-                    items.append(self._buildItem(elem, key, bytag))
-            except UnknownType:
-                pass
-        return items
-
-    def _loadData(self, data):
-        raise NotImplemented('Abstract method not implemented.')
-
-    def reload(self, safe=False):
-        """ Reload the data for this object from self.key. """
-        if not self.key:
-            if safe: return None
-            raise Unsupported('Cannot reload an object not built from a URL.')
-        self._initpath = self.key
-        data = self._root._query(self.key)
-        self._loadData(data[0])
-
-
-class PlexPartialObject(PlexObject):
-    """ Not all objects in the Plex listings return the complete list of elements
-        for the object. This object will allow you to assume each object is complete,
-        and if the specified value you request is None it will fetch the full object
-        automatically and update itself.
-
-        Attributes:
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-    """
-    def __eq__(self, other):
-        return other is not None and self.key == other.key
-
-    def __repr__(self):
-        clsname = self.__class__.__name__
-        key = self.key.replace('/library/metadata/', '') if self.key else 'NA'
-        title = self.title.replace(' ', '.')[0:20].encode('utf8')
-        return '<%s:%s:%s>' % (clsname, key, title)
-
-    def __getattribute__(self, attr):
-        # Check a few cases where we dont want to reload
-        value = super(PlexPartialObject, self).__getattribute__(attr)
-        if attr == 'key' or attr.startswith('_'): return value
-        if value not in (None, []): return value
-        if self.isFullObject(): return value
-        # Log warning that were reloading the object
-        clsname = self.__class__.__name__
-        title = self.__dict__.get('title', self.__dict__.get('name'))
-        objname = "%s '%s'" % (clsname, title) if title else clsname
-        log.warn("Reloading %s for attr '%s'" % (objname, attr))
-        # Reload and return the value
-        self.reload()
-        return super(PlexPartialObject, self).__getattribute__(attr)
-
-    def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
-            were populated from the api path representing only this item. For example, the
-            search result for a movie often only contain a portion of the attributes a full
-            object (main url) for that movie contain.
-        """
-        return not self.key or self.key == self._initpath
-
-    def isPartialObject(self):
-        """ Returns True if this is not a full object. """
-        return not self.isFullObject()

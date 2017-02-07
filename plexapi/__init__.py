@@ -13,7 +13,7 @@ CONFIG = PlexConfig(CONFIG_PATH)
 
 # Core Settings
 PROJECT = 'PlexAPI'                                 # name provided to plex server
-VERSION = '2.0.2'                                   # version of this api
+VERSION = '2.9.0'                                   # version of this api
 TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)    # request timeout
 X_PLEX_CONTAINER_SIZE = 50                          # max results to return in a single search page
 

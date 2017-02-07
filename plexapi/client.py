@@ -89,9 +89,6 @@ class PlexClient(PlexObject):
         self.vendor = data.attrib.get('vendor')
         self.version = data.attrib.get('version')
 
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self._baseurl)
-
     def _query(self, path, method=None, headers=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex client. This method helps
             by encoding the response to utf-8 and parsing the returned XML into and
@@ -134,12 +131,12 @@ class PlexClient(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.Unsupported`: Cannot use client proxy with unknown server.
         """
-        if value is True and not self.server:
+        if value is True and not self._server:
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
     def sendCommand(self, command, proxy=None, **params):
-        """ Convenience wrapper around :func:`~plexapi.client.PlexClient.query()` to more easily
+        """ Convenience wrapper around :func:`~plexapi.client.PlexClient._query()` to more easily
             send simple commands to the client. Returns an ElementTree object containing
             the response.
 
@@ -149,22 +146,21 @@ class PlexClient(PlexObject):
                 **params (dict): Additional GET parameters to include with the command.
 
             Raises:
-                :class:`~plexapi.exceptions.Unsupported`: When we detect the client doesn't support this capability.
+                :class:`~plexapi.exceptions.Unsupported`: When we detect the client
+                    doesn't support this capability.
         """
         command = command.strip('/')
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
-            raise Unsupported('Client %s does not support the %s controller.' %
-                (self.title, controller))
-        path = '/player/%s%s' % (command, utils.joinArgs(params))
+            raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
+        key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
         self._commandId += 1
         params['commandID'] = self._commandId
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
-            return self.server.query(path, headers=headers)
-        path = '/player/%s%s' % (command, utils.joinArgs(params))
-        return self._query(path, headers=headers)
+            return self._root._query(key, headers=headers)
+        return self._query(key, headers=headers)
 
     #---------------------
     # Navigation Commands
@@ -235,11 +231,11 @@ class PlexClient(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
-        if not self.server:
+        if not self._server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media.server._baseurl.split(':')
+        server_url = media._server._baseurl.split(':')
         self.sendCommand('mirror/details', **dict({
-            'machineIdentifier': self.server.machineIdentifier,
+            'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
             'key': media.key,
@@ -402,12 +398,12 @@ class PlexClient(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
-        if not self.server:
+        if not self._server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media.server._baseurl.split(':')
-        playqueue = self.server.createPlayQueue(media)
+        server_url = media._server._baseurl.split(':')
+        playqueue = self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
-            'machineIdentifier': self.server.machineIdentifier,
+            'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
             'offset': offset,

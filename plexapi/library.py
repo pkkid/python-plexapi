@@ -27,8 +27,8 @@ class Library(PlexObject):
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
 
-    def __repr__(self):
-        return '<Library:%s>' % self.title1.encode('utf8')
+    def __len__(self):
+        return len(self.sections())
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
@@ -57,9 +57,9 @@ class Library(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: Invalid library section title.
         """
-        for item in self.sections():
-            if item.title == title:
-                return item
+        for section in self.sections():
+            if section.title == title:
+                return section
         raise NotFound('Invalid library section: %s' % title)
 
     def sectionByID(self, sectionID):
@@ -80,29 +80,11 @@ class Library(PlexObject):
 
     def onDeck(self):
         """ Returns a list of all media items on deck. """
-        return self._fetchItems('/library/onDeck')
+        return self.fetchItems('/library/onDeck')
 
     def recentlyAdded(self):
         """ Returns a list of all media items recently added. """
-        return self._fetchItems('/library/recentlyAdded')
-
-    def get(self, title):  # this should use hub search when its merged
-        """ Return the first item from all items with the specified title.
-
-            Parameters:
-                title (str): Title of the item to return.
-        """
-        for i in self.all():
-            if i.title.lower() == title.lower():
-                return i
-
-    def getByKey(self, key):
-        """ Return the first item from all items with the specified key.
-
-            Parameters:
-                key (str): Key of the item to return.
-        """
-        return utils.findKey(self.server, key)
+        return self.fetchItems('/library/recentlyAdded')
 
     def search(self, title=None, libtype=None, **kwargs):
         """ Searching within a library section is much more powerful. It seems certain
@@ -121,7 +103,7 @@ class Library(PlexObject):
         for attr, value in kwargs.items():
             args[attr] = value
         key = '/library/all%s' % utils.joinArgs(args)
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def cleanBundles(self):
         """ Poster images and other metadata for items in your library are kept in "bundle"
@@ -130,7 +112,7 @@ class Library(PlexObject):
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
-        self.server.query('/library/clean/bundles')
+        self._server._query('/library/clean/bundles')
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -142,16 +124,13 @@ class Library(PlexObject):
             For example, if you have deleted or added an entire library or many items in a
             library, you may like to optimize the database.
         """
-        self.server.query('/library/optimize')
+        self._root._query('/library/optimize')
 
     def refresh(self):
         """ Refresh the metadata for the entire library. This will fetch fresh metadata for
             all contents in the library, including items that already have metadata.
         """
-        self.server.query('/library/sections/all/refresh')
-
-    def __len__(self):
-        return len(self.sections())
+        self._root._query('/library/sections/all/refresh')
 
 
 class LibrarySection(PlexObject):
@@ -205,10 +184,6 @@ class LibrarySection(PlexObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
 
-    def __repr__(self):
-        title = self.title.replace(' ', '.')[0:20]
-        return '<%s:%s>' % (self.__class__.__name__, title.encode('utf8'))
-
     def get(self, title):
         """ Returns the media item with the specified title.
 
@@ -216,16 +191,17 @@ class LibrarySection(PlexObject):
                 title (str): Title of the item to return.
         """
         key = '/library/sections/%s/all' % self.key
-        return utils.findItem(self.server, key, title)
+        return self.fetchItem(key, title=title)
 
     def all(self):
         """ Returns a list of media from this library section. """
         key = '/library/sections/%s/all' % self.key
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
-        return utils.listItems(self.server, '/library/sections/%s/onDeck' % self.key)
+        key = '/library/sections/%s/onDeck' % self.key
+        return self.fetchItems(key)
 
     def recentlyAdded(self, maxresults=50):
         """ Returns a list of media items recently added from this library section.
@@ -237,17 +213,20 @@ class LibrarySection(PlexObject):
 
     def analyze(self):
         """ Run an analysis on all of the items in this library section. """
-        self.server.query('/library/sections/%s/analyze' % self.key, method=self.server.session.put)
+        key = '/library/sections/%s/analyze' % self.key
+        self._server._query(key, method=self.server.session.put)
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
-        self.server.query('/library/sections/%s/emptyTrash' % self.key)
+        key = '/library/sections/%s/emptyTrash' % self.key
+        self._server._query(key)
 
     def refresh(self):
         """ Refresh the metadata for this library section. This will fetch fresh metadata for
             all contents in the section, including items that already have metadata.
         """
-        self.server.query('/library/sections/%s/refresh' % self.key)
+        key = '/library/sections/%s/refresh' % self.key
+        self._server._query(key)
 
     def listChoices(self, category, libtype=None, **kwargs):
         """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the
@@ -263,6 +242,7 @@ class LibrarySection(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
         """
+        # TODO: Should this be moved to base?
         if category in kwargs:
             raise BadRequest('Cannot include kwarg equal to specified category: %s' % category)
         args = {}
@@ -270,8 +250,8 @@ class LibrarySection(PlexObject):
             args[category] = self._cleanSearchFilter(subcategory, value)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-        query = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
-        return utils.listItems(self.server, query, bytag=True)
+        key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
+        return self.fetchItems(key, bytag=True)
 
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
@@ -303,8 +283,7 @@ class LibrarySection(PlexObject):
                         * studio: List of studios to search within ([studio_or_key, ...]). [music]
                         * year: List of years to search within ([yyyy, ...]). [all]
         """
-        # Cleanup the core arguments
-        # TODO: maxresults is raising a 500 error here.
+        # cleanup the core arguments
         args = {}
         for category, value in kwargs.items():
             args[category] = self._cleanSearchFilter(category, value, libtype)
@@ -314,14 +293,13 @@ class LibrarySection(PlexObject):
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-        # Iterate over the results
+        # iterate over the results
         results, subresults = [], '_init'
         args['X-Plex-Container-Start'] = 0
         args['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
         while subresults and maxresults > len(results):
-            query = '/library/sections/%s/all%s' % (
-                self.key, utils.joinArgs(args))
-            subresults = utils.listItems(self.server, query)
+            key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+            subresults = self.fetchItems(key)
             results += subresults[:maxresults - len(results)]
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results
@@ -342,16 +320,10 @@ class LibrarySection(PlexObject):
         for item in value:
             item = str(item.id if isinstance(item, MediaTag) else item).lower()
             # find most logical choice(s) to use in url
-            if item in allowed:
-                result.add(item)
-                continue
-            if item in lookup:
-                result.add(lookup[item])
-                continue
+            if item in allowed: result.add(item); continue
+            if item in lookup: result.add(lookup[item]); continue
             matches = [k for t, k in lookup.items() if item in t]
-            if matches:
-                map(result.add, matches)
-                continue
+            if matches: map(result.add, matches); continue
             # nothing matched; use raw item value
             log.warning('Filter value not listed, using raw item value: %s' % item)
             result.add(item)
@@ -435,7 +407,8 @@ class MusicSection(LibrarySection):
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
-        return utils.listItems(self.server, '/library/sections/%s/albums' % self.key)
+        key = '/library/sections/%s/albums' % self.key
+        return self.fetchItems(key)
 
     def searchArtists(self, **kwargs):
         """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
@@ -459,48 +432,22 @@ class PhotoSection(LibrarySection):
             TYPE (str): 'photo'
     """
     ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure')
-    ALLOWED_SORT = ()
+    ALLOWED_SORT = ('addedAt')
     TYPE = 'photo'
 
-    def searchAlbums(self, title, **kwargs): # lets use this for now.
+    def searchAlbums(self, title, **kwargs):
         """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        albums = utils.listItems(self.server, '/library/sections/%s/all?type=14' % self.key)
-        return [i for i in albums if i.title.lower() == title.lower()]
+        key = '/library/sections/%s/all?type=14' % self.key
+        return self.fetchItems(key, title=title)
 
     def searchPhotos(self, title, **kwargs):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        photos = utils.listItems(self.server, '/library/sections/%s/all?type=13' % self.key)
-        return [i for i in photos if i.title.lower() == title.lower()]
+        key = '/library/sections/%s/all?type=13' % self.key
+        return self.fetchItems(key, title=title)
 
 
 @utils.register_libtype
-class Hub(PlexObject):
-    TYPE = 'Hub'
-    FILTERTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
-
-    def _loadData(self, data):
-        self._data = data
-        self.hubIdentifier = data.attrib.get('hubIdentifier')
-        self.size = utils.cast(int, data.attrib.get('size'))
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-        self.items = self._buildItems(data)
-
-    def __repr__(self):
-        return '<Hub:%s>' % self.title.encode('utf8')
-
-    def __len__(self):
-        return self.size
-
-    def _buildItems(self, data):
-        if self.type in self.FILTERTYPES:
-            cls = self.FILTERTYPES[self.type]
-            return [cls(self._root, elem, self._initpath) for elem in data]
-        return super(Hub, self)._buildItems(data, safe=True)
-
-
-@utils.register_libtype
-class FilterChoice(object):
+class FilterChoice(PlexObject):
     """ Represents a single filter choice. These objects are gathered when using filters
         while searching for library items and is the object returned in the result set of
         :func:`~plexapi.library.LibrarySection.listChoices()`.
@@ -517,16 +464,33 @@ class FilterChoice(object):
     """
     TYPE = 'Directory'
 
-    def __init__(self, server, data, initpath):
+    def _loadData(self, data):
         self._data = data
-        self.server = server
-        self.initpath = initpath
         self.fastKey = data.attrib.get('fastKey')
         self.key = data.attrib.get('key')
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
-    def __repr__(self):
-        title = self.title.replace(' ', '.')[0:20]
-        return '<%s:%s:%s>' % (self.__class__.__name__, self.key, title)
+
+@utils.register_libtype
+class Hub(PlexObject):
+    FILTERTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
+    TYPE = 'Hub'
+
+    def _loadData(self, data):
+        self._data = data
+        self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.size = utils.cast(int, data.attrib.get('size'))
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.items = self._buildItems(data)
+
+    def __len__(self):
+        return self.size
+
+    def _buildItems(self, data):
+        if self.type in self.FILTERTYPES:
+            cls = self.FILTERTYPES[self.type]
+            return [cls(self._root, elem, self._initpath) for elem in data]
+        return super(Hub, self)._buildItems(data)

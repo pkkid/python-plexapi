@@ -57,7 +57,7 @@ class Audio(PlexPartialObject):
 
     def refresh(self):
         """ Tells Plex to refresh the metadata for this and all subitems. """
-        self._root.query('%s/refresh' % self.key, method=self._root.session.put)
+        self._root._query('%s/refresh' % self.key, method=self._root.session.put)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
@@ -109,7 +109,7 @@ class Artist(Audio):
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
         key = '%s/children' % self.key
-        return self._fetchItems(key, Album.TYPE)
+        return self.fetchItems(key, tag=Album.TYPE)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -125,7 +125,7 @@ class Artist(Audio):
     def tracks(self):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
         key = '%s/allLeaves' % self.key
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -202,7 +202,7 @@ class Album(Audio):
     def tracks(self):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
         key = '%s/children' % self.key
-        return self._fetchItems(key)
+        return self.fetchItems(key)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
@@ -210,7 +210,7 @@ class Album(Audio):
 
     def artist(self):
         """ Return :func:`~plexapi.audio.Artist` of this album. """
-        return self._fetchItems(self.parentKey)[0]
+        return self.fetchItem(self.parentKey)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
@@ -313,8 +313,8 @@ class Track(Audio, Playable):
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """
-        return self._fetchItems(self.parentKey)[0]
+        return self.fetchItems(self.parentKey)[0]
 
     def artist(self):
         """ Return this track's :class:`~plexapi.audio.Artist`. """
-        return self._fetchItems(self.grandparentKey)[0]
+        return self.fetchItems(self.grandparentKey)[0]

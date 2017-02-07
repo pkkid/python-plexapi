@@ -39,9 +39,6 @@ class SyncItem(object):
         self.policy = data.find('Policy').attrib.copy()
         self.location = data.find('Location').attrib.copy()
 
-    def __repr__(self):
-        return '<%s:%s>' % (self.__class__.__name__, self.id)
-
     def server(self):
         server = list(filter(lambda x: x.machineIdentifier == self.machineIdentifier, self._servers))
         if 0 == len(server):
@@ -50,11 +47,11 @@ class SyncItem(object):
 
     def getMedia(self):
         server = self.server().connect()
-        items = utils.listItems(server, '/sync/items/%s' % self.id)
-        return items
+        key = '/sync/items/%s' % self.id
+        return server.fetchItems(key)
 
     def markAsDone(self, sync_id):
         server = self.server().connect()
         url = '/sync/%s/%s/files/%s/downloaded' % (
             self._device.clientIdentifier, server.machineIdentifier, sync_id)
-        server.query(url, method=requests.put)
+        server._query(url, method=requests.put)
