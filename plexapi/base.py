@@ -25,7 +25,7 @@ class PlexObject(object):
         ] if p])
 
     def __setattr__(self, attr, value):
-        if value is not None or attr.startswith('_'):
+        if value is not None or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
 
     def __firstattr(self, *attrs):
@@ -37,10 +37,11 @@ class PlexObject(object):
     def _buildItem(self, elem, cls=None, initpath=None, bytag=False):
         """ Factory function to build objects based on registered LIBRARY_TYPES. """
         initpath = initpath or self._initpath
-        if cls: return cls(self._root, elem, initpath)
         libtype = elem.tag if bytag else elem.attrib.get('type')
         if libtype == 'photo' and elem.tag == 'Directory':
             libtype = 'photoalbum'
+        if cls and libtype == cls.TYPE:
+            return cls(self._root, elem, initpath)
         if libtype in utils.LIBRARY_TYPES:
             cls = utils.LIBRARY_TYPES[libtype]
             return cls(self._root, elem, initpath)
@@ -123,8 +124,9 @@ class PlexPartialObject(PlexObject):
         return other is not None and self.key == other.key
 
     def __getattribute__(self, attr):
+        # Dragons inside.. :-/
+        value = utils.getattributeOrNone(PlexPartialObject, self, attr)
         # Check a few cases where we dont want to reload
-        value = super(PlexPartialObject, self).__getattribute__(attr)
         if attr == 'key' or attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
@@ -135,7 +137,7 @@ class PlexPartialObject(PlexObject):
         log.warn("Reloading %s for attr '%s'" % (objname, attr))
         # Reload and return the value
         self.reload()
-        return super(PlexPartialObject, self).__getattribute__(attr)
+        return utils.getattributeOrNone(PlexPartialObject, self, attr)
 
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
@@ -246,9 +248,9 @@ class Playable(object):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._root.url('%s?download=1' % location.key)
+                download_url = self._root._url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
-                savepath=savepath, session=self._root.session)
+                savepath=savepath, session=self._root._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths

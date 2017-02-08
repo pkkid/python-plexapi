@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.exceptions import NotFound
 
 
 class Audio(PlexPartialObject):
@@ -91,9 +90,9 @@ class Artist(Audio):
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
-        self.countries = self._buildItems(data, media.Country)
-        self.genres = self._buildItems(data, media.Genre)
-        self.similar = self._buildItems(data, media.Similar)
+        self.countries = self._buildItems(data, media.Country, bytag=True)
+        self.genres = self._buildItems(data, media.Genre, bytag=True)
+        self.similar = self._buildItems(data, media.Similar, bytag=True)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -101,15 +100,13 @@ class Artist(Audio):
             Parameters:
                 title (str): Title of the album to return.
         """
-        for album in self.albums():
-            if album.title.lower() == title.lower():
-                return album
-        raise NotFound('Unable to find album %s' % title)
+        key = '%s/children' % self.key
+        return self.fetchItem(key, title=title)
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
         key = '%s/children' % self.key
-        return self.fetchItems(key, tag=Album.TYPE)
+        return self.fetchItems(key)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -117,10 +114,8 @@ class Artist(Audio):
             Parameters:
                 title (str): Title of the track to return.
         """
-        for track in self.tracks():
-            if track.title.lower() == title.lower():
-                return track
-        raise NotFound('Unable to find track %s' % title)
+        key = '%s/allLeaves' % self.key
+        return self.fetchItem(key, title=title)
 
     def tracks(self):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
@@ -186,7 +181,7 @@ class Album(Audio):
         self.parentTitle = data.attrib.get('parentTitle')
         self.studio = data.attrib.get('studio')
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildItems(data, media.Genre)
+        self.genres = self._buildItems(data, media.Genre, bytag=True)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -194,10 +189,8 @@ class Album(Audio):
             Parameters:
                 title (str): Title of the track to return.
         """
-        for track in self.tracks():
-            if track.title.lower() == title.lower():
-                return track
-        raise NotFound('Unable to find track %s' % title)
+        key = '%s/children' % self.key
+        return self.fetchItem(key, title=title)
 
     def tracks(self):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
@@ -293,8 +286,8 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.media = self._buildItems(data, media.Media)
-        self.moods = self._buildItems(data, media.Mood)
+        self.media = self._buildItems(data, media.Media, bytag=True)
+        self.moods = self._buildItems(data, media.Mood, bytag=True)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)

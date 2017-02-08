@@ -93,14 +93,14 @@ class Movie(Video, Playable):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
         self.collections = self._buildItems(data, media.Collection)
-        self.countries = self._buildItems(data, media.Country)
-        self.directors = self._buildItems(data, media.Director)
-        self.fields = self._buildItems(data, media.Field)
-        self.genres = self._buildItems(data, media.Genre)
-        self.media = self._buildItems(data, media.Media)
-        self.producers = self._buildItems(data, media.Producer)
-        self.roles = self._buildItems(data, media.Role)
-        self.writers = self._buildItems(data, media.Writer)
+        self.countries = self._buildItems(data, media.Country, bytag=True)
+        self.directors = self._buildItems(data, media.Director, bytag=True)
+        self.fields = self._buildItems(data, media.Field, bytag=True)
+        self.genres = self._buildItems(data, media.Genre, bytag=True)
+        self.media = self._buildItems(data, media.Media, bytag=True)
+        self.producers = self._buildItems(data, media.Producer, bytag=True)
+        self.roles = self._buildItems(data, media.Role, bytag=True)
+        self.writers = self._buildItems(data, media.Writer, bytag=True)
 
     @property
     def actors(self):
@@ -164,8 +164,8 @@ class Show(Video):
         self.theme = data.attrib.get('theme')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildItems(data, media.Genre)
-        self.roles = self._buildItems(data, media.Role)
+        self.genres = self._buildItems(data, media.Genre, bytag=True)
+        self.roles = self._buildItems(data, media.Role, bytag=True)
 
     @property
     def actors(self):
@@ -393,9 +393,9 @@ class Episode(Video, Playable):
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.directors = self._buildItems(data, media.Director)
-        self.media = self._buildItems(data, media.Media)
-        self.writers = self._buildItems(data, media.Writer)
+        self.directors = self._buildItems(data, media.Director, bytag=True)
+        self.media = self._buildItems(data, media.Media, bytag=True)
+        self.writers = self._buildItems(data, media.Writer, bytag=True)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)

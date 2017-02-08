@@ -52,7 +52,7 @@ class Media(PlexObject):
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
-        self.parts = self._buildItems(data, MediaPart)
+        self.parts = self._buildItems(data, MediaPart, bytag=True)
 
 
 class MediaPart(PlexObject):

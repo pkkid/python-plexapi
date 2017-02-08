@@ -32,7 +32,7 @@ BASE_HEADERS = reset_base_headers()
 log = logging.getLogger('plexapi')
 logfile = CONFIG.get('logging.path')
 logformat = CONFIG.get('logging.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
-loglevel = CONFIG.get('logging.level', 'INFO')
+loglevel = CONFIG.get('logging.level', 'INFO').upper()
 loghandler = logging.NullHandler()
 if logfile:
     logbackups = CONFIG.get('logging.backup_count', 3, int)

@@ -55,7 +55,7 @@ def test_audio_Album_attrs(a_music_album):
     assert str(m.addedAt.date()) == '2017-01-17'
     assert [i.tag for i in m.genres] == ['Electronic']
     assert m.index == '1'
-    assert m._initpath == '/library/metadata/21'
+    assert m._initpath == '/library/metadata/20/children'
     assert m.key == '/library/metadata/21'
     assert m.librarySectionID == '3'
     assert m.listType == 'audio'

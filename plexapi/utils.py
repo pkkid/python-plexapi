@@ -135,6 +135,13 @@ def findUsername(data):
     return None
 
 
+def getattributeOrNone(obj, self, attr):
+    try:
+        return super(obj, self).__getattribute__(attr)
+    except AttributeError:
+        return None
+
+
 def isInt(str):
     """ Returns True if the specified string passes as an int. """
     try:
