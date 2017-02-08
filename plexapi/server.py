@@ -147,7 +147,7 @@ class PlexServer(PlexObject):
         """
         url = self._url(key)
         method = method or self._session.get
-        log.info('%s %s', method.__name__.upper(), url)
+        log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
         if response.status_code not in (200, 201):

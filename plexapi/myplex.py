@@ -92,7 +92,7 @@ class MyPlexAccount(PlexObject):
         method = method or self._session.get
         delim = '&' if '?' in url else '?'
         url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
-        log.info('%s %s', method.__name__.upper(), url)
+        log.debug('%s %s', method.__name__.upper(), url)
         allheaders = BASE_HEADERS.copy()
         allheaders.update(headers or {})
         response = method(url, headers=allheaders, timeout=TIMEOUT, **kwargs)

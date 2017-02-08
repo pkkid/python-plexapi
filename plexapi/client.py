@@ -47,7 +47,7 @@ class PlexClient(PlexObject):
     key = '/resources'
 
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
-        self._baseurl = baseurl or CONFIG.get('authentication.client_baseurl')
+        self._baseurl = (baseurl or CONFIG.get('authentication.client_baseurl')).strip('/')
         self._token = token or CONFIG.get('authentication.client_token')
         if self._token:
             logfilter.add_secret(self._token)
@@ -57,7 +57,7 @@ class PlexClient(PlexObject):
         self._session = session or _server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
-        data = data if data is not None else self._query('/resources')[0]
+        data = data or self._query('/resources')[0]
         super(PlexClient, self).__init__(self, data, self.key)
 
     def connect(self, safe=False):
@@ -96,7 +96,7 @@ class PlexClient(PlexObject):
         """
         url = self._url(path)
         method = method or self._session.get
-        log.info('%s %s', method.__name__.upper(), url)
+        log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
         if response.status_code not in (200, 201):
