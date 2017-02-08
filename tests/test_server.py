@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, pytest
+from plexapi import CONFIG
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import download
 
@@ -16,7 +17,7 @@ def test_server_attr(pms):
     assert pms.platform == 'Linux'
     assert pms.platformVersion == '4.4.0-59-generic (#80-Ubuntu SMP Fri Jan 6 17:47:47 UTC 2017)'
     #assert pms.session == <requests.sessions.Session object at 0x029A5E10>
-    assert pms.token == os.environ.get('PLEX_TEST_TOKEN')
+    assert pms._token == os.environ.get('PLEX_TEST_TOKEN') or CONFIG.get('authentication.server_token')
     assert pms.transcoderActiveVideoSessions == 0
     assert str(pms.updatedAt.date()) == '2017-01-20'
     assert pms.version == '1.3.3.3148-b38628e'
@@ -98,11 +99,11 @@ def test_server_history(pms):
 
 
 def test_server_Server_query(pms):
-    assert pms.query('/')
+    assert pms._query('/')
     from plexapi.server import PlexServer
     with pytest.raises(BadRequest):
-        assert pms.query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
-    with pytest.raises(NotFound):
+        assert pms._query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
+    with pytest.raises(BadRequest):
         # This is really requests.exceptions.HTTPError:
         # 401 Client Error: Unauthorized for url:
         PlexServer('http://138.68.157.5:32400', '1234')
@@ -119,7 +120,7 @@ def test_server_Server_session():
 
     plex = PlexServer('http://138.68.157.5:32400',
         os.environ.get('PLEX_TEST_TOKEN'), session=MySession())
-    assert hasattr(plex.session, 'plexapi_session_test')
+    assert hasattr(plex._session, 'plexapi_session_test')
     pl = plex.playlists()
     assert hasattr(pl[0]._root._session, 'plexapi_session_test')
     # TODO: Check client in test_server_Server_session.
@@ -127,7 +128,7 @@ def test_server_Server_session():
 
 
 def test_server_token_in_headers(pms):
-    h = pms.headers()
+    h = pms._headers()
     assert 'X-Plex-Token' in h and len(h['X-Plex-Token'])
 
 

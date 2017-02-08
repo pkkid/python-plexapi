@@ -48,10 +48,10 @@ class Photoalbum(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
-    def photos(self):
+    def photos(self, **attrs):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """

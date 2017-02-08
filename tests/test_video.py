@@ -53,7 +53,8 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.audienceRating == 7.9
     assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     # Assign 0 m.audioStreams
-    aud0 = m.audioStreams[0]
+    m.reload()
+    aud0 = m.media[0].parts[0].audioStreams[0]
     assert m.chapterSource == 'agent'
     assert m.collections == []
     assert m.contentRating == 'G'
@@ -94,7 +95,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.userRating is None
     assert m.username is None
     # Assign 0 m.videoStreams
-    vid0 = m.videoStreams[0]
+    vid0 = m.media[0].parts[0].videoStreams[0]
     assert m.viewCount == 0
     assert m.viewOffset == 88870
     assert m.viewedAt is None
@@ -134,7 +135,6 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     # Assign 0 med0.parts
     par0 = med0.parts[0]
     assert med0._root._baseurl == 'http://138.68.157.5:32400'
-    assert med0.video == m
     assert med0.videoCodec == 'h264'
     assert med0.videoFrameRate == 'PAL'
     assert med0.videoResolution == '720'
@@ -244,7 +244,9 @@ def test_video_Show_attrs(a_show):
     assert m.contentRating == 'TV-14'
     assert m.duration == 2700000
     assert m._initpath == '/library/sections/2/all'
-    # Since we access m.genres the show is forced to reload
+    # Check reloading the show loads the full list of genres
+    assert [i.tag for i in m.genres] == ['Drama', 'Science-Fiction', 'Suspense']
+    m.reload()
     assert [i.tag for i in m.genres] == ['Drama', 'Science-Fiction', 'Suspense', 'Thriller']
     # So the initkey should have changed because of the reload
     assert m._initpath == '/library/metadata/12'

@@ -28,7 +28,7 @@ class Video(PlexPartialObject):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.thumb:
-            return self._root.url(self.thumb)
+            return self._root._url(self.thumb)
 
     def analyze(self):
         """The primary purpose of media analysis is to gather information about
@@ -133,7 +133,7 @@ class Movie(Video, Playable):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._root.url('%s?download=1' % loc.key)
+                download_url = self._root._url('%s?download=1' % loc.key)
             dl = utils.download(download_url, filename=name, savepath=savepath, session=self._root._session)
             if dl:
                 downloaded.append(dl)
@@ -175,10 +175,10 @@ class Show(Video):
     def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
 
-    def seasons(self):
+    def seasons(self, **attrs):
         """Returns a list of Season."""
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Season.TYPE)
+        return self.fetchItems(key, type=Season.TYPE, **attrs)
 
     def season(self, title=None):
         """ Returns the season with the specified title or number.
@@ -191,10 +191,10 @@ class Show(Video):
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItem(key, tag='Directory', title=title)
 
-    def episodes(self):
+    def episodes(self, **attrs):
         """ Returs a list of Episode """
         key = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def episode(self, title=None, season=None, episode=None):
         """Find a episode using a title or season and episode.
@@ -225,7 +225,7 @@ class Show(Video):
             raise TypeError('Missing argument: title or season and episode are required')
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
-            return self._fetchItem(key, title=title)
+            return self.fetchItem(key, title=title)
         elif season and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
@@ -300,14 +300,10 @@ class Season(Video):
         """Returns season number."""
         return self.index
 
-    def episodes(self, watched=None):
-        """ Returs a list of Episode
-
-           Parameters:
-                watched (bool): Defaults to None. Exclude watched episodes
-        """
+    def episodes(self, **attrs):
+        """ Returs a list of Episode. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Episode.TYPE)
+        return self.fetchItems(key, type=Episode.TYPE, **attrs)
 
     def episode(self, title=None, num=None):
         """ Returns the episode with the given title or number.
@@ -332,8 +328,8 @@ class Season(Video):
         
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
-            return self._fetchItem(key, title=title)
-        return self._fetchItem(key, seasonNumber=self.index, index=num)
+            return self.fetchItem(key, title=title)
+        return self.fetchItem(key, seasonNumber=self.index, index=num)
 
     def get(self, title):
         """ Alias for self.episode. """
@@ -425,7 +421,7 @@ class Episode(Video, Playable):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.grandparentThumb:
-            return self._root.url(self.grandparentThumb)
+            return self._root._url(self.grandparentThumb)
 
     def season(self):
         """Return this episode Season"""

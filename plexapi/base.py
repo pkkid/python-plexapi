@@ -21,7 +21,7 @@ class PlexObject(object):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
             self.__firstattr('_baseurl', 'key', 'id', 'playQueueID', 'uri'),
-            self.__firstattr('title', 'name', 'username', 'librarySectionTitle', 'product')
+            self.__firstattr('title', 'name', 'username', 'product', 'tag')
         ] if p])
 
     def __setattr__(self, attr, value):
@@ -30,9 +30,12 @@ class PlexObject(object):
 
     def __firstattr(self, *attrs):
         for attr in attrs:
-            value = str(self.__dict__.get(attr,'')).replace(' ','-')
-            value = value.replace('/library/metadata/','').replace('/children','')
-            if value: return value[:20]
+            value = self.__dict__.get(attr)
+            if value:
+                value = str(value).replace(' ','-')
+                value = value.replace('/library/metadata/','')
+                value = value.replace('/children','')
+                return value[:20]
 
     def _buildItem(self, elem, cls=None, initpath=None, bytag=False):
         """ Factory function to build objects based on registered LIBRARY_TYPES. """
@@ -76,9 +79,7 @@ class PlexObject(object):
             the first item in the result set is returned.
         """
         for elem in self._root._query(key):
-            if tag and elem.tag != tag:
-                continue
-            if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+            if tag and elem.tag != tag or not self._checkAttrs(elem, **attrs):
                 continue
             return self._buildItem(elem, cls, key, bytag)
         raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, attrs))
@@ -89,12 +90,16 @@ class PlexObject(object):
         """
         items = []
         for elem in self._root._query(key):
-            if tag and elem.tag != tag:
-                continue
-            if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+            if tag and elem.tag != tag or not self._checkAttrs(elem, **attrs):
                 continue
             items.append(self._buildItemOrNone(elem, cls, key, bytag))
         return [item for item in items if item]
+
+    def _checkAttrs(self, elem, **attrs):
+        # TODO: Implement opterations
+        if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+            return False
+        return True
 
     def _loadData(self, data):
         raise NotImplemented('Abstract method not implemented.')
@@ -107,6 +112,7 @@ class PlexObject(object):
         self._initpath = self.key
         data = self._root._query(self.key)
         self._loadData(data[0])
+        return self
 
 
 class PlexPartialObject(PlexObject):
@@ -207,7 +213,7 @@ class Playable(object):
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
-        return self._root.url('/%s/:/transcode/universal/start.m3u8?%s' %
+        return self._root._url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):

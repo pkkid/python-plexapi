@@ -47,8 +47,8 @@ def test_library_section_get_movie(pms): # fix me
     assert m
 
 
-def test_library_getByKey(pms):
-    m = pms.library.getByKey('1')
+def test_library_fetchItem(pms):
+    m = pms.library.fetchItem('/library/metadata/1')
     assert m.title == '16 Blocks'
 
 
@@ -60,8 +60,8 @@ def test_library_recentlyAdded(pms):
     assert len(list(pms.library.recentlyAdded()))
 
 
-def test_library_get(pms):
-    m = pms.library.get('16 blocks')
+def test_library_search(pms):
+    m = pms.library.search('16 blocks')[0]
     assert m.title == '16 Blocks'
 
 
@@ -158,4 +158,4 @@ def test_crazy_search(pms, a_movie):
     assert movie in movies.search(director=movie.directors[0]), 'Unable to search movie by director.'
     assert movie in movies.search(year=['2006', '2007']), 'Unable to search movie by year.'
     assert movie not in movies.search(year=2007), 'Unable to filter movie by year.'
-    assert movie in movies.search(actor=movie.actors[0].id)
+    assert movie in movies.search(actor=movie.actors[0].tag)

@@ -72,11 +72,11 @@ class Library(PlexObject):
             self.sections()
         return self._sectionsByID[sectionID]
 
-    def all(self):
+    def all(self, **attrs):
         """ Returns a list of all media from all library sections.
             This may be a very large dataset to retrieve.
         """
-        return [item for section in self.sections() for item in section.all()]
+        return [item for section in self.sections() for item in section.all(**attrs)]
 
     def onDeck(self):
         """ Returns a list of all media items on deck. """
@@ -112,7 +112,7 @@ class Library(PlexObject):
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
-        self._server._query('/library/clean/bundles')
+        self._root._query('/library/clean/bundles')
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -184,6 +184,10 @@ class LibrarySection(PlexObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
 
+    def __repr__(self):
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__,
+            self.key, self.librarySectionTitle] if p])
+
     def get(self, title):
         """ Returns the media item with the specified title.
 
@@ -193,10 +197,10 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all' % self.key
         return self.fetchItem(key, title=title)
 
-    def all(self):
+    def all(self, **attrs):
         """ Returns a list of media from this library section. """
         key = '/library/sections/%s/all' % self.key
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
@@ -214,19 +218,19 @@ class LibrarySection(PlexObject):
     def analyze(self):
         """ Run an analysis on all of the items in this library section. """
         key = '/library/sections/%s/analyze' % self.key
-        self._server._query(key, method=self.server.session.put)
+        self._root._query(key, method=self._root._session.put)
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
         key = '/library/sections/%s/emptyTrash' % self.key
-        self._server._query(key)
+        self._root._query(key)
 
     def refresh(self):
         """ Refresh the metadata for this library section. This will fetch fresh metadata for
             all contents in the section, including items that already have metadata.
         """
         key = '/library/sections/%s/refresh' % self.key
-        self._server._query(key)
+        self._root._query(key)
 
     def listChoices(self, category, libtype=None, **kwargs):
         """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the
@@ -312,13 +316,15 @@ class LibrarySection(PlexObject):
             return '1' if value else '0'
         if not isinstance(value, (list, tuple)):
             value = [value]
+
         # convert list of values to list of keys or ids
         result = set()
         choices = self.listChoices(category, libtype)
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
         allowed = set(c.key for c in choices)
         for item in value:
-            item = str(item.id if isinstance(item, MediaTag) else item).lower()
+            print(item)
+            item = str((item.id or item.tag) if isinstance(item, MediaTag) else item).lower()
             # find most logical choice(s) to use in url
             if item in allowed: result.add(item); continue
             if item in lookup: result.add(lookup[item]); continue

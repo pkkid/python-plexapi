@@ -70,12 +70,6 @@ def _test_utils_findItem():
     pass
 
 
-def test_utils_findKey(pms):
-    with pytest.raises(NotFound):
-        assert utils.findKey(pms, '9999999')
-    assert utils.findKey(pms, '1')
-
-
 def test_utils_cast():
     t_int_int = utils.cast(int, 1)
     t_int_str_int = utils.cast(int, '1')
@@ -100,7 +94,7 @@ def test_utils_download(a_episode):
         filename=a_episode.location, mocked=True)
     assert without_session
     with_session = utils.download(a_episode.getStreamURL(),
-        filename=a_episode.location, session=a_episode._root.session,
+        filename=a_episode.location, session=a_episode._root._session,
         mocked=True)
     assert with_session
     img = utils.download(a_episode.thumbUrl, filename=a_episode.title, mocked=True)

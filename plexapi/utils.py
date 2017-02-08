@@ -3,7 +3,7 @@ import logging, os, requests
 from datetime import datetime
 from threading import Thread
 from plexapi.compat import quote, string_type
-from plexapi.exceptions import NotFound, UnknownType
+from plexapi.exceptions import NotFound
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
@@ -289,8 +289,8 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
             /path/to/file
     """
     # TODO: Review this; It should be properly logging and raising exceptions..
+    from plexapi import log
     session = session or requests.Session()
-    print('Mocked download %s' % mocked)
     if savepath is None:
         savepath = os.getcwd()
     else:
@@ -316,6 +316,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
                     ext = '.%s' % cp.split('/')[1]
         fullpath = '%s%s' % (fullpath, ext)
         if mocked:
+            log.debug('Mocked download %s', fullpath)
             return fullpath
         with open(fullpath, 'wb') as f:
             for chunk in response.iter_content(chunk_size=chunksize):
@@ -324,5 +325,6 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
         #log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
         return fullpath
     except Exception as err:  # pragma: no cover
-        print('Error downloading file: %s' % err)
+        log.error('Error downloading file: %s' % err)
+        raise
         #log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

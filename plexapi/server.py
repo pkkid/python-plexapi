@@ -296,7 +296,7 @@ class PlexServer(PlexObject):
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
                 height, width, opacity, saturation, media)
-            return self.url(transcode_url)
+            return self._url(transcode_url)
 
 
 class Account(PlexObject):

@@ -52,7 +52,7 @@ class Audio(PlexPartialObject):
     def thumbUrl(self):
         """ Returns the URL to this items thumbnail image. """
         if self.thumb:
-            return self._root.url(self.thumb)
+            return self._root._url(self.thumb)
 
     def refresh(self):
         """ Tells Plex to refresh the metadata for this and all subitems. """
@@ -103,10 +103,10 @@ class Artist(Audio):
         key = '%s/children' % self.key
         return self.fetchItem(key, title=title)
 
-    def albums(self):
+    def albums(self, **attrs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
         key = '%s/children' % self.key
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -117,10 +117,10 @@ class Artist(Audio):
         key = '%s/allLeaves' % self.key
         return self.fetchItem(key, title=title)
 
-    def tracks(self):
+    def tracks(self, **attrs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
         key = '%s/allLeaves' % self.key
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -192,10 +192,10 @@ class Album(Audio):
         key = '%s/children' % self.key
         return self.fetchItem(key, title=title)
 
-    def tracks(self):
+    def tracks(self, **attrs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
         key = '%s/children' % self.key
-        return self.fetchItems(key)
+        return self.fetchItems(key, **attrs)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
@@ -302,7 +302,7 @@ class Track(Audio, Playable):
     def thumbUrl(self):
         """ Returns the URL thumbnail image for this track's album. """
         if self.parentThumb:
-            return self._root.url(self.parentThumb)
+            return self._root._url(self.parentThumb)
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """
