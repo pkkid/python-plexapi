@@ -52,15 +52,15 @@ class Audio(PlexPartialObject):
     def thumbUrl(self):
         """ Returns the URL to this items thumbnail image. """
         if self.thumb:
-            return self._root._url(self.thumb)
+            return self._server._url(self.thumb)
 
     def refresh(self):
         """ Tells Plex to refresh the metadata for this and all subitems. """
-        self._root._query('%s/refresh' % self.key, method=self._root.session.put)
+        self._server._query('%s/refresh' % self.key, method=self._server.session.put)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self._root.library.sectionByID(self.librarySectionID)
+        return self._server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
@@ -291,8 +291,8 @@ class Track(Audio, Playable):
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._root, data)
-        self.transcodeSession = utils.findTranscodeSession(self._root, data)
+        self.player = utils.findPlayer(self._server, data)
+        self.transcodeSession = utils.findTranscodeSession(self._server, data)
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
@@ -302,7 +302,7 @@ class Track(Audio, Playable):
     def thumbUrl(self):
         """ Returns the URL thumbnail image for this track's album. """
         if self.parentThumb:
-            return self._root._url(self.parentThumb)
+            return self._server._url(self.parentThumb)
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """

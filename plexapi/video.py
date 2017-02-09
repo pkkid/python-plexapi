@@ -28,7 +28,7 @@ class Video(PlexPartialObject):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.thumb:
-            return self._root._url(self.thumb)
+            return self._server._url(self.thumb)
 
     def analyze(self):
         """The primary purpose of media analysis is to gather information about
@@ -37,28 +37,28 @@ class Video(PlexPartialObject):
         a music track, or one of your photos.
         """
         key = '/%s/analyze' % self.key.lstrip('/')
-        self._root._query(key, method=self._root._session.put)
+        self._server._query(key, method=self._server._session.put)
 
     def markWatched(self):
         """Mark a items as watched."""
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._root._query(key)
+        self._server._query(key)
         self.reload()
 
     def markUnwatched(self):
         """Mark a item as unwatched."""
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._root._query(key)
+        self._server._query(key)
         self.reload()
 
     def refresh(self):
         """Refresh a item."""
         key = '%s/refresh' % self.key
-        self._root._query(key, method=self._root._session.put)
+        self._server._query(key, method=self._server._session.put)
 
     def section(self):
         """Library section."""
-        return self._root.library.sectionByID(self.librarySectionID)
+        return self._server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
@@ -133,8 +133,8 @@ class Movie(Video, Playable):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._root._url('%s?download=1' % loc.key)
-            dl = utils.download(download_url, filename=name, savepath=savepath, session=self._root._session)
+                download_url = self._server._url('%s?download=1' % loc.key)
+            dl = utils.download(download_url, filename=name, savepath=savepath, session=self._server._session)
             if dl:
                 downloaded.append(dl)
         return downloaded
@@ -254,7 +254,7 @@ class Show(Video):
 
     def refresh(self):
         """Refresh the metadata."""
-        self._root._query('/library/metadata/%s/refresh' % self.ratingKey, method=self._root._session.put)
+        self._server._query('/library/metadata/%s/refresh' % self.ratingKey, method=self._server._session.put)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -395,8 +395,8 @@ class Episode(Video, Playable):
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._root, data)
-        self.transcodeSession = utils.findTranscodeSession(self._root, data)
+        self.player = utils.findPlayer(self._server, data)
+        self.transcodeSession = utils.findTranscodeSession(self._server, data)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -421,7 +421,7 @@ class Episode(Video, Playable):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.grandparentThumb:
-            return self._root._url(self.grandparentThumb)
+            return self._server._url(self.grandparentThumb)
 
     def season(self):
         """Return this episode Season"""

@@ -159,7 +159,7 @@ class PlexClient(PlexObject):
         params['commandID'] = self._commandId
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
-            return self._root._query(key, headers=headers)
+            return self._server._query(key, headers=headers)
         return self._query(key, headers=headers)
 
     #---------------------

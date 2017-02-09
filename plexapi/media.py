@@ -87,7 +87,7 @@ class MediaPart(PlexObject):
         for elem in data:
             for cls in (VideoStream, AudioStream, SubtitleStream):
                 if elem.attrib.get('streamType') == str(cls.STREAMTYPE):
-                    streams.append(cls(self._root, elem, self._initpath))
+                    streams.append(cls(self._server, elem, self._initpath))
         return streams
 
     @property

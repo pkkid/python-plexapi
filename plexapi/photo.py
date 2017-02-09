@@ -62,7 +62,7 @@ class Photoalbum(PlexPartialObject):
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self._root.library.sectionByID(self.librarySectionID)
+        return self._server.library.sectionByID(self.librarySectionID)
 
 
 @utils.register_libtype
@@ -118,4 +118,4 @@ class Photo(PlexPartialObject):
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self._root.library.sectionByID(self.photoalbum().librarySectionID)
+        return self._server.library.sectionByID(self.photoalbum().librarySectionID)

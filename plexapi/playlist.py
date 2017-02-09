@@ -47,32 +47,32 @@ class Playlist(PlexPartialObject, Playable):
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys)
         }))
-        return self._root._query(key, method=self._root._session.put)
+        return self._server._query(key, method=self._server._session.put)
 
     def removeItem(self, item):
         """Remove a file from a playlist."""
         key = '%s/items/%s' % (self.key, item.playlistItemID)
-        return self._root._query(key, method=self._root._session.delete)
+        return self._server._query(key, method=self._server._session.delete)
 
     def moveItem(self, item, after=None):
         """Move a to a new position in playlist."""
         key = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
             key += '?after=%s' % after.playlistItemID
-        return self._root._query(key, method=self._root._session.put)
+        return self._server._query(key, method=self._server._session.put)
 
     def edit(self, title=None, summary=None):
         """Edit playlist."""
         key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
-        return self._root._query(key, method=self._root._session.put)
+        return self._server._query(key, method=self._server._session.put)
 
     def delete(self):
         """Delete playlist."""
-        return self._root._query(self.key, method=self._root._session.delete)
+        return self._server._query(self.key, method=self._server._session.delete)
 
     def playQueue(self, *args, **kwargs):
         """ Create a playqueue from this playlist. """
-        return PlayQueue.create(self._root, self, *args, **kwargs)
+        return PlayQueue.create(self._server, self, *args, **kwargs)
 
     @classmethod
     def create(cls, server, title, items):

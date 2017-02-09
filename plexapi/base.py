@@ -12,7 +12,7 @@ class PlexObject(object):
     key = None
 
     def __init__(self, root, data, initpath=None):
-        self._root = root                       # Root MyPlexAccount or PlexServer
+        self._server = root                       # Root MyPlexAccount or PlexServer
         self._data = data                       # XML data needed to build object
         self._initpath = initpath or self.key   # Request path used to fetch data
         self._loadData(data)
@@ -44,10 +44,10 @@ class PlexObject(object):
         if libtype == 'photo' and elem.tag == 'Directory':
             libtype = 'photoalbum'
         if cls and libtype == cls.TYPE:
-            return cls(self._root, elem, initpath)
+            return cls(self._server, elem, initpath)
         if libtype in utils.LIBRARY_TYPES:
             cls = utils.LIBRARY_TYPES[libtype]
-            return cls(self._root, elem, initpath)
+            return cls(self._server, elem, initpath)
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, libtype))
 
     def _buildItemOrNone(self, elem, cls=None, initpath=None, bytag=False):
@@ -78,7 +78,7 @@ class PlexObject(object):
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
         """
-        for elem in self._root._query(key):
+        for elem in self._server._query(key):
             if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             return self._buildItem(elem, cls, key, bytag)
@@ -89,7 +89,7 @@ class PlexObject(object):
             specified tag and attrs.
         """
         items = []
-        for elem in self._root._query(key):
+        for elem in self._server._query(key):
             if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             items.append(self._buildItemOrNone(elem, cls, key, bytag))
@@ -110,7 +110,7 @@ class PlexObject(object):
             if safe: return None
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = self.key
-        data = self._root._query(self.key)
+        data = self._server._query(self.key)
         self._loadData(data[0])
         return self
 
@@ -176,8 +176,8 @@ class Playable(object):
         # Load data for active sessions (/status/sessions)
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._root, data)
-        self.transcodeSession = utils.findTranscodeSession(self._root, data)
+        self.player = utils.findPlayer(self._server, data)
+        self.transcodeSession = utils.findTranscodeSession(self._server, data)
         # Load data for history details (/status/sessions/history/all)
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))
         # Load data for playlist items
@@ -213,7 +213,7 @@ class Playable(object):
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
-        return self._root._url('/%s/:/transcode/universal/start.m3u8?%s' %
+        return self._server._url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
@@ -254,9 +254,9 @@ class Playable(object):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._root._url('%s?download=1' % location.key)
+                download_url = self._server._url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
-                savepath=savepath, session=self._root._session)
+                savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
