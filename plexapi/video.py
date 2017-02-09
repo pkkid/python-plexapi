@@ -175,10 +175,10 @@ class Show(Video):
     def isWatched(self):
         return bool(self.viewedLeafCount == self.leafCount)
 
-    def seasons(self, **attrs):
+    def seasons(self, **kwargs):
         """Returns a list of Season."""
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Season.TYPE, **attrs)
+        return self.fetchItems(key, type=Season.TYPE, **kwargs)
 
     def season(self, title=None):
         """ Returns the season with the specified title or number.
@@ -191,10 +191,10 @@ class Show(Video):
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItem(key, tag='Directory', title=title)
 
-    def episodes(self, **attrs):
+    def episodes(self, **kwargs):
         """ Returs a list of Episode """
         key = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return self.fetchItems(key, **attrs)
+        return self.fetchItems(key, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
         """Find a episode using a title or season and episode.
@@ -300,10 +300,10 @@ class Season(Video):
         """Returns season number."""
         return self.index
 
-    def episodes(self, **attrs):
+    def episodes(self, **kwargs):
         """ Returs a list of Episode. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Episode.TYPE, **attrs)
+        return self.fetchItems(key, type=Episode.TYPE, **kwargs)
 
     def episode(self, title=None, num=None):
         """ Returns the episode with the given title or number.

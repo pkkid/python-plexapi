@@ -72,11 +72,11 @@ class Library(PlexObject):
             self.sections()
         return self._sectionsByID[sectionID]
 
-    def all(self, **attrs):
+    def all(self, **kwargs):
         """ Returns a list of all media from all library sections.
             This may be a very large dataset to retrieve.
         """
-        return [item for section in self.sections() for item in section.all(**attrs)]
+        return [item for section in self.sections() for item in section.all(**kwargs)]
 
     def onDeck(self):
         """ Returns a list of all media items on deck. """
@@ -197,10 +197,10 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all' % self.key
         return self.fetchItem(key, title=title)
 
-    def all(self, **attrs):
+    def all(self, **kwargs):
         """ Returns a list of media from this library section. """
         key = '/library/sections/%s/all' % self.key
-        return self.fetchItems(key, **attrs)
+        return self.fetchItems(key, **kwargs)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """

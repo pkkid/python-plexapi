@@ -103,10 +103,10 @@ class Artist(Audio):
         key = '%s/children' % self.key
         return self.fetchItem(key, title=title)
 
-    def albums(self, **attrs):
+    def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
         key = '%s/children' % self.key
-        return self.fetchItems(key, **attrs)
+        return self.fetchItems(key, **kwargs)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -117,10 +117,10 @@ class Artist(Audio):
         key = '%s/allLeaves' % self.key
         return self.fetchItem(key, title=title)
 
-    def tracks(self, **attrs):
+    def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
         key = '%s/allLeaves' % self.key
-        return self.fetchItems(key, **attrs)
+        return self.fetchItems(key, **kwargs)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -192,10 +192,10 @@ class Album(Audio):
         key = '%s/children' % self.key
         return self.fetchItem(key, title=title)
 
-    def tracks(self, **attrs):
+    def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """
         key = '%s/children' % self.key
-        return self.fetchItems(key, **attrs)
+        return self.fetchItems(key, **kwargs)
 
     def get(self, title):
         """ Alias of :func:`~plexapi.audio.Album.track`. """

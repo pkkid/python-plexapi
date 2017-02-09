@@ -73,31 +73,31 @@ class PlexObject(object):
             items.append(self._buildItemOrNone(elem, cls, initpath, bytag))
         return [item for item in items if item]
 
-    def fetchItem(self, key, cls=None, bytag=False, tag=None, **attrs):
+    def fetchItem(self, key, cls=None, bytag=False, tag=None, **kwargs):
         """ Load the specified key to find and build the first item with the
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
         """
         for elem in self._root._query(key):
-            if tag and elem.tag != tag or not self._checkAttrs(elem, **attrs):
+            if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             return self._buildItem(elem, cls, key, bytag)
-        raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, attrs))
+        raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, kwargs))
 
-    def fetchItems(self, key, cls=None, bytag=False, tag=None, **attrs):
+    def fetchItems(self, key, cls=None, bytag=False, tag=None, **kwargs):
         """ Load the specified key to find and build all items with the
             specified tag and attrs.
         """
         items = []
         for elem in self._root._query(key):
-            if tag and elem.tag != tag or not self._checkAttrs(elem, **attrs):
+            if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             items.append(self._buildItemOrNone(elem, cls, key, bytag))
         return [item for item in items if item]
 
-    def _checkAttrs(self, elem, **attrs):
+    def _checkAttrs(self, elem, **kwargs):
         # TODO: Implement opterations
-        if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in attrs.items()):
+        if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in kwargs.items()):
             return False
         return True
 
