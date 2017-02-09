@@ -169,12 +169,10 @@ class PlexObject(object):
         return self
 
     def _checkAttrs(self, elem, **kwargs):
-        logme = elem.attrib.get('ratingKey') == '746'
         attrsFound = {}
         for attr, query in kwargs.items():
             attr, op, operator = self._getAttrOperator(attr)
             values = self._getAttrValue(elem, attr)
-            if logme: log.debug('Check %s.%s__%s=%s (value=%s)', elem.tag, attr, op, str(query)[:20], str(values)[:20])
             # special case ismissing operator
             if op == 'ismissing':
                 if query not in (True, False):
@@ -190,11 +188,9 @@ class PlexObject(object):
                 if isinstance(query, int): value = int(value)
                 if isinstance(query, float): value = float(value)
                 if isinstance(query, bool): value = bool(int(value))
-                if logme: log.info('%s %s %s', value, op, query)
                 if operator(value, query):
                     attrsFound[attr] = True
                     break
-        if logme: log.info(attrsFound)
         return all(attrsFound.values())
 
     def _getAttrOperator(self, attr):
