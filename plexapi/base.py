@@ -2,7 +2,27 @@
 import re
 from plexapi import log, utils
 from plexapi.compat import urlencode
-from plexapi.exceptions import NotFound, UnknownType, Unsupported
+from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import UnknownType, Unsupported
+
+OPERATORS = {
+    'exact': lambda v,q: v == q,
+    'iexact': lambda v,q: v.lower() == q.lower(),
+    'contains': lambda v,q: q in v,
+    'icontains': lambda v,q: q.lower() in v.lower(),
+    'in': lambda v,q: v in q,
+    'gt': lambda v,q: v > q,
+    'gte': lambda v,q: v >= q,
+    'lt': lambda v,q: v < q,
+    'lte': lambda v,q: v <= q,
+    'startswith': lambda v,q: v.startswith(q),
+    'istartswith': lambda v,q: v.lower().startswith(q),
+    'endswith': lambda v,q: v.endswith(q),
+    'iendswith': lambda v,q: v.lower().endswith(q),
+    'ismissing': None,  # special case in _checkAttrs
+    'regex': lambda v,q: re.match(q, v),
+    'iregex': lambda v,q: re.match(q, v, flasg=re.IGNORECASE),
+}
 
 
 class PlexObject(object):
@@ -77,7 +97,49 @@ class PlexObject(object):
         """ Load the specified key to find and build the first item with the
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
+
+            Parameters:
+                key (str or int): Path in Plex to fetch items from. If an int is passed
+                    in, the key will be translated to /library/metadata/<key>. This allows
+                    fetching an item only knowing its key-id.
+                cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
+                    items to be fetched, passing this in will help the parser ensure 
+                    it only returns those items. By default we convert the xml elements
+                    to the best guess PlexObjects based on the type attr or tag.
+                bytag (bool): Setting this to True tells the build-items function to guess
+                    the PlexObject to build from the tag (instead of the type attr).
+                tag (str): Only fetch items with the specified tag.
+                **kwargs (dict): Optionally add attribute filters on the items to fetch. For
+                    example, passing in viewCount=0 will only return matching items. Filtering
+                    is done before the Python objects are built to help keep things speedy.
+                    Note: Because some attribute names are already used as arguments to this
+                    function, such as 'tag', you may still reference the attr tag byappending
+                    an underscore. For example, passing in _tag='foobar' will return all items
+                    where tag='foobar'. Also Note: Case very much matters when specifying kwargs
+                    -- Optionally, operators can be specified by append it
+                    to the end of the attribute name for more complex lookups. For example,
+                    passing in viewCount__gte=0 will return all items where viewCount >= 0.
+                    Available operations include:
+
+                    * __exact: Value matches specified arg.
+                    * __iexact: Case insensative value matches specified arg.
+                    * __contains: Value contains specified arg.
+                    * __icontains: Case insensative value contains specified arg.
+                    * __in: Value is in a specified list or tuple.
+                    * __gt: Value is greater than specified arg.
+                    * __gte: Value is greater than or equal to specified arg.
+                    * __lt: Value is less than specified arg.
+                    * __lte: Value is less than or equal to specified arg.
+                    * __startswith: Value starts with specified arg.
+                    * __istartswith: Case insensative value starts with specified arg.
+                    * __endswith: Value ends with specified arg.
+                    * __iendswith: Case insensative value ends with specified arg.
+                    * __ismissing (bool): Value is or is not present in the attrs.
+                    * __regex: Value matches the specified regular expression.
+                    * __iregex: Case insensative value matches the specified regular expression.
         """
+        if isinstance(key, int):
+            key = '/library/metadata/%s' % key
         for elem in self._server.query(key):
             if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
@@ -85,8 +147,9 @@ class PlexObject(object):
         raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, kwargs))
 
     def fetchItems(self, key, cls=None, bytag=False, tag=None, **kwargs):
-        """ Load the specified key to find and build all items with the
-            specified tag and attrs.
+        """ Load the specified key to find and build all items with the specified tag
+            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
+            on how this is used.
         """
         items = []
         for elem in self._server.query(key):
@@ -94,15 +157,6 @@ class PlexObject(object):
                 continue
             items.append(self._buildItemOrNone(elem, cls, key, bytag))
         return [item for item in items if item]
-
-    def _checkAttrs(self, elem, **kwargs):
-        # TODO: Implement opterations
-        if not all(elem.attrib.get(a,'').lower() == str(v).lower() for a,v in kwargs.items()):
-            return False
-        return True
-
-    def _loadData(self, data):
-        raise NotImplemented('Abstract method not implemented.')
 
     def reload(self, safe=False):
         """ Reload the data for this object from self.key. """
@@ -113,6 +167,45 @@ class PlexObject(object):
         data = self._server.query(self.key)
         self._loadData(data[0])
         return self
+
+    def _checkAttrs(self, elem, **kwargs):
+        for kwarg, query in kwargs.items():
+            # strip underscore from special cased attrs
+            if kwarg in ('_key', '_cls', '_tag'):
+                kwarg = kwarg[1:]
+            # extract the kwarg operator if present
+            op, operator = 'exact', OPERATORS['exact']
+            if '__' in kwarg:
+                kwarg, op = kwarg.rsplit('__', 1)
+                if op not in OPERATORS:
+                    raise BadRequest('Invalid filter operator: __%s' % op)
+                operator = OPERATORS[op]
+            # get value from elem and check ismissing operator
+            value = elem.attrib.get(kwarg)
+            log.debug("Checking %s.%s__%s=%s (value=%s)", elem.tag, kwarg, op,
+                str(query)[:20], str(value)[:20])
+            if op == 'ismissing':
+                if query not in (True, False):
+                    raise BadRequest('Value when using __ismissing must be in (True, False).')
+                if (query is True and value) or (query is False and not value):
+                    return False
+            # special case query=None,0,'' to include missing attr
+            if op == 'exact' and query in (None, 0, '') and value is None:
+                return True
+            # return if attr were looking for is missing
+            if not value:
+                return False
+            # cast value to the same type as query
+            if isinstance(query, int): value = int(value)
+            if isinstance(query, float): value = float(value)
+            if isinstance(query, bool): value = bool(int(value))
+            # perform the comparison
+            if not operator(value, query):
+                return False
+        return True
+
+    def _loadData(self, data):
+        raise NotImplemented('Abstract method not implemented.')
 
 
 class PlexPartialObject(PlexObject):

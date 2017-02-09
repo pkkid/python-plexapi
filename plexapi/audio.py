@@ -101,7 +101,7 @@ class Artist(Audio):
                 title (str): Title of the album to return.
         """
         key = '%s/children' % self.key
-        return self.fetchItem(key, title=title)
+        return self.fetchItem(key, title__iexact=title)
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by this artist. """
@@ -115,7 +115,7 @@ class Artist(Audio):
                 title (str): Title of the track to return.
         """
         key = '%s/allLeaves' % self.key
-        return self.fetchItem(key, title=title)
+        return self.fetchItem(key, title__iexact=title)
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by this artist. """
@@ -190,7 +190,7 @@ class Album(Audio):
                 title (str): Title of the track to return.
         """
         key = '%s/children' % self.key
-        return self.fetchItem(key, title=title)
+        return self.fetchItem(key, title__iexact=title)
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in this album. """

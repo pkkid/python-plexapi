@@ -189,7 +189,7 @@ class Show(Video):
         if isinstance(title, int):
             title = 'Season %s' % title
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItem(key, tag='Directory', title=title)
+        return self.fetchItem(key, tag='Directory', title__iexact=title)
 
     def episodes(self, **kwargs):
         """ Returs a list of Episode """
@@ -225,7 +225,7 @@ class Show(Video):
             raise TypeError('Missing argument: title or season and episode are required')
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
-            return self.fetchItem(key, title=title)
+            return self.fetchItem(key, title__iexact=title)
         elif season and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
@@ -234,11 +234,11 @@ class Show(Video):
 
     def watched(self):
         """Return a list of watched episodes"""
-        return self.episodes(watched=True)
+        return self.episodes(viewCount__gt=0)
 
     def unwatched(self):
         """Return a list of unwatched episodes"""
-        return self.episodes(watched=False)
+        return self.episodes(viewCount=0)
 
     def get(self, title):
         """Get a Episode with a title.

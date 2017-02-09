@@ -302,7 +302,7 @@ def test_video_Show_reload(pms):
 
 def test_video_Show_episodes(a_show):
     inc_watched = a_show.episodes()
-    ex_watched = a_show.episodes(watched=False)
+    ex_watched = a_show.episodes(viewCount=0)
     assert len(inc_watched) == 9
     assert len(ex_watched) == 8
 
