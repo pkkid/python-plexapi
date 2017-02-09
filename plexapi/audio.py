@@ -52,11 +52,11 @@ class Audio(PlexPartialObject):
     def thumbUrl(self):
         """ Returns the URL to this items thumbnail image. """
         if self.thumb:
-            return self._server._url(self.thumb)
+            return self._server.url(self.thumb)
 
     def refresh(self):
         """ Tells Plex to refresh the metadata for this and all subitems. """
-        self._server._query('%s/refresh' % self.key, method=self._server.session.put)
+        self._server.query('%s/refresh' % self.key, method=self._server.session.put)
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
@@ -302,7 +302,7 @@ class Track(Audio, Playable):
     def thumbUrl(self):
         """ Returns the URL thumbnail image for this track's album. """
         if self.parentThumb:
-            return self._server._url(self.parentThumb)
+            return self._server.url(self.parentThumb)
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """

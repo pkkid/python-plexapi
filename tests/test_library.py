@@ -34,7 +34,7 @@ def test_library_sectionByID_with_attrs(pms):
     assert m.locations == ['/media/movies']
     assert m.refreshing is False
     assert m.scanner == 'Plex Movie Scanner'
-    assert m._root._baseurl == 'http://138.68.157.5:32400'
+    assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.thumb == '/:/resources/movie.png'
     assert m.title == 'Movies'
     assert m.type == 'movie'

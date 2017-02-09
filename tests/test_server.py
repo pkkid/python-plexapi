@@ -33,7 +33,7 @@ def test_server_library(pms):
 
 
 def test_server_url(pms):
-    assert 'ohno' in pms._url('ohno')
+    assert 'ohno' in pms.url('ohno')
 
 
 def test_server_transcodeImage(tmpdir, pms, a_show):
@@ -43,7 +43,7 @@ def test_server_transcodeImage(tmpdir, pms, a_show):
     img_url_resize = pms.transcodeImage(a_show.banner, height, width)
     gray = img_url_resize = pms.transcodeImage(a_show.banner, height, width, saturation=0)
     resized_image = download(img_url_resize, savepath=str(tmpdir), filename='resize_image')
-    org_image = download(a_show._root._url(a_show.banner), savepath=str(tmpdir), filename='org_image')
+    org_image = download(a_show._server.url(a_show.banner), savepath=str(tmpdir), filename='org_image')
     gray_image = download(gray, savepath=str(tmpdir), filename='gray_image')
     with Image.open(resized_image) as im:
         assert width, height == im.size
@@ -99,10 +99,10 @@ def test_server_history(pms):
 
 
 def test_server_Server_query(pms):
-    assert pms._query('/')
+    assert pms.query('/')
     from plexapi.server import PlexServer
     with pytest.raises(BadRequest):
-        assert pms._query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
+        assert pms.query('/asdasdsada/12123127/aaaa', headers={'random_headers': '1337'})
     with pytest.raises(BadRequest):
         # This is really requests.exceptions.HTTPError:
         # 401 Client Error: Unauthorized for url:
@@ -122,7 +122,7 @@ def test_server_Server_session():
         os.environ.get('PLEX_TEST_TOKEN'), session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
     pl = plex.playlists()
-    assert hasattr(pl[0]._root._session, 'plexapi_session_test')
+    assert hasattr(pl[0]._server._session, 'plexapi_session_test')
     # TODO: Check client in test_server_Server_session.
     # TODO: Check myplex in test_server_Server_session.
 
@@ -171,7 +171,7 @@ def test_server_clients(pms):
     assert m.protocol == 'plex'
     assert m.protocolCapabilities == ['timeline', 'playback', 'navigation', 'mirror', 'playqueues']
     assert m.protocolVersion == '1'
-    assert m._root._baseurl == 'http://138.68.157.5:32400'
+    assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.state is None
     assert m.title == 'Plex Web (Chrome)'
     assert m.token is None

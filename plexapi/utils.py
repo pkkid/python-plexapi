@@ -174,7 +174,7 @@ def listChoices(server, path):
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             path (str): Relative path to request XML data from.
     """
-    return {c.attrib['title']: c.attrib['key'] for c in server._query(path)}
+    return {c.attrib['title']: c.attrib['key'] for c in server.query(path)}
 
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover

@@ -52,7 +52,7 @@ class MyPlexAccount(PlexObject):
         self._token = None
         username = username or CONFIG.get('authentication.myplex_username')
         password = password or CONFIG.get('authentication.myplex_password')
-        data = self._query(self.SIGNIN, method=self._session.post, auth=(username, password))
+        data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password))
         super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
 
     def _loadData(self, data):
@@ -88,7 +88,23 @@ class MyPlexAccount(PlexObject):
         self.roles = None
         self.entitlements = None
 
-    def _query(self, url, method=None, headers=None, **kwargs):
+    def device(self, name):
+        """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
+
+            Parameters:
+                name (str): Name to match against.
+        """
+        for device in self.devices():
+            if device.name.lower() == name.lower():
+                return device
+        raise NotFound('Unable to find device %s' % name)
+
+    def devices(self):
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
+        data = self.query(MyPlexDevice.key)
+        return [MyPlexDevice(self, elem) for elem in data]
+
+    def query(self, url, method=None, headers=None, **kwargs):
         method = method or self._session.get
         delim = '&' if '?' in url else '?'
         url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
@@ -103,22 +119,6 @@ class MyPlexAccount(PlexObject):
         text = response.text.encode('utf8')
         return ElementTree.fromstring(text) if text else None
 
-    def device(self, name):
-        """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
-
-            Parameters:
-                name (str): Name to match against.
-        """
-        for device in self.devices():
-            if device.name.lower() == name.lower():
-                return device
-        raise NotFound('Unable to find device %s' % name)
-
-    def devices(self):
-        """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
-        data = self._query(MyPlexDevice.key)
-        return [MyPlexDevice(self, elem) for elem in data]
-
     def resource(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexResource` that matches the name specified.
 
@@ -132,7 +132,7 @@ class MyPlexAccount(PlexObject):
 
     def resources(self):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexResource` objects connected to the server. """
-        data = self._query(MyPlexResource.key)
+        data = self.query(MyPlexResource.key)
         return [MyPlexResource(self, elem) for elem in data]
 
     def user(self, email):
@@ -148,7 +148,7 @@ class MyPlexAccount(PlexObject):
 
     def users(self):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account. """
-        data = self._query(MyPlexUser.key)
+        data = self.query(MyPlexUser.key)
         return [MyPlexUser(self, elem) for elem in data]
 
 

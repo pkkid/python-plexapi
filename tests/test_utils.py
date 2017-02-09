@@ -94,7 +94,7 @@ def test_utils_download(a_episode):
         filename=a_episode.location, mocked=True)
     assert without_session
     with_session = utils.download(a_episode.getStreamURL(),
-        filename=a_episode.location, session=a_episode._root._session,
+        filename=a_episode.location, session=a_episode._server._session,
         mocked=True)
     assert with_session
     img = utils.download(a_episode.thumbUrl, filename=a_episode.title, mocked=True)

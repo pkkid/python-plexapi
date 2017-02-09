@@ -57,7 +57,7 @@ class PlexClient(PlexObject):
         self._session = session or _server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
-        data = data or self._query('/resources')[0]
+        data = data or self.query('/resources')[0]
         super(PlexClient, self).__init__(self, data, self.key)
 
     def connect(self, safe=False):
@@ -89,23 +89,6 @@ class PlexClient(PlexObject):
         self.vendor = data.attrib.get('vendor')
         self.version = data.attrib.get('version')
 
-    def _query(self, path, method=None, headers=None, **kwargs):
-        """ Main method used to handle HTTPS requests to the Plex client. This method helps
-            by encoding the response to utf-8 and parsing the returned XML into and
-            ElementTree object. Returns None if no data exists in the response.
-        """
-        url = self._url(path)
-        method = method or self._session.get
-        log.debug('%s %s', method.__name__.upper(), url)
-        headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
-        if response.status_code not in (200, 201):
-            codename = codes.get(response.status_code)[0]
-            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
-        data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data else None
-
     def _headers(self, **kwargs):
         """ Returns a dict of all default headers for Client requests. """
         headers = BASE_HEADERS
@@ -113,13 +96,6 @@ class PlexClient(PlexObject):
             headers['X-Plex-Token'] = self._token
         headers.update(kwargs)
         return headers
-
-    def _url(self, key):
-        """ Build a URL string with proper token argument. """
-        if self._token:
-            delim = '&' if '?' in key else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
-        return '%s%s' % (self._baseurl, key)
 
     def proxyThroughServer(self, value=True):
         """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
@@ -135,8 +111,25 @@ class PlexClient(PlexObject):
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
+    def query(self, path, method=None, headers=None, **kwargs):
+        """ Main method used to handle HTTPS requests to the Plex client. This method helps
+            by encoding the response to utf-8 and parsing the returned XML into and
+            ElementTree object. Returns None if no data exists in the response.
+        """
+        url = self.url(path)
+        method = method or self._session.get
+        log.debug('%s %s', method.__name__.upper(), url)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        if response.status_code not in (200, 201):
+            codename = codes.get(response.status_code)[0]
+            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data else None
+
     def sendCommand(self, command, proxy=None, **params):
-        """ Convenience wrapper around :func:`~plexapi.client.PlexClient._query()` to more easily
+        """ Convenience wrapper around :func:`~plexapi.client.PlexClient.query()` to more easily
             send simple commands to the client. Returns an ElementTree object containing
             the response.
 
@@ -159,8 +152,15 @@ class PlexClient(PlexObject):
         params['commandID'] = self._commandId
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
-            return self._server._query(key, headers=headers)
-        return self._query(key, headers=headers)
+            return self._server.query(key, headers=headers)
+        return self.query(key, headers=headers)
+
+    def url(self, key):
+        """ Build a URL string with proper token argument. """
+        if self._token:
+            delim = '&' if '?' in key else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
+        return '%s%s' % (self._baseurl, key)
 
     #---------------------
     # Navigation Commands

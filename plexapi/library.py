@@ -39,7 +39,7 @@ class Library(PlexObject):
             MusicSection.TYPE: MusicSection, PhotoSection.TYPE: PhotoSection}
         items = []
         key = '/library/sections'
-        for elem in self._server._query(key):
+        for elem in self._server.query(key):
             stype = elem.attrib['type']
             if stype in SECTION_TYPES:
                 cls = SECTION_TYPES[stype]
@@ -112,7 +112,7 @@ class Library(PlexObject):
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
-        self._server._query('/library/clean/bundles')
+        self._server.query('/library/clean/bundles')
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -124,13 +124,13 @@ class Library(PlexObject):
             For example, if you have deleted or added an entire library or many items in a
             library, you may like to optimize the database.
         """
-        self._server._query('/library/optimize')
+        self._server.query('/library/optimize')
 
     def refresh(self):
         """ Refresh the metadata for the entire library. This will fetch fresh metadata for
             all contents in the library, including items that already have metadata.
         """
-        self._server._query('/library/sections/all/refresh')
+        self._server.query('/library/sections/all/refresh')
 
 
 class LibrarySection(PlexObject):
@@ -218,19 +218,19 @@ class LibrarySection(PlexObject):
     def analyze(self):
         """ Run an analysis on all of the items in this library section. """
         key = '/library/sections/%s/analyze' % self.key
-        self._server._query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put)
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
         key = '/library/sections/%s/emptyTrash' % self.key
-        self._server._query(key)
+        self._server.query(key)
 
     def refresh(self):
         """ Refresh the metadata for this library section. This will fetch fresh metadata for
             all contents in the section, including items that already have metadata.
         """
         key = '/library/sections/%s/refresh' % self.key
-        self._server._query(key)
+        self._server.query(key)
 
     def listChoices(self, category, libtype=None, **kwargs):
         """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the

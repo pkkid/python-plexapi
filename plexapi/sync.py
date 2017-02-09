@@ -54,4 +54,4 @@ class SyncItem(object):
         server = self.server().connect()
         url = '/sync/%s/%s/files/%s/downloaded' % (
             self._device.clientIdentifier, server.machineIdentifier, sync_id)
-        server._query(url, method=requests.put)
+        server.query(url, method=requests.put)

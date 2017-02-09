@@ -81,7 +81,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.ratingImage == 'rottentomatoes://image.rating.certified'
     assert m.ratingKey == 2
     assert [i.tag for i in m.roles] == ['Owen Wilson', 'Paul Newman', 'Bonnie Hunt', 'Larry the Cable Guy', 'Cheech Marin', 'Tony Shalhoub', 'Guido Quaroni', 'Jenifer Lewis', 'Paul Dooley', 'Michael Wallis', 'George Carlin', 'Katherine Helmond', 'John Ratzenberger', 'Michael Keaton', 'Joe Ranft', 'Richard Petty', 'Jeremy Piven', 'Bob Costas', 'Darrell Waltrip', 'Richard Kind', 'Edie McClurg', 'Humpy Wheeler', 'Tom Magliozzi', 'Ray Magliozzi', 'Lynda Petty', 'Andrew Stanton', 'Dale Earnhardt Jr.', 'Michael Schumacher', 'Jay Leno', 'Sarah Clark', 'Mike Nelson', 'Joe Ranft', 'Jonas Rivera', 'Lou Romano', 'Adrian Ochoa', 'E.J. Holowicki', 'Elissa Knight', 'Lindsey Collins', 'Larry Benton', 'Douglas Keever', 'Tom Hanks', 'Tim Allen', 'John Ratzenberger', 'Billy Crystal', 'John Goodman', 'John Ratzenberger', 'Dave Foley', 'John Ratzenberger', 'Vanness Wu']
-    assert m._root._baseurl == 'http://138.68.157.5:32400'
+    assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.sessionKey is None
     assert m.studio == 'Walt Disney Pictures'
     assert m.summary == u"Lightning McQueen, a hotshot rookie race car driven to succeed, discovers that life is about the journey, not the finish line, when he finds himself unexpectedly detoured in the sleepy Route 66 town of Radiator Springs. On route across the country to the big Piston Cup Championship in California to compete against two seasoned pros, McQueen gets to know the town's offbeat characters."
@@ -118,7 +118,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     #assert aud0.part == <MediaPart:2>
     assert aud0.samplingRate == 48000
     assert aud0.selected is True
-    assert aud0._root._baseurl == 'http://138.68.157.5:32400'
+    assert aud0._server._baseurl == 'http://138.68.157.5:32400'
     assert aud0.streamType == 2
     assert aud0.title is None
     assert aud0.type == 2
@@ -134,7 +134,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert med0.optimizedForStreaming is False
     # Assign 0 med0.parts
     par0 = med0.parts[0]
-    assert med0._root._baseurl == 'http://138.68.157.5:32400'
+    assert med0._server._baseurl == 'http://138.68.157.5:32400'
     assert med0.videoCodec == 'h264'
     assert med0.videoFrameRate == 'PAL'
     assert med0.videoResolution == '720'
@@ -162,7 +162,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert vid0.refFrames == 1
     assert vid0.scanType is None
     assert vid0.selected is False
-    assert vid0._root._baseurl == 'http://138.68.157.5:32400'
+    assert vid0._server._baseurl == 'http://138.68.157.5:32400'
     assert vid0.streamType == 1
     assert vid0.title is None
     assert vid0.type == 1
@@ -174,7 +174,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert par0._initpath == '/library/metadata/2'
     assert par0.key == '/library/parts/2/1484679008/file.mp4'
     #assert par0.media == <Media:Cars>
-    assert par0._root._baseurl == 'http://138.68.157.5:32400'
+    assert par0._server._baseurl == 'http://138.68.157.5:32400'
     assert par0.size == 31491130
     # Assign 0 par0.streams
     str0 = par0.streams[0]
@@ -203,7 +203,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert str0.refFrames == 1
     assert str0.scanType is None
     assert str0.selected is False
-    assert str0._root._baseurl == 'http://138.68.157.5:32400'
+    assert str0._server._baseurl == 'http://138.68.157.5:32400'
     assert str0.streamType == 1
     assert str0.title is None
     assert str0.type == 1
@@ -225,7 +225,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     #assert str1.part == <MediaPart:2>
     assert str1.samplingRate == 48000
     assert str1.selected is True
-    assert str1._root._baseurl == 'http://138.68.157.5:32400'
+    assert str1._server._baseurl == 'http://138.68.157.5:32400'
     assert str1.streamType == 2
     assert str1.title is None
     assert str1.type == 2
@@ -261,7 +261,7 @@ def test_video_Show_attrs(a_show):
     assert m.ratingKey == 12
     assert [i.tag for i in m.roles][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
     assert [i.tag for i in m.actors][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
-    assert m._root._baseurl == 'http://138.68.157.5:32400'
+    assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.studio == 'The CW'
     assert m.summary == u"When nuclear Armageddon destroys civilization on Earth, the only survivors are those on the 12 international space stations in orbit at the time. Three generations later, the 4,000 survivors living on a space ark of linked stations see their resources dwindle and face draconian measures established to ensure humanity's future. Desperately looking for a solution, the ark's leaders send 100 juvenile prisoners back to the planet to test its habitability. Having always lived in space, the exiles find the planet fascinating and terrifying, but with the fate of the human race in their hands, they must forge a path into the unknown."
     assert '/library/metadata/12/theme/' in m.theme
@@ -400,7 +400,7 @@ def test_video_Episode_attrs(a_episode):
     assert ep.player is None
     assert ep.rating == 7.4
     assert ep.ratingKey == 14
-    assert ep._root._baseurl == 'http://138.68.157.5:32400'
+    assert ep._server._baseurl == 'http://138.68.157.5:32400'
     assert ep.summary == u'Ninety-seven years ago, nuclear Armageddon decimated planet Earth, destroying civilization. The only survivors were the 400 inhabitants of 12 international space stations that were in orbit at the time. Three generations have been born in space, the survivors now number 4,000, and resources are running out on their dying "Ark." Among the 100 young exiles are Clarke, the bright teenage daughter of the Ark’s chief medical officer; the daredevil Finn; the brother/sister duo of Bellamy and Octavia, whose illegal sibling status has always led them to flaunt the rules, the lighthearted Jasper and the resourceful Monty. Technologically blind to what’s happening on the planet below them, the Ark’s leaders — Clarke’s widowed mother, Abby; Chancellor Jaha; and his shadowy second in command, Kane — are faced with difficult decisions about life, death and the continued existence of the human race.'
     assert ep.thumb == '/library/metadata/14/thumb/1485115318'
     assert ep.title == 'Pilot'
@@ -425,7 +425,7 @@ def test_video_Episode_attrs(a_episode):
     assert med0.optimizedForStreaming is False
     # Assign 0 med0.parts
     par0 = med0.parts[0]
-    assert med0._root._baseurl == 'http://138.68.157.5:32400'
+    assert med0._server._baseurl == 'http://138.68.157.5:32400'
     #assert med0.video == <Episode:14:The 100:S1:E1:Pilot>
     assert med0.videoCodec == 'h264'
     assert med0.videoFrameRate == 'PAL'
@@ -438,7 +438,7 @@ def test_video_Episode_attrs(a_episode):
     assert par0._initpath == '/library/metadata/12/allLeaves'
     assert par0.key == '/library/parts/12/1484679008/file.mp4'
     #assert par0.media == <Media:Pilot>
-    assert par0._root._baseurl == 'http://138.68.157.5:32400'
+    assert par0._server._baseurl == 'http://138.68.157.5:32400'
     assert par0.size == 31491130
     assert ep.isWatched is True
 
@@ -463,7 +463,7 @@ def test_video_Season_attrs(a_show):
     assert m.parentRatingKey == 12
     assert m.parentTitle == 'The 100'
     assert m.ratingKey == 13
-    assert m._root._baseurl == 'http://138.68.157.5:32400'
+    assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.summary == ''
     assert '/library/metadata/13/thumb/' in m.thumb
     #assert m.thumb == '/library/metadata/13/thumb/1485096623'

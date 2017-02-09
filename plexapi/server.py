@@ -93,7 +93,7 @@ class PlexServer(PlexObject):
             logfilter.add_secret(self._token)
         self._session = session or requests.Session()
         self._library = None  # cached library
-        super(PlexServer, self).__init__(self, self._query(self.key), self.key)
+        super(PlexServer, self).__init__(self, self.query(self.key), self.key)
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -140,23 +140,6 @@ class PlexServer(PlexObject):
         self.version = data.attrib.get('version')
         self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
 
-    def _query(self, key, method=None, headers=None, **kwargs):
-        """ Main method used to handle HTTPS requests to the Plex server. This method helps
-            by encoding the response to utf-8 and parsing the returned XML into and
-            ElementTree object. Returns None if no data exists in the response.
-        """
-        url = self._url(key)
-        method = method or self._session.get
-        log.debug('%s %s', method.__name__.upper(), url)
-        headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
-        if response.status_code not in (200, 201):
-            codename = codes.get(response.status_code)[0]
-            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
-        data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data else None
-
     def _headers(self, **kwargs):
         """ Returns dict containing base headers for all requests to the server. """
         headers = BASE_HEADERS.copy()
@@ -165,24 +148,17 @@ class PlexServer(PlexObject):
         headers.update(kwargs)
         return headers
 
-    def _url(self, key):
-        """ Build a URL string with proper token argument. """
-        if self._token:
-            delim = '&' if '?' in key else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
-        return '%s%s' % (self._baseurl, key)
-
     @property
     def library(self):
         """ Library to browse or search your media. """
         if not self._library:
-            data = self._query(Library.key)
+            data = self.query(Library.key)
             self._library = Library(self, data)
         return self._library
 
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
-        data = self._query(Account.key)
+        data = self.query(Account.key)
         return Account(self, data)
 
     def clients(self):
@@ -190,7 +166,7 @@ class PlexServer(PlexObject):
             connected  to this server.
         """
         items = []
-        for elem in self._query('/clients'):
+        for elem in self.query('/clients'):
             print(elem.attrib)
             baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
@@ -205,7 +181,7 @@ class PlexServer(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: Unknown client name
         """
-        for elem in self._query('/clients'):
+        for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
                 baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
                 return PlexClient(baseurl, server=self, data=elem)
@@ -248,6 +224,30 @@ class PlexServer(PlexObject):
                 :class:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
+
+    def query(self, key, method=None, headers=None, **kwargs):
+        """ Main method used to handle HTTPS requests to the Plex server. This method helps
+            by encoding the response to utf-8 and parsing the returned XML into and
+            ElementTree object. Returns None if no data exists in the response.
+        """
+        url = self.url(key)
+        method = method or self._session.get
+        log.debug('%s %s', method.__name__.upper(), url)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        if response.status_code not in (200, 201):
+            codename = codes.get(response.status_code)[0]
+            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data else None
+
+    def url(self, key):
+        """ Build a URL string with proper token argument. """
+        if self._token:
+            delim = '&' if '?' in key else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
+        return '%s%s' % (self._baseurl, key)
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
@@ -296,7 +296,7 @@ class PlexServer(PlexObject):
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
                 height, width, opacity, saturation, media)
-            return self._url(transcode_url)
+            return self.url(transcode_url)
 
 
 class Account(PlexObject):

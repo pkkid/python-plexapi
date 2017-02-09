@@ -61,5 +61,5 @@ class PlayQueue(PlexObject):
             args['type'] = item.listType
             args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
         path = '/playQueues%s' % utils.joinArgs(args)
-        data = server._query(path, method=requests.post)
+        data = server.query(path, method=requests.post)
         return cls(server, data, initpath=path)

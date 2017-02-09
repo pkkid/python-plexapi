@@ -78,7 +78,7 @@ class PlexObject(object):
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
         """
-        for elem in self._server._query(key):
+        for elem in self._server.query(key):
             if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             return self._buildItem(elem, cls, key, bytag)
@@ -89,7 +89,7 @@ class PlexObject(object):
             specified tag and attrs.
         """
         items = []
-        for elem in self._server._query(key):
+        for elem in self._server.query(key):
             if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
                 continue
             items.append(self._buildItemOrNone(elem, cls, key, bytag))
@@ -110,7 +110,7 @@ class PlexObject(object):
             if safe: return None
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = self.key
-        data = self._server._query(self.key)
+        data = self._server.query(self.key)
         self._loadData(data[0])
         return self
 
@@ -213,7 +213,7 @@ class Playable(object):
         streamtype = 'audio' if self.TYPE in ('track', 'album') else 'video'
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
-        return self._server._url('/%s/:/transcode/universal/start.m3u8?%s' %
+        return self._server.url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
@@ -254,7 +254,7 @@ class Playable(object):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._server._url('%s?download=1' % location.key)
+                download_url = self._server.url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
                 savepath=savepath, session=self._server._session)
             if filepath:

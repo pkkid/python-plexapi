@@ -28,7 +28,7 @@ class Video(PlexPartialObject):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.thumb:
-            return self._server._url(self.thumb)
+            return self._server.url(self.thumb)
 
     def analyze(self):
         """The primary purpose of media analysis is to gather information about
@@ -37,24 +37,24 @@ class Video(PlexPartialObject):
         a music track, or one of your photos.
         """
         key = '/%s/analyze' % self.key.lstrip('/')
-        self._server._query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put)
 
     def markWatched(self):
         """Mark a items as watched."""
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._server._query(key)
+        self._server.query(key)
         self.reload()
 
     def markUnwatched(self):
         """Mark a item as unwatched."""
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._server._query(key)
+        self._server.query(key)
         self.reload()
 
     def refresh(self):
         """Refresh a item."""
         key = '%s/refresh' % self.key
-        self._server._query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put)
 
     def section(self):
         """Library section."""
@@ -70,7 +70,7 @@ class Movie(Video, Playable):
 
         Args:
             data (Element): XML reponse from PMS as Element
-                normally built from server._query
+                normally built from server.query
         """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -133,7 +133,7 @@ class Movie(Video, Playable):
             if kwargs:
                 download_url = self.getStreamURL(**kwargs)
             else:
-                download_url = self._server._url('%s?download=1' % loc.key)
+                download_url = self._server.url('%s?download=1' % loc.key)
             dl = utils.download(download_url, filename=name, savepath=savepath, session=self._server._session)
             if dl:
                 downloaded.append(dl)
@@ -254,7 +254,7 @@ class Show(Video):
 
     def refresh(self):
         """Refresh the metadata."""
-        self._server._query('/library/metadata/%s/refresh' % self.ratingKey, method=self._server._session.put)
+        self._server.query('/library/metadata/%s/refresh' % self.ratingKey, method=self._server._session.put)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -273,7 +273,7 @@ class Season(Video):
         """Used to set the attributes
 
         Args:
-            data (Element): Usually built from server._query
+            data (Element): Usually built from server.query
         """
         Video._loadData(self, data)
         self.key = self.key.replace('/children', '')
@@ -364,7 +364,7 @@ class Episode(Video, Playable):
         """Used to set the attributes
 
             Args:
-                data (Element): Usually built from server._query
+                data (Element): Usually built from server.query
         """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -421,7 +421,7 @@ class Episode(Video, Playable):
     def thumbUrl(self):
         """Return url to thumb image."""
         if self.grandparentThumb:
-            return self._server._url(self.grandparentThumb)
+            return self._server.url(self.grandparentThumb)
 
     def season(self):
         """Return this episode Season"""
