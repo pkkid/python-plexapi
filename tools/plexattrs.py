@@ -173,7 +173,7 @@ class PlexAttributes():
             self._load_attrs(playqueue, 'pq')
 
     def _parse_sync(self):
-        # TODO: Get this working..
+        # TODO: Get plexattrs._parse_sync() working.
         pass
 
     def _load_attrs(self, obj, cat=None):
@@ -229,28 +229,38 @@ class PlexAttributes():
     def print_report(self):
         total_attrs = 0
         for clsname in sorted(self.attrs.keys()):
-            meta = self.attrs[clsname]
-            count = meta['total']
-            print(_('\n%s (%s)\n%s' % (clsname, count, '-'*30), 'yellow'))
-            attrs = sorted(set(list(meta['xml'].keys()) + list(meta['obj'].keys())))
-            for attr in attrs:
-                state = self._attr_state(clsname, attr, meta)
-                count = meta['xml'].get(attr, 0)
-                categories = ','.join(meta['categories'].get(attr, ['--']))
-                examples = '; '.join(list(meta['examples'].get(attr, ['--']))[:3])[:80]
-                print('%7s  %3s  %-30s  %-20s  %s' % (count, state, attr, categories, examples))
-                total_attrs += count
+            if self._clsname_match(clsname):
+                meta = self.attrs[clsname]
+                count = meta['total']
+                print(_('\n%s (%s)\n%s' % (clsname, count, '-'*30), 'yellow'))
+                attrs = sorted(set(list(meta['xml'].keys()) + list(meta['obj'].keys())))
+                for attr in attrs:
+                    state = self._attr_state(clsname, attr, meta)
+                    count = meta['xml'].get(attr, 0)
+                    categories = ','.join(meta['categories'].get(attr, ['--']))
+                    examples = '; '.join(list(meta['examples'].get(attr, ['--']))[:3])[:80]
+                    print('%7s  %3s  %-30s  %-20s  %s' % (count, state, attr, categories, examples))
+                    total_attrs += count
         print(_('\nSUMMARY\n%s' % ('-'*30), 'yellow'))
         print('%7s  %3s  %3s  %-20s  %s' % ('total', 'new', 'old', 'categories', 'clsname'))
         for clsname in sorted(self.attrs.keys()):
-            print('%7s  %12s  %12s  %s' % (self.attrs[clsname]['total'],
-                _(self.attrs[clsname]['new'] or '', 'cyan'),
-                _(self.attrs[clsname]['old'] or '', 'red'),
-                clsname))
+            if self._clsname_match(clsname):
+                print('%7s  %12s  %12s  %s' % (self.attrs[clsname]['total'],
+                    _(self.attrs[clsname]['new'] or '', 'cyan'),
+                    _(self.attrs[clsname]['old'] or '', 'red'),
+                    clsname))
         print('\nPlex Version     %s' % self.plex.version)
         print('PlexAPI Version  %s' % plexapi.VERSION)
         print('Total Objects    %s' % sum([x['total'] for x in self.attrs.values()]))
         print('Runtime          %s min\n' % self.runtime)
+
+    def _clsname_match(self, clsname):
+        if not self.clsnames:
+            return True
+        for cname in self.clsnames:
+            if cname.lower() in clsname.lower():
+                return True
+        return False
 
     def _attr_state(self, clsname, attr, meta):
         if attr in meta['xml'].keys() and attr not in meta['obj'].keys():
@@ -280,6 +290,7 @@ if __name__ == '__main__':
     if not opts.force and os.path.exists(CACHEPATH):
         with open(CACHEPATH, 'rb') as handle:
             plexattrs = pickle.load(handle)
+            plexattrs.clsnames = [c for c in opts.clsnames.split(',') if c]
     if not plexattrs:
         plexattrs = PlexAttributes(opts).run()
         with open(CACHEPATH, 'wb') as handle:

@@ -169,40 +169,58 @@ class PlexObject(object):
         return self
 
     def _checkAttrs(self, elem, **kwargs):
-        for kwarg, query in kwargs.items():
-            # strip underscore from special cased attrs
-            if kwarg in ('_key', '_cls', '_tag'):
-                kwarg = kwarg[1:]
-            # extract the kwarg operator if present
-            op, operator = 'exact', OPERATORS['exact']
-            if '__' in kwarg:
-                kwarg, op = kwarg.rsplit('__', 1)
-                if op not in OPERATORS:
-                    raise BadRequest('Invalid filter operator: __%s' % op)
-                operator = OPERATORS[op]
-            # get value from elem and check ismissing operator
-            value = elem.attrib.get(kwarg)
-            log.debug("Checking %s.%s__%s=%s (value=%s)", elem.tag, kwarg, op,
-                str(query)[:20], str(value)[:20])
+        logme = elem.attrib.get('ratingKey') == '746'
+        attrsFound = {}
+        for attr, query in kwargs.items():
+            attr, op, operator = self._getAttrOperator(attr)
+            values = self._getAttrValue(elem, attr)
+            if logme: log.debug('Check %s.%s__%s=%s (value=%s)', elem.tag, attr, op, str(query)[:20], str(values)[:20])
+            # special case ismissing operator
             if op == 'ismissing':
                 if query not in (True, False):
                     raise BadRequest('Value when using __ismissing must be in (True, False).')
-                if (query is True and value) or (query is False and not value):
+                if (query is True and values) or (query is False and not values):
                     return False
-            # special case query=None,0,'' to include missing attr
-            if op == 'exact' and query in (None, 0, '') and value is None:
+            # special case query in (None,0,'') to include missing attr
+            if op == 'exact' and query in (None, 0, '') and not values:
                 return True
             # return if attr were looking for is missing
-            if not value:
-                return False
-            # cast value to the same type as query
-            if isinstance(query, int): value = int(value)
-            if isinstance(query, float): value = float(value)
-            if isinstance(query, bool): value = bool(int(value))
-            # perform the comparison
-            if not operator(value, query):
-                return False
-        return True
+            attrsFound[attr] = False
+            for value in values:
+                if isinstance(query, int): value = int(value)
+                if isinstance(query, float): value = float(value)
+                if isinstance(query, bool): value = bool(int(value))
+                if logme: log.info('%s %s %s', value, op, query)
+                if operator(value, query):
+                    attrsFound[attr] = True
+                    break
+        if logme: log.info(attrsFound)
+        return all(attrsFound.values())
+
+    def _getAttrOperator(self, attr):
+        attr = attr.lstrip('_')
+        for op, operator in OPERATORS.items():
+            if attr.endswith('__%s' % op):
+                attr = attr.rsplit('__', 1)[0]
+                return attr, op, operator
+        # default to exact match
+        return attr, 'exact', OPERATORS['exact']
+
+    def _getAttrValue(self, elem, attrstr, results=None):
+        #log.debug('Fetching %s in %s', attrstr, elem.tag)
+        parts = attrstr.split('__', 1)
+        attr = parts[0]
+        attrstr = parts[1] if len(parts) == 2 else None
+        if attrstr:
+            results = [] if results is None else results
+            for child in [c for c in elem if c.tag.lower() == attr.lower()]:
+                results += self._getAttrValue(child, attrstr, results)
+            return [r for r in results if r is not None]
+        # loop through attrs so we can perform case-insensative match
+        for _attr, value in elem.attrib.items():
+            if attr.lower() == _attr.lower():
+                return [value]
+        return []
 
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
