@@ -60,10 +60,6 @@ class Photoalbum(PlexPartialObject):
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
 
-    def section(self):
-        """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self._server.library.sectionByID(self.librarySectionID)
-
 
 @utils.register_libtype
 class Photo(PlexPartialObject):

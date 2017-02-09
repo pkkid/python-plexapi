@@ -238,6 +238,26 @@ class PlexPartialObject(PlexObject):
         self.reload()
         return utils.getattributeOrNone(PlexPartialObject, self, attr)
 
+    def analyze(self):
+        """ Tell Plex Media Server to performs analysis on it this item to gather
+            information. Analysis includes:
+
+            * Gather Media Properties: All of the media you add to a Library has
+                properties that are useful to know–whether it's a video file, a
+                music track, or one of your photos (container, codec, resolution, etc).
+            * Generate Default Artwork: Artwork will automatically be grabbed from a
+                video file. A background image will be pulled out as well as a
+                smaller image to be used for poster/thumbnail type purposes.
+            * Generate Video Preview Thumbnails: Video preview thumbnails are created,
+                if you have that feature enabled. Video preview thumbnails allow
+                graphical seeking in some Apps. It's also used in the Plex Web App Now
+                Playing screen to show a graphical representation of where playback
+                is. Video preview thumbnails creation is a CPU-intensive process akin
+                to transcoding the file.
+        """
+        key = '/%s/analyze' % self.key.lstrip('/')
+        self._server.query(key, method=self._server._session.put)
+
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
@@ -249,6 +269,28 @@ class PlexPartialObject(PlexObject):
     def isPartialObject(self):
         """ Returns True if this is not a full object. """
         return not self.isFullObject()
+
+    def refresh(self):
+        """ Refreshing a Library or individual item causes the metadata for the item to be
+            refreshed, even if it already has metadata. You can think of refreshing as
+            "update metadata for the requested item even if it already has some". You should
+            refresh a Library or individual item if:
+
+            * You've changed the Library Metadata Agent.
+            * You've added "Local Media Assets" (such as artwork, theme music, external
+                subtitle files, etc.)
+            * You want to freshen the item posters, summary, etc.
+            * There's a problem with the poster image that's been downloaded.
+            * Items are missing posters or other downloaded information. This is possible if
+                the refresh process is interrupted (the Server is turned off, internet
+                connection dies, etc).
+        """
+        key = '%s/refresh' % self.key
+        self._server.query(key, method=self._server._session.put)
+
+    def section(self):
+        """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
+        return self._server.library.sectionByID(self.librarySectionID)
 
 
 class Playable(object):

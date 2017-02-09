@@ -128,7 +128,8 @@ class Library(PlexObject):
 
     def refresh(self):
         """ Refresh the metadata for the entire library. This will fetch fresh metadata for
-            all contents in the library, including items that already have metadata.
+            all contents in the library, including items that already have metadata. See
+            See :func:`~plexapi.base.PlexPartialObject.refresh` for more details.
         """
         self._server.query('/library/sections/all/refresh')
 
@@ -216,7 +217,9 @@ class LibrarySection(PlexObject):
         return self.search(sort='addedAt:desc', maxresults=maxresults)
 
     def analyze(self):
-        """ Run an analysis on all of the items in this library section. """
+        """ Run an analysis on all of the items in this library section. See
+            See :func:`~plexapi.base.PlexPartialObject.analyze` for more details.
+        """
         key = '/library/sections/%s/analyze' % self.key
         self._server.query(key, method=self._server._session.put)
 
@@ -226,8 +229,9 @@ class LibrarySection(PlexObject):
         self._server.query(key)
 
     def refresh(self):
-        """ Refresh the metadata for this library section. This will fetch fresh metadata for
-            all contents in the section, including items that already have metadata.
+        """ Refresh the metadata for the entire library. This will fetch fresh metadata for
+            all contents in the library, including items that already have metadata. See
+            See :func:`~plexapi.base.PlexPartialObject.refresh` for more details.
         """
         key = '/library/sections/%s/refresh' % self.key
         self._server.query(key)

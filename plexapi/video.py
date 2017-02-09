@@ -5,10 +5,28 @@ from plexapi.base import Playable, PlexPartialObject
 
 
 class Video(PlexPartialObject):
+    """ Base class for all video objects including :class:`~plexapi.video.Movie`, 
+        :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
+        :class:`~plexapi.video.Episode`.
+
+        Attributes:
+            addedAt (datetime): Datetime this item was added to the library.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            lastViewedAt (datetime): Datetime item was last accessed.
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            listType (str): Hardcoded as 'audio' (useful for search filters).
+            ratingKey (int): Unique key identifying this item.
+            summary (str): Summary of the artist, track, or album.
+            thumb (str): URL to thumbnail image.
+            title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
+            titleSort (str): Title to use when sorting (defaults to title).
+            type (str): 'artist', 'album', or 'track'.
+            updatedAt (datatime): Datetime this item was updated.
+            viewCount (int): Count of times this item was accessed.
+    """
     TYPE = None
 
     def _loadData(self, data):
-        """ Used to set the attributes. """
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -26,52 +44,58 @@ class Video(PlexPartialObject):
 
     @property
     def thumbUrl(self):
-        """Return url to thumb image."""
+        """ Return url to for the thumbnail image. """
         if self.thumb:
             return self._server.url(self.thumb)
 
-    def analyze(self):
-        """The primary purpose of media analysis is to gather information about
-        that mediaitem. All of the media you add to a Library has properties
-        that are useful to know–whether it's a video file,
-        a music track, or one of your photos.
-        """
-        key = '/%s/analyze' % self.key.lstrip('/')
-        self._server.query(key, method=self._server._session.put)
-
     def markWatched(self):
-        """Mark a items as watched."""
+        """ Mark video as watched. """
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
         self.reload()
 
     def markUnwatched(self):
-        """Mark a item as unwatched."""
+        """ Mark video unwatched. """
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
         self.reload()
 
-    def refresh(self):
-        """Refresh a item."""
-        key = '%s/refresh' % self.key
-        self._server.query(key, method=self._server._session.put)
-
-    def section(self):
-        """Library section."""
-        return self._server.library.sectionByID(self.librarySectionID)
-
 
 @utils.register_libtype
 class Movie(Video, Playable):
+    """ Represents a single Movie.
+        
+        Attributes:
+            art (str): Key to movie artwork (/library/metadata/<ratingkey>/art/<artid>)
+            audienceRating (float): Audience rating (usually from Rotten Tomatoes).
+            audienceRatingImage (str): Key to audience rating image (rottentomatoes://image.rating.spilled)
+            chapterSource (str): Chapter source (agent; media; mixed).
+            contentRating (str) Content rating (PG-13; NR; TV-G).
+            duration (int): Duration of movie in milliseconds.
+            guid: Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+            originalTitle (str): Original title, often the foreign title (転々; 엽기적인 그녀).
+            originallyAvailableAt (datetime): Datetime movie was released.
+            primaryExtraKey (str) Primary extra key (/library/metadata/66351).
+            rating (float): Movie rating (7.9; 9.8; 8.1).
+            ratingImage (str): Key to rating image (rottentomatoes://image.rating.rotten).
+            studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
+            tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
+            userRating (float): User rating (2.0; 8.0).
+            viewOffset (int): View offset in milliseconds.
+            year (int): Year movie was released.
+            collections
+            countries
+            directors
+            fields
+            genres
+            media
+            producers
+            roles
+            writers
+    """
     TYPE = 'movie'
 
     def _loadData(self, data):
-        """Used to set the attributes
-
-        Args:
-            data (Element): XML reponse from PMS as Element
-                normally built from server.query
-        """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.art = data.attrib.get('art')
@@ -118,7 +142,6 @@ class Movie(Video, Playable):
         files = [i.file for i in self.iterParts() if i]
         if len(files) == 1:
             files = files[0]
-
         return files
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
@@ -219,10 +242,7 @@ class Show(Video):
                 <Episode:116263:The.Freelancer>
                 >>> plex.search('The blacklist')[0].episode('The Freelancer')
                 <Episode:116263:The.Freelancer>
-
         """
-        if not title and (not season or not episode):
-            raise TypeError('Missing argument: title or season and episode are required')
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
             return self.fetchItem(key, title__iexact=title)
@@ -231,6 +251,7 @@ class Show(Video):
             if results:
                 return results[0]
             raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
+        raise TypeError('Missing argument: title or season and episode are required')
 
     def watched(self):
         """Return a list of watched episodes"""
@@ -247,14 +268,6 @@ class Show(Video):
                 title (str): fx Secret santa
         """
         return self.episode(title)
-
-    def analyze(self):
-        """ """
-        raise 'Cant analyse a show'  # fix me
-
-    def refresh(self):
-        """Refresh the metadata."""
-        self._server.query('/library/metadata/%s/refresh' % self.ratingKey, method=self._server._session.put)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -419,7 +432,7 @@ class Episode(Video, Playable):
 
     @property
     def thumbUrl(self):
-        """Return url to thumb image."""
+        """ Return url to for the thumbnail image. """
         if self.grandparentThumb:
             return self._server.url(self.grandparentThumb)
 
