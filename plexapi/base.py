@@ -21,7 +21,7 @@ OPERATORS = {
     'iendswith': lambda v,q: v.lower().endswith(q),
     'ismissing': None,  # special case in _checkAttrs
     'regex': lambda v,q: re.match(q, v),
-    'iregex': lambda v,q: re.match(q, v, flasg=re.IGNORECASE),
+    'iregex': lambda v,q: re.match(q, v, flags=re.IGNORECASE),
 }
 
 
@@ -205,7 +205,7 @@ class PlexObject(object):
         return True
 
     def _loadData(self, data):
-        raise NotImplemented('Abstract method not implemented.')
+        raise NotImplementedError('Abstract method not implemented.')
 
 
 class PlexPartialObject(PlexObject):
