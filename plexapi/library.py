@@ -192,6 +192,7 @@ class LibrarySection(PlexObject):
         """Delete a library section."""
         try:
             return self._server.query('/library/sections/%s' % self.key, method=self._server._session.delete)
+        except BadRequest:  # pragma: no cover
             log.error('Failed to delete library %s. This could be because you havnt allowed '
                       'items to be deleted' % self.key)
             raise
