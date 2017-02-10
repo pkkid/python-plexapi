@@ -186,8 +186,15 @@ class LibrarySection(PlexObject):
         self.uuid = data.attrib.get('uuid')
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [self.__class__.__name__,
-            self.key, self.librarySectionTitle] if p])
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, self.key, self.librarySectionTitle] if p])
+
+    def delete(self):
+        """Delete a library section."""
+        try:
+            return self._server.query('/library/sections/%s' % self.key, method=self._server._session.delete)
+            log.error('Failed to delete library %s. This could be because you havnt allowed '
+                      'items to be deleted' % self.key)
+            raise
 
     def get(self, title):
         """ Returns the media item with the specified title.

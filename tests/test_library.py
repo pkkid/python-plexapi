@@ -47,9 +47,20 @@ def test_library_section_get_movie(pms): # fix me
     assert m
 
 
+def test_library_section_delete(monkeypatch, pms):
+    m = pms.library.section('Movies')
+    monkeypatch.delattr("requests.sessions.Session.request")
+    try:
+        m.delete()
+    except AttributeError:
+        pass  # this will always raise because there is no request anymore.
+
+
 def test_library_fetchItem(pms):
     m = pms.library.fetchItem('/library/metadata/1')
+    f = pms.library.fetchItem(1)
     assert m.title == '16 Blocks'
+    assert f == m
 
 
 def test_library_onDeck(pms):

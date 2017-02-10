@@ -7,6 +7,16 @@ def test_video_Movie(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.title == 'Cars'
 
+def test_video_Movie_delete(monkeypatch, pms):
+    m = pms.library.section('Movies').get('16 blocks')
+    monkeypatch.delattr("requests.sessions.Session.request")
+    try:
+        m.delete()
+    except AttributeError:
+        # Silence this because it will always raise beause of monkeypatch
+        pass
+
+
 
 def test_video_Movie_getStreamURL(a_movie):
     assert a_movie.getStreamURL() == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&X-Plex-Token={0}".format(os.environ.get('PLEX_TEST_TOKEN'))
