@@ -186,7 +186,7 @@ class LibrarySection(PlexObject):
         self.uuid = data.attrib.get('uuid')
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, self.key, self.librarySectionTitle] if p])
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, self.key, self.title] if p])
 
     def delete(self):
         """Delete a library section."""

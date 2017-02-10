@@ -369,9 +369,9 @@ def test_video_Show_isWatched(a_show):
     assert not a_show.isWatched
 
 
-@pytest.mark.xfail
-def test_video_Show_section(a_show):  # BROKEN!
-    show = a_show.section()
+def test_video_Show_section(a_show):
+    section = a_show.section()
+    assert section.title == 'TV Shows'
 
 
 def test_video_Episode(a_show):
