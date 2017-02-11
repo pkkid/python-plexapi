@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import json, threading
 from plexapi import log
+from plexapi.exceptions import Unsupported
 
 
 class PlexNotifier(threading.Thread):
     """ Creates a websocket connection to the Plex Server to optionally recieve
         notifications. These often include messages from Plex about media scans
         as well as updates to currently running Transcode Sessions.
+
+        NOTE: You need websocket-client installed in order to use this feature.
+        >> pip install websocket-client
     """
     key = '/:/websockets/notifications'
 
@@ -17,7 +21,12 @@ class PlexNotifier(threading.Thread):
         super(PlexNotifier, self).__init__()
 
     def run(self):
-        import websocket  # only require when needed
+        # try importing websocket-client package
+        try:
+            import websocket  # only require when needed
+        except:
+            raise Unsupported('Websocket-client package is required to use this feature.')
+        # create the websocket connection
         url = self._server.url(self.key).replace('http', 'ws')
         log.info('Starting PlexNotifier: %s', url)
         self._ws = websocket.WebSocketApp(url,
