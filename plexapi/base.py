@@ -51,7 +51,7 @@ class PlexObject(object):
         for attr in attrs:
             value = self.__dict__.get(attr)
             if value:
-                value = str(value, errors='replace').replace(' ', '-')
+                value = str(value).replace(' ', '-')
                 value = value.replace('/library/metadata/', '')
                 value = value.replace('/children', '')
                 return value[:20]
