@@ -2,26 +2,25 @@
 import re
 from plexapi import log, utils
 from plexapi.compat import urlencode
-from plexapi.exceptions import BadRequest, NotFound
-from plexapi.exceptions import UnknownType, Unsupported
+from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
 OPERATORS = {
-    'exact': lambda v,q: v == q,
-    'iexact': lambda v,q: v.lower() == q.lower(),
-    'contains': lambda v,q: q in v,
-    'icontains': lambda v,q: q.lower() in v.lower(),
-    'in': lambda v,q: v in q,
-    'gt': lambda v,q: v > q,
-    'gte': lambda v,q: v >= q,
-    'lt': lambda v,q: v < q,
-    'lte': lambda v,q: v <= q,
-    'startswith': lambda v,q: v.startswith(q),
-    'istartswith': lambda v,q: v.lower().startswith(q),
-    'endswith': lambda v,q: v.endswith(q),
-    'iendswith': lambda v,q: v.lower().endswith(q),
+    'exact': lambda v, q: v == q,
+    'iexact': lambda v, q: v.lower() == q.lower(),
+    'contains': lambda v, q: q in v,
+    'icontains': lambda v, q: q.lower() in v.lower(),
+    'in': lambda v, q: v in q,
+    'gt': lambda v, q: v > q,
+    'gte': lambda v, q: v >= q,
+    'lt': lambda v, q: v < q,
+    'lte': lambda v, q: v <= q,
+    'startswith': lambda v, q: v.startswith(q),
+    'istartswith': lambda v, q: v.lower().startswith(q),
+    'endswith': lambda v, q: v.endswith(q),
+    'iendswith': lambda v, q: v.lower().endswith(q),
     'ismissing': None,  # special case in _checkAttrs
-    'regex': lambda v,q: re.match(q, v),
-    'iregex': lambda v,q: re.match(q, v, flags=re.IGNORECASE),
+    'regex': lambda v, q: re.match(q, v),
+    'iregex': lambda v, q: re.match(q, v, flags=re.IGNORECASE),
 }
 
 
@@ -52,9 +51,9 @@ class PlexObject(object):
         for attr in attrs:
             value = self.__dict__.get(attr)
             if value:
-                value = str(value).replace(' ','-')
-                value = value.replace('/library/metadata/','')
-                value = value.replace('/children','')
+                value = str(value).replace(' ', '-')
+                value = value.replace('/library/metadata/', '')
+                value = value.replace('/children', '')
                 return value[:20]
 
     def _buildItem(self, elem, cls=None, initpath=None, bytag=False):
@@ -103,7 +102,7 @@ class PlexObject(object):
                     in, the key will be translated to /library/metadata/<key>. This allows
                     fetching an item only knowing its key-id.
                 cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
-                    items to be fetched, passing this in will help the parser ensure 
+                    items to be fetched, passing this in will help the parser ensure
                     it only returns those items. By default we convert the xml elements
                     to the best guess PlexObjects based on the type attr or tag.
                 bytag (bool): Setting this to True tells the build-items function to guess
@@ -161,7 +160,9 @@ class PlexObject(object):
     def reload(self, safe=False):
         """ Reload the data for this object from self.key. """
         if not self.key:
-            if safe: return None
+            if safe:
+                return None
+
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = self.key
         data = self._server.query(self.key)
@@ -220,6 +221,14 @@ class PlexObject(object):
 
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
+
+    def delete(self):
+        try:
+            return self._server.query(self.key, method=self._server._session.delete)
+        except BadRequest:
+            log.error('Failed to delete %s. This could be because you havnt allowed '
+                      'items to be deleted' % self.key)
+            raise
 
 
 class PlexPartialObject(PlexObject):
@@ -306,6 +315,15 @@ class PlexPartialObject(PlexObject):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
         return self._server.library.sectionByID(self.librarySectionID)
 
+    def delete(self):
+        """Delete a media elemeent. This has to be enabled under settings > server > library in plex webui."""
+        try:
+            return self._server.query(self.key, method=self._server._session.delete)
+        except BadRequest:  # pragma: no cover
+            log.error('Failed to delete %s. This could be because you havnt allowed '
+                      'items to be deleted' % self.key)
+            raise
+
 
 class Playable(object):
     """ This is a general place to store functions specific to media that is Playable.
@@ -382,7 +400,7 @@ class Playable(object):
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Downloads this items media to the specified location. Returns a list of
             filepaths that have been saved to disk.
-            
+
             Parameters:
                 savepath (str): Title of the track to return.
                 keep_orginal_name (bool): Set True to keep the original filename as stored in
