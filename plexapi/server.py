@@ -8,6 +8,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
+from plexapi.notify import PlexNotifier
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
@@ -280,6 +281,11 @@ class PlexServer(PlexObject):
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
+
+    def startNotifier(self, callback=None):
+        notifier = PlexNotifier(self, callback)
+        notifier.start()
+        return notifier
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
         """ Returns the URL for a transcoded image from the specified media object.

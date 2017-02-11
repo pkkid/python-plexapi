@@ -23,6 +23,16 @@ def test_server_attr(pms):
     assert pms.version == '1.3.3.3148-b38628e'
 
 
+def test_server_notifier(pms, a_movie_section):
+    import time
+    messages = []
+    notifier = pms.startNotifier(messages.append)
+    a_movie_section.refresh()
+    time.sleep(5)
+    notifier.stop()
+    assert len(messages) >= 3
+
+
 @pytest.mark.req_client
 def test_server_session():
     pass
