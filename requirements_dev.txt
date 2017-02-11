@@ -5,3 +5,4 @@ betamax
 betamax_serializers
 pillow
 coveralls
+websocket-client

@@ -8,6 +8,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library
+from plexapi.notify import PlexNotifier
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
@@ -280,6 +281,24 @@ class PlexServer(PlexObject):
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
+
+    def startNotifier(self, callback=None):
+        """ Creates a websocket connection to the Plex Server to optionally recieve
+            notifications. These often include messages from Plex about media scans
+            as well as updates to currently running Transcode Sessions.
+
+            NOTE: You need websocket-client installed in order to use this feature.
+            >> pip install websocket-client
+
+            Parameters:
+                callback (func): Callback function to call on recieved messages.
+
+            raises:
+                :class:`~plexapi.exception.Unsupported`: Websocket-client not installed.
+        """
+        notifier = PlexNotifier(self, callback)
+        notifier.start()
+        return notifier
 
     def transcodeImage(self, media, height, width, opacity=100, saturation=100):
         """ Returns the URL for a transcoded image from the specified media object.

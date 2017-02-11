@@ -19,9 +19,18 @@ def test_server_attr(pms):
     #assert pms.session == <requests.sessions.Session object at 0x029A5E10>
     assert pms._token == os.environ.get('PLEX_TEST_TOKEN') or CONFIG.get('authentication.server_token')
     assert pms.transcoderActiveVideoSessions == 0
-
     #assert str(pms.updatedAt.date()) == '2017-01-20'
     assert pms.version == '1.3.3.3148-b38628e'
+
+
+def test_server_notifier(pms, a_movie_section):
+    import time
+    messages = []
+    notifier = pms.startNotifier(messages.append)
+    a_movie_section.refresh()
+    time.sleep(5)
+    notifier.stop()
+    assert len(messages) >= 3
 
 
 @pytest.mark.req_client
