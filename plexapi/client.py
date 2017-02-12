@@ -62,15 +62,7 @@ class PlexClient(PlexObject):
         self._proxyThroughServer = False
         self._commandId = 0
         # clients are better.
-        data2 = self.query('/clients')
-        import copy
-        d3 = copy.deepcopy(data2)
-        data = data if data is not None else self.query('/clients')
-        for k in d3:
-            if k.attrib.get('host') in baseurl:
-                data = k
-
-        print 'data before super', data
+        data = data if data is not None else self.query('/clients')[0]
         super(PlexClient, self).__init__(self._server, data, self.key)
 
     def connect(self, safe=False):
@@ -88,11 +80,11 @@ class PlexClient(PlexObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.deviceClass = data.attrib.get('deviceClass')
-        self.machineIdentifier = data.attrib.get('machineIdentifier')
-        print data.attrib.get('machineIdentifier'), self.machineIdentifier
+        # we check for clientIdentifier incase data is from devices.xml
+        self.machineIdentifier = data.attrib.get('machineIdentifier', data.attrib.get('clientIdentifier'))
         self.product = data.attrib.get('product')
         self.protocol = data.attrib.get('protocol')
-        self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
+        self.protocolCapabilities = data.attrib.get('protocolCapabilities', data.attrib.get('provides', '')).split(',')
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
@@ -162,7 +154,7 @@ class PlexClient(PlexObject):
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
             # Let comment this out for now. Its too strickt, we can even stop a stream.
-            pass#raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
+            raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
         self._commandId += 1
@@ -402,7 +394,7 @@ class PlexClient(PlexObject):
         """
         self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
 
-    def playMedia(self, media, offset=0, **params):
+    def playMedia(self, media, offset=0, playqueue=None, **params):
         """ Start playback of the specified media item. See also:
 
             Parameters:
@@ -417,8 +409,11 @@ class PlexClient(PlexObject):
         """
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media._server._baseurl.split(':')
-        playqueue = self._server.createPlayQueue(media)
+        server_url = self._server._baseurl.split(':')
+
+        if playqueue is None:
+            playqueue = self._server.createPlayQueue(media)
+
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),

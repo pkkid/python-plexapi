@@ -251,7 +251,6 @@ def threaded(callback, listargs):
         threads[-1].start()
     for thread in threads:
         thread.join()
-    print 'threaded', results
     return results
 
 

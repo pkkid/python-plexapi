@@ -197,13 +197,14 @@ class PlexServer(PlexObject):
         """
         return Playlist.create(self, title, items)
 
-    def createPlayQueue(self, item):
+    def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Parameters:
                 item (Media or Playlist): Media or playlist to add to PlayQueue.
+                kwargs (dict): See :class:`~plexapi.playqueue.PlayQueue.create
         """
-        return PlayQueue.create(self, item)
+        return PlayQueue.create(self, item, **kwargs)
 
     def history(self):
         """ Returns a list of media items from watched history. """

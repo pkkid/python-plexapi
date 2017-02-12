@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from functools import partial
+
 import requests
 from requests.status_codes import _codes as codes
 
@@ -392,8 +394,6 @@ class MyPlexDevice(PlexObject):
         # only return the first server (in order) that provides a response.
         listargs = [[c] for c in self.connections]
         results = utils.threaded(self._connect, listargs)
-        print results
-
         # At this point we have a list of result tuples containing (url, token, Plexclient)
         # or (url, token, None) in the case a connection could not be
         # established.
@@ -410,12 +410,9 @@ class MyPlexDevice(PlexObject):
         log.info('Connecting to client: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
         return results[0]
 
-    def _connect(self, url, results, i):
-        print url, results, i
-        results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session))
-        return results
+    def _connect(self, url, results, i, data=None):
         try:
-            results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session))
+            results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session, data=self._data))
             print '_connect results', results
         except Exception as err:
             log.exception('%s: %s', url, err)
