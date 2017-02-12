@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from functools import partial
-
 import requests
 from requests.status_codes import _codes as codes
 
@@ -401,7 +399,6 @@ class MyPlexDevice(PlexObject):
             okerr = 'OK' if result else 'ERR'
             log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
-        print results
 
         if not results:
             if safe:
@@ -413,7 +410,6 @@ class MyPlexDevice(PlexObject):
     def _connect(self, url, results, i, data=None):
         try:
             results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session, data=self._data))
-            print '_connect results', results
         except Exception as err:
             log.exception('%s: %s', url, err)
             results[i] = (url, self.token, None)
