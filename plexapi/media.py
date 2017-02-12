@@ -57,7 +57,7 @@ class Media(PlexObject):
 
 class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
-        
+
         Attributes:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
@@ -105,7 +105,7 @@ class MediaPart(PlexObject):
 
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
-        
+
         Attributes:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
@@ -221,7 +221,7 @@ class AudioStream(MediaPartStream):
 
 class SubtitleStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
-        
+
         Attributes:
             format (str): Subtitle format (ex: srt).
             key (str): Key of this subtitle stream (ex: /library/streams/212284).
@@ -238,7 +238,7 @@ class SubtitleStream(MediaPartStream):
 
 
 class TranscodeSession(PlexObject):
-    """ Represents a current transcode session. 
+    """ Represents a current transcode session.
         TODO: Document this.
     """
     TYPE = 'TranscodeSession'
@@ -262,6 +262,15 @@ class TranscodeSession(PlexObject):
         self.videoDecision = data.attrib.get('videoDecision')
         self.width = cast(int, data.attrib.get('width'))
 
+    def kill(self):
+        """Kill a transcode.
+
+           Note: This will only work if the file is being transcoded.
+        """
+        part_url = '/video/:/transcode/universal/stop?session=%s' % self.key
+        return self._server.query(part_url, method=self._server._session.post)
+
+
 
 class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
@@ -279,9 +288,9 @@ class MediaTag(PlexObject):
             tag (str): Name of the tag. This will be Animation, SciFi etc for Genres. The name of
                 person for Directors and Roles (ex: Animation, Stephen Graham, etc).
             <Hub_Search_Attributes>: Attributes only applicable in search results from
-                PlexServer :func:`~plexapi.server.PlexServer.search()`. They provide details of which 
+                PlexServer :func:`~plexapi.server.PlexServer.search()`. They provide details of which
                 library section the tag was found as well as the url to dig deeper into the results.
-            
+
                 * key (str): API URL to dig deeper into this tag (ex: /library/sections/1/all?actor=9081).
                 * librarySectionID (int): Section ID this tag was generated from.
                 * librarySectionTitle (str): Library section title this tag was found.

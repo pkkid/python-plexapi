@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from requests.status_codes import _codes as codes
+
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
@@ -19,7 +20,7 @@ class MyPlexAccount(PlexObject):
         Attributes:
             authenticationToken (str): <Unknown>
             certificateVersion (str): <Unknown>
-            cloudSyncDevice (str): 
+            cloudSyncDevice (str):
             email (str): Your current Plex email address.
             entitlements (List<str>): List of devices your allowed to use with this account.
             guest (bool): <Unknown>
@@ -391,22 +392,31 @@ class MyPlexDevice(PlexObject):
         # only return the first server (in order) that provides a response.
         listargs = [[c] for c in self.connections]
         results = utils.threaded(self._connect, listargs)
-        # At this point we have a list of result tuples containing (url, token, PlexServer)
+        print results
+
+        # At this point we have a list of result tuples containing (url, token, Plexclient)
         # or (url, token, None) in the case a connection could not be
         # established.
         for url, token, result in results:
             okerr = 'OK' if result else 'ERR'
             log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
+        print results
+
         if not results:
-            if safe: return log.warn('Unable to connect to client: %s' % self.name)
+            if safe:
+                return log.warn('Unable to connect to client: %s' % self.name)
             raise NotFound('Unable to connect to client: %s' % self.name)
         log.info('Connecting to client: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
         return results[0]
 
     def _connect(self, url, results, i):
+        print url, results, i
+        results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session))
+        return results
         try:
-            results[i] = (url, self.token, PlexClient(url, self.token))
+            results[i] = (url, self.token, PlexClient(url, self.token, session=self._server._session))
+            print '_connect results', results
         except Exception as err:
-            log.error('%s: %s', url, err)
+            log.exception('%s: %s', url, err)
             results[i] = (url, self.token, None)

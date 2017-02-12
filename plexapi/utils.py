@@ -86,7 +86,16 @@ def findPlayer(server, data):
     elem = data.find('Player')
     if elem is not None:
         from plexapi.client import PlexClient
-        baseurl = 'http://%s:%s' % (elem.attrib.get('address'), elem.attrib.get('port'))
+        # This is slow, we should find another way to handle this. # cant default to 32400, my iphone is 32500..
+        # We do shit since there is no port included in the /status/sessions.
+        # This way pms.clients()[0].player is a client so we can kill a stream or something.
+        has_port = elem.attrib.get('port')
+        if not has_port:
+            p = [c for c in server.clients() if elem.attrib.get('machineIdentifier') == c.machineIdentifier]
+            if p:
+                has_port = p[0].port
+
+        baseurl = 'http://%s:%s' % (elem.attrib.get('address'), has_port)
         return PlexClient(baseurl, server=server, data=elem)
     return None
 
@@ -242,6 +251,7 @@ def threaded(callback, listargs):
         threads[-1].start()
     for thread in threads:
         thread.join()
+    print 'threaded', results
     return results
 
 
@@ -262,7 +272,7 @@ def toDatetime(value, format=None):
 
 def toList(value, itemcast=None, delim=','):
     """ Returns a list of strings from the specified value.
-        
+
         Parameters:
             value (str): comma delimited string to convert to list.
             itemcast (func): Function to cast each list item to (default str).
