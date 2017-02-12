@@ -157,7 +157,6 @@ class PlexClient(PlexObject):
             raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
-        print headers
         self._commandId += 1
         params['commandID'] = self._commandId
         proxy = self._proxyThroughServer if proxy is None else proxy
@@ -471,12 +470,14 @@ class PlexClient(PlexObject):
         return self.sendCommand('timeline/poll', **{'wait': 1, 'commandID': 4})
 
     def _find_media_type(self):
-        """Pull the timeline and figure out what media type this client is playing."""
-        # fix me. dunno if this is possible..
+        """Pull the timeline and figure out what media type this client is playing.
+           This is a helper for commands where mtype is required.
+        """
         for media in self.timeline():
-            print media.attrib.items()
-            if media.attrib.get('type') and media.attrib.get('machineIdentifier') == self.machineIdentifier:
-                return media.type('type')
+            if media.attrib.get('type') and media.attrib.get('playQueueID'):
+                return media.attrib.get('type')
+        #Lets default to video since it the most used.
+        return 'video'
 
     def isPlayingMedia(self, includePaused=False):
         """ Returns True if any media is currently playing.
