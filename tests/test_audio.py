@@ -12,7 +12,7 @@ def test_audio_Artist_attr(a_artist):
     assert m.key == '/library/metadata/20'
     assert m.librarySectionID == '3'
     assert m.listType == 'audio'
-    assert m.location == '/media/music/unmastered_impulses'
+    assert m.locations == ['/media/music/unmastered_impulses']
     assert m.ratingKey == 20
     assert m._server._baseurl == 'http://138.68.157.5:32400'
     assert m.similar == []

@@ -127,14 +127,11 @@ class Movie(Video, Playable):
         return bool(self.viewCount > 0)
 
     @property
-    def location(self):
+    def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the location of the Movie/Show/Episode
         """
-        files = [i.file for i in self.iterParts() if i]
-        if len(files) == 1:
-            files = files[0]
-        return files
+        return [p.file for p in self.iterParts() if p]
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         downloaded = []
@@ -440,15 +437,11 @@ class Episode(Video, Playable):
         return self.fetchItem(self.grandparentKey)
 
     @property
-    def location(self):
+    def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the location of the Movie/Show
         """
-        # Note this should probably belong to some parent.
-        files = [i.file for i in self.iterParts() if i]
-        if len(files) == 1:
-            files = files[0]
-        return files
+        return [p.file for p in self.iterParts() if p]
 
     def _prettyfilename(self):
         return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'),

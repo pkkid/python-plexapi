@@ -47,7 +47,7 @@ def test_video_Movie_download(monkeydownload, tmpdir, a_movie):
 
 def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
-    assert m.location == '/media/movies/cars/cars.mp4'
+    assert m.locations == ['/media/movies/cars/cars.mp4']
     assert str(m.addedAt.date()) == '2017-01-17'
     assert m.art == '/library/metadata/2/art/1484690715'
     assert m.audienceRating == 7.9
@@ -255,7 +255,7 @@ def test_video_Show_attrs(a_show):
     assert str(m.lastViewedAt.date()) == '2017-01-22'
     assert m.leafCount == 9
     assert m.listType == 'video'
-    assert m.location == '/media/tvshows/the 100'
+    assert m.locations == ['/media/tvshows/the 100']
     assert str(m.originallyAvailableAt.date()) == '2014-03-19'
     assert m.rating == 8.1
     assert m.ratingKey == 12
@@ -290,7 +290,7 @@ def test_video_Show_location(pms):
     s = pms.library.section('TV Shows').get('The 100')
     # This will require a reload since the xml from http://138.68.157.5:32400/library/sections/2/all
     # Does not contain a location
-    assert s.location == '/media/tvshows/the 100'
+    assert s.locations == ['/media/tvshows/the 100']
 
 def test_video_Show_reload(pms):
     s = pms.library.section('TV Shows').get('Game of Thrones')
