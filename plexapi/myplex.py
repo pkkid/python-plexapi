@@ -57,9 +57,7 @@ class MyPlexAccount(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self._token = data.attrib.get('authenticationToken')
-        if self._token:
-            logfilter.add_secret(self._token)
+        self._token = logfilter.add_secret(data.attrib.get('authenticationToken'))
         self.authenticationToken = self._token
         self.certificateVersion = data.attrib.get('certificateVersion')
         self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
@@ -234,9 +232,7 @@ class MyPlexResource(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.name = data.attrib.get('name')
-        self.accessToken = data.attrib.get('accessToken')
-        if self.accessToken:
-            logfilter.add_secret(self.accessToken)
+        self.accessToken = logfilter.add_secret(data.attrib.get('accessToken'))
         self.product = data.attrib.get('product')
         self.productVersion = data.attrib.get('productVersion')
         self.platform = data.attrib.get('platform')
@@ -252,7 +248,7 @@ class MyPlexResource(PlexObject):
         self.presence = utils.cast(bool, data.attrib.get('presence'))
         self.connections = self.findItems(data, ResourceConnection)
 
-    def connect(self, ssl=None, safe=False):
+    def connect(self, ssl=None):
         """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
             one address specified for a server or client. This function will prioritize local
             connections before remote and HTTPS before HTTP. After trying to connect to all
@@ -263,8 +259,6 @@ class MyPlexResource(PlexObject):
                 ssl (optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
-                safe (bool): If True this function will return None if unable to connect
-                    instead of raising an exception (default False).
 
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
@@ -291,7 +285,6 @@ class MyPlexResource(PlexObject):
             log.info('Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
         if not results:
-            if safe: return log.warn('Unable to connect to resource: %s' % self.name)
             raise NotFound('Unable to connect to resource: %s' % self.name)
         log.info('Connecting to server: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
         return results[0]
@@ -374,22 +367,16 @@ class MyPlexDevice(PlexObject):
         self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.version = data.attrib.get('version')
         self.id = data.attrib.get('id')
-        self.token = data.attrib.get('token')
-        if self.token:
-            logfilter.add_secret(self.token)
+        self.token = logfilter.add_secret(data.attrib.get('token'))
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
-    def connect(self, safe=False):
+    def connect(self):
         """ Returns a new :class:`~plexapi.client.PlexClient` object. Sometimes there is more than
             one address specified for a server or client. After trying to connect to all
             available addresses for this client and assuming at least one connection was
             successful, the PlexClient object is built and returned.
-
-            Parameters:
-                safe (bool): If True this function will return None if unable to connect
-                    instead of raising an exception (default False).
 
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
@@ -399,21 +386,19 @@ class MyPlexDevice(PlexObject):
         listargs = [[c] for c in self.connections]
         results = utils.threaded(self._connect, listargs)
         # At this point we have a list of result tuples containing (url, token, PlexServer)
-        # or (url, token, None) in the case a connection could not be
-        # established.
+        # or (url, token, None) in the case a connection could not be established.
         for url, token, result in results:
             okerr = 'OK' if result else 'ERR'
             log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
         results = [r[2] for r in results if r and r[2] is not None]
         if not results:
-            if safe: return log.warn('Unable to connect to client: %s' % self.name)
             raise NotFound('Unable to connect to client: %s' % self.name)
         log.info('Connecting to client: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
         return results[0]
 
     def _connect(self, url, results, i):
         try:
-            results[i] = (url, self.token, PlexClient(url, self.token))
+            results[i] = (url, self.token, PlexClient(baseurl=url, token=self.token))
         except Exception as err:
             log.error('%s: %s', url, err)
             results[i] = (url, self.token, None)

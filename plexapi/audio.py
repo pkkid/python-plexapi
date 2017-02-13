@@ -281,11 +281,6 @@ class Track(Audio, Playable):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
         self.moods = self.findItems(data, media.Mood)
-        # data for active sessions and history
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
-        self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._server, data)
-        self.transcodeSession = utils.findTranscodeSession(self._server, data)
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """

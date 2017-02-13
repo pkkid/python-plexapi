@@ -40,7 +40,8 @@ class PlexObject(object):
         self._server = server
         self._data = data
         self._initpath = initpath or self.key
-        self._loadData(data)
+        if data is not None:
+            self._loadData(data)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -64,6 +65,7 @@ class PlexObject(object):
         etype = elem.attrib.get('type', elem.attrib.get('streamType'))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
+        #log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
             return ecls(self._server, elem, initpath)
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, etype))
@@ -163,12 +165,9 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, safe=False):
+    def reload(self):
         """ Reload the data for this object from self.key. """
         if not self.key:
-            if safe:
-                return None
-
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = self.key
         data = self._server.query(self.key)
@@ -354,15 +353,12 @@ class Playable(object):
             viewedAt (datetime): Datetime item was last viewed (history).
     """
     def _loadData(self, data):
-        # Load data for active sessions (/status/sessions)
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
-        self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._server, data)
-        self.transcodeSession = utils.findTranscodeSession(self._server, data)
-        # Load data for history details (/status/sessions/history/all)
-        self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))
-        # Load data for playlist items
-        self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session
+        self.username = utils.findUsername(data)                                    # session
+        self.players = self.findItems(data, etag='Player')                          # session
+        self.transcodeSession = utils.findTranscodeSession(self._server, data)      # session
+        self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
+        self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
 
     def getStreamURL(self, **params):
         """ Returns a stream url that may be used by external applications such as VLC.

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, Unsupported
 from xml.etree import ElementTree
 
 
+@utils.registerPlexObject
 class PlexClient(PlexObject):
     """ Main class for interacting with a Plex client. This class can connect
         directly to the client and control it or proxy commands through your
@@ -47,29 +48,32 @@ class PlexClient(PlexObject):
     TAG = 'Player'
     key = '/resources'
 
-    def __init__(self, baseurl, token=None, session=None, server=None, data=None):
-        self._baseurl = (baseurl or CONFIG.get('authentication.client_baseurl')).strip('/')
-        self._token = token or CONFIG.get('authentication.client_token')
-        if self._token:
-            logfilter.add_secret(self._token)
-        self._server = server
-        # session > server.session > requests.Session
-        _server_session = server._session if server else None
-        self._session = session or _server_session or requests.Session()
+    def __init__(self, server=None, data=None, initpath=None, baseurl=None, token=None, session=None):
+        super(PlexClient, self).__init__(server, data, initpath)
+        self._baseurl = baseurl.strip('/') if baseurl else None
+        self._token = logfilter.add_secret(token)
+        server_session = server._session if server else None
+        self._session = session or server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
-        data = data or self.query('/resources')[0]
-        super(PlexClient, self).__init__(self, data, self.key)
+        if self._baseurl and self._token:
+            self.connect()
 
-    def connect(self, safe=False):
+    def connect(self):
         """ Alias of reload as any subsequent requests to this client will be
             made directly to the device even if the object attributes were initially 
             populated from a PlexServer.
         """
-        try:
-            self.reload()
-        except Exception:
-            if not safe: raise
+        if not self.key:
+            raise Unsupported('Cannot reload an object not built from a URL.')
+        self._initpath = self.key
+        data = self.query(self.key)
+        self._loadData(data[0])
+        return self
+
+    def reload(self):
+        """ Alias to self.connect(). """
+        return self.connect()
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -84,11 +88,11 @@ class PlexClient(PlexObject):
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
         # Active session details
-        self.device = data.attrib.get('device')
-        self.model = data.attrib.get('model')
-        self.state = data.attrib.get('state')
-        self.vendor = data.attrib.get('vendor')
-        self.version = data.attrib.get('version')
+        self.device = data.attrib.get('device')         # session
+        self.model = data.attrib.get('model')           # session
+        self.state = data.attrib.get('state')           # session
+        self.vendor = data.attrib.get('vendor')         # session
+        self.version = data.attrib.get('version')       # session
 
     def _headers(self, **kwargs):
         """ Returns a dict of all default headers for Client requests. """
@@ -158,6 +162,8 @@ class PlexClient(PlexObject):
 
     def url(self, key):
         """ Build a URL string with proper token argument. """
+        if not self._baseurl or not self._token:
+            raise BadRequest('PlexClient object missing baseurl or token.')
         if self._token:
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)

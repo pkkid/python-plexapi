@@ -397,11 +397,6 @@ class Episode(Video, Playable):
         self.directors = self.findItems(data, media.Director)
         self.media = self.findItems(data, media.Media)
         self.writers = self.findItems(data, media.Writer)
-        # data for active sessions and history
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
-        self.username = utils.findUsername(data)
-        self.player = utils.findPlayer(self._server, data)
-        self.transcodeSession = utils.findTranscodeSession(self._server, data)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [

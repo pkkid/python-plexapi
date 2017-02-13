@@ -18,7 +18,9 @@ class SecretsFilter(logging.Filter):
         self.secrets = secrets or set()
 
     def add_secret(self, secret):
-        self.secrets.add(secret)
+        if secret is not None:
+            self.secrets.add(secret)
+        return secret
 
     def filter(self, record):
         cleanargs = list(record.args)
@@ -64,7 +66,7 @@ def cast(func, value):
     return value
 
 
-def findPlayer(server, data):
+def findPlayer(server, data, initpath):
     """ Returns the :class:`~plexapi.client.PlexClient` object found in the specified data.
 
         Parameters:
@@ -74,9 +76,10 @@ def findPlayer(server, data):
     elem = data.find('Player')
     if elem is not None:
         from plexapi.client import PlexClient
-        baseurl = 'http://%s:%s' % (elem.attrib.get('address'), elem.attrib.get('port'))
-        return PlexClient(baseurl, server=server, data=elem)
-    return None
+        addr = elem.attrib.get('address')
+        port = elem.attrib.get('port')
+        baseurl = '%s:%s' % (addr, port) if port else addr
+        return PlexClient(baseurl, server=server, data=elem, initpath=initpath)
 
 
 def findTranscodeSession(server, data):

@@ -91,9 +91,7 @@ class PlexServer(PlexObject):
 
     def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
         self._baseurl = baseurl or CONFIG.get('authentication.server_baseurl')
-        self._token = token or CONFIG.get('authentication.server_token')
-        if self._token:
-            logfilter.add_secret(self._token)
+        self._token = logfilter.add_secret(token or CONFIG.get('authentication.server_token'))
         self._session = session or requests.Session()
         self._library = None  # cached library
         super(PlexServer, self).__init__(self, self.query(self.key), self.key)
@@ -170,7 +168,6 @@ class PlexServer(PlexObject):
         """
         items = []
         for elem in self.query('/clients'):
-            print(elem.attrib)
             baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
             items.append(PlexClient(baseurl, server=self, data=elem))
         return items
