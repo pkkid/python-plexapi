@@ -16,7 +16,7 @@ import copy, sys
 import sphinx_rtd_theme
 from os.path import abspath, dirname, join
 from recommonmark.parser import CommonMarkParser
-sys.path.insert(0, join(dirname(abspath('.')), 'plexapi'))
+sys.path.insert(0, join(dirname(abspath(__file__)), 'plexapi'))
 import plexapi
 
 extensions = [

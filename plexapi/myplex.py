@@ -150,7 +150,6 @@ class MyPlexAccount(PlexObject):
         return [MyPlexUser(self, elem) for elem in data]
 
 
-@utils.registerPlexObject
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
         accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
@@ -200,7 +199,6 @@ class MyPlexUser(PlexObject):
         self.username = data.attrib.get('username')
 
 
-#@utils.registerPlexObject
 class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
         content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
@@ -297,7 +295,6 @@ class MyPlexResource(PlexObject):
             results[i] = (url, self.accessToken, None)
 
 
-@utils.registerPlexObject
 class ResourceConnection(PlexObject):
     """ Represents a Resource Connection object found within the
         :class:`~myplex.MyPlexResource` objects.
@@ -322,7 +319,6 @@ class ResourceConnection(PlexObject):
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
 
-#@utils.registerPlexObject
 class MyPlexDevice(PlexObject):
     """ This object represents resources connected to your Plex server that provide
         playback ability from your Plex Server, iPhone or Android clients, Plex Web,
