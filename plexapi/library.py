@@ -171,7 +171,7 @@ class LibrarySection(PlexObject):
         self.filters = data.attrib.get('filters')
         self.key = data.attrib.get('key')  # invalid key from plex
         self.language = data.attrib.get('language')
-        self.locations = utils.findLocations(data)
+        self.locations = self.listAttrs(data, 'path', etag='Location')
         self.refreshing = utils.cast(bool, data.attrib.get('refreshing'))
         self.scanner = data.attrib.get('scanner')
         self.thumb = data.attrib.get('thumb')

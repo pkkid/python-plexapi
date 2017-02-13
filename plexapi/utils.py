@@ -64,23 +64,6 @@ def cast(func, value):
     return value
 
 
-def findLocations(data, single=False):
-    """ Returns a list of filepaths from a location tag.
-
-        Parameters:
-            data (ElementTree): XML object to search for locations in.
-            single (bool): Set True to only return the first location found.
-                Return type will be a string if this is set to True.
-    """
-    locations = []
-    for elem in data:
-        if elem.tag == 'Location':
-            locations.append(elem.attrib.get('path'))
-    if single:
-        return locations[0] if locations else None
-    return locations
-
-
 def findPlayer(server, data):
     """ Returns the :class:`~plexapi.client.PlexClient` object found in the specified data.
 

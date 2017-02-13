@@ -155,6 +155,14 @@ class PlexObject(object):
                     items.append(item)
         return items
 
+    def listAttrs(self, data, attr, **kwargs):
+        results = []
+        for elem in data:
+            kwargs['%s__exists' % attr] = True
+            if self._checkAttrs(elem, **kwargs):
+                results.append(elem.attrib.get(attr))
+        return results
+
     def reload(self, safe=False):
         """ Reload the data for this object from self.key. """
         if not self.key:

@@ -80,7 +80,7 @@ class Artist(Audio):
         self.art = data.attrib.get('art')
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
-        self.location = utils.findLocations(data, single=True)
+        self.locations = self.listAttrs(data, 'path', etag='Location')
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
         self.similar = self.findItems(data, media.Similar)

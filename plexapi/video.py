@@ -172,7 +172,7 @@ class Show(Video):
         self.guid = data.attrib.get('guid')
         self.index = data.attrib.get('index')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
-        self.location = utils.findLocations(data, single=True) or None
+        self.locations = self.listAttrs(data, 'path', etag='Location')
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating'))
