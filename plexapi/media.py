@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from plexapi import utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
 
 
+@utils.registerPlexObject
 class Media(PlexObject):
     """ Container object for all MediaPart objects. Provides useful data about the
         video this media belong to such as video framerate, resolution, etc.
@@ -34,7 +36,7 @@ class Media(PlexObject):
             width (int): Width of the video in pixels (ex: 608).
             parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
     """
-    TYPE = 'Media'
+    TAG = 'Media'
 
     def _loadData(self, data):
         self._data = data
@@ -52,9 +54,10 @@ class Media(PlexObject):
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
-        self.parts = self._buildItems(data, MediaPart, bytag=True)
+        self.parts = self.findItems(data, MediaPart)
 
 
+@utils.registerPlexObject
 class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
         
@@ -70,7 +73,7 @@ class MediaPart(PlexObject):
             size (int): Size of this file in bytes (ex: 733884416).
             streams (list<:class:`~plexapi.media.MediaPartStream`>): List of streams in this media part.
     """
-    TYPE = 'Part'
+    TAG = 'Part'
 
     def _loadData(self, data):
         self._data = data
@@ -121,8 +124,6 @@ class MediaPartStream(PlexObject):
                 2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
             type (int): Alias for streamType.
     """
-    TYPE = None
-    STREAMTYPE = None
 
     def _loadData(self, data):
         self._data = data
@@ -145,6 +146,7 @@ class MediaPartStream(PlexObject):
         return cls(server, data, initpath)
 
 
+@utils.registerPlexObject
 class VideoStream(MediaPartStream):
     """ Respresents a video stream within a :class:`~plexapi.media.MediaPart`.
 
@@ -166,7 +168,7 @@ class VideoStream(MediaPartStream):
             title (str): Title of this video stream.
             width (int): Width of video stream.
     """
-    TYPE = 'videostream'
+    TAG = 'Stream'
     STREAMTYPE = 1
 
     def _loadData(self, data):
@@ -189,6 +191,7 @@ class VideoStream(MediaPartStream):
         self.width = cast(int, data.attrib.get('width'))
 
 
+@utils.registerPlexObject
 class AudioStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
 
@@ -203,7 +206,7 @@ class AudioStream(MediaPartStream):
             samplingRate (int): Sampling rate (ex: xxx)
             title (str): Title of this audio stream.
     """
-    TYPE = 'audiostream'
+    TAG = 'Stream'
     STREAMTYPE = 2
 
     def _loadData(self, data):
@@ -219,6 +222,7 @@ class AudioStream(MediaPartStream):
         self.title = data.attrib.get('title')
 
 
+@utils.registerPlexObject
 class SubtitleStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
         
@@ -227,7 +231,7 @@ class SubtitleStream(MediaPartStream):
             key (str): Key of this subtitle stream (ex: /library/streams/212284).
             title (str): Title of this subtitle stream.
     """
-    TYPE = 'subtitlestream'
+    TAG = 'Stream'
     STREAMTYPE = 3
 
     def _loadData(self, data):
@@ -237,11 +241,12 @@ class SubtitleStream(MediaPartStream):
         self.title = data.attrib.get('title')
 
 
+@utils.registerPlexObject
 class TranscodeSession(PlexObject):
     """ Represents a current transcode session. 
         TODO: Document this.
     """
-    TYPE = 'TranscodeSession'
+    TAG = 'TranscodeSession'
 
     def _loadData(self, data):
         self._data = data
@@ -289,8 +294,6 @@ class MediaTag(PlexObject):
                 * tagType (int): Tag type ID.
                 * thumb (str): URL to thumbnail image.
     """
-    TYPE = None
-
     def _loadData(self, data):
         self._data = data
         self.id = cast(int, data.attrib.get('id'))
@@ -313,45 +316,54 @@ class MediaTag(PlexObject):
         return self.fetchItems(self.key)
 
 
+@utils.registerPlexObject
 class Collection(MediaTag):
-    TYPE = 'Collection'
+    TAG = 'Collection'
     FILTER = 'collection'
 
+@utils.registerPlexObject
 class Country(MediaTag):
-    TYPE = 'Country'
+    TAG = 'Country'
     FILTER = 'country'
 
+@utils.registerPlexObject
 class Director(MediaTag):
-    TYPE = 'Director'
+    TAG = 'Director'
     FILTER = 'director'
 
+@utils.registerPlexObject
 class Genre(MediaTag):
-    TYPE = 'Genre'
+    TAG = 'Genre'
     FILTER = 'genre'
 
+@utils.registerPlexObject
 class Mood(MediaTag):
-    TYPE = 'Mood'
+    TAG = 'Mood'
     FILTER = 'mood'
 
+@utils.registerPlexObject
 class Producer(MediaTag):
-    TYPE = 'Producer'
+    TAG = 'Producer'
     FILTER = 'producer'
 
+@utils.registerPlexObject
 class Role(MediaTag):
-    TYPE = 'Role'
+    TAG = 'Role'
     FILTER = 'role'
 
+@utils.registerPlexObject
 class Similar(MediaTag):
-    TYPE = 'Similar'
+    TAG = 'Similar'
     FILTER = 'similar'
 
+@utils.registerPlexObject
 class Writer(MediaTag):
-    TYPE = 'Writer'
+    TAG = 'Writer'
     FILTER = 'writer'
 
-
+@utils.registerPlexObject
 class Field(PlexObject):
-    TYPE = 'Field'
+    TAG = 'Field'
 
     def _loadData(self, data):
         self._data = data

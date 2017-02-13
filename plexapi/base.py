@@ -2,8 +2,7 @@
 import re
 from plexapi import log, utils
 from plexapi.compat import urlencode
-from plexapi.exceptions import BadRequest, NotFound
-from plexapi.exceptions import UnknownType, Unsupported
+from plexapi.exceptions import NotFound, UnknownType, Unsupported
 
 OPERATORS = {
     'exact': lambda v,q: v == q,
@@ -19,7 +18,7 @@ OPERATORS = {
     'istartswith': lambda v,q: v.lower().startswith(q),
     'endswith': lambda v,q: v.endswith(q),
     'iendswith': lambda v,q: v.lower().endswith(q),
-    'ismissing': None,  # special case in _checkAttrs
+    'exists': lambda v,q: v is not None if q else v is None,
     'regex': lambda v,q: re.match(q, v),
     'iregex': lambda v,q: re.match(q, v, flags=re.IGNORECASE),
 }
@@ -27,73 +26,58 @@ OPERATORS = {
 
 class PlexObject(object):
     """ Base class for all Plex objects.
-        TODO: Finish documenting this.
-    """
-    key = None
 
-    def __init__(self, root, data, initpath=None):
-        self._server = root                       # Root MyPlexAccount or PlexServer
-        self._data = data                       # XML data needed to build object
-        self._initpath = initpath or self.key   # Request path used to fetch data
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+            initpath (str): Relative path requested when retrieving specified `data` (optional).
+    """
+    TAG = None      # xml element tag
+    TYPE = None     # xml element type
+    key = None      # plex relative url
+
+    def __init__(self, server, data, initpath=None):
+        self._server = server
+        self._data = data
+        self._initpath = initpath or self.key
         self._loadData(data)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
-            self.__firstattr('_baseurl', 'key', 'id', 'playQueueID', 'uri'),
-            self.__firstattr('title', 'name', 'username', 'product', 'tag')
+            utils.firstAttr(self, '_baseurl', 'key', 'id', 'playQueueID', 'uri'),
+            utils.firstAttr(self, 'title', 'name', 'username', 'product', 'tag')
         ] if p])
 
     def __setattr__(self, attr, value):
+        # dont overwrite an attr with None unless its a private variable
         if value is not None or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
 
-    def __firstattr(self, *attrs):
-        for attr in attrs:
-            value = self.__dict__.get(attr)
-            if value:
-                value = str(value).replace(' ','-')
-                value = value.replace('/library/metadata/','')
-                value = value.replace('/children','')
-                return value[:20]
-
-    def _buildItem(self, elem, cls=None, initpath=None, bytag=False):
-        """ Factory function to build objects based on registered LIBRARY_TYPES. """
+    def _buildItem(self, elem, cls=None, initpath=None):
+        """ Factory function to build objects based on registered PLEXOBJECTS. """
+        # cls is specified, build the object and return
         initpath = initpath or self._initpath
-        libtype = elem.tag if bytag else elem.attrib.get('type')
-        if libtype == 'photo' and elem.tag == 'Directory':
-            libtype = 'photoalbum'
-        if cls and libtype == cls.TYPE:
+        if cls is not None:
             return cls(self._server, elem, initpath)
-        if libtype in utils.LIBRARY_TYPES:
-            cls = utils.LIBRARY_TYPES[libtype]
-            return cls(self._server, elem, initpath)
-        raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, libtype))
+        # cls is not specified, try looking it up in PLEXOBJECTS
+        etype = elem.attrib.get('type', elem.attrib.get('streamType'))
+        ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
+        ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
+        if ecls is not None:
+            return ecls(self._server, elem, initpath)
+        raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, etype))
 
-    def _buildItemOrNone(self, elem, cls=None, initpath=None, bytag=False):
+    def _buildItemOrNone(self, elem, cls=None, initpath=None):
         """ Calls :func:`~plexapi.base.PlexObject._buildItem()` but returns
             None if elem is an unknown type.
         """
         try:
-            return self._buildItem(elem, cls, initpath, bytag)
+            return self._buildItem(elem, cls, initpath)
         except UnknownType:
             return None
 
-    def _buildItems(self, data, cls=None, initpath=None, bytag=False):
-        """ Build and return a list of items (optionally filtered by tag).
-
-            Parameters:
-                data (ElementTree): XML data to search for items.
-                cls (:class:`plexapi.base.PlexObject`): Optionally specify the PlexObject
-                    to be built. If not specified _buildItem will be called and the best
-                    guess item will be built.
-        """
-        items = []
-        for elem in data:
-            items.append(self._buildItemOrNone(elem, cls, initpath, bytag))
-        return [item for item in items if item]
-
-    def fetchItem(self, key, cls=None, bytag=False, tag=None, **kwargs):
+    def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
@@ -105,10 +89,8 @@ class PlexObject(object):
                 cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
                     items to be fetched, passing this in will help the parser ensure 
                     it only returns those items. By default we convert the xml elements
-                    to the best guess PlexObjects based on the type attr or tag.
-                bytag (bool): Setting this to True tells the build-items function to guess
-                    the PlexObject to build from the tag (instead of the type attr).
-                tag (str): Only fetch items with the specified tag.
+                    with the best guess PlexObjects based on tag and type attrs.
+                etag (str): Only fetch items with the specified tag.
                 **kwargs (dict): Optionally add attribute filters on the items to fetch. For
                     example, passing in viewCount=0 will only return matching items. Filtering
                     is done before the Python objects are built to help keep things speedy.
@@ -121,42 +103,57 @@ class PlexObject(object):
                     passing in viewCount__gte=0 will return all items where viewCount >= 0.
                     Available operations include:
 
-                    * __exact: Value matches specified arg.
-                    * __iexact: Case insensative value matches specified arg.
                     * __contains: Value contains specified arg.
-                    * __icontains: Case insensative value contains specified arg.
-                    * __in: Value is in a specified list or tuple.
+                    * __endswith: Value ends with specified arg.
+                    * __exact: Value matches specified arg.
+                    * __exists (bool): Value is or is not present in the attrs.
                     * __gt: Value is greater than specified arg.
                     * __gte: Value is greater than or equal to specified arg.
+                    * __icontains: Case insensative value contains specified arg.
+                    * __iendswith: Case insensative value ends with specified arg.
+                    * __iexact: Case insensative value matches specified arg.
+                    * __in: Value is in a specified list or tuple.
+                    * __iregex: Case insensative value matches the specified regular expression.
+                    * __istartswith: Case insensative value starts with specified arg.
                     * __lt: Value is less than specified arg.
                     * __lte: Value is less than or equal to specified arg.
-                    * __startswith: Value starts with specified arg.
-                    * __istartswith: Case insensative value starts with specified arg.
-                    * __endswith: Value ends with specified arg.
-                    * __iendswith: Case insensative value ends with specified arg.
-                    * __ismissing (bool): Value is or is not present in the attrs.
                     * __regex: Value matches the specified regular expression.
-                    * __iregex: Case insensative value matches the specified regular expression.
+                    * __startswith: Value starts with specified arg.
         """
-        if isinstance(key, int):
-            key = '/library/metadata/%s' % key
-        for elem in self._server.query(key):
-            if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
-                continue
-            return self._buildItem(elem, cls, key, bytag)
-        raise NotFound('Unable to find elem: tag=%s, attrs=%s' % (tag, kwargs))
+        if isinstance(ekey, int):
+            ekey = '/library/metadata/%s' % ekey
+        for elem in self._server.query(ekey):
+            if self._checkAttrs(elem, **kwargs):
+                return self._buildItem(elem, cls, ekey)
+        clsname = cls.__name__ if cls else 'None'
+        raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
-    def fetchItems(self, key, cls=None, bytag=False, tag=None, **kwargs):
+    def fetchItems(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
         """
+        data = self._server.query(ekey)
+        return self.findItems(data, cls, ekey, **kwargs)
+
+    def findItems(self, data, cls=None, initpath=None, **kwargs):
+        """ Load the specified data to find and build all items with the specified tag
+            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
+            on how this is used.
+        """
+        # filter on cls attrs if specified
+        if cls and cls.TAG and 'tag' not in kwargs:
+            kwargs['etag'] = cls.TAG
+        if cls and cls.TYPE and 'type' not in kwargs:
+            kwargs['type'] = cls.TYPE
+        # loop through all data elements to find matches
         items = []
-        for elem in self._server.query(key):
-            if tag and elem.tag != tag or not self._checkAttrs(elem, **kwargs):
-                continue
-            items.append(self._buildItemOrNone(elem, cls, key, bytag))
-        return [item for item in items if item]
+        for elem in data:
+            if self._checkAttrs(elem, **kwargs):
+                item = self._buildItemOrNone(elem, cls, initpath)
+                if item is not None:
+                    items.append(item)
+        return items
 
     def reload(self, safe=False):
         """ Reload the data for this object from self.key. """
@@ -173,28 +170,20 @@ class PlexObject(object):
         for attr, query in kwargs.items():
             attr, op, operator = self._getAttrOperator(attr)
             values = self._getAttrValue(elem, attr)
-            # special case ismissing operator
-            if op == 'ismissing':
-                if query not in (True, False):
-                    raise BadRequest('Value when using __ismissing must be in (True, False).')
-                if (query is True and values) or (query is False and not values):
-                    return False
-            # special case query in (None,0,'') to include missing attr
-            if op == 'exact' and query in (None, 0, '') and not values:
+            # special case query in (None, 0, '') to include missing attr
+            if op == 'exact' and not values and query in (None, 0, ''):
                 return True
             # return if attr were looking for is missing
             attrsFound[attr] = False
             for value in values:
-                if isinstance(query, int): value = int(value)
-                if isinstance(query, float): value = float(value)
-                if isinstance(query, bool): value = bool(int(value))
+                value = self._castAttrValue(op, query, value)
                 if operator(value, query):
                     attrsFound[attr] = True
                     break
+        #log.debug('Checking %s for %s found: %s', elem.tag, kwargs, attrsFound)
         return all(attrsFound.values())
 
     def _getAttrOperator(self, attr):
-        attr = attr.lstrip('_')
         for op, operator in OPERATORS.items():
             if attr.endswith('__%s' % op):
                 attr = attr.rsplit('__', 1)[0]
@@ -212,11 +201,27 @@ class PlexObject(object):
             for child in [c for c in elem if c.tag.lower() == attr.lower()]:
                 results += self._getAttrValue(child, attrstr, results)
             return [r for r in results if r is not None]
+        # check were looking for the tag
+        if attr.lower() == 'etag':
+            return [elem.tag]
         # loop through attrs so we can perform case-insensative match
         for _attr, value in elem.attrib.items():
             if attr.lower() == _attr.lower():
                 return [value]
         return []
+
+    def _castAttrValue(self, op, query, value):
+        if op == 'exists':
+            return value
+        if isinstance(query, bool):
+            return bool(int(value))
+        if isinstance(query, int) and '.' in value:
+            return float(value)
+        if isinstance(query, int):
+            return int(value)
+        if isinstance(query, float):
+            return float(value)
+        return value
 
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')

@@ -6,8 +6,9 @@ from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Playlist(PlexPartialObject, Playable):
+    TAG = 'Playlist'
     TYPE = 'playlist'
 
     def _loadData(self, data):

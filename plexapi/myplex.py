@@ -152,6 +152,7 @@ class MyPlexAccount(PlexObject):
         return [MyPlexUser(self, elem) for elem in data]
 
 
+@utils.registerPlexObject
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
         accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
@@ -177,6 +178,7 @@ class MyPlexUser(PlexObject):
             title (str): Seems to be an aliad for username
             username (str): User's username
     """
+    TAG = 'User'
     key = 'https://plex.tv/api/users/'
 
     def _loadData(self, data):
@@ -200,6 +202,7 @@ class MyPlexUser(PlexObject):
         self.username = data.attrib.get('username')
 
 
+#@utils.registerPlexObject
 class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
         content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
@@ -225,6 +228,7 @@ class MyPlexResource(PlexObject):
                 player, pubsub-player, etc.)
             synced (bool): Unknown (possibly True if the resource has synced content?)
     """
+    TAG = 'Device'
     key = 'https://plex.tv/api/resources?includeHttps=1'
 
     def _loadData(self, data):
@@ -246,7 +250,7 @@ class MyPlexResource(PlexObject):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = self._buildItems(data, ResourceConnection, bytag=True)
+        self.connections = self.findItems(data, ResourceConnection)
 
     def connect(self, ssl=None, safe=False):
         """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
@@ -300,6 +304,7 @@ class MyPlexResource(PlexObject):
             results[i] = (url, self.accessToken, None)
 
 
+@utils.registerPlexObject
 class ResourceConnection(PlexObject):
     """ Represents a Resource Connection object found within the
         :class:`~myplex.MyPlexResource` objects.
@@ -312,7 +317,7 @@ class ResourceConnection(PlexObject):
             protocol (str): HTTP or HTTPS
             uri (str): External address
     """
-    TYPE = 'Connection'
+    TAG = 'Connection'
 
     def _loadData(self, data):
         self._data = data
@@ -324,6 +329,7 @@ class ResourceConnection(PlexObject):
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
 
 
+#@utils.registerPlexObject
 class MyPlexDevice(PlexObject):
     """ This object represents resources connected to your Plex server that provide
         playback ability from your Plex Server, iPhone or Android clients, Plex Web,
@@ -350,6 +356,7 @@ class MyPlexDevice(PlexObject):
             vendor (str): Device vendor (ubuntu, etc).
             version (str): Unknown (1, 2, 1.3.3.3148-b38628e, 1.3.15, etc.)
     """
+    TAG = 'Device'
     key = 'https://plex.tv/devices.xml'
 
     def _loadData(self, data):

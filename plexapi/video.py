@@ -24,8 +24,6 @@ class Video(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
-    TYPE = None
-
     def _loadData(self, data):
         self._data = data
         self.listType = 'video'
@@ -61,7 +59,7 @@ class Video(PlexPartialObject):
         self.reload()
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Movie(Video, Playable):
     """ Represents a single Movie.
         
@@ -83,16 +81,10 @@ class Movie(Video, Playable):
             userRating (float): User rating (2.0; 8.0).
             viewOffset (int): View offset in milliseconds.
             year (int): Year movie was released.
-            collections
-            countries
-            directors
-            fields
-            genres
-            media
-            producers
-            roles
-            writers
+            
+            # TODO: Finish documenting plexapi.video.Movie
     """
+    TAG = 'Video'
     TYPE = 'movie'
 
     def _loadData(self, data):
@@ -116,15 +108,15 @@ class Movie(Video, Playable):
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.collections = self._buildItems(data, media.Collection)
-        self.countries = self._buildItems(data, media.Country, bytag=True)
-        self.directors = self._buildItems(data, media.Director, bytag=True)
-        self.fields = self._buildItems(data, media.Field, bytag=True)
-        self.genres = self._buildItems(data, media.Genre, bytag=True)
-        self.media = self._buildItems(data, media.Media, bytag=True)
-        self.producers = self._buildItems(data, media.Producer, bytag=True)
-        self.roles = self._buildItems(data, media.Role, bytag=True)
-        self.writers = self._buildItems(data, media.Writer, bytag=True)
+        self.collections = self.findItems(data, media.Collection)
+        self.countries = self.findItems(data, media.Country)
+        self.directors = self.findItems(data, media.Director)
+        self.fields = self.findItems(data, media.Field)
+        self.genres = self.findItems(data, media.Genre)
+        self.media = self.findItems(data, media.Media)
+        self.producers = self.findItems(data, media.Producer)
+        self.roles = self.findItems(data, media.Role)
+        self.writers = self.findItems(data, media.Writer)
 
     @property
     def actors(self):
@@ -163,8 +155,9 @@ class Movie(Video, Playable):
         return downloaded
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Show(Video):
+    TAG = 'Directory'
     TYPE = 'show'
 
     def _loadData(self, data):
@@ -187,8 +180,8 @@ class Show(Video):
         self.theme = data.attrib.get('theme')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildItems(data, media.Genre, bytag=True)
-        self.roles = self._buildItems(data, media.Role, bytag=True)
+        self.genres = self.findItems(data, media.Genre)
+        self.roles = self.findItems(data, media.Role)
 
     @property
     def actors(self):
@@ -201,7 +194,7 @@ class Show(Video):
     def seasons(self, **kwargs):
         """Returns a list of Season."""
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Season.TYPE, **kwargs)
+        return self.fetchItems(key, **kwargs)
 
     def season(self, title=None):
         """ Returns the season with the specified title or number.
@@ -212,7 +205,7 @@ class Show(Video):
         if isinstance(title, int):
             title = 'Season %s' % title
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItem(key, tag='Directory', title__iexact=title)
+        return self.fetchItem(key, etag='Directory', title__iexact=title)
 
     def episodes(self, **kwargs):
         """ Returs a list of Episode """
@@ -278,8 +271,9 @@ class Show(Video):
         return downloaded
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Season(Video):
+    TAG = 'Directory'
     TYPE = 'season'
 
     def _loadData(self, data):
@@ -316,7 +310,7 @@ class Season(Video):
     def episodes(self, **kwargs):
         """ Returs a list of Episode. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, type=Episode.TYPE, **kwargs)
+        return self.fetchItems(key, **kwargs)
 
     def episode(self, title=None, num=None):
         """ Returns the episode with the given title or number.
@@ -369,8 +363,9 @@ class Season(Video):
         return downloaded
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Episode(Video, Playable):
+    TAG = 'Video'
     TYPE = 'episode'
 
     def _loadData(self, data):
@@ -402,9 +397,9 @@ class Episode(Video, Playable):
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.directors = self._buildItems(data, media.Director, bytag=True)
-        self.media = self._buildItems(data, media.Media, bytag=True)
-        self.writers = self._buildItems(data, media.Writer, bytag=True)
+        self.directors = self.findItems(data, media.Director)
+        self.media = self.findItems(data, media.Media)
+        self.writers = self.findItems(data, media.Writer)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)

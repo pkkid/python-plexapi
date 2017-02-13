@@ -4,7 +4,7 @@ from plexapi.base import PlexPartialObject
 from plexapi.exceptions import NotFound
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Photoalbum(PlexPartialObject):
     """ Represents a photoalbum (collection of photos).
 
@@ -29,7 +29,8 @@ class Photoalbum(PlexPartialObject):
             type (str): Unknown
             updatedAt (datatime): Datetime this item was updated.
     """
-    TYPE = 'photoalbum'
+    TAG = 'Directory'
+    TYPE = 'photo'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -61,7 +62,7 @@ class Photoalbum(PlexPartialObject):
         raise NotFound('Unable to find photo: %s' % title)
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Photo(PlexPartialObject):
     """ Represents a single photo.
 
@@ -87,6 +88,7 @@ class Photo(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             year (int): Year this photo was taken.
     """
+    TAG = 'Photo'
     TYPE = 'photo'
 
     def _loadData(self, data):
@@ -106,7 +108,7 @@ class Photo(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.media = self._buildItems(data, media.Media)
+        self.media = self.findItems(data, media.Media)
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """

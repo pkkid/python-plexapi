@@ -9,6 +9,10 @@ class PlexNotifier(threading.Thread):
         notifications. These often include messages from Plex about media scans
         as well as updates to currently running Transcode Sessions.
 
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this notifier is connected to.
+            callback (func): Callback function to call on recieved messages.
+
         NOTE: You need websocket-client installed in order to use this feature.
         >> pip install websocket-client
     """
@@ -21,9 +25,12 @@ class PlexNotifier(threading.Thread):
         super(PlexNotifier, self).__init__()
 
     def run(self):
+        """ Starts the PlexNotifier thread. This function should not be called
+            directly, instead use :func:`~plexapi.server.PlexServer.startNotifier`.
+        """ 
         # try importing websocket-client package
         try:
-            import websocket  # only require when needed
+            import websocket
         except:
             raise Unsupported('Websocket-client package is required to use this feature.')
         # create the websocket connection
@@ -35,6 +42,7 @@ class PlexNotifier(threading.Thread):
         self._ws.run_forever()
 
     def stop(self):
+        """ Stop the PlexNotifier thread. """
         log.info('Stopping PlexNotifier.')
         self._ws.close()
 

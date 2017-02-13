@@ -27,38 +27,29 @@ class Library(PlexObject):
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
 
-    def __len__(self):
-        return len(self.sections())
-
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
             :class:`~plexapi.library.MovieSection`, :class:`~plexapi.library.ShowSection`,
             :class:`~plexapi.library.MusicSection`, :class:`~plexapi.library.PhotoSection`.
         """
-        SECTION_TYPES = {MovieSection.TYPE:MovieSection, ShowSection.TYPE:ShowSection,
-            MusicSection.TYPE: MusicSection, PhotoSection.TYPE: PhotoSection}
-        items = []
         key = '/library/sections'
+        sections = []
         for elem in self._server.query(key):
-            stype = elem.attrib['type']
-            if stype in SECTION_TYPES:
-                cls = SECTION_TYPES[stype]
-                section = cls(self._server, elem, key)
-                self._sectionsByID[section.key] = section
-                items.append(section)
-        return items
+            for cls in (MovieSection, ShowSection, MusicSection, PhotoSection):
+                if elem.attrib.get('type') == cls.TYPE:
+                    section = cls(self._server, elem, key)
+                    self._sectionsByID[section.key] = section
+                    sections.append(section)
+        return sections
 
     def section(self, title=None):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified title.
 
             Parameters:
                 title (str): Title of the section to return.
-
-            Raises:
-                :class:`~plexapi.exceptions.NotFound`: Invalid library section title.
         """
         for section in self.sections():
-            if section.title == title:
+            if section.title.lower() == title.lower():
                 return section
         raise NotFound('Invalid library section: %s' % title)
 
@@ -76,7 +67,11 @@ class Library(PlexObject):
         """ Returns a list of all media from all library sections.
             This may be a very large dataset to retrieve.
         """
-        return [item for section in self.sections() for item in section.all(**kwargs)]
+        items = []
+        for section in self.sections():
+            for item in section.all(**kwargs):
+                items.append(item)
+        return items
 
     def onDeck(self):
         """ Returns a list of all media items on deck. """
@@ -185,10 +180,6 @@ class LibrarySection(PlexObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
 
-    def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [self.__class__.__name__,
-            self.key, self.librarySectionTitle] if p])
-
     def get(self, title):
         """ Returns the media item with the specified title.
 
@@ -259,7 +250,7 @@ class LibrarySection(PlexObject):
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
-        return self.fetchItems(key, bytag=True)
+        return self.fetchItems(key, cls=FilterChoice)
 
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
@@ -360,12 +351,14 @@ class MovieSection(LibrarySection):
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
                 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                 'mediaHeight', 'duration')
+            TAG (str): 'Directory'
             TYPE (str): 'movie'
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
         'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
         'mediaHeight', 'duration')
+    TAG = 'Directory'
     TYPE = 'movie'
 
 
@@ -377,11 +370,13 @@ class ShowSection(LibrarySection):
                 'year', 'genre', 'contentRating', 'network', 'collection')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
                 'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
+            TAG (str): 'Directory'
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
         'rating', 'unwatched')
+    TAG = 'Directory'
     TYPE = 'show'
 
     def searchShows(self, **kwargs):
@@ -409,10 +404,12 @@ class MusicSection(LibrarySection):
                 'country', 'collection')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
                 'lastViewedAt', 'viewCount', 'titleSort')
+            TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
     ALLOWED_FILTERS = ('genre', 'country', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
+    TAG = 'Directory'
     TYPE = 'artist'
 
     def albums(self):
@@ -437,12 +434,15 @@ class PhotoSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. <NONE>
-            ALLOWED_SORT (list<str>): List of allowed sorting keys. <NONE>
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('all', 'iso',
+                'make', 'lens', 'aperture', 'exposure')
+            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt')
+            TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
     ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure')
-    ALLOWED_SORT = ('addedAt')
+    ALLOWED_SORT = ('addedAt',)
+    TAG = 'Directory'
     TYPE = 'photo'
 
     def searchAlbums(self, title, **kwargs):
@@ -456,7 +456,6 @@ class PhotoSection(LibrarySection):
         return self.fetchItems(key, title=title)
 
 
-@utils.register_libtype
 class FilterChoice(PlexObject):
     """ Represents a single filter choice. These objects are gathered when using filters
         while searching for library items and is the object returned in the result set of
@@ -472,7 +471,7 @@ class FilterChoice(PlexObject):
             title (str): Human readable name for this filter option.
             type (str): Filter type (genre, contentRating, etc).
     """
-    TYPE = 'Directory'
+    TAG = 'Directory'
 
     def _loadData(self, data):
         self._data = data
@@ -483,10 +482,10 @@ class FilterChoice(PlexObject):
         self.type = data.attrib.get('type')
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Hub(PlexObject):
     FILTERTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
-    TYPE = 'Hub'
+    TAG = 'Hub'
 
     def _loadData(self, data):
         self._data = data
@@ -494,13 +493,7 @@ class Hub(PlexObject):
         self.size = utils.cast(int, data.attrib.get('size'))
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self.items = self._buildItems(data)
+        self.items = self.findItems(data)
 
     def __len__(self):
         return self.size
-
-    def _buildItems(self, data):
-        if self.type in self.FILTERTYPES:
-            cls = self.FILTERTYPES[self.type]
-            return [cls(self._server, elem, self._initpath) for elem in data]
-        return super(Hub, self)._buildItems(data)

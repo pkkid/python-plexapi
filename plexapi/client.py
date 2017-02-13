@@ -44,6 +44,7 @@ class PlexClient(PlexObject):
             _proxyThroughServer (bool): Set to True after calling
                 :func:`~plexapi.client.PlexClient.proxyThroughServer()` (default False).
     """
+    TAG = 'Player'
     key = '/resources'
 
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):

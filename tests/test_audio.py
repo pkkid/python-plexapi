@@ -279,11 +279,13 @@ def test_audio_Track_attrs(a_music_album):
 
 
 def test_audio_Track_album(a_music_album):
-    assert a_music_album.tracks()[0].album() == a_music_album
+    tracks = a_music_album.tracks()
+    assert tracks[0].album() == a_music_album
 
 
 def test_audio_Track_artist(a_music_album, a_artist):
-    assert a_music_album.tracks()[0].artist() == a_artist
+    tracks = a_music_album.tracks()
+    assert tracks[0].artist() == a_artist
 
 
 def test_audio_Audio_section(a_artist, a_music_album, a_track):

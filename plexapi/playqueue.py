@@ -30,7 +30,7 @@ class PlayQueue(PlexObject):
         self.playQueueSelectedItemOffset = data.attrib.get('playQueueSelectedItemOffset')
         self.playQueueTotalCount = data.attrib.get('playQueueTotalCount')
         self.playQueueVersion = data.attrib.get('playQueueVersion')
-        self.items = self._buildItems(data)
+        self.items = self.findItems(data)
 
     @classmethod
     def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):

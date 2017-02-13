@@ -9,7 +9,7 @@ from plexapi.exceptions import NotFound
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
     'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
-LIBRARY_TYPES = {}
+PLEXOBJECTS = {}
 
 
 class SecretsFilter(logging.Filter):
@@ -30,12 +30,17 @@ class SecretsFilter(logging.Filter):
         return True
 
 
-def register_libtype(cls):
+def registerPlexObject(cls):
     """ Registry of library types we may come across when parsing XML. This allows us to
         define a few helper functions to dynamically convery the XML into objects. See
         buildItem() below for an example.
     """
-    LIBRARY_TYPES[cls.TYPE] = cls
+    etype = getattr(cls, 'STREAMTYPE', cls.TYPE)
+    ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
+    if ehash in PLEXOBJECTS:
+        raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
+            (cls.__name__, cls.TAG, etype, PLEXOBJECTS[ehash].__name__))
+    PLEXOBJECTS[ehash] = cls
     return cls
 
 
@@ -91,22 +96,6 @@ def findPlayer(server, data):
     return None
 
 
-def findStreams(media, streamtype):
-    """ Returns a list of streams (str) found in media that match the specified streamtype.
-
-        Parameters:
-            media (:class:`~plexapi.utils.Playable`): Item to search for streams (show, movie, episode).
-            streamtype (str): Streamtype to return (videostream, audiostream, subtitlestream).
-    """
-    streams = []
-    for mediaitem in media:
-        for part in mediaitem.parts:
-            for stream in part.streams:
-                if stream.TYPE == streamtype:
-                    streams.append(stream)
-    return streams
-
-
 def findTranscodeSession(server, data):
     """ Returns a :class:`~plexapi.media.TranscodeSession` object if found within the specified
         XML data.
@@ -133,6 +122,18 @@ def findUsername(data):
     if elem is not None:
         return elem.attrib.get('title')
     return None
+
+
+def firstAttr(elem, *attrs):
+    """ Return the first attribute in attrs that is not None. """
+    for attr in attrs:
+        value = elem.__dict__.get(attr)
+        if value is not None:
+            value = str(value).replace(' ','-')
+            if attr == 'key':
+                value = value.replace('/library/metadata/','')
+                value = value.replace('/children','')
+            return value[:20]
 
 
 def getattributeOrNone(obj, self, attr):

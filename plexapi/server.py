@@ -7,13 +7,15 @@ from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.library import Library
+from plexapi.library import Library, Hub
 from plexapi.notify import PlexNotifier
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
-# We import media to populate utils.LIBRARY_TYPES
-from plexapi import audio, video, photo, playlist as _pl
+
+# Need these imports to populate utils.PLEXOBJECTS
+from plexapi import (audio as _audio, video as _video,
+    photo as _photo, media as _media, playlist as _playlist)
 
 
 class PlexServer(PlexObject):
@@ -243,13 +245,6 @@ class PlexServer(PlexObject):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 
-    def url(self, key):
-        """ Build a URL string with proper token argument. """
-        if self._token:
-            delim = '&' if '?' in key else '?'
-            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
-        return '%s%s' % (self._baseurl, key)
-
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
             `Hub Search <https://www.plex.tv/blog/seek-plex-shall-find-leveling-web-app/>`_
@@ -274,7 +269,7 @@ class PlexServer(PlexObject):
         if limit:
             params['limit'] = limit
         key = '/hubs/search?%s' % urlencode(params)
-        for hub in self.fetchItems(key, bytag=True):
+        for hub in self.fetchItems(key, Hub):
             results += hub.items
         return results
 
@@ -311,11 +306,17 @@ class PlexServer(PlexObject):
                 opacity (int): Opacity of the resulting image (possibly deprecated).
                 saturation (int): Saturating of the resulting image.
         """
-        # TODO: Does this function really belong here?
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
                 height, width, opacity, saturation, media)
             return self.url(transcode_url)
+
+    def url(self, key):
+        """ Build a URL string with proper token argument. """
+        if self._token:
+            delim = '&' if '?' in key else '?'
+            return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
+        return '%s%s' % (self._baseurl, key)
 
 
 class Account(PlexObject):

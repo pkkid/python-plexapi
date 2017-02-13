@@ -28,8 +28,6 @@ class Audio(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
-    TYPE = None
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
@@ -55,7 +53,7 @@ class Audio(PlexPartialObject):
             return self._server.url(self.thumb)
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Artist(Audio):
     """ Represents a single audio artist.
 
@@ -73,6 +71,7 @@ class Artist(Audio):
             location (str): Filepath this artist is found on disk.
             similar (list): List of :class:`~plexapi.media.Similar` artists.
     """
+    TAG = 'Directory'
     TYPE = 'artist'
 
     def _loadData(self, data):
@@ -82,9 +81,9 @@ class Artist(Audio):
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.location = utils.findLocations(data, single=True)
-        self.countries = self._buildItems(data, media.Country, bytag=True)
-        self.genres = self._buildItems(data, media.Genre, bytag=True)
-        self.similar = self._buildItems(data, media.Similar, bytag=True)
+        self.countries = self.findItems(data, media.Country)
+        self.genres = self.findItems(data, media.Genre)
+        self.similar = self.findItems(data, media.Similar)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -138,7 +137,7 @@ class Artist(Audio):
         return filepaths
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Album(Audio):
     """ Represents a single audio album.
 
@@ -159,6 +158,7 @@ class Album(Audio):
             studio (str): Studio that released this album.
             year (int): Year this album was released.
     """
+    TAG = 'Directory'
     TYPE = 'album'
 
     def _loadData(self, data):
@@ -173,7 +173,7 @@ class Album(Audio):
         self.parentTitle = data.attrib.get('parentTitle')
         self.studio = data.attrib.get('studio')
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.genres = self._buildItems(data, media.Genre, bytag=True)
+        self.genres = self.findItems(data, media.Genre)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -216,7 +216,7 @@ class Album(Audio):
         return filepaths
 
 
-@utils.register_libtype
+@utils.registerPlexObject
 class Track(Audio, Playable):
     """ Represents a single audio track.
 
@@ -253,6 +253,7 @@ class Track(Audio, Playable):
             transcodeSession (None): :class:`~plexapi.media.TranscodeSession` for playing
                 track (active sessions only).
     """
+    TAG = 'Track'
     TYPE = 'track'
 
     def _loadData(self, data):
@@ -278,8 +279,8 @@ class Track(Audio, Playable):
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        self.media = self._buildItems(data, media.Media, bytag=True)
-        self.moods = self._buildItems(data, media.Mood, bytag=True)
+        self.media = self.findItems(data, media.Media)
+        self.moods = self.findItems(data, media.Mood)
         # data for active sessions and history
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
         self.username = utils.findUsername(data)
@@ -298,8 +299,8 @@ class Track(Audio, Playable):
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """
-        return self.fetchItems(self.parentKey)[0]
+        return self.fetchItem(self.parentKey)
 
     def artist(self):
         """ Return this track's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItems(self.grandparentKey)[0]
+        return self.fetchItem(self.grandparentKey)
