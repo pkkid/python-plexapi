@@ -5,6 +5,8 @@
   <img align="right" src='https://coveralls.io/repos/github/mjs7231/python-plexapi/badge.svg' alt='Coverage Status' /></a>
 <a href="https://travis-ci.org/mjs7231/python-plexapi">
   <img align="right" src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master"/></a>
+<a href='http://python-plexapi.readthedocs.io/en/latest/?badge=latest'>
+  <img src='https://readthedocs.org/projects/python-plexapi/badge/?version=latest' alt='Documentation Status' /></a>
 Python bindings for the Plex API.
 
 * Navigate local or remote shared libraries.
