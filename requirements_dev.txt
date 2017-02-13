@@ -4,5 +4,4 @@ coveralls
 pillow
 pytest
 pytest-cov
-requests
 websocket-client

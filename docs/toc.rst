@@ -12,6 +12,7 @@
    :caption: Modules
 
    modules/audio
+   modules/base
    modules/client
    modules/config
    modules/exceptions
