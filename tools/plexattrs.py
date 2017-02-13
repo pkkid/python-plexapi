@@ -6,6 +6,7 @@ each media type. The resulting list can be compared with the current object
 implementation in python-plex api to track new attributes and depricate old ones.
 """
 import argparse, copy, pickle, plexapi, os, sys, time
+from os.path import abspath, dirname, join
 from collections import defaultdict
 from datetime import datetime
 from plexapi import library
@@ -14,7 +15,7 @@ from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 from plexapi.playqueue import PlayQueue
 
-CACHEPATH = '/tmp/findattrs.pickle'
+CACHEPATH = join(dirname(abspath(__file__)), 'findattrs.pickle')
 NAMESPACE =  {
     'xml': defaultdict(int),
     'obj': defaultdict(int),
@@ -22,7 +23,7 @@ NAMESPACE =  {
     'categories': defaultdict(set),
     'total': 0,
     'old': 0,
-    'new': 0,
+    'new': 0
 }
 IGNORES = {
     'server.PlexServer': ['baseurl', 'token', 'session'],
@@ -46,12 +47,10 @@ DONT_RELOAD = (
     'photo.Photoalbum',
     'server.Account',
     'client.PlexClient',  # we dont have the token to reload.
-    #'server.PlexServer',  # setting version to None? :(
 )
 TAGATTRS = {
     'Media': 'media',
     'Country': 'countries',
-
 }
 STOP_RECURSING_AT = (
     #'media.MediaPart',
@@ -157,11 +156,11 @@ class PlexAttributes():
 
     def _parse_client(self):
         for device in self.account.devices():
-            client = device.connect(safe=True)
+            client = self._safe_connect(device)
             if client is not None:
                 self._load_attrs(client, 'myplex')
         for client in self.plex.clients():
-            client.connect(safe=True)
+            self._safe_connect(client)
             self._load_attrs(client, 'client')
 
     def _parse_playlist(self):
@@ -215,7 +214,8 @@ class PlexAttributes():
 
     def _load_obj_attrs(self, clsname, obj, attrs):
         if clsname in STOP_RECURSING_AT: return None
-        if isinstance(obj, PlexObject) and clsname not in DONT_RELOAD: obj.reload(safe=True)
+        if isinstance(obj, PlexObject) and clsname not in DONT_RELOAD:
+            self._safe_reload(obj)
         for attr, value in obj.__dict__.items():
             if value is None or isinstance(value, (str, bool, float, int, datetime)):
                 if not attr.startswith('_') and attr not in IGNORES.get(clsname, []):
@@ -270,6 +270,18 @@ class PlexAttributes():
             self.attrs[clsname]['old'] += 1
             return _('old', 'red')
         return _('   ', 'green')
+
+    def _safe_connect(self, elem):
+        try:
+            return elem.connect()
+        except:
+            return None
+
+    def _safe_reload(self, elem):
+        try:
+            elem.reload()
+        except:
+            pass
 
 
 def _(text, color):
