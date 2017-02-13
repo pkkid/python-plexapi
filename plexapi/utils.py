@@ -66,50 +66,6 @@ def cast(func, value):
     return value
 
 
-def findPlayer(server, data, initpath):
-    """ Returns the :class:`~plexapi.client.PlexClient` object found in the specified data.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            data (ElementTree): XML data to find Player in.
-    """
-    elem = data.find('Player')
-    if elem is not None:
-        from plexapi.client import PlexClient
-        addr = elem.attrib.get('address')
-        port = elem.attrib.get('port')
-        baseurl = '%s:%s' % (addr, port) if port else addr
-        return PlexClient(baseurl, server=server, data=elem, initpath=initpath)
-
-
-def findTranscodeSession(server, data):
-    """ Returns a :class:`~plexapi.media.TranscodeSession` object if found within the specified
-        XML data.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            data (ElementTree): XML data to find TranscodeSession in.
-    """
-
-    elem = data.find('TranscodeSession')
-    if elem is not None:
-        from plexapi import media
-        return media.TranscodeSession(server, elem)
-    return None
-
-
-def findUsername(data):
-    """ Returns the username if found in the specified XML data. Returns None if not found.
-
-        Parameters:
-            data (ElementTree): XML data to find username in.
-    """
-    elem = data.find('User')
-    if elem is not None:
-        return elem.attrib.get('title')
-    return None
-
-
 def firstAttr(elem, *attrs):
     """ Return the first attribute in attrs that is not None. """
     for attr in attrs:
@@ -129,15 +85,6 @@ def getattributeOrNone(obj, self, attr):
         return None
 
 
-def isInt(str):
-    """ Returns True if the specified string passes as an int. """
-    try:
-        int(str)
-        return True
-    except ValueError:
-        return False
-
-
 def joinArgs(args):
     """ Returns a query string (uses for HTTP URLs) where only the value is URL encoded.
         Example return value: '?genre=action&type=1337'.
@@ -152,16 +99,6 @@ def joinArgs(args):
         value = str(args[key])
         arglist.append('%s=%s' % (key, quote(value)))
     return '?%s' % '&'.join(arglist)
-
-
-def listChoices(server, path):
-    """ Returns a dict of {title:key} for all simple choices in a search filter.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            path (str): Relative path to request XML data from.
-    """
-    return {c.attrib['title']: c.attrib['key'] for c in server.query(path)}
 
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover

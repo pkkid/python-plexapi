@@ -24,50 +24,9 @@ def test_utils_searchType():
         utils.searchType('kekekekeke')
 
 
-def _test_utils_listItems():
-    # TODO: Implement test_utils_listItems
-    pass
-
-
-def _test_utils_listChoices(pms):
-    # TODO: Implement test_utils_listChoices
-    pass
-
-
 def test_utils_joinArgs():
     test_dict = {'genre': 'action', 'type': 1337}
     assert utils.joinArgs(test_dict) == '?genre=action&type=1337'
-
-
-def test_utils_isInt():
-    assert utils.isInt(1) is True
-    assert utils.isInt('got_you') is False
-    assert utils.isInt('1337') is True
-
-
-def _test_utils_findUsername():
-    # TODO: Implement test_utils_findUsername
-    pass
-
-
-def _test_utils_findStreams():
-    # TODO: Implement test_utils_findStreams
-    pass
-
-
-def _test_utils_findPlayer():
-    # TODO: Implement test_utils_findPlayer
-    pass
-
-
-def _test_utils_findLocations():
-    # TODO: Implement test_utils_findLocations
-    pass
-
-
-def _test_utils_findItem():
-    # TODO: Implement test_utils_findItem
-    pass
 
 
 def test_utils_cast():

@@ -354,9 +354,9 @@ class Playable(object):
     """
     def _loadData(self, data):
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session
-        self.username = utils.findUsername(data)                                    # session
+        self.usernames = self.listAttrs(data, 'title', etag='User')                 # session
         self.players = self.findItems(data, etag='Player')                          # session
-        self.transcodeSession = utils.findTranscodeSession(self._server, data)      # session
+        self.transcodeSessions = self.findItems(data, etag='TranscodeSession')      # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
 
