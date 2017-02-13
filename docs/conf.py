@@ -16,13 +16,14 @@ import copy, sys
 import sphinx_rtd_theme
 from os.path import abspath, dirname, join
 from recommonmark.parser import CommonMarkParser
-sys.path.insert(0, join(dirname(abspath('.')), 'plexapi'))
+path = dirname(dirname(abspath(__file__)))
+sys.path.append(path)
+sys.path.append(join(path, 'plexapi'))
 import plexapi
 
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinxcontrib.napoleon',
 ]
 
