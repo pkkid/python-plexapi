@@ -16,7 +16,7 @@ import copy, sys
 import sphinx_rtd_theme
 from os.path import abspath, dirname, join
 from recommonmark.parser import CommonMarkParser
-path = dirname(abspath(__file__))
+path = dirname(dirname(abspath(__file__)))
 sys.path.append(path)
 sys.path.append(join(path, 'plexapi'))
 import plexapi
