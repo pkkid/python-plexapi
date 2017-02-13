@@ -170,9 +170,9 @@ class PlexServer(PlexObject):
         """
         items = []
         for elem in self.query('/clients'):
-            print(elem.attrib)
-            baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
+            baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib.get('port', 32400))
             items.append(PlexClient(baseurl, server=self, data=elem))
+
         return items
 
     def client(self, name):
@@ -186,26 +186,27 @@ class PlexServer(PlexObject):
         """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
+                baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib.get('port', 32400))
                 return PlexClient(baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlaylist(self, title, items):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
-            
+
             Parameters:
                 title (str): Title of the playlist to be created.
                 items (list<Media>): List of media items to include in the playlist.
         """
         return Playlist.create(self, title, items)
 
-    def createPlayQueue(self, item):
+    def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Parameters:
                 item (Media or Playlist): Media or playlist to add to PlayQueue.
+                kwargs (dict): See :class:`~plexapi.playqueue.PlayQueue.create
         """
-        return PlayQueue.create(self, item)
+        return PlayQueue.create(self, item, **kwargs)
 
     def history(self):
         """ Returns a list of media items from watched history. """

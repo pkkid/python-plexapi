@@ -48,8 +48,12 @@ class PlexClient(PlexObject):
     key = '/resources'
 
     def __init__(self, baseurl, token=None, session=None, server=None, data=None):
+
         self._baseurl = (baseurl or CONFIG.get('authentication.client_baseurl')).strip('/')
         self._token = token or CONFIG.get('authentication.client_token')
+        if server and server._token and not self._token:
+            self._token = server._token
+
         if self._token:
             logfilter.add_secret(self._token)
         self._server = server
@@ -58,31 +62,35 @@ class PlexClient(PlexObject):
         self._session = session or _server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
-        data = data or self.query('/resources')[0]
-        super(PlexClient, self).__init__(self, data, self.key)
+        # clients are better.
+        data = data if data is not None else self.query('/clients')[0]
+        super(PlexClient, self).__init__(self._server, data, self.key)
 
     def connect(self, safe=False):
         """ Alias of reload as any subsequent requests to this client will be
-            made directly to the device even if the object attributes were initially 
+            made directly to the device even if the object attributes were initially
             populated from a PlexServer.
         """
         try:
             self.reload()
         except Exception:
-            if not safe: raise
+            if not safe:
+                raise
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.deviceClass = data.attrib.get('deviceClass')
-        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        # we check for clientIdentifier incase data is from devices.xml
+        self.machineIdentifier = data.attrib.get('machineIdentifier', data.attrib.get('clientIdentifier'))
         self.product = data.attrib.get('product')
         self.protocol = data.attrib.get('protocol')
-        self.protocolCapabilities = data.attrib.get('protocolCapabilities', '').split(',')
+        self.protocolCapabilities = data.attrib.get('protocolCapabilities', data.attrib.get('provides', '')).split(',')
         self.protocolVersion = data.attrib.get('protocolVersion')
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
+        self.port = data.attrib.get('port', 32400)
         # Active session details
         self.device = data.attrib.get('device')
         self.model = data.attrib.get('model')
@@ -100,7 +108,7 @@ class PlexClient(PlexObject):
 
     def proxyThroughServer(self, value=True):
         """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
-            Useful if you do not wish to connect directly to the Client device itself. 
+            Useful if you do not wish to connect directly to the Client device itself.
 
             Parameters:
                 value (bool): Enable or disable proxying (optional, default True).
@@ -146,6 +154,7 @@ class PlexClient(PlexObject):
         command = command.strip('/')
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
+            # Let comment this out for now. Its too strickt, we can even stop a stream.
             raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
@@ -386,9 +395,9 @@ class PlexClient(PlexObject):
         """
         self.setStreams(videoStreamID=videoStreamID, mtype=mtype)
 
-    def playMedia(self, media, offset=0, **params):
+    def playMedia(self, media, offset=0, playqueue=None, **params):
         """ Start playback of the specified media item. See also:
-            
+
             Parameters:
                 media (:class:`~plexapi.media.Media`): Media item to be played back (movie, music, photo).
                 offset (int): Number of milliseconds at which to start playing with zero representing
@@ -401,8 +410,11 @@ class PlexClient(PlexObject):
         """
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
-        server_url = media._server._baseurl.split(':')
-        playqueue = self._server.createPlayQueue(media)
+        server_url = self._server._baseurl.split(':')
+
+        if playqueue is None:
+            playqueue = self._server.createPlayQueue(media)
+
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
@@ -457,6 +469,16 @@ class PlexClient(PlexObject):
     def timeline(self):
         """ Poll the current timeline and return the XML response. """
         return self.sendCommand('timeline/poll', **{'wait': 1, 'commandID': 4})
+
+    def _find_media_type(self):
+        """Pull the timeline and figure out what media type this client is playing.
+           This is a helper for commands where mtype is required.
+        """
+        for media in self.timeline():
+            if media.attrib.get('type') and media.attrib.get('playQueueID'):
+                return media.attrib.get('type')
+        #Lets default to video since it the most used.
+        return 'video'
 
     def isPlayingMedia(self, includePaused=False):
         """ Returns True if any media is currently playing.
