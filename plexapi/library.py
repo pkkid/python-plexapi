@@ -180,6 +180,16 @@ class LibrarySection(PlexObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
 
+    def delete(self):
+        """Delete a library section."""
+        try:
+            return self._server.query('/library/sections/%s' % self.key, method=self._server._session.delete)
+        except BadRequest:  # pragma: no cover
+            msg = 'Failed to delete library %s' % self.key
+            msg += 'You may need to allow this permission in your Plex settings.'
+            log.error(msg)
+            raise
+
     def get(self, title):
         """ Returns the media item with the specified title.
 
