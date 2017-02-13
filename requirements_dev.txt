@@ -1,8 +1,10 @@
-requests
-pytest
-pytest-cov
 betamax
 betamax_serializers
-pillow
 coveralls
+pillow
+pytest
+pytest-cov
+requests
+sphinx-rtd-theme
+sphinxcontrib-napoleon
 websocket-client

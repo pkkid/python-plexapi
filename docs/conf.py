@@ -24,7 +24,6 @@ import plexapi
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinxcontrib.napoleon',
 ]
 
