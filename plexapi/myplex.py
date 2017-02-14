@@ -17,6 +17,8 @@ class MyPlexAccount(PlexObject):
         the myplex.tv servers at the url https://plex.tv/users/account.
 
         Attributes:
+            SIGNIN (str): 'https://my.plexapp.com/users/sign_in.xml'
+            key (str): 'https://plex.tv/users/account'
             authenticationToken (str): <Unknown>
             certificateVersion (str): <Unknown>
             cloudSyncDevice (str): 
@@ -56,6 +58,7 @@ class MyPlexAccount(PlexObject):
         super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self._token = logfilter.add_secret(data.attrib.get('authenticationToken'))
         self.authenticationToken = self._token
@@ -157,28 +160,31 @@ class MyPlexUser(PlexObject):
         can be found at: https://plex.tv/api/users/
 
         Attributes:
-            allowCameraUpload (bool): True if this user can upload images
-            allowChannels (bool): True if this user has access to channels
-            allowSync (bool): True if this user can sync
-            email (str): User's email address (user@gmail.com)
-            filterAll (str): Unknown
-            filterMovies (str): Unknown
-            filterMusic (str): Unknown
-            filterPhotos (str): Unknown
-            filterTelevision (str): Unknown
-            home (bool): Unknown
+            TAG (str): 'User'
+            key (str): 'https://plex.tv/api/users/'
+            allowCameraUpload (bool): True if this user can upload images.
+            allowChannels (bool): True if this user has access to channels.
+            allowSync (bool): True if this user can sync.
+            email (str): User's email address (user@gmail.com).
+            filterAll (str): Unknown.
+            filterMovies (str): Unknown.
+            filterMusic (str): Unknown.
+            filterPhotos (str): Unknown.
+            filterTelevision (str): Unknown.
+            home (bool): Unknown.
             id (int): User's Plex account ID.
-            protected (False): Unknown (possibly SSL enabled?)
-            recommendationsPlaylistId (str): Unknown
-            restricted (str): Unknown
-            thumb (str): Link to the users avatar
-            title (str): Seems to be an aliad for username
-            username (str): User's username
+            protected (False): Unknown (possibly SSL enabled?).
+            recommendationsPlaylistId (str): Unknown.
+            restricted (str): Unknown.
+            thumb (str): Link to the users avatar.
+            title (str): Seems to be an aliad for username.
+            username (str): User's username.
     """
     TAG = 'User'
     key = 'https://plex.tv/api/users/'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
         self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
@@ -205,6 +211,8 @@ class MyPlexResource(PlexObject):
         for the data presented here can be found at: https://plex.tv/api/resources?includeHttps=1
 
         Attributes:
+            TAG (str): 'Device'
+            key (str): 'https://plex.tv/api/resources?includeHttps=1'
             accessToken (str): This resources accesstoken.
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of :class:`~myplex.ResourceConnection` objects
@@ -300,6 +308,7 @@ class ResourceConnection(PlexObject):
         :class:`~myplex.MyPlexResource` objects.
 
         Attributes:
+            TAG (str): 'Connection'
             address (str): Local IP address
             httpuri (str): Full local address
             local (bool): True if local
@@ -326,6 +335,8 @@ class MyPlexDevice(PlexObject):
         https://plex.tv/devices.xml
 
         Attributes:
+            TAG (str): 'Device'
+            key (str): 'https://plex.tv/devices.xml'
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of connection URIs for the device.
             device (str): Best guess on the type of device this is (Linux, iPad, AFTB, etc).

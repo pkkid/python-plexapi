@@ -19,6 +19,7 @@
    modules/library
    modules/media
    modules/myplex
+   modules/notify
    modules/photo
    modules/playlist
    modules/playqueue

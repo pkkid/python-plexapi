@@ -16,13 +16,16 @@ class PlexClient(PlexObject):
         https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 
         Parameters:
+            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional).
+            data (ElementTree): Response from PlexServer used to build this object (optional).
+            initpath (str): Path used to generate data.
             baseurl (str): HTTP URL to connect dirrectly to this client.
             token (str): X-Plex-Token used for authenication (optional).
             session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-
+            
         Attributes:
+            TAG (str): 'Player'
+            key (str): '/resources'
             baseurl (str): HTTP address of the client
             device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
             deviceClass (str): Device class (pc, phone, etc).

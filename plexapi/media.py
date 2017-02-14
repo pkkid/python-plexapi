@@ -10,13 +10,8 @@ class Media(PlexObject):
     """ Container object for all MediaPart objects. Provides useful data about the
         video this media belong to such as video framerate, resolution, etc.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
-            data (ElementTree): Response from PlexServer used to build this object.
-            initpath (str): Relative path requested when retrieving specified `data`.
-            video (:class:`~plexapi.video.Video`): Video this media belongs to.
-
         Attributes:
+            TAG (str): 'Media'
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
             video (str): Video this media belongs to.
@@ -39,6 +34,7 @@ class Media(PlexObject):
     TAG = 'Media'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.aspectRatio = cast(float, data.attrib.get('aspectRatio'))
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
@@ -62,6 +58,7 @@ class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
         
         Attributes:
+            TAG (str): 'Part'
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
             media (:class:`~plexapi.media.Media`): Media object this part belongs to.
@@ -76,6 +73,7 @@ class MediaPart(PlexObject):
     TAG = 'Part'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.container = data.attrib.get('container')
         self.duration = cast(int, data.attrib.get('duration'))
@@ -95,14 +93,17 @@ class MediaPart(PlexObject):
 
     @property
     def videoStreams(self):
+        """ Returns a list of :class:`~plexapi.media.VideoStream` objects in this MediaPart. """
         return [s for s in self.streams if s.streamType == VideoStream.STREAMTYPE]
 
     @property
     def audioStreams(self):
+        """ Returns a list of :class:`~plexapi.media.AudioStream` objects in this MediaPart. """
         return [s for s in self.streams if s.streamType == AudioStream.STREAMTYPE]
 
     @property
     def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [s for s in self.streams if s.streamType == SubtitleStream.STREAMTYPE]
 
 
@@ -124,8 +125,8 @@ class MediaPartStream(PlexObject):
                 2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
             type (int): Alias for streamType.
     """
-
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.codec = data.attrib.get('codec')
         self.codecID = data.attrib.get('codecID')
@@ -151,6 +152,8 @@ class VideoStream(MediaPartStream):
     """ Respresents a video stream within a :class:`~plexapi.media.MediaPart`.
 
         Attributes:
+            TAG (str): 'Stream'
+            STREAMTYPE (int): 1
             bitDepth (int): Bit depth (ex: 8).
             bitrate (int): Bitrate (ex: 1169)
             cabac (int): Unknown
@@ -172,6 +175,7 @@ class VideoStream(MediaPartStream):
     STREAMTYPE = 1
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         super(VideoStream, self)._loadData(data)
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrate = cast(int, data.attrib.get('bitrate'))
@@ -196,6 +200,8 @@ class AudioStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
 
         Attributes:
+            TAG (str): 'Stream'
+            STREAMTYPE (int): 2
             audioChannelLayout (str): Audio channel layout (ex: 5.1(side)).
             bitDepth (int): Bit depth (ex: 16).
             bitrate (int): Audio bitrate (ex: 448).
@@ -210,6 +216,7 @@ class AudioStream(MediaPartStream):
     STREAMTYPE = 2
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         super(AudioStream, self)._loadData(data)
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
@@ -227,6 +234,8 @@ class SubtitleStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
         
         Attributes:
+            TAG (str): 'Stream'
+            STREAMTYPE (int): 3
             format (str): Subtitle format (ex: srt).
             key (str): Key of this subtitle stream (ex: /library/streams/212284).
             title (str): Title of this subtitle stream.
@@ -235,6 +244,7 @@ class SubtitleStream(MediaPartStream):
     STREAMTYPE = 3
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
         self.format = data.attrib.get('format')
         self.key = data.attrib.get('key')
@@ -244,11 +254,15 @@ class SubtitleStream(MediaPartStream):
 @utils.registerPlexObject
 class TranscodeSession(PlexObject):
     """ Represents a current transcode session. 
-        TODO: Document this.
+
+        Attributes:
+            TAG (str): 'TranscodeSession'
+            TODO: Document this.
     """
     TAG = 'TranscodeSession'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
@@ -273,10 +287,6 @@ class MediaTag(PlexObject):
         items or navigating the metadata of media items in your library. Tags are
         the construct used for things such as Country, Director, Genre, etc.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-
         Attributes:
             server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
             id (id): Tag ID (This seems meaningless except to use it as a unique id).
@@ -295,6 +305,7 @@ class MediaTag(PlexObject):
                 * thumb (str): URL to thumbnail image.
     """
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = cast(int, data.attrib.get('id'))
         self.role = data.attrib.get('role')
@@ -318,51 +329,110 @@ class MediaTag(PlexObject):
 
 @utils.registerPlexObject
 class Collection(MediaTag):
+    """ Represents a single Collection media tag.
+        
+        Attributes:
+            TAG (str): 'Collection'
+            FILTER (str): 'collection'
+    """
     TAG = 'Collection'
     FILTER = 'collection'
 
 @utils.registerPlexObject
 class Country(MediaTag):
+    """ Represents a single Country media tag.
+        
+        Attributes:
+            TAG (str): 'Country'
+            FILTER (str): 'country'
+    """
     TAG = 'Country'
     FILTER = 'country'
 
 @utils.registerPlexObject
 class Director(MediaTag):
+    """ Represents a single Director media tag.
+        
+        Attributes:
+            TAG (str): 'Director'
+            FILTER (str): 'director'
+    """
     TAG = 'Director'
     FILTER = 'director'
 
 @utils.registerPlexObject
 class Genre(MediaTag):
+    """ Represents a single Genre media tag.
+        
+        Attributes:
+            TAG (str): 'Genre'
+            FILTER (str): 'genre'
+    """
     TAG = 'Genre'
     FILTER = 'genre'
 
 @utils.registerPlexObject
 class Mood(MediaTag):
+    """ Represents a single Mood media tag.
+        
+        Attributes:
+            TAG (str): 'Mood'
+            FILTER (str): 'mood'
+    """
     TAG = 'Mood'
     FILTER = 'mood'
 
 @utils.registerPlexObject
 class Producer(MediaTag):
+    """ Represents a single Producer media tag.
+        
+        Attributes:
+            TAG (str): 'Producer'
+            FILTER (str): 'producer'
+    """
     TAG = 'Producer'
     FILTER = 'producer'
 
 @utils.registerPlexObject
 class Role(MediaTag):
+    """ Represents a single Role (actor/actress) media tag.
+        
+        Attributes:
+            TAG (str): 'Role'
+            FILTER (str): 'role'
+    """
     TAG = 'Role'
     FILTER = 'role'
 
 @utils.registerPlexObject
 class Similar(MediaTag):
+    """ Represents a single Similar media tag.
+        
+        Attributes:
+            TAG (str): 'Similar'
+            FILTER (str): 'similar'
+    """
     TAG = 'Similar'
     FILTER = 'similar'
 
 @utils.registerPlexObject
 class Writer(MediaTag):
+    """ Represents a single Writer media tag.
+        
+        Attributes:
+            TAG (str): 'Writer'
+            FILTER (str): 'writer'
+    """
     TAG = 'Writer'
     FILTER = 'writer'
 
 @utils.registerPlexObject
 class Field(PlexObject):
+    """ Represents a single Field.
+        
+        Attributes:
+            TAG (str): 'Field'
+    """
     TAG = 'Field'
 
     def _loadData(self, data):

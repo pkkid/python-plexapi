@@ -265,7 +265,7 @@ class Show(Video):
                 episode (int): Episode number (default:None; required if title not specified).
 
            Raises:
-                ValueError: If season and episode is missing.
+                BadRequest: If season and episode is missing.
                 NotFound: If the episode is missing.
         """
         if title:
@@ -276,7 +276,7 @@ class Show(Video):
             if results:
                 return results[0]
             raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
-        raise TypeError('Missing argument: title or season and episode are required')
+        raise BadRequest('Missing argument: title or season and episode are required')
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
@@ -361,13 +361,9 @@ class Season(Video):
     def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
 
-           Parameters:
+            Parameters:
                 title (str): Title of the episode to return.
                 episode (int): Episode number (default:None; required if title not specified).
-
-           Raises:
-                TypeError: If title and episode is missing.
-                NotFound: If that episode cant be found.
         """
         if not title and not episode:
             raise BadRequest('Missing argument, you need to use title or episode.')

@@ -8,10 +8,14 @@ from plexapi.utils import cast, toDatetime
 
 @utils.registerPlexObject
 class Playlist(PlexPartialObject, Playable):
+    """ Represents a single Playlist object. 
+        # TODO: Document attributes
+    """
     TAG = 'Playlist'
     TYPE = 'playlist'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
         self.addedAt = toDatetime(data.attrib.get('addedAt'))
         self.composite = data.attrib.get('composite')  # url to thumbnail
@@ -35,7 +39,7 @@ class Playlist(PlexPartialObject, Playable):
         return self.fetchItems(key)
 
     def addItems(self, items):
-        """Add items to a playlist."""
+        """ Add items to a playlist. """
         if not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
@@ -51,24 +55,24 @@ class Playlist(PlexPartialObject, Playable):
         return self._server.query(key, method=self._server._session.put)
 
     def removeItem(self, item):
-        """Remove a file from a playlist."""
+        """ Remove a file from a playlist. """
         key = '%s/items/%s' % (self.key, item.playlistItemID)
         return self._server.query(key, method=self._server._session.delete)
 
     def moveItem(self, item, after=None):
-        """Move a to a new position in playlist."""
+        """ Move a to a new position in playlist. """
         key = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
             key += '?after=%s' % after.playlistItemID
         return self._server.query(key, method=self._server._session.put)
 
     def edit(self, title=None, summary=None):
-        """Edit playlist."""
+        """ Edit playlist. """
         key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
         return self._server.query(key, method=self._server._session.put)
 
     def delete(self):
-        """Delete playlist."""
+        """ Delete playlist. """
         return self._server.query(self.key, method=self._server._session.delete)
 
     def playQueue(self, *args, **kwargs):
@@ -77,7 +81,7 @@ class Playlist(PlexPartialObject, Playable):
 
     @classmethod
     def create(cls, server, title, items):
-        """Create a playlist."""
+        """ Create a playlist. """
         if not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
