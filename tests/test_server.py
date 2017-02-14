@@ -129,7 +129,8 @@ def test_server_Server_session():
             self.plexapi_session_test = True
 
     plex = PlexServer('http://138.68.157.5:32400',
-        os.environ.get('PLEX_TEST_TOKEN'), session=MySession())
+                      os.environ.get('PLEX_TEST_TOKEN'),
+                      session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
     pl = plex.playlists()
     assert hasattr(pl[0]._server._session, 'plexapi_session_test')
@@ -142,9 +143,10 @@ def test_server_token_in_headers(pms):
     assert 'X-Plex-Token' in h and len(h['X-Plex-Token'])
 
 
-def _test_server_createPlayQueue():
-    # see test_playlists.py
-    pass
+def test_server_createPlayQueue(pms, a_movie):
+    pq = pms.createPlayQueue(a_movie, **dict(shuffle=1, repeat=1))
+    assert 'shuffle=1' and 'repeat=1' in pq._initpath
+    assert pq.playQueueShuffled is True
 
 
 def _test_server_createPlaylist():
