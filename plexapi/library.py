@@ -121,12 +121,18 @@ class Library(PlexObject):
         """
         self._server.query('/library/optimize')
 
-    def refresh(self):
-        """ Refresh the metadata for the entire library. This will fetch fresh metadata for
-            all contents in the library, including items that already have metadata. See
-            See :func:`~plexapi.base.PlexPartialObject.refresh` for more details.
-        """
+    def update(self):
+        """ Scan this library for new items."""
         self._server.query('/library/sections/all/refresh')
+
+    def cancelUpdate(self):
+        """Cancel a library update. """
+        self._server.query('/library/sections/all/refresh', method=self._server._session.delete)
+
+    def refresh(self):
+        """Forces a download of fresh media information from the internet.
+           This can take a long time. Any locked fields are not modified."""
+        self._server.query('/library/sections/all/refresh?force=1')
 
 
 class LibrarySection(PlexObject):
@@ -229,12 +235,20 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/emptyTrash' % self.key
         self._server.query(key)
 
-    def refresh(self):
-        """ Refresh the metadata for the entire library. This will fetch fresh metadata for
-            all contents in the library, including items that already have metadata. See
-            See :func:`~plexapi.base.PlexPartialObject.refresh` for more details.
-        """
+    def update(self):
+        """Scan this section for new media. """
         key = '/library/sections/%s/refresh' % self.key
+        self._server.query(key)
+
+    def cancelUpdate(self):
+        """Cancel update of this Library Section."""
+        key = '/library/sections/%s/refresh' % self.key
+        self._server.query(key, method=self._server._session.delete)
+
+    def refresh(self):
+        """Forces a download of fresh media information from the internet.
+           This can take a long time. Any locked fields are not modified."""
+        key = '/library/sections/%s/refresh?force=1' % self.key
         self._server.query(key)
 
     def listChoices(self, category, libtype=None, **kwargs):
