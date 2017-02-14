@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, pytest
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 
 
 def test_video_Movie(a_movie_section):
@@ -377,7 +377,7 @@ def test_video_Show_section(a_show):
 def test_video_Episode(a_show):
     pilot = a_show.episode('Pilot')
     assert pilot == a_show.episode(season=1, episode=1)
-    with pytest.raises(TypeError):
+    with pytest.raises(BadRequest):
         a_show.episode()
     with pytest.raises(NotFound):
         a_show.episode(season=1337, episode=1337)
