@@ -49,7 +49,7 @@ def test_video_Movie_download(monkeydownload, tmpdir, a_movie):
 def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.location == '/media/movies/cars/cars.mp4'
-    assert str(m.addedAt.date()) == '2017-01-17'
+    assert m.addedAt > datetime(2017, 1, 1)
     assert '/library/metadata/2/art/' in m.art
     assert m.audienceRating == 7.9
     assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
@@ -91,7 +91,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.titleSort == 'Cars'
     assert m.transcodeSession is None
     assert m.type == 'movie'
-    assert str(m.updatedAt.date()) == '2017-01-17'
+    assert m.updatedAt > datetime(2017, 1, 1)
     assert str(m.userRating) == '__NA__'
     assert m.username is None
     # Assign 0 m.videoStreams
@@ -238,7 +238,7 @@ def test_video_Show(a_show):
 
 def test_video_Show_attrs(a_show):
     m = a_show
-    assert str(m.addedAt.date()) == '2017-01-17'
+    assert m.addedAt > datetime(2017, 1, 1)
     assert '/library/metadata/12/art/' in m.art
     assert '/library/metadata/12/banner/' in m.banner
     assert m.childCount == 2
@@ -251,7 +251,7 @@ def test_video_Show_attrs(a_show):
     assert m.initpath == '/library/metadata/12'
     assert m.index == '1'
     assert m.key == '/library/metadata/12'
-    assert str(m.lastViewedAt.date()) == '2017-01-22'
+    assert m.lastViewedAt > datetime(2017, 1, 1)
     assert m.leafCount == 9
     assert m.listType == 'video'
     assert m.location == '/media/tvshows/the 100'
@@ -268,7 +268,7 @@ def test_video_Show_attrs(a_show):
     assert m.title == 'The 100'
     assert m.titleSort == '100'
     assert m.type == 'show'
-    assert str(m.updatedAt.date()) == '2017-01-22'
+    assert m.updatedAt > datetime(2017, 1, 1)
     assert m.viewCount == 1
     assert m.viewedLeafCount == 1
     assert m.year == 2014
@@ -379,7 +379,7 @@ def test_video_Episode_analyze(a_tv_section):
 
 def test_video_Episode_attrs(a_episode):
     ep = a_episode
-    assert str(ep.addedAt.date()) == '2017-01-17'
+    assert ep.addedAt.date() > datetime(2017, 1, 1)
     assert ep.contentRating == 'TV-14'
     assert [i.tag for i in ep.directors] == ['Bharat Nalluri']
     assert ep.duration == 170859
@@ -406,7 +406,7 @@ def test_video_Episode_attrs(a_episode):
     assert ep.titleSort == 'Pilot'
     assert ep.transcodeSession is None
     assert ep.type == 'episode'
-    assert str(ep.updatedAt.date()) == '2017-01-22'
+    assert ep.updatedAt > datetime(2017, 1, 1)
     assert ep.username is None
     assert ep.viewCount == 1
     assert ep.viewOffset == 0
@@ -451,11 +451,11 @@ def test_video_Season(a_show):
 
 def test_video_Season_attrs(a_show):
     m = a_show.season('Season 1')
-    assert str(m.addedAt.date()) == '2017-01-17'
+    assert m.addedAt > datetime(2017, 1, 1)
     assert m.index == 1
     assert m.initpath == '/library/metadata/12/children'
     assert m.key == '/library/metadata/13'
-    assert str(m.lastViewedAt.date()) == '2017-01-22'
+    assert m.lastViewedAt > datetime(2017, 1, 1)
     assert m.leafCount == 8
     assert m.listType == 'video'
     assert m.parentKey == '/library/metadata/12'
@@ -469,7 +469,7 @@ def test_video_Season_attrs(a_show):
     assert m.title == 'Season 1'
     assert m.titleSort == 'Season 1'
     assert m.type == 'season'
-    assert str(m.updatedAt.date()) == '2017-01-22'
+    assert m.updatedAt > datetime(2017, 1, 1)
     assert m.viewCount == 1
     assert m.viewedLeafCount == 1
     assert m.seasonNumber == 1
