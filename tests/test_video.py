@@ -379,7 +379,7 @@ def test_video_Episode_analyze(a_tv_section):
 
 def test_video_Episode_attrs(a_episode):
     ep = a_episode
-    assert ep.addedAt.date() > datetime(2017, 1, 1)
+    assert ep.addedAt > datetime(2017, 1, 1)
     assert ep.contentRating == 'TV-14'
     assert [i.tag for i in ep.directors] == ['Bharat Nalluri']
     assert ep.duration == 170859
