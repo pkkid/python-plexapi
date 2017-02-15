@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, pytest
+from datetime import datetime
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -59,7 +60,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.locations == ['/media/movies/cars/cars.mp4']
     assert str(m.addedAt.date()) == '2017-01-17'
-    assert m.art == '/library/metadata/2/art/1484690715'
+    assert '/library/metadata/2/art/' in m.art
     assert m.audienceRating == 7.9
     assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     # Assign 0 m.audioStreams
@@ -76,7 +77,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
     assert m._initpath == '/library/metadata/2'
     assert m.key == '/library/metadata/2'
-    #assert str(m.lastViewedAt) == '2017-01-30 22:19:38' # TODO: fix me
+    assert m.lastViewedAt > datetime(2017, 1, 1) 
     assert m.librarySectionID == '1'
     assert m.listType == 'video'
     # Assign 0 m.media
@@ -96,7 +97,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.studio == 'Walt Disney Pictures'
     assert m.summary == u"Lightning McQueen, a hotshot rookie race car driven to succeed, discovers that life is about the journey, not the finish line, when he finds himself unexpectedly detoured in the sleepy Route 66 town of Radiator Springs. On route across the country to the big Piston Cup Championship in California to compete against two seasoned pros, McQueen gets to know the town's offbeat characters."
     assert m.tagline == "Ahhh... it's got that new movie smell."
-    assert m.thumb == '/library/metadata/2/thumb/1484690715'
+    assert '/library/metadata/2/thumb/' in m.thumb
     assert m.title == 'Cars'
     assert m.titleSort == 'Cars'
     assert m.transcodeSession is None
