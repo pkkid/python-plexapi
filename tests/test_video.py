@@ -86,7 +86,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.studio == 'Walt Disney Pictures'
     assert m.summary == u"Lightning McQueen, a hotshot rookie race car driven to succeed, discovers that life is about the journey, not the finish line, when he finds himself unexpectedly detoured in the sleepy Route 66 town of Radiator Springs. On route across the country to the big Piston Cup Championship in California to compete against two seasoned pros, McQueen gets to know the town's offbeat characters."
     assert m.tagline == "Ahhh... it's got that new movie smell."
-    assert m.thumb == '/library/metadata/2/thumb/1484690715'
+    assert '/library/metadata/2/thumb/' in m.thumb
     assert m.title == 'Cars'
     assert m.titleSort == 'Cars'
     assert m.transcodeSession is None
