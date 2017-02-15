@@ -66,7 +66,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
     assert m.initpath == '/library/metadata/2'
     assert m.key == '/library/metadata/2'
-    assert str(m.lastViewedAt) > datetime(2017, 2, 1) 
+    assert m.lastViewedAt > datetime(2017, 2, 1) 
     assert m.librarySectionID == '1'
     assert m.listType == 'video'
     # Assign 0 m.media
