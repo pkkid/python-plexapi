@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, pytest
+from datetime import datetime
 from plexapi.exceptions import NotFound
 
 
@@ -49,7 +50,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.location == '/media/movies/cars/cars.mp4'
     assert str(m.addedAt.date()) == '2017-01-17'
-    assert m.art == '/library/metadata/2/art/1487119158'
+    assert '/library/metadata/2/art/' in m.art
     assert m.audienceRating == 7.9
     assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     # Assign 0 m.audioStreams
@@ -65,7 +66,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     assert m.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
     assert m.initpath == '/library/metadata/2'
     assert m.key == '/library/metadata/2'
-    #assert str(m.lastViewedAt) == '2017-01-30 22:19:38' # TODO: fix me
+    assert str(m.lastViewedAt) > datetime(2017, 2, 1) 
     assert m.librarySectionID == '1'
     assert m.listType == 'video'
     # Assign 0 m.media
