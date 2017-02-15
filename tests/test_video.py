@@ -49,7 +49,7 @@ def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
     m = a_movie_section.get('Cars')
     assert m.location == '/media/movies/cars/cars.mp4'
     assert str(m.addedAt.date()) == '2017-01-17'
-    assert m.art == '/library/metadata/2/art/1484690715'
+    assert m.art == '/library/metadata/2/art/1487119158'
     assert m.audienceRating == 7.9
     assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     # Assign 0 m.audioStreams
