@@ -249,11 +249,6 @@ class PlexPartialObject(PlexObject):
         for the object. This object will allow you to assume each object is complete,
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
-
-        Attributes:
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
     """
     def __eq__(self, other):
         return other is not None and self.key == other.key
@@ -344,13 +339,13 @@ class Playable(object):
         Albums which are all not playable.
 
         Attributes:
-            player (:class:`~plexapi.client.PlexClient`): Client object playing this item (for active sessions).
-            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             sessionKey (int): Active session key.
+            username (str): Username of the person playing this item (for active sessions).
+            players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
             transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
-            username (str): Username of the person playing this item (for active sessions).
             viewedAt (datetime): Datetime item was last viewed (history).
+            playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
     """
     def _loadData(self, data):
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session

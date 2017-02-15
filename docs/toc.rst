@@ -12,12 +12,14 @@
    :caption: Modules
 
    modules/audio
+   modules/base
    modules/client
    modules/config
    modules/exceptions
    modules/library
    modules/media
    modules/myplex
+   modules/notify
    modules/photo
    modules/playlist
    modules/playqueue

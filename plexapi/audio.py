@@ -7,11 +7,6 @@ class Audio(PlexPartialObject):
     """ Base class for audio :class:`~plexapi.audio.Artist`, :class:`~plexapi.audio.Album`
         and :class:`~plexapi.audio.Track` objects.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
             index (sting): Index Number (often the track number).
@@ -57,12 +52,9 @@ class Audio(PlexPartialObject):
 class Artist(Audio):
     """ Represents a single audio artist.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'artist'
             art (str): Artist artwork (/library/metadata/<ratingkey>/art/<artid>)
             countries (list): List of :class:`~plexapi.media.Country` objects this artist respresents.
             genres (list): List of :class:`~plexapi.media.Genre` objects this artist respresents.
@@ -141,12 +133,9 @@ class Artist(Audio):
 class Album(Audio):
     """ Represents a single audio album.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'album'
             art (str): Album artwork (/library/metadata/<ratingkey>/art/<artid>)
             genres (list): List of :class:`~plexapi.media.Genre` objects this album respresents.
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -220,12 +209,9 @@ class Album(Audio):
 class Track(Audio, Playable):
     """ Represents a single audio track.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): XML response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'track'
             art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (TYPE): Unknown
             duration (int): Length of this album in seconds.

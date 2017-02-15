@@ -8,12 +8,9 @@ from plexapi.exceptions import NotFound
 class Photoalbum(PlexPartialObject):
     """ Represents a photoalbum (collection of photos).
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'photo'
             addedAt (datetime): Datetime this item was added to the library.
             art (str): Photo art (/library/metadata/<ratingkey>/art/<artid>)
             composite (str): Unknown
@@ -66,12 +63,9 @@ class Photoalbum(PlexPartialObject):
 class Photo(PlexPartialObject):
     """ Represents a single photo.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            TAG (str): 'Photo'
+            TYPE (str): 'photo'
             addedAt (datetime): Datetime this item was added to the library.
             index (sting): Index number of this photo.
             key (str): API URL (/library/metadata/<ratingkey>).

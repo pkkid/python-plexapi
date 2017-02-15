@@ -25,6 +25,7 @@ class Video(PlexPartialObject):
             viewCount (int): Count of times this item was accessed.
     """
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -39,6 +40,11 @@ class Video(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+
+    @property
+    def isWatched(self):
+        """ Returns True if this video is watched. """
+        return bool(self.viewCount > 0)
 
     @property
     def thumbUrl(self):
@@ -64,6 +70,8 @@ class Movie(Video, Playable):
     """ Represents a single Movie.
         
         Attributes:
+            TAG (str): 'Diectory'
+            TYPE (str): 'movie'
             art (str): Key to movie artwork (/library/metadata/<ratingkey>/art/<artid>)
             audienceRating (float): Audience rating (usually from Rotten Tomatoes).
             audienceRatingImage (str): Key to audience rating image (rottentomatoes://image.rating.spilled)
@@ -81,13 +89,21 @@ class Movie(Video, Playable):
             userRating (float): User rating (2.0; 8.0).
             viewOffset (int): View offset in milliseconds.
             year (int): Year movie was released.
-            
-            # TODO: Finish documenting plexapi.video.Movie
+            collections (List<:class:`~plexapi.media.Collection`>): List of collections this media belongs.
+            countries (List<:class:`~plexapi.media.Country`>): List of countries objects.
+            directors (List<:class:`~plexapi.media.Director`>): List of director objects.
+            fields (List<:class:`~plexapi.media.Field`>): List of field objects.
+            genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
+            media (List<:class:`~plexapi.media.Media`>): List of media objects.
+            producers (List<:class:`~plexapi.media.Producer`>): List of producers objects.
+            roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+            writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
     """
     TAG = 'Video'
     TYPE = 'movie'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.art = data.attrib.get('art')
@@ -120,11 +136,8 @@ class Movie(Video, Playable):
 
     @property
     def actors(self):
+        """ Alias to self.roles. """
         return self.roles
-
-    @property
-    def isWatched(self):
-        return bool(self.viewCount > 0)
 
     @property
     def locations(self):
@@ -134,6 +147,14 @@ class Movie(Video, Playable):
         return [p.file for p in self.iterParts() if p]
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """ Download video files to specified directory.
+    
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_orginal_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+        """
         downloaded = []
         locs = [i for i in self.iterParts() if i]
         for loc in locs:
@@ -154,12 +175,36 @@ class Movie(Video, Playable):
 
 @utils.registerPlexObject
 class Show(Video):
+    """ Represents a single Show (including all seasons and episodes).
+
+        Attributes:
+            TAG (str): 'Diectory'
+            TYPE (str): 'show'
+            art (str): Key to show artwork (/library/metadata/<ratingkey>/art/<artid>)
+            banner (str): Key to banner artwork (/library/metadata/<ratingkey>/art/<artid>)
+            childCount (int): Unknown.
+            contentRating (str) Content rating (PG-13; NR; TV-G).
+            duration (int): Duration of show in milliseconds.
+            guid (str): Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+            index (int): Plex index (?)
+            leafCount (int): Unknown.
+            locations (list<str>): List of locations paths.
+            originallyAvailableAt (datetime): Datetime show was released.
+            rating (float): Show rating (7.9; 9.8; 8.1).
+            studio (str): Studio that created show (Di Bonaventura Pictures; 21 Laps Entertainment).
+            theme (str): Key to theme resource (/library/metadata/<ratingkey>/theme/<themeid>)
+            viewedLeafCount (int): Unknown.
+            year (int): Year the show was released.
+            genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
+            roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+    """
     TAG = 'Directory'
     TYPE = 'show'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
-        # fix the key if this was loaded from search..
+        # fix key if loaded from search
         self.key = self.key.replace('/children', '')
         self.art = data.attrib.get('art')
         self.banner = data.attrib.get('banner')
@@ -182,14 +227,16 @@ class Show(Video):
 
     @property
     def actors(self):
+        """ Alias to self.roles. """
         return self.roles
 
     @property
     def isWatched(self):
+        """ Returns True if this show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     def seasons(self, **kwargs):
-        """Returns a list of Season."""
+        """ Returns a list of :class:`~plexapi.video.Season` objects. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key, **kwargs)
 
@@ -205,33 +252,21 @@ class Show(Video):
         return self.fetchItem(key, etag='Directory', title__iexact=title)
 
     def episodes(self, **kwargs):
-        """ Returs a list of Episode """
+        """ Returns a list of :class:`~plexapi.video.Episode` objects. """
         key = '/library/metadata/%s/allLeaves' % self.ratingKey
         return self.fetchItems(key, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
-        """Find a episode using a title or season and episode.
+        """ Find a episode using a title or season and episode.
 
-           Note:
-                Both season and episode is required if title is missing.
-
-           Args:
-                title (str): Default None
-                season (int): Season number, default None
-                episode (int): Episode number, default None
+           Parameters:
+                title (str): Title of the episode to return
+                season (int): Season number (default:None; required if title not specified).
+                episode (int): Episode number (default:None; required if title not specified).
 
            Raises:
-                ValueError: If season and episode is missing.
+                BadRequest: If season and episode is missing.
                 NotFound: If the episode is missing.
-
-           Returns:
-                Episode
-
-           Examples:
-                >>> plex.search('The blacklist')[0].episode(season=1, episode=1)
-                <Episode:116263:The.Freelancer>
-                >>> plex.search('The blacklist')[0].episode('The Freelancer')
-                <Episode:116263:The.Freelancer>
         """
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
@@ -241,25 +276,29 @@ class Show(Video):
             if results:
                 return results[0]
             raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
-        raise TypeError('Missing argument: title or season and episode are required')
+        raise BadRequest('Missing argument: title or season and episode are required')
 
     def watched(self):
-        """Return a list of watched episodes"""
+        """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(viewCount__gt=0)
 
     def unwatched(self):
-        """Return a list of unwatched episodes"""
+        """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(viewCount=0)
 
-    def get(self, title):
-        """Get a Episode with a title.
-
-           Args:
-                title (str): fx Secret santa
-        """
-        return self.episode(title)
+    def get(self, title=None, season=None, episode=None):
+        """ Alias to :func:`~plexapi.video.Show.episode()`. """
+        return self.episode(title, season, episode)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """ Download video files to specified directory.
+    
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_orginal_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+        """
         downloaded = []
         for ep in self.episodes():
             dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
@@ -270,16 +309,25 @@ class Show(Video):
 
 @utils.registerPlexObject
 class Season(Video):
+    """ Represents a single Show Season (including all episodes).
+
+        Attributes:
+            TAG (str): 'Diectory'
+            TYPE (str): 'season'
+            leafCount (int): Number of episodes in season.
+            index (int): Season number.
+            parentKey (str): Key to this seasons :class:`~plexapi.video.Show`.
+            parentRatingKey (int): Unique key for this seasons :class:`~plexapi.video.Show`.
+            parentTitle (str): Title of this seasons :class:`~plexapi.video.Show`.
+            viewedLeafCount (int): Number of watched episodes in season.
+    """
     TAG = 'Directory'
     TYPE = 'season'
 
     def _loadData(self, data):
-        """Used to set the attributes
-
-        Args:
-            data (Element): Usually built from server.query
-        """
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
+        # fix key if loaded from search
         self.key = self.key.replace('/children', '')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.index = utils.cast(int, data.attrib.get('index'))
@@ -297,61 +345,58 @@ class Season(Video):
 
     @property
     def isWatched(self):
+        """ Returns True if this season is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     @property
     def seasonNumber(self):
-        """Returns season number."""
+        """ Returns season number. """
         return self.index
 
     def episodes(self, **kwargs):
-        """ Returs a list of Episode. """
+        """ Returns a list of :class:`~plexapi.video.Episode` objects. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key, **kwargs)
 
-    def episode(self, title=None, num=None):
+    def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
 
-           Parameters:
+            Parameters:
                 title (str): Title of the episode to return.
-                num (int): Number of the episode to return (if title not specified).
-
-           Raises:
-                TypeError: If title and episode is missing.
-                NotFound: If that episode cant be found.
-
-           Examples:
-                >>> plex.search('The blacklist').season(1).episode(episode=1)
-                <Episode:116263:The.Freelancer>
-                >>> plex.search('The blacklist').season(1).episode('The Freelancer')
-                <Episode:116263:The.Freelancer>
-
+                episode (int): Episode number (default:None; required if title not specified).
         """
-        if not title and not num:
+        if not title and not episode:
             raise BadRequest('Missing argument, you need to use title or episode.')
-        
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
             return self.fetchItem(key, title=title)
-        return self.fetchItem(key, seasonNumber=self.index, index=num)
+        return self.fetchItem(key, seasonNumber=self.index, index=episode)
 
-    def get(self, title):
-        """ Alias for self.episode. """
-        return self.episode(title)
+    def get(self, title=None, episode=None):
+        """ Alias to :func:`~plexapi.video.Season.episode()`. """
+        return self.episode(title, episode)
 
     def show(self):
-        """Return this seasons show."""
+        """ Return this seasons :func:`~plexapi.video.Show`.. """
         return self.fetchItem(self.parentKey)
 
     def watched(self):
-        """Returns a list of watched Episode"""
+        """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(watched=True)
 
     def unwatched(self):
-        """Returns a list of unwatched Episode"""
+        """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(watched=False)
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+        """ Download video files to specified directory.
+    
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_orginal_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+        """
         downloaded = []
         for ep in self.episodes():
             dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
@@ -362,15 +407,40 @@ class Season(Video):
 
 @utils.registerPlexObject
 class Episode(Video, Playable):
+    """ Represents a single Shows Episode.
+        
+        Attributes:
+            TAG (str): 'Diectory'
+            TYPE (str): 'episode'
+            art (str): Key to episode artwork (/library/metadata/<ratingkey>/art/<artid>)
+            chapterSource (str): Unknown (media).
+            contentRating (str) Content rating (PG-13; NR; TV-G).
+            duration (int): Duration of episode in milliseconds.
+            grandparentArt (str): Key to this episodes :class:`~plexapi.video.Show` artwork.
+            grandparentKey (str): Key to this episodes :class:`~plexapi.video.Show`.
+            grandparentRatingKey (str): Unique key for this episodes :class:`~plexapi.video.Show`.
+            grandparentTheme (str): Key to this episodes :class:`~plexapi.video.Show` theme.
+            grandparentThumb (str): Key to this episodes :class:`~plexapi.video.Show` thumb.
+            grandparentTitle (str): Title of this episodes :class:`~plexapi.video.Show`.
+            guid (str): Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+            index (int): Episode number.
+            originallyAvailableAt (datetime): Datetime episode was released.
+            parentIndex (str): Season number of episode.
+            parentKey (str): Key to this episodes :class:`~plexapi.video.Season`.
+            parentRatingKey (int): Unique key for this episodes :class:`~plexapi.video.Season`.
+            parentThumb (str): Key to this episodes thumbnail.
+            rating (float): Movie rating (7.9; 9.8; 8.1).
+            viewOffset (int): View offset in milliseconds.
+            year (int): Year episode was released.
+            directors (List<:class:`~plexapi.media.Director`>): List of director objects.
+            media (List<:class:`~plexapi.media.Media`>): List of media objects.
+            writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
+    """
     TAG = 'Video'
     TYPE = 'episode'
 
     def _loadData(self, data):
-        """Used to set the attributes
-
-            Args:
-                data (Element): Usually built from server.query
-        """
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self._seasonNumber = None  # cached season number
@@ -405,14 +475,21 @@ class Episode(Video, Playable):
             '%s-s%se%s' % (self.grandparentTitle.replace(' ','-')[:20], self.seasonNumber, self.index),
         ] if p])
 
+    def _prettyfilename(self):
+        """ Returns a human friendly filename. """
+        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'),
+            str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
+
     @property
-    def isWatched(self):
-        """Returns True if watched, False if not."""
-        return bool(self.viewCount > 0)
+    def locations(self):
+        """ This does not exist in plex xml response but is added to have a common
+            interface to get the location of the Movie/Show
+        """
+        return [part.file for part in self.iterParts() if part]
 
     @property
     def seasonNumber(self):
-        """Return this episode seasonnumber."""
+        """ Returns this episodes season number. """
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
@@ -424,20 +501,9 @@ class Episode(Video, Playable):
             return self._server.url(self.grandparentThumb)
 
     def season(self):
-        """Return this episode Season"""
+        """" Return this episodes :func:`~plexapi.video.Season`.. """
         return self.fetchItem(self.parentKey)
 
     def show(self):
-        """Return this episodes Show"""
+        """" Return this episodes :func:`~plexapi.video.Show`.. """
         return self.fetchItem(self.grandparentKey)
-
-    @property
-    def locations(self):
-        """ This does not exist in plex xml response but is added to have a common
-            interface to get the location of the Movie/Show
-        """
-        return [p.file for p in self.iterParts() if p]
-
-    def _prettyfilename(self):
-        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'),
-            str(self.seasonNumber).zfill(2), str(self.index).zfill(2))

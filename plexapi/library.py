@@ -11,6 +11,7 @@ class Library(PlexObject):
         in your Plex server including video, shows and audio.
 
         Attributes:
+            key (str): '/library'
             identifier (str): Unknown ('com.plexapp.plugins.library').
             mediaTagVersion (str): Unknown (/system/bundle/media/flags/)
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
@@ -138,12 +139,10 @@ class Library(PlexObject):
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
 
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this library section is from.
-            data (ElementTree): Response from PlexServer used to build this object (optional).
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-
         Attributes:
+            ALLOWED_FILTERS (tuple): ()
+            ALLOWED_SORT (tuple): ()
+            BOOLEAN_FILTERS (tuple<str>): ('unwatched', 'duplicate')
             server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
             initpath (str): Path requested when building this object.
             agent (str): Unknown (com.plexapp.agents.imdb, etc)
@@ -485,6 +484,7 @@ class FilterChoice(PlexObject):
         :func:`~plexapi.library.LibrarySection.listChoices()`.
 
         Attributes:
+            TAG (str): 'Directory'
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
             initpath (str): Relative path requested when retrieving specified `data` (optional).
             fastKey (str): API path to quickly list all items in this filter
@@ -497,6 +497,7 @@ class FilterChoice(PlexObject):
     TAG = 'Directory'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.fastKey = data.attrib.get('fastKey')
         self.key = data.attrib.get('key')
@@ -507,10 +508,20 @@ class FilterChoice(PlexObject):
 
 @utils.registerPlexObject
 class Hub(PlexObject):
-    FILTERTYPES = {'genre':Genre, 'director':Director, 'actor':Role}
+    """ Represents a single Hub (or category) in the PlexServer search.
+
+        Attributes:
+            TAG (str): 'Hub'
+            hubIdentifier (str): Unknown.
+            size (int): Number of items found.
+            title (str): Title of this Hub.
+            type (str): Type of items in the Hub.
+            items (str): List of items in the Hub.
+    """
     TAG = 'Hub'
 
     def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
         self._data = data
         self.hubIdentifier = data.attrib.get('hubIdentifier')
         self.size = utils.cast(int, data.attrib.get('size'))

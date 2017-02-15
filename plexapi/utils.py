@@ -79,6 +79,7 @@ def firstAttr(elem, *attrs):
 
 
 def getattributeOrNone(obj, self, attr):
+    """ Returns result from __getattribute__ or None if not found. """
     try:
         return super(obj, self).__getattribute__(attr)
     except AttributeError:
@@ -136,8 +137,7 @@ def searchType(libtype):
     """ Returns the integer value of the library string type.
 
         Parameters:
-            libtype (str): Library type to lookup (movie, show, season, episode,
-                artist, album, track)
+            libtype (str): LibType to lookup (movie, show, season, episode, artist, album, track)
 
         Raises:
             NotFound: Unknown libtype

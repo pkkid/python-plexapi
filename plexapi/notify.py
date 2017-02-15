@@ -14,7 +14,7 @@ class PlexNotifier(threading.Thread):
             callback (func): Callback function to call on recieved messages.
 
         NOTE: You need websocket-client installed in order to use this feature.
-        >> pip install websocket-client
+            >> pip install websocket-client
     """
     key = '/:/websockets/notifications'
 
@@ -47,6 +47,7 @@ class PlexNotifier(threading.Thread):
         self._ws.close()
 
     def _onMessage(self, ws, message):
+        """ Called when websocket message is recieved. """
         try:
             data = json.loads(message)['NotificationContainer']
             log.debug('Notify: %s', data)
@@ -56,4 +57,5 @@ class PlexNotifier(threading.Thread):
             log.error('PlexNotifier Msg Error: %s', err)
 
     def _onError(self, ws, err):
+        """ Called when websocket error is recieved. """
         log.error('PlexNotifier Error: %s' % err)

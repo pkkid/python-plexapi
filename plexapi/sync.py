@@ -5,22 +5,7 @@ from plexapi.exceptions import NotFound
 
 
 class SyncItem(object):
-    """ Sync Item (NOT WORKING?)
-
-        Attributes:
-            device (TYPE): Description
-            id (TYPE): Description
-            location (TYPE): Description
-            machineIdentifier (TYPE): Description
-            MediaSettings (TYPE): Description
-            metadataType (TYPE): Description
-            policy (TYPE): Description
-            rootTitle (TYPE): Description
-            servers (TYPE): Description
-            status (TYPE): Description
-            title (TYPE): Description
-            version (TYPE): Description
-    """
+    """ Sync Item. This doesn't current work. """
     def __init__(self, device, data, servers=None):
         self._device = device
         self._servers = servers
