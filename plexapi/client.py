@@ -5,7 +5,10 @@ from plexapi import BASE_HEADERS, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.playqueue import PlayQueue
 from xml.etree import ElementTree
+
+DEFAULT_MTYPE = 'video'
 
 
 @utils.registerPlexObject
@@ -257,7 +260,7 @@ class PlexClient(PlexObject):
     # to specify which media type to apply the command to, (except for playMedia). This
     # is in case there are multiple things happening (e.g. music in the background, photo
     # slideshow in the foreground).
-    def pause(self, mtype):
+    def pause(self, mtype=DEFAULT_MTYPE):
         """ Pause the currently playing media type.
 
             Parameters:
@@ -265,7 +268,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/pause', type=mtype)
 
-    def play(self, mtype):
+    def play(self, mtype=DEFAULT_MTYPE):
         """ Start playback for the specified media type.
 
             Parameters:
@@ -273,7 +276,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/play', type=mtype)
 
-    def refreshPlayQueue(self, playQueueID, mtype=None):
+    def refreshPlayQueue(self, playQueueID, mtype=DEFAULT_MTYPE):
         """ Refresh the specified Playqueue.
 
             Parameters:
@@ -283,7 +286,7 @@ class PlexClient(PlexObject):
         self.sendCommand(
             'playback/refreshPlayQueue', playQueueID=playQueueID, type=mtype)
 
-    def seekTo(self, offset, mtype=None):
+    def seekTo(self, offset, mtype=DEFAULT_MTYPE):
         """ Seek to the specified offset (ms) during playback.
 
             Parameters:
@@ -292,7 +295,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/seekTo', offset=offset, type=mtype)
 
-    def skipNext(self, mtype=None):
+    def skipNext(self, mtype=DEFAULT_MTYPE):
         """ Skip to the next playback item.
 
             Parameters:
@@ -300,7 +303,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/skipNext', type=mtype)
 
-    def skipPrevious(self, mtype=None):
+    def skipPrevious(self, mtype=DEFAULT_MTYPE):
         """ Skip to previous playback item.
 
             Parameters:
@@ -308,7 +311,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/skipPrevious', type=mtype)
 
-    def skipTo(self, key, mtype=None):
+    def skipTo(self, key, mtype=DEFAULT_MTYPE):
         """ Skip to the playback item with the specified key.
 
             Parameters:
@@ -317,7 +320,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/skipTo', key=key, type=mtype)
 
-    def stepBack(self, mtype=None):
+    def stepBack(self, mtype=DEFAULT_MTYPE):
         """ Step backward a chunk of time in the current playback item.
 
             Parameters:
@@ -325,7 +328,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/stepBack', type=mtype)
 
-    def stepForward(self, mtype):
+    def stepForward(self, mtype=DEFAULT_MTYPE):
         """ Step forward a chunk of time in the current playback item.
 
             Parameters:
@@ -333,7 +336,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/stepForward', type=mtype)
 
-    def stop(self, mtype):
+    def stop(self, mtype=DEFAULT_MTYPE):
         """ Stop the currently playing item.
 
             Parameters:
@@ -341,7 +344,7 @@ class PlexClient(PlexObject):
         """
         self.sendCommand('playback/stop', type=mtype)
 
-    def setRepeat(self, repeat, mtype):
+    def setRepeat(self, repeat, mtype=DEFAULT_MTYPE):
         """ Enable repeat for the specified playback items.
 
             Parameters:
@@ -350,7 +353,7 @@ class PlexClient(PlexObject):
         """
         self.setParameters(repeat=repeat, mtype=mtype)
 
-    def setShuffle(self, shuffle, mtype):
+    def setShuffle(self, shuffle, mtype=DEFAULT_MTYPE):
         """ Enable shuffle for the specified playback items.
 
             Parameters:
@@ -359,7 +362,7 @@ class PlexClient(PlexObject):
         """
         self.setParameters(shuffle=shuffle, mtype=mtype)
 
-    def setVolume(self, volume, mtype):
+    def setVolume(self, volume, mtype=DEFAULT_MTYPE):
         """ Enable volume for the current playback item.
 
             Parameters:
@@ -368,7 +371,7 @@ class PlexClient(PlexObject):
         """
         self.setParameters(volume=volume, mtype=mtype)
 
-    def setAudioStream(self, audioStreamID, mtype):
+    def setAudioStream(self, audioStreamID, mtype=DEFAULT_MTYPE):
         """ Select the audio stream for the current playback item (only video).
 
             Parameters:
@@ -377,7 +380,7 @@ class PlexClient(PlexObject):
         """
         self.setStreams(audioStreamID=audioStreamID, mtype=mtype)
 
-    def setSubtitleStream(self, subtitleStreamID, mtype):
+    def setSubtitleStream(self, subtitleStreamID, mtype=DEFAULT_MTYPE):
         """ Select the subtitle stream for the current playback item (only video).
 
             Parameters:
@@ -386,7 +389,7 @@ class PlexClient(PlexObject):
         """
         self.setStreams(subtitleStreamID=subtitleStreamID, mtype=mtype)
 
-    def setVideoStream(self, videoStreamID, mtype):
+    def setVideoStream(self, videoStreamID, mtype=DEFAULT_MTYPE):
         """ Select the video stream for the current playback item (only video).
 
             Parameters:
@@ -399,9 +402,10 @@ class PlexClient(PlexObject):
         """ Start playback of the specified media item. See also:
             
             Parameters:
-                media (:class:`~plexapi.media.Media`): Media item to be played back (movie, music, photo).
-                offset (int): Number of milliseconds at which to start playing with zero representing
-                    the beginning (default 0).
+                media (:class:`~plexapi.media.Media`): Media item to be played back
+                    (movie, music, photo, playlist, playqueue).
+                offset (int): Number of milliseconds at which to start playing with zero
+                    representing the beginning (default 0).
                 **params (dict): Optional additional parameters to include in the playback request. See
                     also: https://github.com/plexinc/plex-media-player/wiki/Remote-control-API#modified-commands
 
@@ -411,7 +415,7 @@ class PlexClient(PlexObject):
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
-        playqueue = self._server.createPlayQueue(media)
+        playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
@@ -421,7 +425,7 @@ class PlexClient(PlexObject):
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
 
-    def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=None):
+    def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=DEFAULT_MTYPE):
         """ Set multiple playback parameters at once.
 
             Parameters:
@@ -441,7 +445,7 @@ class PlexClient(PlexObject):
             params['type'] = mtype
         self.sendCommand('playback/setParameters', **params)
 
-    def setStreams(self, audioStreamID=None, subtitleStreamID=None, videoStreamID=None, mtype=None):
+    def setStreams(self, audioStreamID=None, subtitleStreamID=None, videoStreamID=None, mtype=DEFAULT_MTYPE):
         """ Select multiple playback streams at once.
 
             Parameters:
