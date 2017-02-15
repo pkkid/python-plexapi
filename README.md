@@ -3,8 +3,8 @@
   <img align="right" src="https://badge.fury.io/py/PlexAPI.svg"/></a>
 <a href='https://coveralls.io/github/mjs7231/python-plexapi'>
   <img align="right" src='https://coveralls.io/repos/github/mjs7231/python-plexapi/badge.svg' alt='Coverage Status' /></a>
-<a href="https://travis-ci.org/mjs7231/python-plexapi">
-  <img align="right" src="https://travis-ci.org/mjs7231/python-plexapi.svg?branch=master"/></a>
+<a href="https://travis-ci.org/pkkid/python-plexapi">
+  <img align="right" src="https://travis-ci.org/pkkid/python-plexapi.svg?branch=master"/></a>
 <a href='http://python-plexapi.readthedocs.io/en/latest/?badge=latest'>
   <img align="right"  src='https://readthedocs.org/projects/python-plexapi/badge/?version=latest' alt='Documentation Status' /></a>
 Python bindings for the Plex API.
