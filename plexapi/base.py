@@ -56,7 +56,8 @@ class PlexObject(object):
     def _clean(self, value):
         """ Clean attr value for display in __repr__. """
         if value:
-            value = value.replace('/library/metadata/', '').replace('/children', '')
+            value = str(value).replace('/library/metadata/', '')
+            value = value.replace('/children', '')
             return value.replace(' ', '-')[:20]
 
     def _buildItem(self, elem, cls=None, initpath=None):
