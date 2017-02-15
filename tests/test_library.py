@@ -91,9 +91,27 @@ def test_library_Library_emptyTrash(pms):
 def _test_library_Library_refresh(pms):
     pms.library.refresh()  # fix mangle and proof the sections attrs
 
+def test_library_Library_update(pms):
+    pms.library.update()
+
+def test_library_Library_cancelUpdate(pms):
+    pms.library.cancelUpdate()
+
 
 def _test_library_MovieSection_refresh(a_movie_section):
     a_movie_section.refresh()
+
+
+def test_library_MovieSection_update(a_movie_section):
+    a_movie_section.update()
+
+
+def test_library_MovieSection_cancelUpdate(a_movie_section):
+    a_movie_section.cancelUpdate()
+
+
+def _test_library_MovieSection_refresh(a_movie_section):
+    a_movie_section.refresh()  # check how much this breaks test before enabling it.
 
 
 def test_library_MovieSection_onDeck(a_movie_section):
