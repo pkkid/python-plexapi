@@ -49,8 +49,8 @@ class Video(PlexPartialObject):
     @property
     def thumbUrl(self):
         """ Return url to for the thumbnail image. """
-        if self.thumb:
-            return self._server.url(self.thumb)
+        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        return self._server.url(thumb) if thumb else None
 
     def markWatched(self):
         """ Mark video as watched. """
@@ -493,12 +493,6 @@ class Episode(Video, Playable):
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
-
-    @property
-    def thumbUrl(self):
-        """ Return url to for the thumbnail image. """
-        if self.grandparentThumb:
-            return self._server.url(self.grandparentThumb)
 
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """

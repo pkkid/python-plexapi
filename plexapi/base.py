@@ -44,16 +44,20 @@ class PlexObject(object):
             self._loadData(data)
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [
-            self.__class__.__name__,
-            utils.firstAttr(self, '_baseurl', 'key', 'id', 'playQueueID', 'uri'),
-            utils.firstAttr(self, 'title', 'name', 'username', 'product', 'tag')
-        ] if p])
+        uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
+        name = self._clean(self.firstAttr('title', 'name', 'username', 'product', 'tag'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):
         # dont overwrite an attr with None unless its a private variable
         if value is not None or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
+
+    def _clean(self, value):
+        """ Clean attr value for display in __repr__. """
+        if value:
+            value = value.replace('/library/metadata/', '').replace('/children', '')
+            return value.replace(' ', '-')[:20]
 
     def _buildItem(self, elem, cls=None, initpath=None):
         """ Factory function to build objects based on registered PLEXOBJECTS. """
@@ -156,6 +160,13 @@ class PlexObject(object):
                 if item is not None:
                     items.append(item)
         return items
+
+    def firstAttr(self, *attrs):
+        """ Return the first attribute in attrs that is not None. """
+        for attr in attrs:
+            value = self.__dict__.get(attr)
+            if value is not None:
+                return value
 
     def listAttrs(self, data, attr, **kwargs):
         results = []

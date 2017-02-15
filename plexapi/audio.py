@@ -44,8 +44,8 @@ class Audio(PlexPartialObject):
     @property
     def thumbUrl(self):
         """ Return url to for the thumbnail image. """
-        if self.thumb:
-            return self._server.url(self.thumb)
+        key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        return self._server.url(key) if key else None
 
 
 @utils.registerPlexObject
@@ -271,12 +271,6 @@ class Track(Audio, Playable):
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
         return '%s - %s %s' % (self.grandparentTitle, self.parentTitle, self.title)
-
-    @property
-    def thumbUrl(self):
-        """ Return url to for the thumbnail image. """
-        if self.parentThumb:
-            return self._server.url(self.parentThumb)
 
     def album(self):
         """ Return this track's :class:`~plexapi.audio.Album`. """

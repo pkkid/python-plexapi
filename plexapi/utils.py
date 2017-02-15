@@ -66,18 +66,6 @@ def cast(func, value):
     return value
 
 
-def firstAttr(elem, *attrs):
-    """ Return the first attribute in attrs that is not None. """
-    for attr in attrs:
-        value = elem.__dict__.get(attr)
-        if value is not None:
-            value = str(value).replace(' ','-')
-            if attr == 'key':
-                value = value.replace('/library/metadata/','')
-                value = value.replace('/children','')
-            return value[:20]
-
-
 def getattributeOrNone(obj, self, attr):
     """ Returns result from __getattribute__ or None if not found. """
     try:
