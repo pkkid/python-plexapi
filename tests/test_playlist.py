@@ -83,6 +83,13 @@ def test_playlist_photos(pms, a_photo_album):
     assert pl_name not in [i.title for i in pms.playlists()]
 
 
+def test_playlist_playQueue(pms):
+    pl = pms.playlists()[0]
+    pq = pl.playQueue(**dict(shuffle=1))
+    assert 'shuffle=1' in pq._initpath
+    assert pq.playQueueShuffled is True
+
+
 @pytest.mark.req_client
 def _test_play_photos(account, plex):
     client = getclient('iphone-mike', CONFIG.client_baseurl, plex)
