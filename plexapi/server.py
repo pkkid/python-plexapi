@@ -201,7 +201,7 @@ class PlexServer(PlexObject):
 
             Parameters:
                 item (Media or Playlist): Media or playlist to add to PlayQueue.
-                kwargs (dict): See `~plexapi.playerque.PlayQueue.create`
+                kwargs (dict): See `~plexapi.playerque.PlayQueue.create`.
         """
         return PlayQueue.create(self, item, **kwargs)
 

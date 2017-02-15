@@ -43,7 +43,7 @@ class PlayQueue(PlexObject):
 
     @classmethod
     def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):
-        """ Create a new playqueue
+        """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Paramaters:
                 server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
@@ -52,9 +52,6 @@ class PlayQueue(PlexObject):
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
-
-            Returns:
-                :class:`~plexapi.playqueue.PlayQueue`:
         """
         args = {}
         args['includeChapters'] = includeChapters
@@ -69,7 +66,6 @@ class PlayQueue(PlexObject):
             args['key'] = item.key
             args['type'] = item.listType
             args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
-
         path = '/playQueues%s' % utils.joinArgs(args)
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
