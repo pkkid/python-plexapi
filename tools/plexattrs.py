@@ -5,7 +5,7 @@ This script loops through all media items to build a collection of attributes on
 each media type. The resulting list can be compared with the current object 
 implementation in python-plex api to track new attributes and depricate old ones.
 """
-import argparse, copy, pickle, plexapi, os, sys, time
+import argparse, copy, pickle, plexapi, os, re, sys, time
 from os.path import abspath, dirname, join
 from collections import defaultdict
 from datetime import datetime
@@ -19,11 +19,13 @@ CACHEPATH = join(dirname(abspath(__file__)), 'findattrs.pickle')
 NAMESPACE =  {
     'xml': defaultdict(int),
     'obj': defaultdict(int),
+    'docs': defaultdict(int),
     'examples': defaultdict(set),
     'categories': defaultdict(set),
     'total': 0,
     'old': 0,
-    'new': 0
+    'new': 0,
+    'doc': 0,
 }
 IGNORES = {
     'server.PlexServer': ['baseurl', 'token', 'session'],
@@ -68,17 +70,17 @@ class PlexAttributes():
 
     def run(self):
         starttime = time.time()
-        self._parse_myplex()
-        self._parse_server()
-        self._parse_search()
-        self._parse_library()
+        # self._parse_myplex()
+        # self._parse_server()
+        # self._parse_search()
+        # self._parse_library()
         self._parse_audio()
-        self._parse_photo()
-        self._parse_movie()
-        self._parse_show()
-        self._parse_client()
-        self._parse_playlist()
-        self._parse_sync()
+        # self._parse_photo()
+        # self._parse_movie()
+        # self._parse_show()
+        # self._parse_client()
+        # self._parse_playlist()
+        # self._parse_sync()
         self.runtime = round((time.time() - starttime) / 60.0, 1)
         return self
 
@@ -191,7 +193,8 @@ class PlexAttributes():
         self.attrs[clsname]['total'] += 1
         self._load_xml_attrs(clsname, obj._data, self.attrs[clsname]['xml'],
             self.attrs[clsname]['examples'], self.attrs[clsname]['categories'], cat)
-        self._load_obj_attrs(clsname, obj, self.attrs[clsname]['obj'])
+        self._load_obj_attrs(clsname, obj, self.attrs[clsname]['obj'],
+            self.attrs[clsname]['docs'])
 
     def _print_the_little_dot(self):
         self.total += 1
@@ -212,19 +215,32 @@ class PlexAttributes():
                 attrname = TAGATTRS.get(subelem.tag, '%ss' % subelem.tag.lower())
                 attrs['%s[]' % attrname] += 1
 
-    def _load_obj_attrs(self, clsname, obj, attrs):
+    def _load_obj_attrs(self, clsname, obj, attrs, docs):
         if clsname in STOP_RECURSING_AT: return None
         if isinstance(obj, PlexObject) and clsname not in DONT_RELOAD:
             self._safe_reload(obj)
+        alldocs = '\n\n'.join(self._all_docs(obj.__class__))
         for attr, value in obj.__dict__.items():
             if value is None or isinstance(value, (str, bool, float, int, datetime)):
                 if not attr.startswith('_') and attr not in IGNORES.get(clsname, []):
                     attrs[attr] += 1
+                    if re.search('\s{8}%s\s\(.+?\)\:' % attr, alldocs) is not None:
+                        docs[attr] += 1
             if isinstance(value, list):
                 if not attr.startswith('_') and attr not in IGNORES.get(clsname, []):
                     if value and isinstance(value[0], PlexObject):
                         attrs['%s[]' % attr] += 1
                         [self._parse_objects(obj) for obj in value]
+
+    def _all_docs(self, cls, docs=None):
+        import inspect
+        docs = docs or []
+        if cls.__doc__ is not None:
+            docs.append(cls.__doc__)
+        for parent in inspect.getmro(cls):
+            if parent != cls:
+                docs += self._all_docs(parent)
+        return docs
 
     def print_report(self):
         total_attrs = 0
@@ -242,12 +258,13 @@ class PlexAttributes():
                     print('%7s  %3s  %-30s  %-20s  %s' % (count, state, attr, categories, examples))
                     total_attrs += count
         print(_('\nSUMMARY\n%s' % ('-'*30), 'yellow'))
-        print('%7s  %3s  %3s  %-20s  %s' % ('total', 'new', 'old', 'categories', 'clsname'))
+        print('%7s  %3s  %3s  %3s  %-20s  %s' % ('total', 'new', 'old', 'doc', 'categories', 'clsname'))
         for clsname in sorted(self.attrs.keys()):
             if self._clsname_match(clsname):
-                print('%7s  %12s  %12s  %s' % (self.attrs[clsname]['total'],
+                print('%7s  %12s  %12s  %12s  %s' % (self.attrs[clsname]['total'],
                     _(self.attrs[clsname]['new'] or '', 'cyan'),
                     _(self.attrs[clsname]['old'] or '', 'red'),
+                    _(self.attrs[clsname]['doc'] or '', 'purple'),
                     clsname))
         print('\nPlex Version     %s' % self.plex.version)
         print('PlexAPI Version  %s' % plexapi.VERSION)
@@ -269,6 +286,9 @@ class PlexAttributes():
         if attr not in meta['xml'].keys() and attr in meta['obj'].keys():
             self.attrs[clsname]['old'] += 1
             return _('old', 'red')
+        if attr not in meta['docs'].keys() and attr in meta['obj'].keys():
+            self.attrs[clsname]['doc'] += 1
+            return _('doc', 'purple')
         return _('   ', 'green')
 
     def _safe_connect(self, elem):
@@ -286,7 +306,7 @@ class PlexAttributes():
 
 def _(text, color):
     FMTSTR = '\033[%dm%s\033[0m'
-    COLORS = {'blue':34, 'cyan':36, 'green':32, 'grey':30, 'magenta':35, 'red':31, 'white':37, 'yellow':33}
+    COLORS = {'blue':34, 'cyan':36, 'green':32, 'grey':30, 'purple':35, 'red':31, 'white':37, 'yellow':33}
     return FMTSTR % (COLORS[color], text)
 
 
