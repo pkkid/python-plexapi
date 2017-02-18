@@ -5,7 +5,7 @@ from plexapi.base import Playable, PlexPartialObject
 
 
 class Video(PlexPartialObject):
-    """ Base class for all video objects including :class:`~plexapi.video.Movie`, 
+    """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
         :class:`~plexapi.video.Episode`.
 
@@ -68,7 +68,7 @@ class Video(PlexPartialObject):
 @utils.registerPlexObject
 class Movie(Video, Playable):
     """ Represents a single Movie.
-        
+
         Attributes:
             TAG (str): 'Diectory'
             TYPE (str): 'movie'
@@ -146,9 +146,13 @@ class Movie(Video, Playable):
         """
         return [p.file for p in self.iterParts() if p]
 
+    def _prettyfilename(self):
+        # This is just for compat.
+        return self.title
+
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Download video files to specified directory.
-    
+
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_orginal_name (bool): True to keep the original file name otherwise
@@ -292,7 +296,7 @@ class Show(Video):
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Download video files to specified directory.
-    
+
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_orginal_name (bool): True to keep the original file name otherwise
@@ -390,7 +394,7 @@ class Season(Video):
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Download video files to specified directory.
-    
+
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_orginal_name (bool): True to keep the original file name otherwise
@@ -408,7 +412,7 @@ class Season(Video):
 @utils.registerPlexObject
 class Episode(Video, Playable):
     """ Represents a single Shows Episode.
-        
+
         Attributes:
             TAG (str): 'Diectory'
             TYPE (str): 'episode'

@@ -56,7 +56,7 @@ class Media(PlexObject):
 @utils.registerPlexObject
 class MediaPart(PlexObject):
     """ Represents a single media part (often a single file) for the media this belongs to.
-        
+
         Attributes:
             TAG (str): 'Part'
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
@@ -66,6 +66,7 @@ class MediaPart(PlexObject):
             duration (int): Length of this media part in milliseconds.
             file (str): Path to this file on disk (ex: /media/Movies/Cars.(2006)/Cars.cd2.avi)
             id (int): Unique ID of this media part.
+            indexes (str, None): None or SD.
             key (str): Key used to access this media part (ex: /library/parts/46618/1389985872/file.avi).
             size (int): Size of this file in bytes (ex: 733884416).
             streams (list<:class:`~plexapi.media.MediaPartStream`>): List of streams in this media part.
@@ -79,6 +80,7 @@ class MediaPart(PlexObject):
         self.duration = cast(int, data.attrib.get('duration'))
         self.file = data.attrib.get('file')
         self.id = cast(int, data.attrib.get('id'))
+        self.indexes = data.attrib.get('indexes')
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
@@ -109,7 +111,7 @@ class MediaPart(PlexObject):
 
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
-        
+
         Attributes:
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
@@ -232,7 +234,7 @@ class AudioStream(MediaPartStream):
 @utils.registerPlexObject
 class SubtitleStream(MediaPartStream):
     """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
-        
+
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 3
@@ -253,7 +255,7 @@ class SubtitleStream(MediaPartStream):
 
 @utils.registerPlexObject
 class TranscodeSession(PlexObject):
-    """ Represents a current transcode session. 
+    """ Represents a current transcode session.
 
         Attributes:
             TAG (str): 'TranscodeSession'
@@ -294,9 +296,9 @@ class MediaTag(PlexObject):
             tag (str): Name of the tag. This will be Animation, SciFi etc for Genres. The name of
                 person for Directors and Roles (ex: Animation, Stephen Graham, etc).
             <Hub_Search_Attributes>: Attributes only applicable in search results from
-                PlexServer :func:`~plexapi.server.PlexServer.search()`. They provide details of which 
+                PlexServer :func:`~plexapi.server.PlexServer.search()`. They provide details of which
                 library section the tag was found as well as the url to dig deeper into the results.
-            
+
                 * key (str): API URL to dig deeper into this tag (ex: /library/sections/1/all?actor=9081).
                 * librarySectionID (int): Section ID this tag was generated from.
                 * librarySectionTitle (str): Library section title this tag was found.
@@ -330,7 +332,7 @@ class MediaTag(PlexObject):
 @utils.registerPlexObject
 class Collection(MediaTag):
     """ Represents a single Collection media tag.
-        
+
         Attributes:
             TAG (str): 'Collection'
             FILTER (str): 'collection'
@@ -341,7 +343,7 @@ class Collection(MediaTag):
 @utils.registerPlexObject
 class Country(MediaTag):
     """ Represents a single Country media tag.
-        
+
         Attributes:
             TAG (str): 'Country'
             FILTER (str): 'country'
@@ -352,7 +354,7 @@ class Country(MediaTag):
 @utils.registerPlexObject
 class Director(MediaTag):
     """ Represents a single Director media tag.
-        
+
         Attributes:
             TAG (str): 'Director'
             FILTER (str): 'director'
@@ -363,7 +365,7 @@ class Director(MediaTag):
 @utils.registerPlexObject
 class Genre(MediaTag):
     """ Represents a single Genre media tag.
-        
+
         Attributes:
             TAG (str): 'Genre'
             FILTER (str): 'genre'
@@ -374,7 +376,7 @@ class Genre(MediaTag):
 @utils.registerPlexObject
 class Mood(MediaTag):
     """ Represents a single Mood media tag.
-        
+
         Attributes:
             TAG (str): 'Mood'
             FILTER (str): 'mood'
@@ -385,7 +387,7 @@ class Mood(MediaTag):
 @utils.registerPlexObject
 class Producer(MediaTag):
     """ Represents a single Producer media tag.
-        
+
         Attributes:
             TAG (str): 'Producer'
             FILTER (str): 'producer'
@@ -396,7 +398,7 @@ class Producer(MediaTag):
 @utils.registerPlexObject
 class Role(MediaTag):
     """ Represents a single Role (actor/actress) media tag.
-        
+
         Attributes:
             TAG (str): 'Role'
             FILTER (str): 'role'
@@ -407,7 +409,7 @@ class Role(MediaTag):
 @utils.registerPlexObject
 class Similar(MediaTag):
     """ Represents a single Similar media tag.
-        
+
         Attributes:
             TAG (str): 'Similar'
             FILTER (str): 'similar'
@@ -418,7 +420,7 @@ class Similar(MediaTag):
 @utils.registerPlexObject
 class Writer(MediaTag):
     """ Represents a single Writer media tag.
-        
+
         Attributes:
             TAG (str): 'Writer'
             FILTER (str): 'writer'
@@ -429,7 +431,7 @@ class Writer(MediaTag):
 @utils.registerPlexObject
 class Field(PlexObject):
     """ Represents a single Field.
-        
+
         Attributes:
             TAG (str): 'Field'
     """

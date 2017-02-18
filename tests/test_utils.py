@@ -15,6 +15,10 @@ def _test_utils_threaded():
     pass
 
 
+def _download_session_images():
+    pass  # TODO Add this when we got clients fixed.
+
+
 def test_utils_searchType():
     st = utils.searchType('movie')
     assert st == 1
