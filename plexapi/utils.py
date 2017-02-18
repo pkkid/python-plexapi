@@ -191,7 +191,7 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def get_session_images(server, filename=None, height=150, width=150, opacity=100, saturation=100):
+def download_session_images(server, filename=None, height=150, width=150, opacity=100, saturation=100):
     """Simple helper to download a bif image or thumb.url from plex.server.sessions. Returns a dict.
 
        Parameters:
@@ -217,7 +217,7 @@ def get_session_images(server, filename=None, height=150, width=150, opacity=100
 
             # Always use bif images if available.
             if part.indexes:
-                url = '/library/parts/%s/indexes/sd/%s' % (part.id, media.viewOffset)
+                url = '/library/parts/%s/indexes/%s/%s' % (part.id, part.indexes.lower(), media.viewOffset)
 
         if url:
             if filename is None:
