@@ -137,13 +137,12 @@ class Library(PlexObject):
         """
         self._server.query('/library/sections/all/refresh?force=1')
 
-    def deleteMediaPreview(self):
-        """ Delete the preview thumbnails for the all librarys.
-            This cannot be undone. Recreating media preview files can take hours
-            or even days.
+    def deleteMediaPreviews(self):
+        """ Delete the preview thumbnails for the all sections. This cannot be
+            undone. Recreating media preview files can take hours or even days.
         """
         for section in self.sections():
-            section.deleteMediaPreview()
+            section.deleteMediaPreviews()
 
 
 class LibrarySection(PlexObject):
@@ -261,10 +260,9 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/refresh?force=1' % self.key
         self._server.query(key)
 
-    def deleteMediaPreview(self):
-        """ Delete the preview thumbnails for items in this library
-            This cannot be undone. Recreating media preview files can take hours
-            or even days.
+    def deleteMediaPreviews(self):
+        """ Delete the preview thumbnails for items in this library. This cannot
+            be undone. Recreating media preview files can take hours or even days.
         """
         key = '/library/sections/%s/indexes' % self.key
         self._server.query(key, method=self._server._session.delete)
