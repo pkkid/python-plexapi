@@ -1,9 +1,8 @@
 .. toctree::
    :maxdepth: 1
-   :caption: Table of Contents
+   :caption: Overview
    :titlesonly:
 
-   self
    introduction
    configuration
 
