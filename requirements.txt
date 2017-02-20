@@ -1,5 +1,5 @@
 #---------------------------------------------------------
-# PlexAPI Requirements
+# PlexAPI core requirements.
 # pip install -r requirments.txt
 #---------------------------------------------------------
 requests

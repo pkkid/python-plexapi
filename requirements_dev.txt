@@ -1,7 +1,12 @@
+#---------------------------------------------------------
+# PlexAPI requirements to run py.test.
+# pip install -r requirments_dev.txt
+#---------------------------------------------------------
 betamax
 betamax_serializers
 coveralls
 pillow
 pytest
 pytest-cov
+requests
 websocket-client

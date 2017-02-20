@@ -1,3 +1,7 @@
+#---------------------------------------------------------
+# PlexAPI requirements to build documentation.
+# pip install -r requirments_doc.txt
+#---------------------------------------------------------
 recommonmark
 sphinx-rtd-theme
 sphinxcontrib-napoleon
