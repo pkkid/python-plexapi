@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+from datetime import datetime
 from plexapi.exceptions import NotFound
 
 
@@ -25,8 +26,8 @@ def test_library_sectionByID_with_attrs(pms):
     assert m.agent == 'com.plexapp.agents.imdb'
     assert m.allowSync is False
     assert m.art == '/:/resources/movie-fanart.jpg'
-    assert m.composite == '/library/sections/1/composite/1484690696'
-    assert str(m.createdAt.date()) == '2017-01-17'
+    assert '/library/sections/1/composite/' in m.composite
+    assert m.createdAt > datetime(2017, 1, 16)
     assert m.filters == '1'
     assert m._initpath == '/library/sections'
     assert m.key == '1'
@@ -38,7 +39,7 @@ def test_library_sectionByID_with_attrs(pms):
     assert m.thumb == '/:/resources/movie.png'
     assert m.title == 'Movies'
     assert m.type == 'movie'
-    assert str(m.updatedAt.date()) == '2017-01-17'
+    assert m.updatedAt > datetime(2017, 1, 16)
     assert m.uuid == '2b72d593-3881-43f4-a8b8-db541bd3535a'
 
 

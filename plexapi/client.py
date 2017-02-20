@@ -135,7 +135,7 @@ class PlexClient(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 

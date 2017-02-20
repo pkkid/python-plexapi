@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, pytest
+import plexapi, pytest
 from datetime import datetime
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -20,8 +20,9 @@ def test_video_Movie_delete(monkeypatch, pms):
 
 
 def test_video_Movie_getStreamURL(a_movie):
-    assert a_movie.getStreamURL() == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&X-Plex-Token={0}".format(os.environ.get('PLEX_TEST_TOKEN'))
-    assert a_movie.getStreamURL(videoResolution='800x600') == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&videoResolution=800x600&X-Plex-Token={0}".format(os.environ.get('PLEX_TEST_TOKEN'))
+    server_token = plexapi.CONFIG.get('auth.server_token')
+    assert a_movie.getStreamURL() == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&X-Plex-Token={0}".format(server_token)
+    assert a_movie.getStreamURL(videoResolution='800x600') == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&videoResolution=800x600&X-Plex-Token={0}".format(server_token)
 
 
 def test_video_Movie_isFullObject_and_reload(pms):

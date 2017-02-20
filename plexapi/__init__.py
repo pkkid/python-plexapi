@@ -8,39 +8,39 @@ from uuid import getnode
 
 # Load User Defined Config
 DEFAULT_CONFIG_PATH = os.path.expanduser('~/.config/plexapi/config.ini')
-CONFIG_PATH = os.environ.get('PLEX_CONFIG_PATH', DEFAULT_CONFIG_PATH)
+CONFIG_PATH = os.environ.get('PLEXAPI_CONFIG_PATH', DEFAULT_CONFIG_PATH)
 CONFIG = PlexConfig(CONFIG_PATH)
 
-# Core Settings
-PROJECT = 'PlexAPI'                                 # name provided to plex server
-VERSION = '2.9.0'                                   # version of this api
-TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)    # request timeout
-X_PLEX_CONTAINER_SIZE = 50                          # max results to return in a single search page
+# PlexAPI Settings
+PROJECT = 'PlexAPI'
+VERSION = '2.9.0'
+TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)
+X_PLEX_CONTAINER_SIZE = CONFIG.get('plexapi.container_size', 50, int)
 
 # Plex Header Configuation
-X_PLEX_PROVIDES = 'controller'                                                 # one or more of [player, controller, server]
-X_PLEX_PLATFORM = CONFIG.get('headers.platorm', uname()[0])                    # Platform name, eg iOS, MacOSX, Android, LG, etc
-X_PLEX_PLATFORM_VERSION = CONFIG.get('headers.platform_version', uname()[2])   # Operating system version, eg 4.3.1, 10.6.7, 3.2
-X_PLEX_PRODUCT = CONFIG.get('headers.product', PROJECT)                        # Plex application name, eg Laika, Plex Media Server, Media Link
-X_PLEX_VERSION = CONFIG.get('headers.version', VERSION)                        # Plex application version number
-X_PLEX_DEVICE = CONFIG.get('headers.platform', X_PLEX_PLATFORM)                # Device make, eg iPhone, FiteTV, Linux, etc.
-X_PLEX_DEVICE_NAME = uname()[1]                                                # Device name, hostname or phone name, etc.
-X_PLEX_IDENTIFIER = CONFIG.get('headers.identifier', str(hex(getnode())))      # UUID, serial number, or other number unique per device
+X_PLEX_PROVIDES = CONFIG.get('header.provides', 'controller')
+X_PLEX_PLATFORM = CONFIG.get('header.platorm', uname()[0])
+X_PLEX_PLATFORM_VERSION = CONFIG.get('header.platform_version', uname()[2])
+X_PLEX_PRODUCT = CONFIG.get('header.product', PROJECT)
+X_PLEX_VERSION = CONFIG.get('header.version', VERSION)
+X_PLEX_DEVICE = CONFIG.get('header.device', X_PLEX_PLATFORM)
+X_PLEX_DEVICE_NAME = CONFIG.get('header.device_name', uname()[1])
+X_PLEX_IDENTIFIER = CONFIG.get('header.identifier', str(hex(getnode())))
 BASE_HEADERS = reset_base_headers()
 
 # Logging Configuration
 log = logging.getLogger('plexapi')
-logfile = CONFIG.get('logging.path')
-logformat = CONFIG.get('logging.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
-loglevel = CONFIG.get('logging.level', 'INFO').upper()
+logfile = CONFIG.get('log.path')
+logformat = CONFIG.get('log.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
+loglevel = CONFIG.get('log.level', 'INFO').upper()
 loghandler = logging.NullHandler()
 if logfile:
-    logbackups = CONFIG.get('logging.backup_count', 3, int)
-    logbytes = CONFIG.get('logging.rotate_bytes', 512000, int)
+    logbackups = CONFIG.get('log.backup_count', 3, int)
+    logbytes = CONFIG.get('log.rotate_bytes', 512000, int)
     loghandler = RotatingFileHandler(os.path.expanduser(logfile), 'a', logbytes, logbackups)
 loghandler.setFormatter(logging.Formatter(logformat))
 log.addHandler(loghandler)
 log.setLevel(loglevel)
 logfilter = SecretsFilter()
-if CONFIG.get('logging.show_secrets') != 'true':
+if CONFIG.get('log.secrets', '').lower() != 'true':
     log.addFilter(logfilter)
