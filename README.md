@@ -32,7 +32,7 @@ the top left above your available libraries.
 
 ```python
 from plexapi.myplex import MyPlexAccount
-account = MyPlexAccount.signin('<USERNAME>', '<PASSWORD>')
+account = MyPlexAccount('<USERNAME>', '<PASSWORD>')
 plex = account.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
 ```
 
@@ -68,9 +68,9 @@ for client in plex.clients():
 ```python
 # Example 4: Play the movie Cars on another client.
 # Note: Client must be on same network as server.
-avatar = plex.library.section('Movies').get('Cars')
+cars = plex.library.section('Movies').get('Cars')
 client = plex.client("Michael's iPhone")
-client.playMedia(avatar)
+client.playMedia(cars)
 ```
 ```python
 # Example 5: List all content with the word 'Game' in the title.
@@ -87,8 +87,8 @@ for movie in movies.search(None, director=director):
 ```
 ```python
 # Example 7: List files for the latest episode of The 100.
-thelastone = plex.library.section('TV Shows').get('The 100').episodes()[-1]
-for part in thelastone.iterParts():
+last_episode = plex.library.section('TV Shows').get('The 100').episodes()[-1]
+for part in last_episode.iterParts():
     print(part.file)
 ```
 ```python
