@@ -70,7 +70,7 @@ class PlexObject(object):
         etype = elem.attrib.get('type', elem.attrib.get('streamType'))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
-        #log.debug('Building %s as %s', elem.tag, ecls.__name__)
+        # log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
             return ecls(self._server, elem, initpath)
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, etype))
@@ -201,7 +201,7 @@ class PlexObject(object):
                 if operator(value, query):
                     attrsFound[attr] = True
                     break
-        #log.debug('Checking %s for %s found: %s', elem.tag, kwargs, attrsFound)
+        # log.debug('Checking %s for %s found: %s', elem.tag, kwargs, attrsFound)
         return all(attrsFound.values())
 
     def _getAttrOperator(self, attr):
@@ -213,7 +213,7 @@ class PlexObject(object):
         return attr, 'exact', OPERATORS['exact']
 
     def _getAttrValue(self, elem, attrstr, results=None):
-        #log.debug('Fetching %s in %s', attrstr, elem.tag)
+        # log.debug('Fetching %s in %s', attrstr, elem.tag)
         parts = attrstr.split('__', 1)
         attr = parts[0]
         attrstr = parts[1] if len(parts) == 2 else None

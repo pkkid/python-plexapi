@@ -25,7 +25,7 @@ class PlexClient(PlexObject):
             baseurl (str): HTTP URL to connect dirrectly to this client.
             token (str): X-Plex-Token used for authenication (optional).
             session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
-            
+
         Attributes:
             TAG (str): 'Player'
             key (str): '/resources'
@@ -67,7 +67,7 @@ class PlexClient(PlexObject):
 
     def connect(self):
         """ Alias of reload as any subsequent requests to this client will be
-            made directly to the device even if the object attributes were initially 
+            made directly to the device even if the object attributes were initially
             populated from a PlexServer.
         """
         if not self.key:
@@ -110,7 +110,7 @@ class PlexClient(PlexObject):
 
     def proxyThroughServer(self, value=True):
         """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
-            Useful if you do not wish to connect directly to the Client device itself. 
+            Useful if you do not wish to connect directly to the Client device itself.
 
             Parameters:
                 value (bool): Enable or disable proxying (optional, default True).
@@ -175,7 +175,7 @@ class PlexClient(PlexObject):
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
 
-    #---------------------
+    # ---------------------
     # Navigation Commands
     # These commands navigate around the user-interface.
     def contextMenu(self):
@@ -254,7 +254,7 @@ class PlexClient(PlexObject):
             'key': media.key,
         }, **params))
 
-    #-------------------
+    # -------------------
     # Playback Commands
     # Most of the playback commands take a mandatory mtype {'music','photo','video'} argument,
     # to specify which media type to apply the command to, (except for playMedia). This
@@ -400,7 +400,7 @@ class PlexClient(PlexObject):
 
     def playMedia(self, media, offset=0, **params):
         """ Start playback of the specified media item. See also:
-            
+
             Parameters:
                 media (:class:`~plexapi.media.Media`): Media item to be played back
                     (movie, music, photo, playlist, playqueue).
@@ -465,7 +465,7 @@ class PlexClient(PlexObject):
             params['type'] = mtype
         self.sendCommand('playback/setStreams', **params)
 
-    #-------------------
+    # -------------------
     # Timeline Commands
     def timeline(self):
         """ Poll the current timeline and return the XML response. """

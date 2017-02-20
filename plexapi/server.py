@@ -14,8 +14,8 @@ from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
 
 # Need these imports to populate utils.PLEXOBJECTS
-from plexapi import (audio as _audio, video as _video,
-    photo as _photo, media as _media, playlist as _playlist)
+from plexapi import (audio as _audio, video as _video,          # noqa: F401
+    photo as _photo, media as _media, playlist as _playlist)    # noqa: F401
 
 
 class PlexServer(PlexObject):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging, os
+import logging
+import os
 from logging.handlers import RotatingFileHandler
 from platform import uname
 from plexapi.config import PlexConfig, reset_base_headers

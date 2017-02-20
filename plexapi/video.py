@@ -344,7 +344,7 @@ class Season(Video):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
             self.key.replace('/library/metadata/', '').replace('/children', ''),
-            '%s-s%s' % (self.parentTitle.replace(' ','-')[:20], self.seasonNumber),
+            '%s-s%s' % (self.parentTitle.replace(' ', '-')[:20], self.seasonNumber),
         ] if p])
 
     @property
@@ -476,7 +476,7 @@ class Episode(Video, Playable):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
             self.key.replace('/library/metadata/', '').replace('/children', ''),
-            '%s-s%se%s' % (self.grandparentTitle.replace(' ','-')[:20], self.seasonNumber, self.index),
+            '%s-s%se%s' % (self.grandparentTitle.replace(' ', '-')[:20], self.seasonNumber, self.index),
         ] if p])
 
     def _prettyfilename(self):

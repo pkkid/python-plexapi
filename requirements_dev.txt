@@ -5,6 +5,7 @@
 betamax
 betamax_serializers
 coveralls
+flake8
 pillow
 pytest
 pytest-cov

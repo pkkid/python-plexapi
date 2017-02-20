@@ -8,7 +8,7 @@ from plexapi.utils import cast, toDatetime
 
 @utils.registerPlexObject
 class Playlist(PlexPartialObject, Playable):
-    """ Represents a single Playlist object. 
+    """ Represents a single Playlist object.
         # TODO: Document attributes
     """
     TAG = 'Playlist'
@@ -45,7 +45,8 @@ class Playlist(PlexPartialObject, Playable):
         ratingKeys = []
         for item in items:
             if item.listType != self.playlistType:
-                raise BadRequest('Can not mix media types when building a playlist: %s and %s' % (self.playlistType, item.listType))
+                raise BadRequest('Can not mix media types when building a playlist: %s and %s' %
+                    (self.playlistType, item.listType))
             ratingKeys.append(str(item.ratingKey))
         uuid = items[0].section().uuid
         ratingKeys = ','.join(ratingKeys)
@@ -68,7 +69,7 @@ class Playlist(PlexPartialObject, Playable):
 
     def edit(self, title=None, summary=None):
         """ Edit playlist. """
-        key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title':title, 'summary':summary}))
+        key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title': title, 'summary': summary}))
         return self._server.query(key, method=self._server._session.put)
 
     def delete(self):

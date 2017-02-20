@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-import logging, os, requests, time
+import logging
+import os
+import requests
+import time
 from datetime import datetime
 from plexapi.compat import quote, string_type
 from plexapi.exceptions import NotFound
@@ -266,9 +269,9 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
             for chunk in response.iter_content(chunk_size=chunksize):
                 if chunk:
                     f.write(chunk)
-        #log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
+        # log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
         return fullpath
     except Exception as err:  # pragma: no cover
         log.error('Error downloading file: %s' % err)
         raise
-        #log.exception('Failed to download %s to %s %s' % (url, fullpath, e))
+        # log.exception('Failed to download %s to %s %s' % (url, fullpath, e))

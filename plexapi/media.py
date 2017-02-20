@@ -143,7 +143,7 @@ class MediaPartStream(PlexObject):
     @staticmethod
     def parse(server, data, initpath):
         """ Factory method returns a new MediaPartStream from xml data. """
-        STREAMCLS = {1:VideoStream, 2:AudioStream, 3:SubtitleStream}
+        STREAMCLS = {1: VideoStream, 2: AudioStream, 3: SubtitleStream}
         stype = cast(int, data.attrib.get('streamType'))
         cls = STREAMCLS.get(stype, MediaPartStream)
         return cls(server, data, initpath)
@@ -340,6 +340,7 @@ class Collection(MediaTag):
     TAG = 'Collection'
     FILTER = 'collection'
 
+
 @utils.registerPlexObject
 class Country(MediaTag):
     """ Represents a single Country media tag.
@@ -350,6 +351,7 @@ class Country(MediaTag):
     """
     TAG = 'Country'
     FILTER = 'country'
+
 
 @utils.registerPlexObject
 class Director(MediaTag):
@@ -362,6 +364,7 @@ class Director(MediaTag):
     TAG = 'Director'
     FILTER = 'director'
 
+
 @utils.registerPlexObject
 class Genre(MediaTag):
     """ Represents a single Genre media tag.
@@ -372,6 +375,7 @@ class Genre(MediaTag):
     """
     TAG = 'Genre'
     FILTER = 'genre'
+
 
 @utils.registerPlexObject
 class Mood(MediaTag):
@@ -384,6 +388,7 @@ class Mood(MediaTag):
     TAG = 'Mood'
     FILTER = 'mood'
 
+
 @utils.registerPlexObject
 class Producer(MediaTag):
     """ Represents a single Producer media tag.
@@ -394,6 +399,7 @@ class Producer(MediaTag):
     """
     TAG = 'Producer'
     FILTER = 'producer'
+
 
 @utils.registerPlexObject
 class Role(MediaTag):
@@ -406,6 +412,7 @@ class Role(MediaTag):
     TAG = 'Role'
     FILTER = 'role'
 
+
 @utils.registerPlexObject
 class Similar(MediaTag):
     """ Represents a single Similar media tag.
@@ -417,6 +424,7 @@ class Similar(MediaTag):
     TAG = 'Similar'
     FILTER = 'similar'
 
+
 @utils.registerPlexObject
 class Writer(MediaTag):
     """ Represents a single Writer media tag.
@@ -427,6 +435,7 @@ class Writer(MediaTag):
     """
     TAG = 'Writer'
     FILTER = 'writer'
+
 
 @utils.registerPlexObject
 class Field(PlexObject):

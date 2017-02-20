@@ -2,7 +2,7 @@
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
 from plexapi.compat import unquote
-from plexapi.media import MediaTag, Genre, Role, Director
+from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -303,7 +303,8 @@ class LibrarySection(PlexObject):
                 sort (str): column:dir; column can be any of {addedAt, originallyAvailableAt, lastViewedAt,
                       titleSort, rating, mediaHeight, duration}. dir can be asc or desc (optional).
                 maxresults (int): Only return the specified number of results (optional).
-                libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist, album, track; optional).
+                libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist,
+                    album, track; optional).
                 **kwargs (dict): Any of the available filters for the current library section. Partial string
                         matches allowed. Multiple matches OR together. All inputs will be compared with the
                         available options and a warning logged if the option does not appear valid.

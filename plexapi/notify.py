@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import json, threading
+import json
+import threading
 from plexapi import log
 from plexapi.exceptions import Unsupported
 
@@ -27,7 +28,7 @@ class PlexNotifier(threading.Thread):
     def run(self):
         """ Starts the PlexNotifier thread. This function should not be called
             directly, instead use :func:`~plexapi.server.PlexServer.startNotifier`.
-        """ 
+        """
         # try importing websocket-client package
         try:
             import websocket

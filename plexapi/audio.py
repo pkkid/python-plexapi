@@ -111,7 +111,7 @@ class Artist(Audio):
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
-            
+
             Parameters:
                 savepath (str): Title of the track to return.
                 keep_orginal_name (bool): Set True to keep the original filename as stored in
@@ -188,7 +188,7 @@ class Album(Audio):
 
     def download(self, savepath=None, keep_orginal_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
-            
+
             Parameters:
                 savepath (str): Title of the track to return.
                 keep_orginal_name (bool): Set True to keep the original filename as stored in

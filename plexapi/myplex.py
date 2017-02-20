@@ -19,21 +19,21 @@ class MyPlexAccount(PlexObject):
         Attributes:
             SIGNIN (str): 'https://my.plexapp.com/users/sign_in.xml'
             key (str): 'https://plex.tv/users/account'
-            authenticationToken (str): <Unknown>
-            certificateVersion (str): <Unknown>
-            cloudSyncDevice (str): 
+            authenticationToken (str): Unknown.
+            certificateVersion (str): Unknown.
+            cloudSyncDevice (str): Unknown.
             email (str): Your current Plex email address.
             entitlements (List<str>): List of devices your allowed to use with this account.
-            guest (bool): <Unknown>
-            home (bool): <Unknown>
-            homeSize (int): <Unknown>
+            guest (bool): Unknown.
+            home (bool): Unknown.
+            homeSize (int): Unknown.
             id (str): Your Plex account ID.
             locale (str): Your Plex locale
             mailing_list_status (str): Your current mailing list status.
-            maxHomeSize (int): <Unknown>
+            maxHomeSize (int): Unknown.
             queueEmail (str): Email address to add items to your `Watch Later` queue.
-            queueUid (str): <Unknown>
-            restricted (bool): <Unknown>
+            queueUid (str): Unknown.
+            restricted (bool): Unknown.
             roles: (List<str>) Lit of account roles. Plexpass membership listed here.
             scrobbleTypes (str): Description
             secure (bool): Description
@@ -42,9 +42,9 @@ class MyPlexAccount(PlexObject):
             subscriptionPlan (str): Name of subscription plan.
             subscriptionStatus (str): String representation of `subscriptionActive`.
             thumb (str): URL of your account thumbnail.
-            title (str): <Unknown> - Looks like an alias for `username`.
+            title (str): Unknown. - Looks like an alias for `username`.
             username (str): Your account username.
-            uuid (str): <Unknown>
+            uuid (str): Unknown.
     """
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
     key = 'https://plex.tv/users/account'
@@ -271,10 +271,9 @@ class MyPlexResource(PlexObject):
         """
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
-        forcelocal = lambda c: self.owned or c.local
         connections = sorted(self.connections, key=lambda c: c.local, reverse=True)
-        https = [c.uri for c in self.connections if forcelocal(c)]
-        http = [c.httpuri for c in self.connections if forcelocal(c)]
+        https = [c.uri for c in self.connections if self.owned or c.local]
+        http = [c.httpuri for c in self.connections if self.owned or c.local]
         # Force ssl, no ssl, or any (default)
         if ssl is True: connections = https
         elif ssl is False: connections = http
