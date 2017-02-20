@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
+import logging, os, requests, time
 from datetime import datetime
-import time
-from threading import Thread
-
-
-import requests
-
 from plexapi.compat import quote, string_type
 from plexapi.exceptions import NotFound
+from threading import Thread
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
