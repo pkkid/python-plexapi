@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-import logging, os, requests
+import logging, os, requests, time
 from datetime import datetime
-from threading import Thread
 from plexapi.compat import quote, string_type
 from plexapi.exceptions import NotFound
+from threading import Thread
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
-    'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
+               'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
 PLEXOBJECTS = {}
 
 
@@ -174,7 +174,7 @@ def toDatetime(value, format=None):
 
 def toList(value, itemcast=None, delim=','):
     """ Returns a list of strings from the specified value.
-        
+
         Parameters:
             value (str): comma delimited string to convert to list.
             itemcast (func): Function to cast each list item to (default str).
@@ -183,6 +183,49 @@ def toList(value, itemcast=None, delim=','):
     value = value or ''
     itemcast = itemcast or str
     return [itemcast(item) for item in value.split(delim) if item != '']
+
+
+def download_session_images(server, filename=None, height=150, width=150, opacity=100, saturation=100):
+    """Simple helper to download a bif image or thumb.url from plex.server.sessions. Returns a dict.
+
+       Parameters:
+           filename (str): default to None,
+           height (int): Height of the image.
+           width (int): width of the image.
+           opacity (int): Opacity of the resulting image (possibly deprecated).
+           saturation (int): Saturating of the resulting image.
+
+       Returns:
+            {'hellowlol': {'fp': 'path_to_file'
+                           'url', 'http://....'}
+            }
+
+    """
+    info = {}
+    for media in server.sessions():
+        url = None
+        for part in media.iterParts():
+
+            if media.thumb:
+                url = media.thumb
+
+            # Always use bif images if available.
+            if part.indexes:
+                url = '/library/parts/%s/indexes/%s/%s' % (part.id, part.indexes.lower(), media.viewOffset)
+
+        if url:
+            if filename is None:
+                filename = 'session_transcode_%s_%s_%s' % (media.usernames[0], media._prettyfilename(),
+                                                           int(time.time()))
+
+            url = server.transcodeImage(url, height=height, width=width,
+                                        opacity=opacity, saturation=saturation)
+
+            dfp = download(url, filename=filename)
+            info['username'] = {'fp': dfp,
+                                'url': url}
+
+    return info
 
 
 def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False):
