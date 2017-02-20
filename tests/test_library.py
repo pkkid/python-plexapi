@@ -99,6 +99,10 @@ def test_library_Library_cancelUpdate(pms):
     pms.library.cancelUpdate()
 
 
+def test_library_Library_deleteMediaPreview(pms):
+    pms.library.deleteMediaPreview()
+
+
 def _test_library_MovieSection_refresh(a_movie_section):
     a_movie_section.refresh()
 
@@ -109,6 +113,9 @@ def test_library_MovieSection_update(a_movie_section):
 
 def test_library_MovieSection_cancelUpdate(a_movie_section):
     a_movie_section.cancelUpdate()
+
+def test_librarty_deleteMediaPreview(a_movie_section):
+    a_movie_section.deleteMediaPreview()
 
 
 def _test_library_MovieSection_refresh(a_movie_section):
