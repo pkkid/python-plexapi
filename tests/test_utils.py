@@ -15,7 +15,7 @@ def _test_utils_threaded():
     pass
 
 
-def _download_session_images():
+def _downloadSessionImages():
     pass  # TODO Add this when we got clients fixed.
 
 
