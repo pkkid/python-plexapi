@@ -185,8 +185,8 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def download_session_images(server, filename=None, height=150, width=150, opacity=100, saturation=100):
-    """Simple helper to download a bif image or thumb.url from plex.server.sessions. Returns a dict.
+def downloadSessionImages(server, filename=None, height=150, width=150, opacity=100, saturation=100):
+    """ Helper to download a bif image or thumb.url from plex.server.sessions.
 
        Parameters:
            filename (str): default to None,
@@ -196,35 +196,24 @@ def download_session_images(server, filename=None, height=150, width=150, opacit
            saturation (int): Saturating of the resulting image.
 
        Returns:
-            {'hellowlol': {'fp': 'path_to_file'
-                           'url', 'http://....'}
-            }
-
+            {'hellowlol': {'filepath': '<filepath>', 'url': 'http://<url>'},
+            {'<username>': {filepath, url}}, ...
     """
     info = {}
     for media in server.sessions():
         url = None
         for part in media.iterParts():
-
             if media.thumb:
                 url = media.thumb
-
-            # Always use bif images if available.
-            if part.indexes:
+            if part.indexes:  # Always use bif images if available.
                 url = '/library/parts/%s/indexes/%s/%s' % (part.id, part.indexes.lower(), media.viewOffset)
-
         if url:
             if filename is None:
-                filename = 'session_transcode_%s_%s_%s' % (media.usernames[0], media._prettyfilename(),
-                                                           int(time.time()))
-
-            url = server.transcodeImage(url, height=height, width=width,
-                                        opacity=opacity, saturation=saturation)
-
+                prettyname = media._prettyfilename()
+                filename = 'session_transcode_%s_%s_%s' % (media.usernames[0], prettyname, int(time.time()))
+            url = server.transcodeImage(url, height=height, width=width, opacity=opacity, saturation=saturation)
             dfp = download(url, filename=filename)
-            info['username'] = {'fp': dfp,
-                                'url': url}
-
+            info['username'] = {'filepath': dfp, 'url': url}
     return info
 
 
