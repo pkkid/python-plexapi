@@ -20,7 +20,7 @@ install:
   - pip install -r requirements_doc.txt
 
 script:
-  - py.test tests --tb=native --verbose --cov-config .coveragerc --cov=plexapi --cov-report=html
+  - py.test tests --tb=native --verbose --cov-config .coveragerc --cov=plexapi
 
 after_success:
   - coveralls
