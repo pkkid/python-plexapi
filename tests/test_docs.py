@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
-import shlex
-import subprocess
+import os, pytest, shlex, subprocess
+from os.path import abspath, dirname, join
 
-import pytest
 
-# Uncomments when a make.bat file has been added to docs.
-#@pytest.mark.xfail("os.environ.get('PLEX_TEST_TOKEN') is None",
-#                   reason='Allow this to fail but not for devs or travis')
-@pytest.mark.skipif(os.name == 'nt',
-                    reason='Skipping this test for windows as there there is no make.bat.')
+@pytest.mark.skipif(os.name == 'nt', reason='No make.bat specified for Windows')
 def test_build_documentation():
     docroot = join(dirname(dirname(abspath(__file__))), 'docs')
     cmd = shlex.split('/usr/bin/make html --warn-undefined-variables')
