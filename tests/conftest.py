@@ -4,10 +4,10 @@ import pytest, requests
 from betamax_serializers import pretty_json
 from functools import partial
 
-token = os.environ.get('PLEX_TOKEN')
-test_token = os.environ.get('PLEX_TEST_TOKEN')
-test_username = os.environ.get('PLEX_TEST_USERNAME')
-test_password = os.environ.get('PLEX_TEST_PASSWORD')
+test_baseurl = plexapi.CONFIG.get('auth.server_baseurl')
+test_token = plexapi.CONFIG.get('auth.server_token')
+test_username = plexapi.CONFIG.get('auth.myplex_username')
+test_password = plexapi.CONFIG.get('auth.myplex_password')
 
 
 @pytest.fixture(scope='session')
@@ -22,10 +22,9 @@ def pms(request):
     # recorder = betamax.Betamax(sess, cassette_library_dir=CASSETTE_LIBRARY_DIR)
     # recorder.use_cassette('http_responses', serialize_with='prettyjson') # record='new_episodes'
     # recorder.start()
-    url = 'http://138.68.157.5:32400'
+    assert test_baseurl
     assert test_token
-    assert url
-    pms = PlexServer(url, test_token, session=sess)
+    pms = PlexServer(test_baseurl, test_token, session=sess)
     #request.addfinalizer(recorder.stop)
     return pms
 
@@ -34,10 +33,9 @@ def pms(request):
 def freshpms():
     from plexapi.server import PlexServer
     sess = requests.Session()
-    url = 'http://138.68.157.5:32400'
+    assert test_baseurl
     assert test_token
-    assert url
-    pms = PlexServer(url, test_token, session=sess)
+    pms = PlexServer(test_baseurl, test_token, session=sess)
     return pms
 
 

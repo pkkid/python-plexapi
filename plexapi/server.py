@@ -90,8 +90,8 @@ class PlexServer(PlexObject):
     key = '/'
 
     def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
-        self._baseurl = baseurl or CONFIG.get('authentication.server_baseurl')
-        self._token = logfilter.add_secret(token or CONFIG.get('authentication.server_token'))
+        self._baseurl = baseurl or CONFIG.get('auth.server_baseurl')
+        self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._library = None  # cached library
         super(PlexServer, self).__init__(self, self.query(self.key), self.key)
@@ -239,7 +239,7 @@ class PlexServer(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data else None
 

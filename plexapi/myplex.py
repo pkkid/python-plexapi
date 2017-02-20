@@ -52,8 +52,8 @@ class MyPlexAccount(PlexObject):
     def __init__(self, username=None, password=None, session=None):
         self._session = session or requests.Session()
         self._token = None
-        username = username or CONFIG.get('authentication.myplex_username')
-        password = password or CONFIG.get('authentication.myplex_password')
+        username = username or CONFIG.get('auth.myplex_username')
+        password = password or CONFIG.get('auth.myplex_password')
         data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password))
         super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
 
@@ -116,7 +116,7 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s %s' % (response.status_code, codename, response.url))
+            raise BadRequest('(%s) %s' % (response.status_code, codename))
         text = response.text.encode('utf8')
         return ElementTree.fromstring(text) if text else None
 

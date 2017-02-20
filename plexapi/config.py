@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from collections import defaultdict
 from plexapi.compat import ConfigParser
 
@@ -17,14 +18,6 @@ class PlexConfig(ConfigParser):
         self.read(path)
         self.data = self._asDict()
 
-    def __getattr__(self, attr):
-        if attr not in ('get', '_asDict', 'data'):
-            for section in self._sections:
-                for name, value in self._sections[section].items():
-                    if name == attr:
-                        return value
-        raise Exception('Config attr not found: %s' % attr)
-
     def get(self, key, default=None, cast=None):
         """ Returns the specified configuration value or <default> if not found.
 
@@ -34,8 +27,13 @@ class PlexConfig(ConfigParser):
                 cast (func): Cast the value to the specified type before returning.
         """
         try:
-            section, name = key.split('.')
-            value = self.data.get(section.lower(), {}).get(name.lower(), default)
+            # First: check environment variable is set
+            envkey = 'PLEXAPI_%s' % key.upper().replace('.', '_')
+            value = os.environ.get(envkey)
+            if value is None:
+                # Second: check the config file has attr
+                section, name = key.lower().split('.')
+                value = self.data.get(section, {}).get(name, default)
             return cast(value) if cast else value
         except:
             return default

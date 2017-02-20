@@ -17,7 +17,7 @@ def test_server_attr(pms):
     assert pms.platform == 'Linux'
     assert pms.platformVersion == '4.4.0-59-generic (#80-Ubuntu SMP Fri Jan 6 17:47:47 UTC 2017)'
     #assert pms.session == <requests.sessions.Session object at 0x029A5E10>
-    assert pms._token == os.environ.get('PLEX_TEST_TOKEN') or CONFIG.get('authentication.server_token')
+    assert pms._token == CONFIG.get('auth.server_token')
     assert pms.transcoderActiveVideoSessions == 0
     #assert str(pms.updatedAt.date()) == '2017-01-20'
     assert pms.version == '1.3.3.3148-b38628e'
@@ -129,8 +129,7 @@ def test_server_Server_session():
             self.plexapi_session_test = True
 
     plex = PlexServer('http://138.68.157.5:32400',
-                      os.environ.get('PLEX_TEST_TOKEN'),
-                      session=MySession())
+        CONFIG.get('auth.server_token'), session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
     pl = plex.playlists()
     assert hasattr(pl[0]._server._session, 'plexapi_session_test')
