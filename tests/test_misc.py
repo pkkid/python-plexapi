@@ -3,7 +3,6 @@ import os
 import pytest
 import shlex
 import subprocess
-from collections import defaultdict
 from os.path import abspath, dirname, join
 
 SKIP_EXAMPLES = ['Example 4']
@@ -21,7 +20,7 @@ def test_build_documentation():
 def test_readme_examples(pms):
     failed = 0
     examples = _fetch_examples(pms)
-    assert len(examples), 'No examples found in README.md'
+    assert len(examples), 'No examples found in README'
     for title, example in examples:
         if _check_run_example(title):
             try:
@@ -36,14 +35,15 @@ def test_readme_examples(pms):
 def _fetch_examples(pms):
     parsing = False
     examples = []
-    filepath = join(dirname(dirname(abspath(__file__))), 'README.md')
+    filepath = join(dirname(dirname(abspath(__file__))), 'README.rst')
     with open(filepath, 'r') as handle:
         for line in handle.read().split('\n'):
+            line = line[4:]
             if line.startswith('# Example '):
                 parsing = True
                 title = line.lstrip('# ')
                 examples.append([title, ['plex = pms']])
-            elif parsing and line == '```':
+            elif parsing and line == '':
                 parsing = False
             elif parsing:
                 examples[-1][1].append(line)

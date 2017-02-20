@@ -6,30 +6,32 @@ Install PlexAPI
 import re
 from distutils.core import setup
 
-# Convert markdown readme to rst
-try:
-    from pypandoc import convert
-    read_md = lambda f: convert(f, 'rst')
-except ImportError:
-    print("Warn: pypandoc not found, not converting Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
-
-
-# Fetch the current version
+# Get the current version
 with open('plexapi/__init__.py') as handle:
     for line in handle.readlines():
         if line.startswith('VERSION'):
-            VERSION = re.findall("'([0-9\.]+?)'", line)[0]
+            version = re.findall("'([0-9\.]+?)'", line)[0]
+
+# Get README.rst contents
+readme = open('README.rst', 'r').read()
+
+# Get requirments
+requirements = []
+with open('requirements.txt') as handle:
+    for line in handle.readlines():
+        if not line.startswith('#'):
+            package = line.strip().split('=', 1)[0]
+            requirements.append(package)
 
 setup(
     name='PlexAPI',
-    version=VERSION,
+    version=version,
     description='Python bindings for the Plex API.',
     author='Michael Shepanski',
-    author_email='mjs7231@gmail.com',
-    url='https://github.com/mjs7231/plexapi',
+    author_email='michael.shepanski@gmail.com',
+    url='https://github.com/pkkid/plexapi',
     packages=['plexapi'],
-    install_requires=['requests'],
-    long_description=read_md('README.md'),
+    install_requires=requirements,
+    long_description=readme,
     keywords=['plex', 'api'],
 )
