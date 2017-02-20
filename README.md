@@ -57,8 +57,8 @@ for video in movies.search(unwatched=True):
     print(video.title)
 ```
 ```python
-# Example 2: Mark all Conan episodes watched.
-plex.library.get('Conan (2010)').markWatched()
+# Example 2: Mark all Game of Thrones episodes watched.
+plex.library.section('TV Shows').get('Game of Thrones').markWatched()
 ```
 ```python
 # Example 3: List all clients connected to the Server.
@@ -66,9 +66,9 @@ for client in plex.clients():
     print(client.title)
 ```
 ```python
-# Example 4: Play the movie Avatar on another client.
+# Example 4: Play the movie Cars on another client.
 # Note: Client must be on same network as server.
-avatar = plex.library.section('Movies').get('Avatar')
+avatar = plex.library.section('Movies').get('Cars')
 client = plex.client("Michael's iPhone")
 client.playMedia(avatar)
 ```
@@ -78,29 +78,28 @@ for video in plex.search('Game'):
     print('%s (%s)' % (video.title, video.TYPE))
 ```
 ```python
-# Example 6: List all movies directed by the same person as Jurassic Park.
+# Example 6: List all movies directed by the same person as Die Hard.
 movies = plex.library.section('Movies')
-jurassic_park = movies.get('Jurassic Park')
-director = jurassic_park.directors[0]
+die_hard = movies.get('Die Hard')
+director = die_hard.directors[0]
 for movie in movies.search(None, director=director):
     print(movie.title)
 ```
 ```python
-# Example 7: List files for the latest episode of Friends.
-thelastone = plex.library.get('Friends').episodes()[-1]
+# Example 7: List files for the latest episode of The 100.
+thelastone = plex.library.section('TV Shows').get('The 100').episodes()[-1]
 for part in thelastone.iterParts():
     print(part.file)
 ```
 ```python
 # Example 8: Get a URL to stream a movie or show in another client
-jurassic_park = plex.library.section('Movies').get('Jurassic Park')
-print 'Run running the following command to play in VLC:'
-print 'vlc "%s"' % jurassic_park.getStreamUrl(videoResolution='800x600')
+die_hard = plex.library.section('Movies').get('Die Hard')
+print('Run running the following command to play in VLC:')
+print('vlc "%s"' % die_hard.getStreamURL(videoResolution='800x600'))
 ```
-
 ```python
 # Example 9: Get audio/video/all playlists
-for playlist in self.plex.playlists():
+for playlist in plex.playlists():
     print(playlist.title)
 ```
 
