@@ -18,6 +18,8 @@ are optional. An example config.ini file may look like the following with all po
     myplex_password = kodi-stinks
     server_baseurl = http://127.0.0.1:32400
     server_token = XBHSMSJSDJ763JSm
+    client_baseurl = http://127.0.0.1:32433
+    client_token = BDFSLCNSNL789FH7
 
     [headers]
     identifier = 0x485b314307f3L
@@ -79,6 +81,20 @@ Section [auth] Options
 
 **server_token**
     Default token to use when creating a new :any:`PlexServer` object. See `auth.server_baseurl` for more
+    information and example usage (default: None).
+
+    WARNING: When specifying a password or token in the configuration file, be sure lock it down
+    (persmission 600) to ensure no other users on the system can read them. Or better yet, only specify
+    sensitive values as a local environment variables.
+
+**client_baseurl**
+    Default baseurl to use when creating a new :any:`PlexClient` object. Specifying this along with
+    :samp:`auth.client_token` allow you to more easily connect to a client and remove the need to hard
+    code the baseurl and token in any supplemental scripts you may write. To create a client object using
+    these values you may simply specify :samp:`client = PlexClient()` without any arguments (default: None).
+
+**client_token**
+    Default token to use when creating a new :any:`PlexClient` object. See `auth.client_baseurl` for more
     information and example usage (default: None).
 
     WARNING: When specifying a password or token in the configuration file, be sure lock it down
