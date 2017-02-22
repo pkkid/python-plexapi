@@ -43,5 +43,5 @@ loghandler.setFormatter(logging.Formatter(logformat))
 log.addHandler(loghandler)
 log.setLevel(loglevel)
 logfilter = SecretsFilter()
-if CONFIG.get('log.secrets', '').lower() != 'true':
+if CONFIG.get('log.show_secrets', '').lower() != 'true':
     log.addFilter(logfilter)

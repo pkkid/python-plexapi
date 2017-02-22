@@ -89,8 +89,8 @@ class PlexServer(PlexObject):
     """
     key = '/'
 
-    def __init__(self, baseurl='http://localhost:32400', token=None, session=None):
-        self._baseurl = baseurl or CONFIG.get('auth.server_baseurl')
+    def __init__(self, baseurl=None, token=None, session=None):
+        self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._library = None  # cached library

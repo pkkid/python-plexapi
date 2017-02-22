@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, TIMEOUT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, Unsupported
@@ -62,6 +62,9 @@ class PlexClient(PlexObject):
         self._session = session or server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
+        if not any([data, initpath, baseurl, token]):
+            self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
+            self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
         if self._baseurl and self._token:
             self.connect()
 
