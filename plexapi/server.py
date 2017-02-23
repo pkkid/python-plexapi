@@ -8,6 +8,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library, Hub
+from plexapi.settings import Settings
 from plexapi.notify import PlexNotifier
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
@@ -93,7 +94,8 @@ class PlexServer(PlexObject):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
-        self._library = None  # cached library
+        self._library = None   # cached library
+        self._settings = None   # cached settings
         super(PlexServer, self).__init__(self, self.query(self.key), self.key)
 
     def _loadData(self, data):
@@ -156,6 +158,14 @@ class PlexServer(PlexObject):
             data = self.query(Library.key)
             self._library = Library(self, data)
         return self._library
+
+    @property
+    def settings(self):
+        """ Returns a list of all server settings. """
+        if not self._settings:
+            data = self.query(Settings.key)
+            self._settings = Settings(self, data)
+        return self._settings
 
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """

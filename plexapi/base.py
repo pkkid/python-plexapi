@@ -45,7 +45,7 @@ class PlexObject(object):
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
-        name = self._clean(self.firstAttr('title', 'name', 'username', 'product', 'tag'))
+        name = self._clean(self.firstAttr('title', 'name', 'username', 'product', 'tag', 'value'))
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):

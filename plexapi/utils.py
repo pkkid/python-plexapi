@@ -93,6 +93,10 @@ def joinArgs(args):
     return '?%s' % '&'.join(arglist)
 
 
+def lowerFirst(s):
+    return s[0].lower() + s[1:]
+
+
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
     """ Returns the value at the specified attrstr location within a nexted tree of
         dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
