@@ -22,7 +22,7 @@ class Settings(PlexObject):
     def __getattr__(self, attr):
         if attr.startswith('_'):
             return self.__dict__[attr]
-        return self.get(attr)
+        return self.get(attr).value
 
     def __setattr__(self, attr, value):
         if not attr.startswith('_'):
