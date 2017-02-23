@@ -28,7 +28,7 @@ class Settings(PlexObject):
         if not attr.startswith('_'):
             return self.get(attr).set(value)
         self.__dict__[attr] = value
-            
+
     def _loadData(self, data):
         self._data = data
         for elem in data:
@@ -67,7 +67,7 @@ class Settings(PlexObject):
                 params[setting.id] = quote(setting._setValue)
         if not params:
             raise BadRequest('No setting have been modified.')
-        querystr = '&'.join(['%s=%s' % (k,v) for k,v in params.items()])
+        querystr = '&'.join(['%s=%s' % (k, v) for k, v in params.items()])
         url = '%s?%s' % (self.key, querystr)
         self._server.query(url, self._server._session.put)
         self.reload()
@@ -102,7 +102,7 @@ class Setting(PlexObject):
             return None
         if ':' in enumstr:
             cast = self.TYPES[self.type]['cast']
-            return {cast(k):v for k,v in [kv.split(':') for kv in enumstr.split('|')]}
+            return {cast(k): v for k, v in [kv.split(':') for kv in enumstr.split('|')]}
         return enumstr.split('|')
 
     def set(self, value):
