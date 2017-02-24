@@ -23,6 +23,7 @@
    modules/playlist
    modules/playqueue
    modules/server
+   modules/settings
    modules/sync
    modules/utils
    modules/video

@@ -6,16 +6,20 @@ from plexapi.exceptions import Unsupported
 
 
 class PlexNotifier(threading.Thread):
-    """ Creates a websocket connection to the Plex Server to optionally recieve
-        notifications. These often include messages from Plex about media scans
-        as well as updates to currently running Transcode Sessions.
+    """ Creates a websocket connection to the Plex Server to optionally recieve notifications. These
+        often include messages from Plex about media scans as well as updates to currently running
+        Transcode Sessions. This class implements threading.Thread, therfore to start monitoring
+        notifications you must call .start() on the object once it's created. When calling
+        `PlexServer.startNotifier()`, the thread will be started for you.
+
+        In order to use this feature, you must have websocket-client installed in your Python path.
+        This can be installed vis pip `pip install websocket-client`.
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this notifier is connected to.
-            callback (func): Callback function to call on recieved messages.
-
-        NOTE: You need websocket-client installed in order to use this feature.
-            >> pip install websocket-client
+            callback (func): Callback function to call on recieved messages. The callback function
+                will be sent a single argument 'data' which will contain a dictionary of data
+                recieved from the server. :samp:`def my_callback(data): ...`
     """
     key = '/:/websockets/notifications'
 
@@ -26,9 +30,6 @@ class PlexNotifier(threading.Thread):
         super(PlexNotifier, self).__init__()
 
     def run(self):
-        """ Starts the PlexNotifier thread. This function should not be called
-            directly, instead use :func:`~plexapi.server.PlexServer.startNotifier`.
-        """
         # try importing websocket-client package
         try:
             import websocket
@@ -43,7 +44,10 @@ class PlexNotifier(threading.Thread):
         self._ws.run_forever()
 
     def stop(self):
-        """ Stop the PlexNotifier thread. """
+        """ Stop the PlexNotifier thread. Once the notifier is stopped, it cannot be diractly
+            started again. You must call :func:`plexapi.server.PlexServer.startNotifier()`
+            from a PlexServer instance.
+        """
         log.info('Stopping PlexNotifier.')
         self._ws.close()
 

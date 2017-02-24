@@ -1,7 +1,7 @@
 .. include:: ../global.rst
 
-Server :modname:`plexapi.server`
+Notify :modname:`plexapi.notify`
 --------------------------------
-.. automodule:: plexapi.server
+.. automodule:: plexapi.notify
     :members:
     :show-inheritance:
