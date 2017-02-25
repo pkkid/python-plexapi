@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
@@ -47,6 +48,7 @@ class MyPlexAccount(PlexObject):
             uuid (str): Unknown.
     """
     SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
+    WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'
     key = 'https://plex.tv/users/account'
 
     def __init__(self, username=None, password=None, session=None):
@@ -61,6 +63,7 @@ class MyPlexAccount(PlexObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self._token = logfilter.add_secret(data.attrib.get('authenticationToken'))
+        self._webhooks = []
         self.authenticationToken = self._token
         self.certificateVersion = data.attrib.get('certificateVersion')
         self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
@@ -151,6 +154,31 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account. """
         data = self.query(MyPlexUser.key)
         return [MyPlexUser(self, elem) for elem in data]
+
+    # ---------------------
+    # Webhook Commands
+    def addWebhook(self, url):
+        urls = copy.copy(self._webhooks) + [url]
+        return self.setWebhooks(urls)
+
+    def deleteWebhook(self, url):
+        urls = copy.copy(self._webhooks)
+        if url not in urls:
+            raise BadRequest('Webhook does not exist: %s' % url)
+        urls.remove(url)
+        return self.setWebhooks(urls)
+
+    def setWebhooks(self, urls):
+        log.info('Setting webhooks: %s' % urls)
+        data = self.query(self.WEBHOOKS, self._session.post, data={'urls[]': urls})
+        self._webhooks = self.listAttrs(data, 'url', etag='webhook')
+        return self._webhooks
+
+    def webhooks(self):
+        data = self.query(self.WEBHOOKS)
+        self._webhooks = self.listAttrs(data, 'url', etag='webhook')
+        return self._webhooks
+
 
 
 class MyPlexUser(PlexObject):
