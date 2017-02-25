@@ -120,8 +120,8 @@ class MyPlexAccount(PlexObject):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
-        text = response.text.encode('utf8')
-        return ElementTree.fromstring(text) if text else None
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data.strip() else None
 
     def resource(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexResource` that matches the name specified.
@@ -404,6 +404,8 @@ class MyPlexDevice(PlexObject):
         self.token = logfilter.add_secret(data.attrib.get('token'))
         self.screenResolution = data.attrib.get('screenResolution')
         self.screenDensity = data.attrib.get('screenDensity')
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
     def connect(self):
@@ -436,3 +438,8 @@ class MyPlexDevice(PlexObject):
         except Exception as err:
             log.error('%s: %s', url, err)
             results[i] = (url, self.token, None)
+
+    def delete(self):
+        """ Remove this device from your account. """
+        key = 'https://plex.tv/devices/%s.xml' % self.id
+        self._server.query(key, self._server._session.delete)

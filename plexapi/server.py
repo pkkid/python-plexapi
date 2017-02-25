@@ -251,7 +251,7 @@ class PlexServer(PlexObject):
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
             raise BadRequest('(%s) %s' % (response.status_code, codename))
         data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data else None
+        return ElementTree.fromstring(data) if data.strip() else None
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
