@@ -180,7 +180,6 @@ class MyPlexAccount(PlexObject):
         return self._webhooks
 
 
-
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
         accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
