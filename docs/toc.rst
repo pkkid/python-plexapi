@@ -9,6 +9,7 @@
 .. toctree::
    :maxdepth: 1
    :caption: Modules
+   :titlesonly:
 
    modules/audio
    modules/base

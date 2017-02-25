@@ -60,7 +60,7 @@ class Settings(PlexObject):
 
     def group(self, group):
         """ Return a list of all :class:`~plexapi.settings.Setting` objects in the specified group.
-            
+
             Parameters:
                 group (str): Group to return all settings.
         """
@@ -85,7 +85,7 @@ class Settings(PlexObject):
 
 class Setting(PlexObject):
     """ Represents a single Plex setting.
-        
+
         Attributes:
             id (str): Setting id (or name).
             label (str): Short description of what this setting is.
