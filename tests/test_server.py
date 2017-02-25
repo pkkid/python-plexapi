@@ -23,13 +23,13 @@ def test_server_attr(pms):
     assert pms.version == '1.3.3.3148-b38628e'
 
 
-def test_server_notifier(pms, a_movie_section):
+def test_server_alert_listener(pms, a_movie_section):
     import time
     messages = []
-    notifier = pms.startNotifier(messages.append)
+    listener = pms.startAlertListener(messages.append)
     a_movie_section.refresh()
     time.sleep(5)
-    notifier.stop()
+    listener.stop()
     assert len(messages) >= 3
 
 

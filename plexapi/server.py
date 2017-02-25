@@ -3,20 +3,20 @@ import requests
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
+from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import Library, Hub
 from plexapi.settings import Settings
-from plexapi.notify import PlexNotifier
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
 
 # Need these imports to populate utils.PLEXOBJECTS
-from plexapi import (audio as _audio, video as _video,          # noqa: F401
-    photo as _photo, media as _media, playlist as _playlist)    # noqa: F401
+from plexapi import (audio as _audio, video as _video,
+    photo as _photo, media as _media, playlist as _playlist)
 
 
 class PlexServer(PlexObject):
@@ -285,7 +285,7 @@ class PlexServer(PlexObject):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
 
-    def startNotifier(self, callback=None):
+    def startAlertListener(self, callback=None):
         """ Creates a websocket connection to the Plex Server to optionally recieve
             notifications. These often include messages from Plex about media scans
             as well as updates to currently running Transcode Sessions.
@@ -299,7 +299,7 @@ class PlexServer(PlexObject):
             raises:
                 :class:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
-        notifier = PlexNotifier(self, callback)
+        notifier = AlertListener(self, callback)
         notifier.start()
         return notifier
 
