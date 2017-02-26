@@ -46,10 +46,22 @@ class Photoalbum(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
+    def albums(self, **kwargs):
+        """ Returns a list of :class:`~plexapi.photo.Photoalbum` objects in this album. """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItems(key, etag='Directory', **kwargs)
+
+    def album(self, title):
+        """ Returns the :class:`~plexapi.photo.Photoalbum` that matches the specified title. """
+        for album in self.albums():
+            if album.attrib.get('title').lower() == title.lower():
+                return album
+        raise NotFound('Unable to find album: %s' % title)
+
     def photos(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, **kwargs)
+        return self.fetchItems(key, etag='Photo', **kwargs)
 
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
@@ -57,6 +69,13 @@ class Photoalbum(PlexPartialObject):
             if photo.attrib.get('title').lower() == title.lower():
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
+
+    def reload(self):
+        """ Reload the data for this object from self.key. """
+        self._initpath = self.key
+        data = self._server.query(self.key)
+        self._loadData(data)
+        return self
 
 
 @utils.registerPlexObject
