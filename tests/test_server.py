@@ -206,3 +206,13 @@ def test_server_account(pms):
     assert acc.subscriptionFeatures == []
     assert acc.subscriptionState == 'Unknown'
     assert acc.username == 'testplexapi@gmail.com'
+
+
+def test_server_downloadLogs(tmpdir, pms):
+    pms.downloadLogs(savepath=tmpdir, unpack=True)
+    assert len(os.listdir(tmpdir)) > 1
+
+
+def test_server_downloadDB(tmpdir, pms):
+    pms.downloadDB(savepath=tmpdir, unpack=True)
+    assert len(os.listdir(tmpdir)) > 1

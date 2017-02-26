@@ -326,6 +326,16 @@ class PlexServer(PlexObject):
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
 
+    def downloadLog(self, savepath=None, unpack=False):
+        url = self.url('/diagnostics/databases')
+        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack)
+        return fp
+
+    def downloadDB(self, savepath=None, unpack=False):
+        url = self.url('/diagnostics/logs')
+        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack)
+        return fp
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
