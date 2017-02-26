@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import utils
 from plexapi.base import PlexObject
+from plexapi.compat import quote_plus
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
 
@@ -282,6 +283,10 @@ class TranscodeSession(PlexObject):
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoDecision = data.attrib.get('videoDecision')
         self.width = cast(int, data.attrib.get('width'))
+
+    def stop(self, reason=''):
+        key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.key, quote_plus(reason))
+        return self._server.query(key)
 
 
 class MediaTag(PlexObject):

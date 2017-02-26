@@ -174,12 +174,28 @@ class PlexServer(PlexObject):
 
     def clients(self):
         """ Returns a list of all :class:`~plexapi.client.PlexClient` objects
-            connected  to this server.
-        """
+            connected  to this server."""
+
         items = []
+        cache_resource = None
+        from plexapi.myplex import MyPlexResource
         for elem in self.query('/clients'):
-            baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
-            items.append(PlexClient(baseurl, server=self, data=elem))
+            # Some shitty clients dont include a port..
+            port = elem.attrib.get('port')
+            if port is None:
+                log.debug("%s didn't provide a port. Checking https://plex.tv/devices.xml" % elem.attrib.get('name'))
+                data = cache_resource or self._server._session.get('https://plex.tv/devices.xml?X-Plex-Token=%s' % self.token)
+                cache_resource = data
+                resources = MyPlexResource(self, data)
+                for resource in resources:
+                    if resource.clientIdentifier == elem.attrib.get('machineIdentifier'):
+                        for conn in resource.connection:
+                            if conn.local is True:
+                                port = conn.port
+                                break
+
+            baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
+            items.append(PlexClient(baseurl=baseurl, server=self, data=elem))
         return items
 
     def client(self, name):
@@ -326,14 +342,14 @@ class PlexServer(PlexObject):
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
 
-    def downloadLog(self, savepath=None, unpack=False):
+    def downloadLogs(self, savepath=None, unpack=False):
         url = self.url('/diagnostics/databases')
-        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack)
+        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack, session=self._session)
         return fp
 
-    def downloadDB(self, savepath=None, unpack=False):
+    def downloadDBS(self, savepath=None, unpack=False):
         url = self.url('/diagnostics/logs')
-        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack)
+        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack, session=self._session)
         return fp
 
 

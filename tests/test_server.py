@@ -209,10 +209,10 @@ def test_server_account(pms):
 
 
 def test_server_downloadLogs(tmpdir, pms):
-    pms.downloadLogs(savepath=tmpdir, unpack=True)
-    assert len(os.listdir(tmpdir)) > 1
+    pms.downloadLogs(savepath=str(tmpdir), unpack=True)
+    assert len(tmpdir.listdir()) > 1
 
 
 def test_server_downloadDB(tmpdir, pms):
-    pms.downloadDB(savepath=tmpdir, unpack=True)
-    assert len(os.listdir(tmpdir)) > 1
+    pms.downloadDBS(savepath=str(tmpdir), unpack=True)
+    assert len(tmpdir.listdir()) > 1
