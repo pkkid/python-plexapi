@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi import utils
 from plexapi.base import PlexObject
-from plexapi.compat import quote_plus
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
 
@@ -255,6 +254,19 @@ class SubtitleStream(MediaPartStream):
 
 
 @utils.registerPlexObject
+class Session(PlexObject):
+    """Represents a current session."""
+    TAG = 'Session'
+
+    def _loadData(self, data):
+        print('shit')
+        self.id = data.attrib.get('id')
+        self.bandwidth = utils.cast(int, data.attrib.get('bandwidth'))
+        self.location = data.attrib.get('location')
+
+
+
+@utils.registerPlexObject
 class TranscodeSession(PlexObject):
     """ Represents a current transcode session.
 
@@ -283,10 +295,6 @@ class TranscodeSession(PlexObject):
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoDecision = data.attrib.get('videoDecision')
         self.width = cast(int, data.attrib.get('width'))
-
-    def stop(self, reason=''):
-        key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.key, quote_plus(reason))
-        return self._server.query(key)
 
 
 class MediaTag(PlexObject):

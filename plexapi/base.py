@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
+
 from plexapi import log, utils
-from plexapi.compat import urlencode
+from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
 OPERATORS = {
@@ -354,6 +355,7 @@ class Playable(object):
             sessionKey (int): Active session key.
             username (str): Username of the person playing this item (for active sessions).
             players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
+            session (:class:`~plexapi.media.Session`): Session object, for a playing media file.
             transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
@@ -364,6 +366,7 @@ class Playable(object):
         self.usernames = self.listAttrs(data, 'title', etag='User')                 # session
         self.players = self.findItems(data, etag='Player')                          # session
         self.transcodeSessions = self.findItems(data, etag='TranscodeSession')      # session
+        self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
 
@@ -440,7 +443,13 @@ class Playable(object):
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
-                savepath=savepath, session=self._server._session)
+                                      savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
+
+    def stop(self, reason=''):
+        """Stop playback for a media item."""
+        print('called stop')
+        key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.session[0].id, quote_plus(reason))
+        return self._server.query(key)
