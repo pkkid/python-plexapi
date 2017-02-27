@@ -50,6 +50,7 @@ def pytest_runtest_setup(item):
     else:
         item.config.getvalue("req_client")
 
+
 @pytest.fixture()
 def plex_account():
     from plexapi.myplex import MyPlexAccount
@@ -87,6 +88,7 @@ def a_music_section(pms):
     sec = pms.library.section('Music')
     assert sec
     return sec
+
 
 @pytest.fixture()
 def a_photo_section(pms):

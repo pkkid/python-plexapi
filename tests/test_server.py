@@ -213,6 +213,6 @@ def test_server_downloadLogs(tmpdir, pms):
     assert len(tmpdir.listdir()) > 1
 
 
-def test_server_downloadDB(tmpdir, pms):
-    pms.downloadDBS(savepath=str(tmpdir), unpack=True)
+def test_server_downloadDatabases(tmpdir, pms):
+    pms.downloadDatabases(savepath=str(tmpdir), unpack=True)
     assert len(tmpdir.listdir()) > 1
