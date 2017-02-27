@@ -8,8 +8,7 @@ import zipfile
 from datetime import datetime
 from threading import Thread
 from plexapi import compat
-from plexapi.exceptions import NotFound, PlexApiException
-
+from plexapi.exceptions import NotFound
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
