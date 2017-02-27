@@ -2,13 +2,11 @@
 import logging
 import os
 import re
+import requests
 import time
 import zipfile
 from datetime import datetime
 from threading import Thread
-
-import requests
-
 from plexapi.compat import quote, string_type
 from plexapi.exceptions import NotFound
 
