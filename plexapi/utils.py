@@ -262,7 +262,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
         # Lets grab the name if we dont supply one.
         # This will be used for downloading logs/db etc.
         if filename is None and response.headers.get('Content-Disposition'):
-            filename = re.findall(ur'filename=\"(.+)\"', response.headers.get('Content-Disposition'))
+            filename = re.findall(r'filename=\"(.+)\"', response.headers.get('Content-Disposition'))
             if filename:
                 filename = filename[0]
 
