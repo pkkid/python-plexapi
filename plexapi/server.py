@@ -184,7 +184,7 @@ class PlexServer(PlexObject):
             port = elem.attrib.get('port')
             if port is None:
                 log.debug("%s didn't provide a port. Checking https://plex.tv/devices.xml" % elem.attrib.get('name'))
-                data = cache_resource or self._server._session.get('https://plex.tv/devices.xml?X-Plex-Token=%s' % self.token)
+                data = cache_resource or self._server._session.get('https://plex.tv/devices.xml?X-Plex-Token=%s' % self.token) # noqa
                 cache_resource = data
                 resources = MyPlexResource(self, data)
                 for resource in resources:

@@ -265,7 +265,6 @@ class Session(PlexObject):
         self.location = data.attrib.get('location')
 
 
-
 @utils.registerPlexObject
 class TranscodeSession(PlexObject):
     """ Represents a current transcode session.
