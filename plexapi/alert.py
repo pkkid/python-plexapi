@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import threading
-
 import websocket
-
 from plexapi import log
 
 
@@ -32,9 +30,8 @@ class AlertListener(threading.Thread):
         # create the websocket connection
         url = self._server.url(self.key).replace('http', 'ws')
         log.info('Starting AlertListener: %s', url)
-        self._ws = websocket.WebSocketApp(url,
-                                          on_message=self._onMessage,
-                                          on_error=self._onError)
+        self._ws = websocket.WebSocketApp(url, on_message=self._onMessage,
+            on_error=self._onError)
         self._ws.run_forever()
 
     def stop(self):
