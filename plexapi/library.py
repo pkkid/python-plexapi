@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import unquote
+from plexapi.compat import unquote, urlencode, quote_plus
 from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -144,6 +144,34 @@ class Library(PlexObject):
         for section in self.sections():
             section.deleteMediaPreviews()
 
+    def addLibrary(self, name='', media_type='', location='', *args, **kwargs):
+        """ Simplified add for the most common options.
+
+            name (str): Name of the library
+            media_type (str): movie, show, # check me
+            location (str):
+
+        """
+        from plexpai.compat import quote_plus, urlencode
+
+        # agents
+        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/system/agents?mediaType=2&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=
+
+        # Scanner
+        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/system/scanners/2?X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=
+
+        # advance gets the info from.
+        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/library/sections/prefs?type=2&agent=com.plexapp.agents.thetvdb&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=864x662%2C1366x768&X-Plex-Token=
+
+        # Add lib.
+        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=en&importFromiTunes=&enableAutoPhotoTags=&location=%s' % (quote_plus(name), mtype, agent, scanner, quote_plus(location))
+        if kwargs:  # for advanced settings etc.
+            part += urlencode(kwargs)
+
+        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/library/sections?name=Movies&type=movie&agent=com.plexapp.agents.imdb&scanner=Plex%20Movie%20Scanner&language=en&importFromiTunes=&enableAutoPhotoTags=&location=D%3A%5Ccpmovies&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=utrPyACsqh26yCLR7gWo
+        self._server._session.query(url)
+
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -203,6 +231,11 @@ class LibrarySection(PlexObject):
             msg += 'You may need to allow this permission in your Plex settings.'
             log.error(msg)
             raise
+
+    def editLibrary(self, **kwargs):
+        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
+        print(part)
+        return self._server._query(part, method=self._server._session.put)
 
     def get(self, title):
         """ Returns the media item with the specified title.
