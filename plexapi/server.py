@@ -175,7 +175,6 @@ class PlexServer(PlexObject):
     def clients(self):
         """ Returns a list of all :class:`~plexapi.client.PlexClient` objects
             connected  to this server."""
-
         items = []
         cache_resource = None
         from plexapi.myplex import MyPlexResource
@@ -193,7 +192,6 @@ class PlexServer(PlexObject):
                             if conn.local is True:
                                 port = conn.port
                                 break
-
             baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
             items.append(PlexClient(baseurl=baseurl, server=self, data=elem))
         return items
@@ -230,6 +228,16 @@ class PlexServer(PlexObject):
                 kwargs (dict): See `~plexapi.playerque.PlayQueue.create`.
         """
         return PlayQueue.create(self, item, **kwargs)
+
+    def downloadDatabases(self, savepath=None, unpack=False):
+        url = self.url('/diagnostics/databases')
+        filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
+        return filepath
+
+    def downloadLogs(self, savepath=None, unpack=False):
+        url = self.url('/diagnostics/logs')
+        filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
+        return filepath
 
     def history(self):
         """ Returns a list of media items from watched history. """
@@ -341,17 +349,7 @@ class PlexServer(PlexObject):
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
-
-    def downloadLogs(self, savepath=None, unpack=False):
-        url = self.url('/diagnostics/databases')
-        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack, session=self._session)
-        return fp
-
-    def downloadDBS(self, savepath=None, unpack=False):
-        url = self.url('/diagnostics/logs')
-        fp = utils.download(url, filename=None, savepath=savepath, unpack=unpack, session=self._session)
-        return fp
-
+    
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't

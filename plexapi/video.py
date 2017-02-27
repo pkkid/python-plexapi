@@ -159,22 +159,20 @@ class Movie(Video, Playable):
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
-        downloaded = []
-        locs = [i for i in self.iterParts() if i]
-        for loc in locs:
-            if keep_orginal_name is False:
-                name = '%s.%s' % (self.title.replace(' ', '.'), loc.container)
+        filepaths = []
+        locations = [i for i in self.iterParts() if i]
+        for location in locations:
+            name = location.file
+            if not keep_orginal_name:
+                title = self.title.replace(' ', '.')
+                name = '%s.%s' % (title, location.container)
+            if kwargs is not None:
+                url = self.getStreamURL(**kwargs)
             else:
-                name = loc.file
-            # So this seems to be a alot slower but allows transcode.
-            if kwargs:
-                download_url = self.getStreamURL(**kwargs)
-            else:
-                download_url = self._server.url('%s?download=1' % loc.key)
-            dl = utils.download(download_url, filename=name, savepath=savepath, session=self._server._session)
-            if dl:
-                downloaded.append(dl)
-        return downloaded
+                self._server.url('%s?download=1' % location.key)
+            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session)
+            filepaths.append(filepath)
+        return filepaths
 
 
 @utils.registerPlexObject
@@ -303,12 +301,10 @@ class Show(Video):
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
-        downloaded = []
-        for ep in self.episodes():
-            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
-            if dl:
-                downloaded.extend(dl)
-        return downloaded
+        filepaths = []
+        for episode in self.episodes():
+            filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
+        return filepaths
 
 
 @utils.registerPlexObject
@@ -401,12 +397,10 @@ class Season(Video):
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
-        downloaded = []
-        for ep in self.episodes():
-            dl = ep.download(savepath=savepath, keep_orginal_name=keep_orginal_name, **kwargs)
-            if dl:
-                downloaded.extend(dl)
-        return downloaded
+        filepaths = []
+        for episode in self.episodes():
+            filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
+        return filepaths
 
 
 @utils.registerPlexObject

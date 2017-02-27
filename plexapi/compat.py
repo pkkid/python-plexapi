@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Python 2/3 compatability
 # Always try Py3 first
+import os
 
 try:
     string_type = basestring
@@ -36,3 +37,12 @@ try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
     from xml.etree import ElementTree
+
+
+def makedirs(name, mode=0o777, exist_ok=False):
+    """ Mimicks os.makedirs() from Python 3. """
+    try:
+        os.makedirs(name, mode)
+    except OSError:
+        if not os.path.isdir(name) or not exist_ok:
+            raise

@@ -7,8 +7,8 @@ import time
 import zipfile
 from datetime import datetime
 from threading import Thread
-from plexapi.compat import quote, string_type
-from plexapi.exceptions import NotFound
+from plexapi import compat
+from plexapi.exceptions import NotFound, PlexApiException
 
 
 # Search Types - Plex uses these to filter specific media types when searching.
@@ -31,7 +31,7 @@ class SecretsFilter(logging.Filter):
     def filter(self, record):
         cleanargs = list(record.args)
         for i in range(len(cleanargs)):
-            if isinstance(cleanargs[i], string_type):
+            if isinstance(cleanargs[i], compat.string_type):
                 for secret in self.secrets:
                     cleanargs[i] = cleanargs[i].replace(secret, '<hidden>')
         record.args = tuple(cleanargs)
@@ -92,7 +92,7 @@ def joinArgs(args):
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
         value = str(args[key])
-        arglist.append('%s=%s' % (key, quote(value)))
+        arglist.append('%s=%s' % (key, compat.quote(value)))
     return '?%s' % '&'.join(arglist)
 
 
@@ -215,15 +215,15 @@ def downloadSessionImages(server, filename=None, height=150, width=150, opacity=
         for part in media.iterParts():
             if media.thumb:
                 url = media.thumb
-            if part.indexes:  # Always use bif images if available.
+            if part.indexes:  # always use bif images if available.
                 url = '/library/parts/%s/indexes/%s/%s' % (part.id, part.indexes.lower(), media.viewOffset)
         if url:
             if filename is None:
                 prettyname = media._prettyfilename()
                 filename = 'session_transcode_%s_%s_%s' % (media.usernames[0], prettyname, int(time.time()))
-            url = server.transcodeImage(url, height=height, width=width, opacity=opacity, saturation=saturation)
-            dfp = download(url, filename=filename)
-            info['username'] = {'filepath': dfp, 'url': url}
+            url = server.transcodeImage(url, height, width, opacity, saturation)
+            filepath = download(url, filename=filename)
+            info['username'] = {'filepath': filepath, 'url': url}
     return info
 
 
@@ -243,61 +243,37 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, mo
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
     """
-    # TODO: Review this; It should be properly logging and raising exceptions..
     from plexapi import log
+    # fetch the data to be saved
     session = session or requests.Session()
-    if savepath is None:
-        savepath = os.getcwd()
-    else:
-        # Make sure the user supplied path exists
-        try:
-            os.makedirs(savepath)
-        except OSError:
-            if not os.path.isdir(savepath):  # pragma: no cover
-                raise
-
-    try:
-        response = session.get(url, stream=True)
-
-        # Lets grab the name if we dont supply one.
-        # This will be used for downloading logs/db etc.
-        if filename is None and response.headers.get('Content-Disposition'):
-            filename = re.findall(r'filename=\"(.+)\"', response.headers.get('Content-Disposition'))
-            if filename:
-                filename = filename[0]
-
-        filename = os.path.basename(filename)
-        fullpath = os.path.join(savepath, filename)
-
-        # images dont have a extention so we try
-        # to guess it from content-type
-        ext = os.path.splitext(fullpath)[-1]
-        if ext:
-            ext = ''
-        else:
-            cp = response.headers.get('content-type')
-            if cp:
-                if 'image' in cp:
-                    ext = '.%s' % cp.split('/')[1]
-        fullpath = '%s%s' % (fullpath, ext)
-
-        if mocked:
-            log.debug('Mocked download %s', fullpath)
-            return fullpath
-
-        with open(fullpath, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=chunksize):
-                if chunk:
-                    f.write(chunk)
-
-        if fullpath.endswith('zip') and unpack is True:
-            with zipfile.ZipFile(fullpath, 'r') as zp:
-                zp.extractall(savepath)
-
-        # log.debug('Downloaded %s to %s from %s' % (filename, fullpath, url))
+    response = session.get(url, stream=True)
+    # make sure the savepath directory exists
+    savepath = savepath or os.getcwd()
+    compat.makedirs(savepath, exist_ok=True)
+    # try getting filename from header if not specified in arguments (used for logs, db)
+    if not filename and response.headers.get('Content-Disposition'):
+        filename = re.findall(r'filename=\"(.+)\"', response.headers.get('Content-Disposition'))
+        filename = filename[0] if filename[0] else None
+    filename = os.path.basename(filename)
+    fullpath = os.path.join(savepath, filename)
+    # append file.ext from content-type if not already there
+    extension = os.path.splitext(fullpath)[-1]
+    if not extension:
+        contenttype = response.headers.get('content-type')
+        if contenttype and 'image' in contenttype:
+            fullpath += contenttype.split('/')[1]
+    # check this is a mocked download (testing)
+    if mocked:
+        log.debug('Mocked download %s', fullpath)
         return fullpath
-
-    except Exception as err:  # pragma: no cover
-        log.exception('Error downloading file: %s' % err)
-        raise
-        # log.exception('Failed to download %s to %s %s' % (url, fullpath, e))
+    # save the file to disk
+    log.info('Downloading: %s', fullpath)
+    with open(fullpath, 'wb') as handle:
+        for chunk in response.iter_content(chunk_size=chunksize):
+            handle.write(chunk)
+    # check we want to unzip the contents
+    if fullpath.endswith('zip') and unpack:
+        with zipfile.ZipFile(fullpath, 'r') as handle:
+            handle.extractall(savepath)
+    # finished; return fillpath
+    return fullpath
