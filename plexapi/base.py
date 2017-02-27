@@ -177,12 +177,13 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self):
+    def reload(self, key=None):
         """ Reload the data for this object from self.key. """
-        if not self.key:
+        key = key or self.key
+        if not key:
             raise Unsupported('Cannot reload an object not built from a URL.')
-        self._initpath = self.key
-        data = self._server.query(self.key)
+        self._initpath = key
+        data = self._server.query(key)
         self._loadData(data[0])
         return self
 

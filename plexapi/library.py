@@ -144,7 +144,7 @@ class Library(PlexObject):
         for section in self.sections():
             section.deleteMediaPreviews()
 
-    def add(self, name='', media_type='', agent='', scanner='', location='', language='en', *args, **kwargs):
+    def add(self, name='', type='', agent='', scanner='', location='', language='en', *args, **kwargs):
         """ Simplified add for the most common options.
 
             name (str): Name of the library
@@ -227,8 +227,12 @@ class LibrarySection(PlexObject):
     def edit(self, **kwargs):
         """Edit a library
 
-           See addLibrary for example usage.
+           See :class:`~plexapi.library.Library for example usage.
+
            Note: agent is required.
+
+           kwargs (dict): Dict of settings to edit. Some values might need to be quoted.
+                          Value of scanner, name and location is quoted automatically.
 
         """
         # We might need to quote more, but lets start with what we know.
@@ -239,7 +243,12 @@ class LibrarySection(PlexObject):
             kw[k] = v
 
         part = '/library/sections/%s?%s' % (self.key, urlencode(kw))
-        return self._server.query(part, method=self._server._session.put)
+        self._server.query(part, method=self._server._session.put)
+        # Reload this way since the self.key dont have a full path, but is simply a id.
+        for s in self._server.library.sections():
+            if s.key == self.key:
+                return s
+
 
     def get(self, title):
         """ Returns the media item with the specified title.

@@ -76,6 +76,22 @@ def test_library_search(pms):
     m = pms.library.search('16 blocks')[0]
     assert m.title == '16 Blocks'
 
+def test_library_add_edit_delete(pms):
+    d = dict(name='zomg strange11', type='movie', agent='com.plexapp.agents.imdb',
+             scanner='Plex Movie Scanner', language='en')
+
+    rn = dict(name='a renamed lib', type='movie', agent='com.plexapp.agents.imdb')
+
+    # We dont want to add a location because we dont want to start scanning.
+    pms.library.add(**d)
+
+    assert pms.library.section('zomg strange11')
+
+    edited_library = pms.library.section('zomg strange11').edit(**rn)
+    assert edited_library.title == 'a renamed lib'
+
+    pms.library.section('a renamed lib').delete()
+
 
 def test_library_Library_cleanBundle(pms):
     pms.library.cleanBundles()
