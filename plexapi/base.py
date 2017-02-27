@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-
 from plexapi import log, utils
 from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
@@ -443,7 +442,7 @@ class Playable(object):
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
             filepath = utils.download(download_url, filename=filename,
-                                      savepath=savepath, session=self._server._session)
+                savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
