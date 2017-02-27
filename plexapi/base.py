@@ -448,7 +448,6 @@ class Playable(object):
         return filepaths
 
     def stop(self, reason=''):
-        """Stop playback for a media item."""
-        print('called stop')
+        """ Stop playback for a media item. """
         key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.session[0].id, quote_plus(reason))
         return self._server.query(key)
