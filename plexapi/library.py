@@ -231,19 +231,12 @@ class LibrarySection(PlexObject):
 
            Note: agent is required.
 
-           kwargs (dict): Dict of settings to edit. Some values might need to be quoted.
-                          Value of scanner, name and location is quoted automatically.
+           kwargs (dict): Dict of settings to edit.
 
         """
-        # We might need to quote more, but lets start with what we know.
-        kw = {}
-        for k, v in kwargs.items():
-            if k in ('scanner', 'name', 'location'):
-                v = quote_plus(v)
-            kw[k] = v
-
-        part = '/library/sections/%s?%s' % (self.key, urlencode(kw))
+        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
+
         # Reload this way since the self.key dont have a full path, but is simply a id.
         for s in self._server.library.sections():
             if s.key == self.key:
