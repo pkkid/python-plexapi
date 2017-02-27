@@ -144,32 +144,24 @@ class Library(PlexObject):
         for section in self.sections():
             section.deleteMediaPreviews()
 
-    def addLibrary(self, name='', media_type='', location='', *args, **kwargs):
+    def add(self, name='', media_type='', agent='', scanner='', location='', language='en', *args, **kwargs):
         """ Simplified add for the most common options.
 
             name (str): Name of the library
-            media_type (str): movie, show, # check me
-            location (str):
+            agent (str): Example com.plexapp.agents.imdb
+            type (str): movie, show, # check me
+            location (str): /path/to/files
+            language (str): Two letter language fx en
+            kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
 
         """
-        from plexpai.compat import quote_plus, urlencode
+        # Should this function be here or in server??
+        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
+                quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))
 
-        # agents
-        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/system/agents?mediaType=2&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=
-
-        # Scanner
-        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/system/scanners/2?X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=
-
-        # advance gets the info from.
-        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/library/sections/prefs?type=2&agent=com.plexapp.agents.thetvdb&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=864x662%2C1366x768&X-Plex-Token=
-
-        # Add lib.
-        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=en&importFromiTunes=&enableAutoPhotoTags=&location=%s' % (quote_plus(name), mtype, agent, scanner, quote_plus(location))
-        if kwargs:  # for advanced settings etc.
+        if kwargs:
             part += urlencode(kwargs)
-
-        # https://10-0-0-97.b0b2cd13b5684d54bc9f439d7a9df61e.plex.direct:32400/library/sections?name=Movies&type=movie&agent=com.plexapp.agents.imdb&scanner=Plex%20Movie%20Scanner&language=en&importFromiTunes=&enableAutoPhotoTags=&location=D%3A%5Ccpmovies&X-Plex-Product=Plex%20Web&X-Plex-Version=2.13.0&X-Plex-Client-Identifier=9l332forz5fdpldi&X-Plex-Platform=Chrome&X-Plex-Platform-Version=56.0&X-Plex-Device=Windows&X-Plex-Device-Name=Plex%20Web%20%28Chrome%29&X-Plex-Device-Screen-Resolution=1366x662%2C1366x768&X-Plex-Token=utrPyACsqh26yCLR7gWo
-        self._server._session.query(url)
+        return self._server.query(part, method=self._server._session.post)
 
 
 
@@ -232,10 +224,22 @@ class LibrarySection(PlexObject):
             log.error(msg)
             raise
 
-    def editLibrary(self, **kwargs):
-        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
-        print(part)
-        return self._server._query(part, method=self._server._session.put)
+    def edit(self, **kwargs):
+        """Edit a library
+
+           See addLibrary for example usage.
+           Note: agent is required.
+
+        """
+        # We might need to quote more, but lets start with what we know.
+        kw = {}
+        for k, v in kwargs.items():
+            if k in ('scanner', 'name', 'location'):
+                v = quote_plus(v)
+            kw[k] = v
+
+        part = '/library/sections/%s?%s' % (self.key, urlencode(kw))
+        return self._server.query(part, method=self._server._session.put)
 
     def get(self, title):
         """ Returns the media item with the specified title.
