@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 import threading
+import websocket
 from plexapi import log
-from plexapi.exceptions import Unsupported
 
 
 class AlertListener(threading.Thread):
@@ -11,9 +11,6 @@ class AlertListener(threading.Thread):
         Transcode Sessions. This class implements threading.Thread, therfore to start monitoring
         alerts you must call .start() on the object once it's created. When calling
         `PlexServer.startAlertListener()`, the thread will be started for you.
-
-        In order to use this feature, you must have websocket-client installed in your Python path.
-        This can be installed vis pip `pip install websocket-client`.
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this listener is connected to.
@@ -30,16 +27,10 @@ class AlertListener(threading.Thread):
         super(AlertListener, self).__init__()
 
     def run(self):
-        # try importing websocket-client package
-        try:
-            import websocket
-        except:
-            raise Unsupported('Websocket-client package is required to use this feature.')
         # create the websocket connection
         url = self._server.url(self.key).replace('http', 'ws')
         log.info('Starting AlertListener: %s', url)
-        self._ws = websocket.WebSocketApp(url,
-            on_message=self._onMessage,
+        self._ws = websocket.WebSocketApp(url, on_message=self._onMessage,
             on_error=self._onError)
         self._ws.run_forever()
 

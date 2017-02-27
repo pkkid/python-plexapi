@@ -18,6 +18,11 @@ except ImportError:
     from urllib import quote
 
 try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus
+
+try:
     from urllib.parse import unquote
 except ImportError:
     from urllib import unquote
@@ -31,4 +36,3 @@ try:
     from xml.etree import cElementTree as ElementTree
 except ImportError:
     from xml.etree import ElementTree
-    

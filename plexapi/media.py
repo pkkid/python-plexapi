@@ -254,6 +254,17 @@ class SubtitleStream(MediaPartStream):
 
 
 @utils.registerPlexObject
+class Session(PlexObject):
+    """ Represents a current session. """
+    TAG = 'Session'
+
+    def _loadData(self, data):
+        self.id = data.attrib.get('id')
+        self.bandwidth = utils.cast(int, data.attrib.get('bandwidth'))
+        self.location = data.attrib.get('location')
+
+
+@utils.registerPlexObject
 class TranscodeSession(PlexObject):
     """ Represents a current transcode session.
 
