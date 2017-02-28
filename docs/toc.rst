@@ -11,6 +11,7 @@
    :caption: Modules
    :titlesonly:
 
+   modules/alert
    modules/audio
    modules/base
    modules/client
@@ -19,7 +20,6 @@
    modules/library
    modules/media
    modules/myplex
-   modules/notify
    modules/photo
    modules/playlist
    modules/playqueue

@@ -158,7 +158,8 @@ class MyPlexAccount(PlexObject):
     # ---------------------
     # Webhook Commands
     def addWebhook(self, url):
-        urls = copy.copy(self._webhooks) + [url]
+        # copy _webhooks and append url
+        urls = self._webhooks[:] + [url]
         return self.setWebhooks(urls)
 
     def deleteWebhook(self, url):
@@ -174,6 +175,7 @@ class MyPlexAccount(PlexObject):
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 
+    @property
     def webhooks(self):
         data = self.query(self.WEBHOOKS)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
