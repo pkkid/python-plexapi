@@ -19,7 +19,7 @@ install:
   - pip install -r requirements_doc.txt
 
 script:
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash py.test tests -s --tb=native --verbose --cov-config .coveragerc --cov=plexapi; fi'
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests -s --tb=native --verbose --cov-config .coveragerc --cov=plexapi; fi
   - flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
 
 after_success:
