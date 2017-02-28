@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
+
 from plexapi import log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import string_type, quote
+from plexapi.compat import quote, string_type
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -149,3 +150,7 @@ class Setting(PlexObject):
         # store value off to the side until we call settings.save()
         tostr = self.TYPES[self.type]['tostr']
         self._setValue = tostr(value)
+
+    def toUrl(self):
+        """Helper for urls"""
+        return '%s=%s' % (self.id, self._value or self.value)
