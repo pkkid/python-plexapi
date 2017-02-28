@@ -157,12 +157,11 @@ class Library(PlexObject):
         """
         # Should this function be here or in server??
         part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
-                quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))
+                quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
 
         if kwargs:
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
-
 
 
 class LibrarySection(PlexObject):
@@ -241,7 +240,6 @@ class LibrarySection(PlexObject):
         for s in self._server.library.sections():
             if s.key == self.key:
                 return s
-
 
     def get(self, title):
         """ Returns the media item with the specified title.
