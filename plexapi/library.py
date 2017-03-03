@@ -153,6 +153,39 @@ class Library(PlexObject):
             location (str): /path/to/files
             language (str): Two letter language fx en
             kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
+                          # Sooo this was a major fucking pain..
+
+                           # Prefs for album
+                           includeInGlobal (bool): Default value true
+
+                           #  Prefs for episode
+                           includeInGlobal (bool): Default value true
+
+                           #  Prefs for artist
+                           includeInGlobal (bool): Default value true
+                           respectTags (bool): Default value false
+                           albumSort (int): Default value -1 Possible option: 0:Newest first,1:Oldest first,2:By name
+                           enableTrackOffsets (bool): Default value false
+                           scanner (str): Plex Music Scanner, Plex Premium Music Scanner
+
+                           #  Prefs for track
+                           includeInGlobal (bool): Default value true
+
+                           #  Prefs for movie
+                           includeInGlobal (bool): Default value true
+                           enableCinemaTrailers (bool): Default value true
+                           enableBIFGeneration (bool): Default value true
+                           scanner (str): Options: Plex Movie Scanner, Plex Video Files Scanner
+
+                           #  Prefs for show
+                           includeInGlobal (bool): Default value true
+                           enableBIFGeneration (bool): Default value true
+                           flattenSeasons (int): Default value 0 Possible option: 0:Show,1:Hide
+                           episodeSort (int): Default value -1 Possible option: 0:Oldest first,1:Newest first
+
+                           #  Prefs for season
+                           includeInGlobal (bool): Default value true
+
 
         """
         # Should this function be here or in server??
@@ -162,6 +195,10 @@ class Library(PlexObject):
         if kwargs:
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
+
+    def share(self, user, *args, **kwargs):
+        """Share this library with the user."""
+        pass
 
 
 class LibrarySection(PlexObject):
