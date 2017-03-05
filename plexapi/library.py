@@ -153,42 +153,91 @@ class Library(PlexObject):
             location (str): /path/to/files
             language (str): Two letter language fx en
             kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
-                          # Sooo this was a major fucking pain..
 
-                           # Prefs for album
-                           includeInGlobal (bool): Default value true
+                           #  Prefs for photo
+                           agent (str): com.plexapp.agents.none
+                           enableAutoPhotoTags (bool): Tag photos. Default value false .
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Photo Scanner
 
-                           #  Prefs for episode
-                           includeInGlobal (bool): Default value true
+                           #  Prefs for other movies
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           enableCinemaTrailers (bool): Enable Cinema Trailers. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Movie Scanner, Plex Video Files Scanner
 
-                           #  Prefs for artist
-                           includeInGlobal (bool): Default value true
-                           respectTags (bool): Default value false
-                           albumSort (int): Default value -1 Possible option: 0:Newest first,1:Oldest first,2:By name
-                           enableTrackOffsets (bool): Default value false
-                           scanner (str): Plex Music Scanner, Plex Premium Music Scanner
+                           #  other movies com.plexapp.agents.imdb settings options
+                           title (bool): Localized titles. Default value false .
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           only_trailers (bool): Skip extras which aren't trailers. Default value false .
+                           redband (bool): Use red band (restricted audiences) trailers when available. Default value false .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+                           cast_list (int): Cast List Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           ratings (int): Ratings Source: . Default value 0 Possible options: 0:Rotten Tomatoes,1:IMDb,2:The Movie Database.
+                           summary (int): Plot Summary Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           country (int): Country: . Default value 46 Possible options: 0:Argentina,1:Australia,2:Austria,3:Belgium,4:Belize,5:Bolivia,6:Brazil,7:Canada,8:Chile,9:Colombia,10:Costa Rica,11:Czech Republic,12:Denmark,13:Dominican Republic,14:Ecuador,15:El Salvador,16:France,17:Germany,18:Guatemala,19:Honduras,20:Hong Kong SAR,21:Ireland,22:Italy,23:Jamaica,24:Korea,25:Liechtenstein,26:Luxembourg,27:Mexico,28:Netherlands,29:New Zealand,30:Nicaragua,31:Panama,32:Paraguay,33:Peru,34:Portugal,35:Peoples Republic of China,36:Puerto Rico,37:Russia,38:Singapore,39:South Africa,40:Spain,41:Sweden,42:Switzerland,43:Taiwan,44:Trinidad,45:United Kingdom,46:United States,47:Uruguay,48:Venezuela.
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           usage (bool): Send anonymous usage data to Plex. Default value true .
 
-                           #  Prefs for track
-                           includeInGlobal (bool): Default value true
+                           #  other movies com.plexapp.agents.themoviedb settings options
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
 
                            #  Prefs for movie
-                           includeInGlobal (bool): Default value true
-                           enableCinemaTrailers (bool): Default value true
-                           enableBIFGeneration (bool): Default value true
-                           scanner (str): Options: Plex Movie Scanner, Plex Video Files Scanner
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           enableCinemaTrailers (bool): Enable Cinema Trailers. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Movie Scanner, Plex Video Files Scanner
+
+                           #  movie com.plexapp.agents.imdb settings options
+                           title (bool): Localized titles. Default value false .
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           only_trailers (bool): Skip extras which aren't trailers. Default value false .
+                           redband (bool): Use red band (restricted audiences) trailers when available. Default value false .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+                           cast_list (int): Cast List Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           ratings (int): Ratings Source: . Default value 0 Possible options: 0:Rotten Tomatoes,1:IMDb,2:The Movie Database.
+                           summary (int): Plot Summary Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           country (int): Country: . Default value 46 Possible options: 0:Argentina,1:Australia,2:Austria,3:Belgium,4:Belize,5:Bolivia,6:Brazil,7:Canada,8:Chile,9:Colombia,10:Costa Rica,11:Czech Republic,12:Denmark,13:Dominican Republic,14:Ecuador,15:El Salvador,16:France,17:Germany,18:Guatemala,19:Honduras,20:Hong Kong SAR,21:Ireland,22:Italy,23:Jamaica,24:Korea,25:Liechtenstein,26:Luxembourg,27:Mexico,28:Netherlands,29:New Zealand,30:Nicaragua,31:Panama,32:Paraguay,33:Peru,34:Portugal,35:Peoples Republic of China,36:Puerto Rico,37:Russia,38:Singapore,39:South Africa,40:Spain,41:Sweden,42:Switzerland,43:Taiwan,44:Trinidad,45:United Kingdom,46:United States,47:Uruguay,48:Venezuela.
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           usage (bool): Send anonymous usage data to Plex. Default value true .
+
+                           #  movie com.plexapp.agents.themoviedb settings options
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
 
                            #  Prefs for show
-                           includeInGlobal (bool): Default value true
-                           enableBIFGeneration (bool): Default value true
-                           flattenSeasons (int): Default value 0 Possible option: 0:Show,1:Hide
-                           episodeSort (int): Default value -1 Possible option: 0:Oldest first,1:Newest first
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.thetvdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           episodeSort (int): Episode order. Default value -1 Possible options: 0:Oldest first,1:Newest first.
+                           flattenSeasons (int): Seasons. Default value 0 Possible options: 0:Show,1:Hide.
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Series Scanner
 
-                           #  Prefs for season
-                           includeInGlobal (bool): Default value true
+                           #  show com.plexapp.agents.thetvdb settings options
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+
+                           #  show com.plexapp.agents.themoviedb settings
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
+
 
 
         """
-        # Should this function be here or in server??
         part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
                 quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
 
