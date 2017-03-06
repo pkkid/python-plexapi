@@ -245,10 +245,6 @@ class Library(PlexObject):
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
-    def share(self, user, *args, **kwargs):
-        """Share this library with the user."""
-        pass
-
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -415,6 +411,38 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return self.fetchItems(key, cls=FilterChoice)
 
+    def share(self, user, **kwargs):
+        """Share this library with the user.
+
+           user (str): username as a string or :class:`~plexapi.myplex.MyPlexUser`
+           kwargs (dict): Shared settings should be passed as kwargs.
+        """
+        # So im not really sure where is belongs but it works. still need docs for kwargs.
+
+        # Allow passing a User
+        if isinstance(user, type):
+            user = user.username
+
+        # Grab the section ids, note this is NOT the same as the regular that the library has.
+        uri = 'https://plex.tv/api/servers/%s?X-Plex-Token=%s' % (self._server.machineIdentifier, self._server._token)
+        server = self._server.query(uri)
+        library_section_ids = [section.attrib.get('id') for section in server
+                               if section.attrib.get('title') == self.title]
+
+        cmd = {'shared_id': self._server.machineIdentifier,
+               'shared_server': {'library_section_ids': library_section_ids,
+                                 'invited_email': user},
+               'sharing_settings': kwargs  # empty means none
+
+               }
+
+        # Json content type seems to be req.
+        h = {"Content-Type": "application/json"}
+
+        share_uri = 'https://plex.tv/api/servers/%s/shared_servers?X-Plex-Token=%s' % (
+                    self._server.machineIdentifier, self._server._token)
+        r = self._server._session.post(share_uri, json=cmd, headers=h)
+
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
             in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only looking for the first <num>
@@ -518,9 +546,9 @@ class MovieSection(LibrarySection):
             TYPE (str): 'movie'
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
-        'collection', 'director', 'actor', 'country', 'studio', 'resolution')
+                       'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-        'mediaHeight', 'duration')
+                    'mediaHeight', 'duration')
     TAG = 'Directory'
     TYPE = 'movie'
 
@@ -538,7 +566,7 @@ class ShowSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
-        'rating', 'unwatched')
+                    'rating', 'unwatched')
     TAG = 'Directory'
     TYPE = 'show'
 

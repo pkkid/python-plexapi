@@ -265,7 +265,11 @@ class PlexServer(PlexObject):
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
-        url = self.url(key)
+        if not key.startswith('http'):
+            url = self.url(key)
+        else:
+            url = key
+
         method = method or self._session.get
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
@@ -349,7 +353,7 @@ class PlexServer(PlexObject):
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
-    
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
