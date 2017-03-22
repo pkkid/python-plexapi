@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import unquote
+from plexapi.compat import unquote, urlencode, quote_plus
 from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -144,6 +144,107 @@ class Library(PlexObject):
         for section in self.sections():
             section.deleteMediaPreviews()
 
+    def add(self, name='', type='', agent='', scanner='', location='', language='en', *args, **kwargs):
+        """ Simplified add for the most common options.
+
+            name (str): Name of the library
+            agent (str): Example com.plexapp.agents.imdb
+            type (str): movie, show, # check me
+            location (str): /path/to/files
+            language (str): Two letter language fx en
+            kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
+
+                           #  Prefs for photo
+                           agent (str): com.plexapp.agents.none
+                           enableAutoPhotoTags (bool): Tag photos. Default value false .
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Photo Scanner
+
+                           #  Prefs for other movies
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           enableCinemaTrailers (bool): Enable Cinema Trailers. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Movie Scanner, Plex Video Files Scanner
+
+                           #  other movies com.plexapp.agents.imdb settings options
+                           title (bool): Localized titles. Default value false .
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           only_trailers (bool): Skip extras which aren't trailers. Default value false .
+                           redband (bool): Use red band (restricted audiences) trailers when available. Default value false .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+                           cast_list (int): Cast List Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           ratings (int): Ratings Source: . Default value 0 Possible options: 0:Rotten Tomatoes,1:IMDb,2:The Movie Database.
+                           summary (int): Plot Summary Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           country (int): Country: . Default value 46 Possible options: 0:Argentina,1:Australia,2:Austria,3:Belgium,4:Belize,5:Bolivia,6:Brazil,7:Canada,8:Chile,9:Colombia,10:Costa Rica,11:Czech Republic,12:Denmark,13:Dominican Republic,14:Ecuador,15:El Salvador,16:France,17:Germany,18:Guatemala,19:Honduras,20:Hong Kong SAR,21:Ireland,22:Italy,23:Jamaica,24:Korea,25:Liechtenstein,26:Luxembourg,27:Mexico,28:Netherlands,29:New Zealand,30:Nicaragua,31:Panama,32:Paraguay,33:Peru,34:Portugal,35:Peoples Republic of China,36:Puerto Rico,37:Russia,38:Singapore,39:South Africa,40:Spain,41:Sweden,42:Switzerland,43:Taiwan,44:Trinidad,45:United Kingdom,46:United States,47:Uruguay,48:Venezuela.
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           usage (bool): Send anonymous usage data to Plex. Default value true .
+
+                           #  other movies com.plexapp.agents.themoviedb settings options
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
+
+                           #  Prefs for movie
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           enableCinemaTrailers (bool): Enable Cinema Trailers. Default value true .
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Movie Scanner, Plex Video Files Scanner
+
+                           #  movie com.plexapp.agents.imdb settings options
+                           title (bool): Localized titles. Default value false .
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           only_trailers (bool): Skip extras which aren't trailers. Default value false .
+                           redband (bool): Use red band (restricted audiences) trailers when available. Default value false .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+                           cast_list (int): Cast List Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           ratings (int): Ratings Source: . Default value 0 Possible options: 0:Rotten Tomatoes,1:IMDb,2:The Movie Database.
+                           summary (int): Plot Summary Source: . Default value 1 Possible options: 0:IMDb,1:The Movie Database.
+                           country (int): Country: . Default value 46 Possible options: 0:Argentina,1:Australia,2:Austria,3:Belgium,4:Belize,5:Bolivia,6:Brazil,7:Canada,8:Chile,9:Colombia,10:Costa Rica,11:Czech Republic,12:Denmark,13:Dominican Republic,14:Ecuador,15:El Salvador,16:France,17:Germany,18:Guatemala,19:Honduras,20:Hong Kong SAR,21:Ireland,22:Italy,23:Jamaica,24:Korea,25:Liechtenstein,26:Luxembourg,27:Mexico,28:Netherlands,29:New Zealand,30:Nicaragua,31:Panama,32:Paraguay,33:Peru,34:Portugal,35:Peoples Republic of China,36:Puerto Rico,37:Russia,38:Singapore,39:South Africa,40:Spain,41:Sweden,42:Switzerland,43:Taiwan,44:Trinidad,45:United Kingdom,46:United States,47:Uruguay,48:Venezuela.
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           usage (bool): Send anonymous usage data to Plex. Default value true .
+
+                           #  movie com.plexapp.agents.themoviedb settings options
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
+
+                           #  Prefs for show
+                           agent (str): com.plexapp.agents.none, com.plexapp.agents.thetvdb, com.plexapp.agents.themoviedb
+                           enableBIFGeneration (bool): Enable video preview thumbnails. Default value true .
+                           episodeSort (int): Episode order. Default value -1 Possible options: 0:Oldest first,1:Newest first.
+                           flattenSeasons (int): Seasons. Default value 0 Possible options: 0:Show,1:Hide.
+                           includeInGlobal (bool): Include in dashboard. Default value true .
+                           scanner (str): Plex Series Scanner
+
+                           #  show com.plexapp.agents.thetvdb settings options
+                           extras (bool): Find trailers and extras automatically (Plex Pass required). Default value true .
+                           native_subs (bool): Include extras with subtitles in Library language. Default value false .
+
+                           #  show com.plexapp.agents.themoviedb settings
+                           collections (bool): Use collection info from The Movie Database. Default value false .
+                           localart (bool): Prefer artwork based on library language. Default value true .
+                           adult (bool): Include adult content. Default value false .
+                           country (int): Country (used for release date and content rating). Default value 47 Possible options: 0:,1:Argentina,2:Australia,3:Austria,4:Belgium,5:Belize,6:Bolivia,7:Brazil,8:Canada,9:Chile,10:Colombia,11:Costa Rica,12:Czech Republic,13:Denmark,14:Dominican Republic,15:Ecuador,16:El Salvador,17:France,18:Germany,19:Guatemala,20:Honduras,21:Hong Kong SAR,22:Ireland,23:Italy,24:Jamaica,25:Korea,26:Liechtenstein,27:Luxembourg,28:Mexico,29:Netherlands,30:New Zealand,31:Nicaragua,32:Panama,33:Paraguay,34:Peru,35:Portugal,36:Peoples Republic of China,37:Puerto Rico,38:Russia,39:Singapore,40:South Africa,41:Spain,42:Sweden,43:Switzerland,44:Taiwan,45:Trinidad,46:United Kingdom,47:United States,48:Uruguay,49:Venezuela.
+
+
+
+        """
+        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
+                quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
+
+        if kwargs:
+            part += urlencode(kwargs)
+        return self._server.query(part, method=self._server._session.post)
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -203,6 +304,24 @@ class LibrarySection(PlexObject):
             msg += 'You may need to allow this permission in your Plex settings.'
             log.error(msg)
             raise
+
+    def edit(self, **kwargs):
+        """Edit a library
+
+           See :class:`~plexapi.library.Library for example usage.
+
+           Note: agent is required.
+
+           kwargs (dict): Dict of settings to edit.
+
+        """
+        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
+        self._server.query(part, method=self._server._session.put)
+
+        # Reload this way since the self.key dont have a full path, but is simply a id.
+        for s in self._server.library.sections():
+            if s.key == self.key:
+                return s
 
     def get(self, title):
         """ Returns the media item with the specified title.
@@ -291,6 +410,38 @@ class LibrarySection(PlexObject):
             args['type'] = utils.searchType(libtype)
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return self.fetchItems(key, cls=FilterChoice)
+
+    def share(self, user, **kwargs):
+        """Share this library with the user.
+
+           user (str): username as a string or :class:`~plexapi.myplex.MyPlexUser`
+           kwargs (dict): Shared settings should be passed as kwargs.
+        """
+        # So im not really sure where is belongs but it works. still need docs for kwargs.
+
+        # Allow passing a User
+        if isinstance(user, type):
+            user = user.username
+
+        # Grab the section ids, note this is NOT the same as the regular that the library has.
+        uri = 'https://plex.tv/api/servers/%s?X-Plex-Token=%s' % (self._server.machineIdentifier, self._server._token)
+        server = self._server.query(uri)
+        library_section_ids = [section.attrib.get('id') for section in server
+                               if section.attrib.get('title') == self.title]
+
+        cmd = {'shared_id': self._server.machineIdentifier,
+               'shared_server': {'library_section_ids': library_section_ids,
+                                 'invited_email': user},
+               'sharing_settings': kwargs  # empty means none
+
+               }
+
+        # Json content type seems to be req.
+        h = {"Content-Type": "application/json"}
+
+        share_uri = 'https://plex.tv/api/servers/%s/shared_servers?X-Plex-Token=%s' % (
+                    self._server.machineIdentifier, self._server._token)
+        r = self._server._session.post(share_uri, json=cmd, headers=h)
 
     def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
@@ -395,9 +546,9 @@ class MovieSection(LibrarySection):
             TYPE (str): 'movie'
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
-        'collection', 'director', 'actor', 'country', 'studio', 'resolution')
+                       'collection', 'director', 'actor', 'country', 'studio', 'resolution')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-        'mediaHeight', 'duration')
+                    'mediaHeight', 'duration')
     TAG = 'Directory'
     TYPE = 'movie'
 
@@ -415,7 +566,7 @@ class ShowSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
-        'rating', 'unwatched')
+                    'rating', 'unwatched')
     TAG = 'Directory'
     TYPE = 'show'
 
