@@ -265,11 +265,8 @@ class PlexServer(PlexObject):
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
-        if not key.startswith('http'):
-            url = self.url(key)
-        else:
-            url = key
-
+        #url = key if key.startswith('http') else self.url(key)
+        url = self.url(key)
         method = method or self._session.get
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})

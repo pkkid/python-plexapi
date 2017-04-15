@@ -1,144 +1,105 @@
 # -*- coding: utf-8 -*-
-import betamax, os, plexapi
-import pytest, requests
-from betamax_serializers import pretty_json
+import plexapi, pytest, requests
+from datetime import datetime
+from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 from functools import partial
 
-test_baseurl = plexapi.CONFIG.get('auth.server_baseurl')
-test_token = plexapi.CONFIG.get('auth.server_token')
-test_username = plexapi.CONFIG.get('auth.myplex_username')
-test_password = plexapi.CONFIG.get('auth.myplex_password')
-
-
-@pytest.fixture(scope='session')
-def pms(request):
-    from plexapi.server import PlexServer
-    sess = requests.Session()
-    # CASSETTE_LIBRARY_DIR = 'response/'
-    # betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
-    # config = betamax.Betamax.configure()
-    # config.define_cassette_placeholder('MASKED', token)
-    # config.define_cassette_placeholder('MASKED', test_token)
-    # recorder = betamax.Betamax(sess, cassette_library_dir=CASSETTE_LIBRARY_DIR)
-    # recorder.use_cassette('http_responses', serialize_with='prettyjson') # record='new_episodes'
-    # recorder.start()
-    assert test_baseurl
-    assert test_token
-    pms = PlexServer(test_baseurl, test_token, session=sess)
-    #request.addfinalizer(recorder.stop)
-    return pms
-
-
-@pytest.fixture()
-def freshpms():
-    from plexapi.server import PlexServer
-    sess = requests.Session()
-    assert test_baseurl
-    assert test_token
-    pms = PlexServer(test_baseurl, test_token, session=sess)
-    return pms
+MIN_DATETIME = datetime(2017, 1, 1)
+SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
+SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
+MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
+MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 
 
 def pytest_addoption(parser):
-    parser.addoption("--req_client", action="store_true",
-        help="Run tests that interact with a client")
+    parser.addoption('--req_client', action='store_true', help='Run tests that interact with a client')
 
 
 def pytest_runtest_setup(item):
-    if 'req_client' in item.keywords and not item.config.getvalue("req_client"):
-        pytest.skip("need --req_client option to run")
+    if 'req_client' in item.keywords and not item.config.getvalue('req_client'):
+        pytest.skip('need --req_client option to run')
     else:
-        item.config.getvalue("req_client")
+        item.config.getvalue('req_client')
+
+
+#---------------------------------
+# Fixtures
+#---------------------------------
+
+@pytest.fixture()
+def account():
+    assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
+    assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
+    return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
+
+
+@pytest.fixture(scope='session')
+def plex():
+    assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
+    assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
+    session = requests.Session()
+    return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
 
 
 @pytest.fixture()
-def plex_account():
-    from plexapi.myplex import MyPlexAccount
-    username = test_username
-    password = test_password
-    assert username and password
-    account = MyPlexAccount(username, password)
-    assert account
-    return account
+def plex2():
+    return plex()
 
 
 @pytest.fixture()
-def a_movie(pms):
-    m = pms.library.search('16 blocks')
-    assert m
-    return m[0]
+def tvshows(plex):
+    return plex.library.section('TV Shows')
 
 
 @pytest.fixture()
-def a_tv_section(pms):
-    sec = pms.library.section('TV Shows')
-    assert sec
-    return sec
+def movies(plex):
+    return plex.library.section('Movies')
 
 
 @pytest.fixture()
-def a_movie_section(pms):
-    sec = pms.library.section('Movies')
-    assert sec
-    return sec
+def music(plex):
+    return plex.library.section('Music')
 
 
 @pytest.fixture()
-def a_music_section(pms):
-    sec = pms.library.section('Music')
-    assert sec
-    return sec
+def photos(plex):
+    return plex.library.section('Photos')
 
 
 @pytest.fixture()
-def a_photo_section(pms):
-    sec = pms.library.section('Photos')
-    assert sec
-    return sec
+def movie(movies):
+    return movies.get('16 blocks')
 
 
 @pytest.fixture()
-def a_artist(a_music_section):
-    sec = a_music_section.get('Infinite State')
-    assert sec
-    return sec
+def artist(music):
+    return music.get('Infinite State')
 
 
 @pytest.fixture()
-def a_music_album(a_music_section):
-    sec = a_music_section.get('Infinite State').album('Unmastered Impulses')
-    assert sec
-    return sec
+def album(artist):
+    return artist.album('Unmastered Impulses')
 
 
 @pytest.fixture()
-def a_track(a_music_album):
-    track = a_music_album.track('Holy Moment')
-    assert track
-    return track
+def track(album):
+    return album.track('Holy Moment')
 
 
 @pytest.fixture()
-def a_show(a_tv_section):
-    sec = a_tv_section.get('The 100')
-    assert sec
-    return sec
+def show(tvshows):
+    return tvshows.get('The 100')
 
 
 @pytest.fixture()
-def a_episode(a_show):
-    ep = a_show.get('Pilot')
-    assert ep
-    return ep
+def episode(show):
+    return show.get('Pilot')
 
 
 @pytest.fixture()
-def a_photo_album(pms):
-    sec = pms.library.section('Photos')
-    assert sec
-    album = sec.get('photo_album1')
-    assert album
-    return album
+def photoalbum(photos):
+    return photos.get('photo_album1')
 
 
 @pytest.fixture()
@@ -146,3 +107,27 @@ def monkeydownload(request, monkeypatch):
     monkeypatch.setattr('plexapi.utils.download', partial(plexapi.utils.download, mocked=True))
     yield
     monkeypatch.undo()
+
+
+#---------------------------------
+# Utility Functions
+#---------------------------------
+
+def is_datetime(value):
+    return value > MIN_DATETIME
+
+
+def is_int(value):
+    return int(value) >= 1
+
+
+def is_metadata(key):
+    return key.startswith('/library/metadata/')
+
+
+def is_part(key):
+    return key.startswith('/library/parts/')
+
+
+def is_thumb(key):
+    return key.startswith('/library/metadata/') and '/thumb/' in key

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-def test_myplex_accounts(plex_account, pms):
-    account = plex_account
+
+def test_myplex_accounts(account, plex):
     assert account, 'Must specify username, password & resource to run this test.'
     print('MyPlexAccount:')
     print('username: %s' % account.username)
@@ -13,7 +13,7 @@ def test_myplex_accounts(plex_account, pms):
     assert account.email, 'Account has no email'
     assert account.home is not None, 'Account has no home'
     assert account.queueEmail, 'Account has no queueEmail'
-    account = pms.account()
+    account = plex.account()
     print('Local PlexServer.account():')
     print('username: %s' % account.username)
     print('authToken: %s' % account.authToken)
@@ -23,8 +23,7 @@ def test_myplex_accounts(plex_account, pms):
     assert account.signInState, 'Account has no signInState'
 
 
-def test_myplex_resources(plex_account):
-    account = plex_account
+def test_myplex_resources(account):
     assert account, 'Must specify username, password & resource to run this test.'
     resources = account.resources()
     for resource in resources:
@@ -35,8 +34,8 @@ def test_myplex_resources(plex_account):
     assert resources, 'No resources found for account: %s' % account.name
 
 
-def test_myplex_connect_to_resource(plex_account):
-    for resource in plex_account.resources():
+def test_myplex_connect_to_resource(account):
+    for resource in account.resources():
         if resource.name == 'PMS_API_TEST_SERVER':
             break
     server = resource.connect()
@@ -44,8 +43,7 @@ def test_myplex_connect_to_resource(plex_account):
     assert server
 
 
-def test_myplex_devices(plex_account):
-    account = plex_account
+def test_myplex_devices(account):
     devices = account.devices()
     for device in devices:
         name = device.name or 'Unknown'
@@ -54,9 +52,7 @@ def test_myplex_devices(plex_account):
     assert devices, 'No devices found for account: %s' % account.name
 
 
-#@pytest.mark.req_client  # this need to be recorded?
-def _test_myplex_connect_to_device(plex_account):
-    account = plex_account
+def _test_myplex_connect_to_device(account):
     devices = account.devices()
     for device in devices:
         if device.name == 'some client name' and len(device.connections):
@@ -65,11 +61,10 @@ def _test_myplex_connect_to_device(plex_account):
     assert client, 'Unable to connect to device'
 
 
-def test_myplex_users(plex_account):
-    account = plex_account
+def test_myplex_users(account):
     users = account.users()
     assert users, 'Found no users on account: %s' % account.name
     print('Found %s users.' % len(users))
-    user = account.user('Hellowlol')
+    user = account.user(users[0].title)
     print('Found user: %s' % user)
-    assert user, 'Could not find user Hellowlol'
+    assert user, 'Could not find user %s' % users[0].title

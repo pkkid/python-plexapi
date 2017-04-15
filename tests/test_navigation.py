@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-def test_navigate_around_show(plex_account, pms):
-    show = pms.library.section('TV Shows').get('The 100')
+
+def test_navigate_around_show(account, plex):
+    show = plex.library.section('TV Shows').get('The 100')
     seasons = show.seasons()
     season = show.season('Season 1')
     episodes = show.episodes()
@@ -16,8 +17,8 @@ def test_navigate_around_show(plex_account, pms):
     assert episode.season() == season, 'episode.season() doesnt match expected season.'
 
 
-def test_navigate_around_artist(plex_account, pms):
-    artist = pms.library.section('Music').get('Infinite State')
+def test_navigate_around_artist(account, plex):
+    artist = plex.library.section('Music').get('Infinite State')
     albums = artist.albums()
     album = artist.album('Unmastered Impulses')
     tracks = artist.tracks()

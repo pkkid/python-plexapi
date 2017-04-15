@@ -23,9 +23,9 @@ def test_build_documentation():
             assert 'traceback' not in line
 
 
-def test_readme_examples(pms):
+def test_readme_examples(plex):
     failed = 0
-    examples = _fetch_examples(pms)
+    examples = _fetch_examples()
     assert len(examples), 'No examples found in README'
     for title, example in examples:
         if _check_run_example(title):
@@ -38,7 +38,7 @@ def test_readme_examples(pms):
     assert not failed, '%s examples raised an exception.' % failed
 
 
-def _fetch_examples(pms):
+def _fetch_examples():
     parsing = False
     examples = []
     filepath = join(dirname(dirname(abspath(__file__))), 'README.rst')
@@ -48,7 +48,7 @@ def _fetch_examples(pms):
             if line.startswith('# Example '):
                 parsing = True
                 title = line.lstrip('# ')
-                examples.append([title, ['plex = pms']])
+                examples.append([title, []])
             elif parsing and line == '':
                 parsing = False
             elif parsing:
