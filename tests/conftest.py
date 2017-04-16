@@ -99,7 +99,7 @@ def episode(show):
 
 @pytest.fixture()
 def photoalbum(photos):
-    return photos.get('photo_album1')
+    return photos.get('Cats')
 
 
 @pytest.fixture()
