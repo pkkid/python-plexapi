@@ -6,6 +6,9 @@ from plexapi.server import PlexServer
 from functools import partial
 
 MIN_DATETIME = datetime(2017, 1, 1)
+REGEX_EMAIL = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
+REGEX_IPADDR = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
+
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
