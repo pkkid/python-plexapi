@@ -102,12 +102,12 @@ def test_server_playlist(plex, show):
 
 def test_server_playlists(plex, show):
     playlists = plex.playlists()
-    assert len(playlists) == 0
+    count = len(playlists)
     episodes = show.episodes()
     playlist = plex.createPlaylist('test_playlist', episodes[:3])
     try:
         playlists = plex.playlists()
-        assert len(playlists) == 1
+        assert len(playlists) == count + 1
     finally:
         playlist.delete()
 

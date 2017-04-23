@@ -63,7 +63,8 @@ def test_audio_Album_attrs(album):
     assert album.originallyAvailableAt == datetime(2016, 1, 1)
     assert utils.is_metadata(album.parentKey)
     assert utils.is_int(album.parentRatingKey)
-    assert utils.is_metadata(album.parentThumb, contains='/thumb/')
+    if album.parentThumb:
+        assert utils.is_metadata(album.parentThumb, contains='/thumb/')
     assert album.parentTitle == 'Infinite State'
     assert album.ratingKey >= 1
     assert album._server._baseurl == utils.SERVER_BASEURL
@@ -192,7 +193,8 @@ def test_audio_Track_attrs(album):
     assert track.grandparentArt is None
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
-    assert utils.is_metadata(track.grandparentThumb, contains='/thumb/')
+    if track.grandparentThumb:
+        assert utils.is_metadata(track.grandparentThumb, contains='/thumb/')
     assert track.grandparentTitle == 'Infinite State'
     assert track.guid.startswith('local://')
     assert int(track.index) == 1

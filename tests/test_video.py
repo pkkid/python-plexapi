@@ -66,15 +66,16 @@ def test_video_Movie_attrs(movies):
     assert movie.chapterSource == 'agent'
     assert movie.collections == []
     assert movie.contentRating == 'G'
-    assert [i.tag for i in movie.countries] == ['USA']
+    assert all([i.tag in ['US', 'USA'] for i in movie.countries])
     assert [i.tag for i in movie.directors] == ['John Lasseter', 'Joe Ranft']
-    assert movie.duration >= 3600000
+    assert movie.duration >= 160000
     assert movie.fields == []
     assert sorted([i.tag for i in movie.genres]) == ['Adventure', 'Animation', 'Comedy', 'Family', 'Sport']
     assert movie.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
-    assert movie.lastViewedAt is None
+    if movie.lastViewedAt:
+        assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == 'video'
     assert movie.originalTitle is None
@@ -101,7 +102,7 @@ def test_video_Movie_attrs(movies):
     assert movie.userRating is None
     assert movie.username is None
     assert movie.viewCount == 0
-    assert movie.viewOffset == 0
+    assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
     assert sorted([i.tag for i in movie.writers]) == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Jorgen Klubien', 'Kiel Murray', 'Phil Lorin']  # noqa
     assert movie.year == 2006
@@ -134,7 +135,7 @@ def test_video_Movie_attrs(movies):
     assert media.audioCodec in utils.CODECS
     assert utils.is_int(media.bitrate)
     assert media.container in utils.CONTAINERS
-    assert utils.is_int(media.duration, gte=3600000)
+    assert utils.is_int(media.duration, gte=160000)
     assert utils.is_int(media.height)
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
@@ -176,7 +177,7 @@ def test_video_Movie_attrs(movies):
     # Part
     part = media.parts[0]
     assert part.container in utils.CONTAINERS
-    assert utils.is_int(part.duration, 1600000)
+    assert utils.is_int(part.duration, 160000)
     assert len(part.file) >= 10
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)

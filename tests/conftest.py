@@ -112,7 +112,10 @@ def episode(show):
 
 @pytest.fixture()
 def photoalbum(photos):
-    return photos.get('Cats')
+    try:
+        return photos.get('Cats')
+    except:
+        return photos.get('photo_album1')
 
 
 @pytest.fixture()

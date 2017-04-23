@@ -168,14 +168,15 @@ def test_library_MusicSection_searchAlbums(music):
     assert len(music.searchAlbums(title='Unmastered Impulses'))
 
 
-def test_library_PhotoSection_searchAlbums(photos):
-    albums = photos.searchAlbums('Cats')
+def test_library_PhotoSection_searchAlbums(photos, photoalbum):
+    title = photoalbum.title
+    albums = photos.searchAlbums(title)
     assert len(albums)
-    print([i.TYPE for i in albums])
 
 
-def test_library_PhotoSection_searchPhotos(photos):
-    assert len(photos.searchPhotos('CatBed'))
+def test_library_PhotoSection_searchPhotos(photos, photoalbum):
+    title = photoalbum.photos()[0].title
+    assert len(photos.searchPhotos(title))
 
 
 # Start on library search
