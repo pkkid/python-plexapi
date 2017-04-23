@@ -1,31 +1,29 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from .conftest import is_int, is_datetime
-from .conftest import is_metadata, is_part, is_thumb
-from .conftest import SERVER_BASEURL
+from . import conftest as utils
 
 
 def test_audio_Artist_attr(artist):
     artist.reload()
-    assert is_datetime(artist.addedAt)
+    assert utils.is_datetime(artist.addedAt)
     assert artist.countries == []
     assert [i.tag for i in artist.genres] == ['Electronic']
     assert 'lastfm' in artist.guid
     assert artist.index == '1'
-    assert is_metadata(artist._initpath)
-    assert is_metadata(artist.key)
-    assert is_int(artist.librarySectionID)
+    assert utils.is_metadata(artist._initpath)
+    assert utils.is_metadata(artist.key)
+    assert utils.is_int(artist.librarySectionID)
     assert artist.listType == 'audio'
     assert len(artist.locations) == 1
     assert len(artist.locations[0]) >= 10
     assert artist.ratingKey >= 1
-    assert artist._server._baseurl == SERVER_BASEURL
+    assert artist._server._baseurl == utils.SERVER_BASEURL
     assert artist.similar == []
     assert artist.summary == ''
     assert artist.title == 'Infinite State'
     assert artist.titleSort == 'Infinite State'
     assert artist.type == 'artist'
-    assert is_datetime(artist.updatedAt)
+    assert utils.is_datetime(artist.updatedAt)
     assert artist.viewCount == 0
 
 
@@ -55,27 +53,27 @@ def test_audio_Artist_albums(artist):
 
 
 def test_audio_Album_attrs(album):
-    assert is_datetime(album.addedAt)
+    assert utils.is_datetime(album.addedAt)
     assert [i.tag for i in album.genres] == ['Electronic']
     assert album.index == '1'
-    assert is_metadata(album._initpath)
-    assert is_metadata(album.key)
-    assert is_int(album.librarySectionID)
+    assert utils.is_metadata(album._initpath)
+    assert utils.is_metadata(album.key)
+    assert utils.is_int(album.librarySectionID)
     assert album.listType == 'audio'
     assert album.originallyAvailableAt == datetime(2016, 1, 1)
-    assert is_metadata(album.parentKey)
-    assert is_int(album.parentRatingKey)
-    assert is_thumb(album.parentThumb)
+    assert utils.is_metadata(album.parentKey)
+    assert utils.is_int(album.parentRatingKey)
+    assert utils.is_metadata(album.parentThumb, contains='/thumb/')
     assert album.parentTitle == 'Infinite State'
     assert album.ratingKey >= 1
-    assert album._server._baseurl == SERVER_BASEURL
+    assert album._server._baseurl == utils.SERVER_BASEURL
     assert album.studio is None
     assert album.summary == ''
-    assert is_thumb(album.thumb)
+    assert utils.is_metadata(album.thumb, contains='/thumb/')
     assert album.title == 'Unmastered Impulses'
     assert album.titleSort == 'Unmastered Impulses'
     assert album.type == 'album'
-    assert is_datetime(album.updatedAt)
+    assert utils.is_datetime(album.updatedAt)
     assert album.viewCount == 0
     assert album.year == 2016
 
@@ -84,30 +82,30 @@ def test_audio_Album_tracks(album):
     tracks = album.tracks()
     track = tracks[0]
     assert len(tracks) == 14
-    assert is_metadata(track.grandparentKey)
-    assert is_int(track.grandparentRatingKey)
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == 'Infinite State'
     assert track.index == '1'
-    assert is_metadata(track._initpath)
-    assert is_metadata(track.key)
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
     assert track.listType == 'audio'
     assert track.originalTitle == 'Kenneth Reitz'
-    assert is_int(track.parentIndex)
-    assert is_metadata(track.parentKey)
-    assert is_int(track.parentRatingKey)
-    assert is_thumb(track.parentThumb)
+    assert utils.is_int(track.parentIndex)
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
     assert track.ratingCount == 9
-    assert is_int(track.ratingKey)
-    assert track._server._baseurl == SERVER_BASEURL
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.summary == ""
-    assert is_thumb(track.thumb)
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
     assert track.transcodeSession is None
     assert track.type == 'track'
-    assert is_datetime(track.updatedAt)
+    assert utils.is_datetime(track.updatedAt)
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
@@ -116,34 +114,34 @@ def test_audio_Album_tracks(album):
 def test_audio_Album_track(album, track=None):
     # this is not reloaded. its not that much info missing.
     track = track or album.track('Holy Moment')
-    assert is_datetime(track.addedAt)
+    assert utils.is_datetime(track.addedAt)
     assert track.duration == 298606
-    assert is_metadata(track.grandparentKey)
-    assert is_int(track.grandparentRatingKey)
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == 'Infinite State'
     assert int(track.index) == 1
-    assert is_metadata(track._initpath)
-    assert is_metadata(track.key)
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
     assert track.listType == 'audio'
     # Assign 0 track.media
     media = track.media[0]
     assert track.originalTitle == 'Kenneth Reitz'
-    assert is_int(track.parentIndex)
-    assert is_metadata(track.parentKey)
-    assert is_int(track.parentRatingKey)
-    assert is_thumb(track.parentThumb)
+    assert utils.is_int(track.parentIndex)
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
     assert track.ratingCount == 9
-    assert is_int(track.ratingKey)
-    assert track._server._baseurl == SERVER_BASEURL
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.summary == ''
-    assert is_thumb(track.thumb)
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
     assert track.transcodeSession is None
     assert track.type == 'track'
-    assert is_datetime(track.updatedAt)
+    assert utils.is_datetime(track.updatedAt)
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
@@ -155,11 +153,11 @@ def test_audio_Album_track(album, track=None):
     assert media.duration == 298606
     assert media.height is None
     assert media.id == 22
-    assert is_metadata(media._initpath)
+    assert utils.is_metadata(media._initpath)
     assert media.optimizedForStreaming is None
     # Assign 0 media.parts
     part = media.parts[0]
-    assert media._server._baseurl == SERVER_BASEURL
+    assert media._server._baseurl == utils.SERVER_BASEURL
     assert media.videoCodec is None
     assert media.videoFrameRate is None
     assert media.videoResolution is None
@@ -167,10 +165,10 @@ def test_audio_Album_track(album, track=None):
     assert part.container == 'mp3'
     assert part.duration == 298606
     assert part.file.endswith('.mp3')
-    assert is_int(part.id)
-    assert is_metadata(part._initpath)
-    assert is_part(part.key)
-    assert part._server._baseurl == SERVER_BASEURL
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert utils.is_part(part.key)
+    assert part._server._baseurl == utils.SERVER_BASEURL
     assert part.size == 14360402
 
 
@@ -187,45 +185,45 @@ def test_audio_Album_artist(album):
 
 def test_audio_Track_attrs(album):
     track = album.get('Holy Moment').reload()
-    assert is_datetime(track.addedAt)
+    assert utils.is_datetime(track.addedAt)
     assert track.art is None
     assert track.chapterSource is None
     assert track.duration == 298606
     assert track.grandparentArt is None
-    assert is_metadata(track.grandparentKey)
-    assert is_int(track.grandparentRatingKey)
-    assert is_thumb(track.grandparentThumb)
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
+    assert utils.is_metadata(track.grandparentThumb, contains='/thumb/')
     assert track.grandparentTitle == 'Infinite State'
     assert track.guid.startswith('local://')
     assert int(track.index) == 1
-    assert is_metadata(track._initpath)
-    assert is_metadata(track.key)
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
     assert track.lastViewedAt is None
-    assert is_int(track.librarySectionID)
+    assert utils.is_int(track.librarySectionID)
     assert track.listType == 'audio'
     # Assign 0 track.media
     media = track.media[0]
     assert track.moods == []
     assert track.originalTitle == 'Kenneth Reitz'
     assert int(track.parentIndex) == 1
-    assert is_metadata(track.parentKey)
-    assert is_int(track.parentRatingKey)
-    assert is_thumb(track.parentThumb)
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
     assert track.ratingCount == 9
-    assert is_int(track.ratingKey)
-    assert track._server._baseurl == SERVER_BASEURL
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.sessionKey is None
     assert track.summary == ''
-    assert is_thumb(track.thumb)
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
     assert track.transcodeSession is None
     assert track.type == 'track'
-    assert is_datetime(track.updatedAt)
+    assert utils.is_datetime(track.updatedAt)
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
@@ -239,11 +237,11 @@ def test_audio_Track_attrs(album):
     assert media.duration == 298606
     assert media.height is None
     assert media.id == 22
-    assert is_metadata(media._initpath)
+    assert utils.is_metadata(media._initpath)
     assert media.optimizedForStreaming is None
     # Assign 0 media.parts
     part = media.parts[0]
-    assert media._server._baseurl == SERVER_BASEURL
+    assert media._server._baseurl == utils.SERVER_BASEURL
     assert media.videoCodec is None
     assert media.videoFrameRate is None
     assert media.videoResolution is None
@@ -251,11 +249,11 @@ def test_audio_Track_attrs(album):
     assert part.container == 'mp3'
     assert part.duration == 298606
     assert part.file.endswith('.mp3')
-    assert is_int(part.id)
-    assert is_metadata(part._initpath)
-    assert is_part(part.key)
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert utils.is_part(part.key)
     #assert part.media == <Media:Holy.Moment>
-    assert part._server._baseurl == SERVER_BASEURL
+    assert part._server._baseurl == utils.SERVER_BASEURL
     assert part.size == 14360402
     # Assign 0 part.streams
     stream = part.streams[0]
@@ -268,15 +266,15 @@ def test_audio_Track_attrs(album):
     assert stream.codecID is None
     assert stream.dialogNorm is None
     assert stream.duration is None
-    assert is_int(stream.id)
+    assert utils.is_int(stream.id)
     assert stream.index == 0
-    assert is_metadata(stream._initpath)
+    assert utils.is_metadata(stream._initpath)
     assert stream.language is None
     assert stream.languageCode is None
     #assert stream.part == <MediaPart:22>
     assert stream.samplingRate == 44100
     assert stream.selected is True
-    assert stream._server._baseurl == SERVER_BASEURL
+    assert stream._server._baseurl == utils.SERVER_BASEURL
     assert stream.streamType == 2
     assert stream.title is None
     assert stream.type == 2

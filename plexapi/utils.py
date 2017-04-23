@@ -160,6 +160,7 @@ def threaded(callback, listargs):
         args += [results, len(results)]
         results.append(None)
         threads.append(Thread(target=callback, args=args))
+        threads[-1].setDaemon(True)
         threads[-1].start()
     for thread in threads:
         thread.join()
@@ -226,7 +227,7 @@ def downloadSessionImages(server, filename=None, height=150, width=150, opacity=
     return info
 
 
-def download(url, filename=None, savepath=None, session=None, chunksize=4024, mocked=False, unpack=False):
+def download(url, filename=None, savepath=None, session=None, chunksize=4024, unpack=False, mocked=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
 

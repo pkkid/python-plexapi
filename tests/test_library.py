@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from plexapi.exceptions import NotFound
-from .conftest import is_datetime
-from .conftest import SERVER_BASEURL
+from . import conftest as utils
 
 
 def test_library_Library_section(plex):
@@ -27,7 +26,7 @@ def test_library_sectionByID_with_attrs(plex):
     assert section.allowSync is False
     assert section.art == '/:/resources/movie-fanart.jpg'
     assert '/library/sections/1/composite/' in section.composite
-    assert is_datetime(section.createdAt)
+    assert utils.is_datetime(section.createdAt)
     assert section.filters == '1'
     assert section._initpath == '/library/sections'
     assert section.key == '1'
@@ -36,11 +35,11 @@ def test_library_sectionByID_with_attrs(plex):
     assert len(section.locations[0]) >= 10
     assert section.refreshing is False
     assert section.scanner == 'Plex Movie Scanner'
-    assert section._server._baseurl == SERVER_BASEURL
+    assert section._server._baseurl == utils.SERVER_BASEURL
     assert section.thumb == '/:/resources/movie.png'
     assert section.title == 'Movies'
     assert section.type == 'movie'
-    assert is_datetime(section.updatedAt)
+    assert utils.is_datetime(section.updatedAt)
     assert len(section.uuid) == 36
 
 

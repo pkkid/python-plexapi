@@ -5,25 +5,23 @@ from plexapi.server import PlexServer
 from plexapi.utils import download
 from PIL import Image, ImageStat
 from requests import Session
-from .conftest import is_datetime
-from .conftest import REGEX_EMAIL, REGEX_IPADDR
-from .conftest import SERVER_BASEURL, SERVER_TOKEN
+from . import conftest as utils
 
 
 def test_server_attr(plex):
-    assert plex._baseurl == SERVER_BASEURL
+    assert plex._baseurl == utils.SERVER_BASEURL
     assert len(plex.friendlyName) >= 1
     assert len(plex.machineIdentifier) == 40
     assert plex.myPlex is True
     assert plex.myPlexMappingState == 'mapped'
     assert plex.myPlexSigninState == 'ok'
     assert plex.myPlexSubscription == '0'
-    assert re.match(REGEX_EMAIL, plex.myPlexUsername)
+    assert re.match(utils.REGEX_EMAIL, plex.myPlexUsername)
     assert plex.platform in ('Linux', 'Windows')
     assert len(plex.platformVersion) >= 5
-    assert plex._token == SERVER_TOKEN
+    assert plex._token == utils.SERVER_TOKEN
     assert plex.transcoderActiveVideoSessions == 0
-    assert is_datetime(plex.updatedAt)
+    assert utils.is_datetime(plex.updatedAt)
     assert len(plex.version) >= 5
 
 
@@ -127,7 +125,7 @@ def test_server_Server_query(plex):
     with pytest.raises(BadRequest):
         # This is really requests.exceptions.HTTPError
         # 401 Client Error: Unauthorized for url
-        PlexServer(SERVER_BASEURL, '1234')
+        PlexServer(utils.SERVER_BASEURL, '1234')
 
 
 def test_server_Server_session():
@@ -137,7 +135,7 @@ def test_server_Server_session():
             super(self.__class__, self).__init__()
             self.plexapi_session_test = True
     # Test Code
-    plex = PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=MySession())
+    plex = PlexServer(utils.SERVER_BASEURL, utils.SERVER_TOKEN, session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
 
 
@@ -204,15 +202,15 @@ def test_server_account(plex):
     # assert account.mappingError == 'publisherror'
     assert account.mappingErrorMessage is None
     assert account.mappingState == 'mapped'
-    assert re.match(REGEX_IPADDR, account.privateAddress)
+    assert re.match(utils.REGEX_IPADDR, account.privateAddress)
     assert int(account.privatePort) >= 1000
-    assert re.match(REGEX_IPADDR, account.publicAddress)
+    assert re.match(utils.REGEX_IPADDR, account.publicAddress)
     assert int(account.publicPort) >= 1000
     assert account.signInState == 'ok'
     assert account.subscriptionActive is False
     assert account.subscriptionFeatures == []
     assert account.subscriptionState == 'Unknown'
-    assert re.match(REGEX_EMAIL, account.username)
+    assert re.match(utils.REGEX_EMAIL, account.username)
 
 
 def test_server_downloadLogs(tmpdir, plex):
