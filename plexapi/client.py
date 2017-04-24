@@ -25,6 +25,7 @@ class PlexClient(PlexObject):
             baseurl (str): HTTP URL to connect dirrectly to this client.
             token (str): X-Plex-Token used for authenication (optional).
             session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
+            timeout (int): timeout in seconds on initial connect to client (default config.TIMEOUT).
 
         Attributes:
             TAG (str): 'Player'
@@ -54,7 +55,7 @@ class PlexClient(PlexObject):
     TAG = 'Player'
     key = '/resources'
 
-    def __init__(self, server=None, data=None, initpath=None, baseurl=None, token=None, session=None):
+    def __init__(self, server=None, data=None, initpath=None, baseurl=None, token=None, session=None, timeout=None):
         super(PlexClient, self).__init__(server, data, initpath)
         self._baseurl = baseurl.strip('/') if baseurl else None
         self._token = logfilter.add_secret(token)
@@ -66,9 +67,9 @@ class PlexClient(PlexObject):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
         if self._baseurl and self._token:
-            self.connect()
+            self.connect(timeout=timeout)
 
-    def connect(self):
+    def connect(self, timeout=None):
         """ Alias of reload as any subsequent requests to this client will be
             made directly to the device even if the object attributes were initially
             populated from a PlexServer.
@@ -76,7 +77,7 @@ class PlexClient(PlexObject):
         if not self.key:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = self.key
-        data = self.query(self.key)
+        data = self.query(self.key, timeout=timeout)
         self._loadData(data[0])
         return self
 
@@ -125,16 +126,17 @@ class PlexClient(PlexObject):
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
 
-    def query(self, path, method=None, headers=None, **kwargs):
+    def query(self, path, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex client. This method helps
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
         url = self.url(path)
         method = method or self._session.get
+        timeout = timeout or TIMEOUT
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        response = method(url, headers=headers, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))

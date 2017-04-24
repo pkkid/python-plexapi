@@ -34,13 +34,12 @@ def test_myplex_resources(account):
     assert resources, 'No resources found for account: %s' % account.name
 
 
-def test_myplex_connect_to_resource(account):
+def test_myplex_connect_to_resource(plex, account):
+    servername = plex.friendlyName
     for resource in account.resources():
-        if resource.name == 'PMS_API_TEST_SERVER':
+        if resource.name == servername:
             break
-    server = resource.connect()
-    assert 'Ohno' in server.url('Ohno')
-    assert server
+    assert resource.connect(timeout=10)
 
 
 def test_myplex_devices(account):

@@ -31,6 +31,7 @@ class PlexServer(PlexObject):
             token (str): Required Plex authentication token to access the server.
             session (requests.Session, optional): Use your own session object if you want to
                 cache the http responses from PMS
+            timeout (int): timeout in seconds on initial connect to server (default config.TIMEOUT).
 
         Attributes:
             allowCameraUpload (bool): True if server allows camera upload.
@@ -90,13 +91,14 @@ class PlexServer(PlexObject):
     """
     key = '/'
 
-    def __init__(self, baseurl=None, token=None, session=None):
+    def __init__(self, baseurl=None, token=None, session=None, timeout=None):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._library = None   # cached library
         self._settings = None   # cached settings
-        super(PlexServer, self).__init__(self, self.query(self.key), self.key)
+        data = self.query(self.key, timeout=timeout)
+        super(PlexServer, self).__init__(self, data, self.key)
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -260,17 +262,17 @@ class PlexServer(PlexObject):
         """
         return self.fetchItem('/playlists', title=title)
 
-    def query(self, key, method=None, headers=None, **kwargs):
+    def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
-        #url = key if key.startswith('http') else self.url(key)
         url = self.url(key)
         method = method or self._session.get
+        timeout = timeout or TIMEOUT
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=TIMEOUT, **kwargs)
+        response = method(url, headers=headers, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
