@@ -318,7 +318,7 @@ class MyPlexResource(PlexObject):
         else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        listargs = [[PlexServer, c, self.accessToken, timeout] for c in connections]
+        listargs = [[PlexServer, url, self.accessToken, timeout] for url in connections]
         log.info('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
@@ -411,7 +411,7 @@ class MyPlexDevice(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
-        listargs = [[PlexClient, c, self.token, timeout] for c in self.connections]
+        listargs = [[PlexClient, url, self.token, timeout] for url in self.connections]
         log.info('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         _chooseConnection('Device', self.name, results)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import plexapi, pytest, requests
 from plexapi import compat
+from plexapi.client import PlexClient
 from datetime import datetime
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
@@ -26,14 +27,15 @@ RESOLUTIONS = ['720', 'sd']
 
 
 def pytest_addoption(parser):
-    parser.addoption('--req_client', action='store_true', help='Run tests that interact with a client')
+    parser.addoption('--client', help='Run client tests against specified baseurl.')
+    parser.addoption('--token', help='Token required to connect to client.')
 
 
 def pytest_runtest_setup(item):
-    if 'req_client' in item.keywords and not item.config.getvalue('req_client'):
-        pytest.skip('need --req_client option to run')
-    else:
-        item.config.getvalue('req_client')
+    if 'client' in item.keywords and not item.config.getvalue('client'):
+        return pytest.skip('Need --client option to run.')
+    if 'client' in item.keywords and not item.config.getvalue('token'):
+        return pytest.skip('Need --token option to run.')
 
 
 #---------------------------------
@@ -58,6 +60,13 @@ def plex():
 @pytest.fixture()
 def plex2():
     return plex()
+
+
+@pytest.fixture()
+def client(request):
+    client = request.config.getoption('--client')
+    token = request.config.getoption('--token')
+    return PlexClient(baseurl=client, token=token)
 
 
 @pytest.fixture()
