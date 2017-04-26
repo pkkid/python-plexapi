@@ -10,8 +10,8 @@ def test_list_clients(account, plex, client):
     for resource in resources:
         print('%s (%s)' % (resource.name, resource.product))
         for connection in resource.connections:
-            print('* baseurl=%s, token=%s' % (connection.uri, resource.accessToken))
-            print('* baseurl=%s, token=%s' % (connection.httpuri, resource.accessToken))
+            print("* baseurl='%s', token='%s'" % (connection.uri, resource.accessToken))
+            print("* baseurl='%s', token='%s'" % (connection.httpuri, resource.accessToken))
     assert resources, 'MyPlex is not listing any devlices.'
     # List devices from MyPlex
     print('\nDevices listed on MyPlex')
@@ -20,7 +20,7 @@ def test_list_clients(account, plex, client):
     for device in devices:
         print('%s (%s)' % (device.name, device.product))
         for connection in device.connections:
-            print('* baseurl=%s, token=%s' % (connection, device.token))
+            print("* baseurl='%s', token='%s'" % (connection, device.token))
     assert devices, 'MyPlex is not listing any devlices.'
     # List clients from PlexServer
     clients = plex.clients()
@@ -28,7 +28,7 @@ def test_list_clients(account, plex, client):
     print('------------------------------')
     for client in clients:
         print('%s (%s)' % (client.title, client.product))
-        print('* baseurl=%s, token=%s' % (client._baseurl, plex._token))
+        print("* baseurl='%s', token='%s'" % (client._baseurl, plex._token))
     assert clients, 'PlexServer is not listing any clients.'
 
 

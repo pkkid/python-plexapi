@@ -11,6 +11,8 @@ SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
 MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
+CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
+CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
 MIN_DATETIME = datetime(2017, 1, 1)
 REGEX_EMAIL = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
@@ -27,15 +29,12 @@ RESOLUTIONS = ['720', 'sd']
 
 
 def pytest_addoption(parser):
-    parser.addoption('--client', help='Run client tests against specified baseurl.')
-    parser.addoption('--token', help='Token required to connect to client.')
+    parser.addoption('--client', action='store_true', default=False, help='Run client tests.')
 
 
 def pytest_runtest_setup(item):
     if 'client' in item.keywords and not item.config.getvalue('client'):
         return pytest.skip('Need --client option to run.')
-    if 'client' in item.keywords and not item.config.getvalue('token'):
-        return pytest.skip('Need --token option to run.')
 
 
 #---------------------------------
@@ -64,9 +63,7 @@ def plex2():
 
 @pytest.fixture()
 def client(request):
-    client = request.config.getoption('--client')
-    token = request.config.getoption('--token')
-    return PlexClient(baseurl=client, token=token)
+    return PlexClient(baseurl=CLIENT_BASEURL, token=CLIENT_TOKEN)
 
 
 @pytest.fixture()

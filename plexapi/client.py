@@ -66,7 +66,7 @@ class PlexClient(PlexObject):
         if not any([data, initpath, baseurl, token]):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
-        if self._baseurl and self._token:
+        if self._baseurl:
             self.connect(timeout=timeout)
 
     def connect(self, timeout=None):
