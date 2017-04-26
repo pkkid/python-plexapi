@@ -2,7 +2,42 @@
 import pytest
 
 
-@pytest.mark.req_client
+def test_list_clients(account, plex, client):
+    # List resources from MyPlex
+    print('\nResources listed on MyPlex')
+    print('---------------------------')
+    resources = account.resources()
+    for resource in resources:
+        print('%s (%s)' % (resource.name, resource.product))
+        for connection in resource.connections:
+            print('* baseurl=%s, token=%s' % (connection.uri, resource.accessToken))
+            print('* baseurl=%s, token=%s' % (connection.httpuri, resource.accessToken))
+    assert resources, 'MyPlex is not listing any devlices.'
+    # List devices from MyPlex
+    print('\nDevices listed on MyPlex')
+    print('--------------------------')
+    devices = account.devices()
+    for device in devices:
+        print('%s (%s)' % (device.name, device.product))
+        for connection in device.connections:
+            print('* baseurl=%s, token=%s' % (connection, device.token))
+    assert devices, 'MyPlex is not listing any devlices.'
+    # List clients from PlexServer
+    clients = plex.clients()
+    print('\nClients listed on PlexServer')
+    print('------------------------------')
+    for client in clients:
+        print('%s (%s)' % (client.title, client.product))
+        print('* baseurl=%s, token=%s' % (client._baseurl, plex._token))
+    assert clients, 'PlexServer is not listing any clients.'
+
+
+@pytest.mark.client
+def test_test(client):
+    print(client)
+
+
+@pytest.mark.client
 def _test_client_PlexClient__loadData(pms):
     pass
 

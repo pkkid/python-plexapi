@@ -1,6 +1,9 @@
 #---------------------------------------------------------
 # PlexAPI requirements to build documentation.
 # pip install -r requirments_doc.txt
+#
+# If testing locally:
+# sudo apt-get install python-sphinx
 #---------------------------------------------------------
 recommonmark
 sphinx-rtd-theme

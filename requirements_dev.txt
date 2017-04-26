@@ -9,5 +9,6 @@ flake8
 pillow
 pytest
 pytest-cov
+pytest-cache
 requests
 websocket-client

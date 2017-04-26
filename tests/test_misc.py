@@ -11,21 +11,24 @@ SKIP_EXAMPLES = ['Example 4']
 @pytest.mark.skipif(os.name == 'nt', reason='No make.bat specified for Windows')
 def test_build_documentation():
     docroot = join(dirname(dirname(abspath(__file__))), 'docs')
-    cmd = shlex.split('sphinx-build . _build')
+    cmd = shlex.split('sphinx-build -aE . _build')
     proc = subprocess.Popen(cmd, cwd=docroot, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     status = proc.wait()
     assert status == 0
+    issues = []
     for output in proc.communicate():
         for line in str(output).split('\\n'):
             line = line.lower().strip()
-            assert 'warning' not in line
-            assert 'error' not in line
-            assert 'traceback' not in line
+            if 'warning' in line or 'error' in line or 'traceback' in line:
+                issues.append(line)
+    for line in issues:
+        print(line)
+    assert not issues
 
 
-def test_readme_examples(pms):
+def test_readme_examples(plex):
     failed = 0
-    examples = _fetch_examples(pms)
+    examples = _fetch_examples()
     assert len(examples), 'No examples found in README'
     for title, example in examples:
         if _check_run_example(title):
@@ -38,7 +41,7 @@ def test_readme_examples(pms):
     assert not failed, '%s examples raised an exception.' % failed
 
 
-def _fetch_examples(pms):
+def _fetch_examples():
     parsing = False
     examples = []
     filepath = join(dirname(dirname(abspath(__file__))), 'README.rst')
@@ -48,7 +51,7 @@ def _fetch_examples(pms):
             if line.startswith('# Example '):
                 parsing = True
                 title = line.lstrip('# ')
-                examples.append([title, ['plex = pms']])
+                examples.append([title, []])
             elif parsing and line == '':
                 parsing = False
             elif parsing:

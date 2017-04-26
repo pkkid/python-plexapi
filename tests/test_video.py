@@ -1,40 +1,38 @@
 # -*- coding: utf-8 -*-
-import plexapi, pytest
+import pytest
 from datetime import datetime
 from plexapi.exceptions import BadRequest, NotFound
+from . import conftest as utils
 
 
-def test_video_Movie(a_movie_section):
-    m = a_movie_section.get('Cars')
-    assert m.title == 'Cars'
-
-def test_video_Movie_delete(monkeypatch, pms):
-    m = pms.library.section('Movies').get('16 blocks')
-    monkeypatch.delattr("requests.sessions.Session.request")
-    try:
-        m.delete()
-    except AttributeError:
-        # Silence this because it will always raise beause of monkeypatch
-        pass
+def test_video_Movie(movies):
+    movie = movies.get('Cars')
+    assert movie.title == 'Cars'
 
 
+def test_video_Movie_delete(monkeypatch, plex):
+    movie = plex.library.section('Movies').get('16 blocks')
+    monkeypatch.delattr('requests.sessions.Session.request')
+    with pytest.raises(AttributeError):
+        movie.delete()
 
-def test_video_Movie_getStreamURL(a_movie):
-    server_token = plexapi.CONFIG.get('auth.server_token')
-    assert a_movie.getStreamURL() == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&X-Plex-Token={0}".format(server_token)
-    assert a_movie.getStreamURL(videoResolution='800x600') == "http://138.68.157.5:32400/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F1&videoResolution=800x600&X-Plex-Token={0}".format(server_token)
+
+def test_video_Movie_getStreamURL(movie):
+    key = movie.ratingKey
+    assert movie.getStreamURL() == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
+    assert movie.getStreamURL(videoResolution='800x600') == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
 
 
-def test_video_Movie_isFullObject_and_reload(pms):
-    movie = pms.library.section('Movies').get('16 Blocks')
+def test_video_Movie_isFullObject_and_reload(plex):
+    movie = plex.library.section('Movies').get('Cars')
     assert movie.isFullObject() is False
     movie.reload()
     assert movie.isFullObject() is True
-    movie_via_search = pms.library.search('16 Blocks')[0]
+    movie_via_search = plex.library.search('Cars')[0]
     assert movie_via_search.isFullObject() is False
     movie_via_search.reload()
     assert movie_via_search.isFullObject() is True
-    movie_via_section_search = pms.library.section('Movies').search('16 Blocks')[0]
+    movie_via_section_search = plex.library.section('Movies').search('Cars')[0]
     assert movie_via_section_search.isFullObject() is False
     movie_via_section_search.reload()
     assert movie_via_section_search.isFullObject() is True
@@ -42,501 +40,497 @@ def test_video_Movie_isFullObject_and_reload(pms):
     assert len(movie_via_section_search.roles) > 3
 
 
-def test_video_Movie_isPartialObject(a_movie):
-    assert a_movie.isPartialObject()
+def test_video_Movie_isPartialObject(movie):
+    assert movie.isPartialObject()
 
 
-def test_video_Movie_iterParts(a_movie):
-    assert len(list(a_movie.iterParts())) == 1
+def test_video_Movie_iterParts(movie):
+    assert len(list(movie.iterParts())) >= 1
 
 
-def test_video_Movie_download(monkeydownload, tmpdir, a_movie):
-    downloaded_movie = a_movie.download(savepath=str(tmpdir))
-    assert len(downloaded_movie) == 1
-    downloaded_movie2 = a_movie.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
-    assert len(downloaded_movie2) == 1
+def test_video_Movie_download(monkeydownload, tmpdir, movie):
+    filepaths1 = movie.download(savepath=str(tmpdir))
+    assert len(filepaths1) >= 1
+    filepaths2 = movie.download(savepath=str(tmpdir), videoResolution='500x300')
+    assert len(filepaths2) >= 1
 
 
-def test_video_Movie_attrs_as_much_as_possible(a_movie_section):
-    m = a_movie_section.get('Cars')
-    assert m.locations == ['/media/movies/cars/cars.mp4']
-    assert m.addedAt > datetime(2017, 1, 1)
-    assert '/library/metadata/2/art/' in m.art
-    assert m.audienceRating == 7.9
-    assert m.audienceRatingImage == 'rottentomatoes://image.rating.upright'
-    # Assign 0 m.audioStreams
-    m.reload()
-    aud0 = m.media[0].parts[0].audioStreams[0]
-    assert m.chapterSource == 'agent'
-    assert m.collections == []
-    assert m.contentRating == 'G'
-    #assert m.countries == [<Country:35:USA>]
-    assert [i.tag for i in m.directors] == ['John Lasseter', 'Joe Ranft']
-    assert m.duration == 170859
-    assert m.fields == []
-    assert [i.tag for i in m.genres] == ['Animation', 'Family', 'Comedy', 'Sport', 'Adventure']
-    assert m.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
-    assert m._initpath == '/library/metadata/2'
-    assert m.key == '/library/metadata/2'
-    assert m.lastViewedAt > datetime(2017, 1, 1) 
-    assert m.librarySectionID == '1'
-    assert m.listType == 'video'
-    # Assign 0 m.media
-    med0 = m.media[0]
-    assert m.originalTitle is None
-    assert str(m.originallyAvailableAt.date()) == '2006-06-09'
-    assert m.player is None
-    assert m.playlistItemID is None
-    assert m.primaryExtraKey is None
-    #assert m.producers == [<Producer:130:Darla.K..Anderson>]
-    assert m.rating == '7.4'
-    assert m.ratingImage == 'rottentomatoes://image.rating.certified'
-    assert m.ratingKey == 2
-    assert [i.tag for i in m.roles] == ['Owen Wilson', 'Paul Newman', 'Bonnie Hunt', 'Larry the Cable Guy', 'Cheech Marin', 'Tony Shalhoub', 'Guido Quaroni', 'Jenifer Lewis', 'Paul Dooley', 'Michael Wallis', 'George Carlin', 'Katherine Helmond', 'John Ratzenberger', 'Michael Keaton', 'Joe Ranft', 'Richard Petty', 'Jeremy Piven', 'Bob Costas', 'Darrell Waltrip', 'Richard Kind', 'Edie McClurg', 'Humpy Wheeler', 'Tom Magliozzi', 'Ray Magliozzi', 'Lynda Petty', 'Andrew Stanton', 'Dale Earnhardt Jr.', 'Michael Schumacher', 'Jay Leno', 'Sarah Clark', 'Mike Nelson', 'Joe Ranft', 'Jonas Rivera', 'Lou Romano', 'Adrian Ochoa', 'E.J. Holowicki', 'Elissa Knight', 'Lindsey Collins', 'Larry Benton', 'Douglas Keever', 'Tom Hanks', 'Tim Allen', 'John Ratzenberger', 'Billy Crystal', 'John Goodman', 'John Ratzenberger', 'Dave Foley', 'John Ratzenberger', 'Vanness Wu']
-    assert m._server._baseurl == 'http://138.68.157.5:32400'
-    assert m.sessionKey is None
-    assert m.studio == 'Walt Disney Pictures'
-    assert m.summary == u"Lightning McQueen, a hotshot rookie race car driven to succeed, discovers that life is about the journey, not the finish line, when he finds himself unexpectedly detoured in the sleepy Route 66 town of Radiator Springs. On route across the country to the big Piston Cup Championship in California to compete against two seasoned pros, McQueen gets to know the town's offbeat characters."
-    assert m.tagline == "Ahhh... it's got that new movie smell."
-    assert '/library/metadata/2/thumb/' in m.thumb
-    assert m.title == 'Cars'
-    assert m.titleSort == 'Cars'
-    assert m.transcodeSession is None
-    assert m.type == 'movie'
-    assert m.updatedAt > datetime(2017, 1, 1)
-    assert m.userRating is None
-    assert m.username is None
-    # Assign 0 m.videoStreams
-    vid0 = m.media[0].parts[0].videoStreams[0]
-    assert m.viewCount == 0
-    assert m.viewOffset == 88870
-    assert m.viewedAt is None
-    assert [i.tag for i in m.writers] == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Kiel Murray', 'Phil Lorin', 'Jorgen Klubien']
-    assert m.year == 2006
-    assert aud0.audioChannelLayout == '5.1'
-    assert aud0.bitDepth is None
-    assert aud0.bitrate == 388
-    assert aud0.bitrateMode is None
-    assert aud0.channels == 6
-    assert aud0.codec == 'aac'
-    assert aud0.codecID is None
-    assert aud0.dialogNorm is None
-    assert aud0.duration is None
-    assert aud0.id == 10
-    assert aud0.index == 1
-    assert aud0._initpath == '/library/metadata/2'
-    assert aud0.language is None
-    assert aud0.languageCode is None
-    #assert aud0.part == <MediaPart:2>
-    assert aud0.samplingRate == 48000
-    assert aud0.selected is True
-    assert aud0._server._baseurl == 'http://138.68.157.5:32400'
-    assert aud0.streamType == 2
-    assert aud0.title is None
-    assert aud0.type == 2
-    assert med0.aspectRatio == 1.78
-    assert med0.audioChannels == 6
-    assert med0.audioCodec == 'aac'
-    assert med0.bitrate == 1474
-    assert med0.container == 'mp4'
-    assert med0.duration == 170859
-    assert med0.height == 720
-    assert med0.id == 2
-    assert med0._initpath == '/library/metadata/2'
-    assert med0.optimizedForStreaming is False
-    # Assign 0 med0.parts
-    par0 = med0.parts[0]
-    assert med0._server._baseurl == 'http://138.68.157.5:32400'
-    assert med0.videoCodec == 'h264'
-    assert med0.videoFrameRate == 'PAL'
-    assert med0.videoResolution == '720'
-    assert med0.width == 1280
-    assert vid0.bitDepth == 8
-    assert vid0.bitrate == 1086
-    assert vid0.cabac is None
-    assert vid0.chromaSubsampling == '4:2:0'
-    assert vid0.codec == 'h264'
-    assert vid0.codecID is None
-    assert vid0.colorSpace is None
-    assert vid0.duration is None
-    assert vid0.frameRate == 25.0
-    assert vid0.frameRateMode is None
-    assert vid0.hasScallingMatrix is None
-    assert vid0.height == 720
-    assert vid0.id == 9
-    assert vid0.index == 0
-    assert vid0._initpath == '/library/metadata/2'
-    assert vid0.language is None
-    assert vid0.languageCode is None
-    assert vid0.level == 31
-    #assert vid0.part == <MediaPart:2>
-    assert vid0.profile == 'main'
-    assert vid0.refFrames == 1
-    assert vid0.scanType is None
-    assert vid0.selected is False
-    assert vid0._server._baseurl == 'http://138.68.157.5:32400'
-    assert vid0.streamType == 1
-    assert vid0.title is None
-    assert vid0.type == 1
-    assert vid0.width == 1280
-    assert par0.container == 'mp4'
-    assert par0.duration == 170859
-    assert par0.file == '/media/movies/cars/cars.mp4'
-    assert par0.id == 2
-    assert par0._initpath == '/library/metadata/2'
-    assert par0.key == '/library/parts/2/1484679008/file.mp4'
-    #assert par0.media == <Media:Cars>
-    assert par0._server._baseurl == 'http://138.68.157.5:32400'
-    assert par0.size == 31491130
-    # Assign 0 par0.streams
-    str0 = par0.streams[0]
-    # Assign 1 par0.streams
-    str1 = par0.streams[1]
-    assert str0.bitDepth == 8
-    assert str0.bitrate == 1086
-    assert str0.cabac is None
-    assert str0.chromaSubsampling == '4:2:0'
-    assert str0.codec == 'h264'
-    assert str0.codecID is None
-    assert str0.colorSpace is None
-    assert str0.duration is None
-    assert str0.frameRate == 25.0
-    assert str0.frameRateMode is None
-    assert str0.hasScallingMatrix is None
-    assert str0.height == 720
-    assert str0.id == 9
-    assert str0.index == 0
-    assert str0._initpath == '/library/metadata/2'
-    assert str0.language is None
-    assert str0.languageCode is None
-    assert str0.level == 31
-    #assert str0.part == <MediaPart:2>
-    assert str0.profile == 'main'
-    assert str0.refFrames == 1
-    assert str0.scanType is None
-    assert str0.selected is False
-    assert str0._server._baseurl == 'http://138.68.157.5:32400'
-    assert str0.streamType == 1
-    assert str0.title is None
-    assert str0.type == 1
-    assert str0.width == 1280
-    assert str1.audioChannelLayout == '5.1'
-    assert str1.bitDepth is None
-    assert str1.bitrate == 388
-    assert str1.bitrateMode is None
-    assert str1.channels == 6
-    assert str1.codec == 'aac'
-    assert str1.codecID is None
-    assert str1.dialogNorm is None
-    assert str1.duration is None
-    assert str1.id == 10
-    assert str1.index == 1
-    assert str1._initpath == '/library/metadata/2'
-    assert str1.language is None
-    assert str1.languageCode is None
-    #assert str1.part == <MediaPart:2>
-    assert str1.samplingRate == 48000
-    assert str1.selected is True
-    assert str1._server._baseurl == 'http://138.68.157.5:32400'
-    assert str1.streamType == 2
-    assert str1.title is None
-    assert str1.type == 2
+def test_video_Movie_attrs(movies):
+    movie = movies.get('Cars')
+    assert len(movie.locations[0]) >= 10
+    assert utils.is_datetime(movie.addedAt)
+    assert utils.is_metadata(movie.art)
+    assert movie.audienceRating == 7.9
+    assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
+    movie.reload()  # RELOAD
+    assert movie.chapterSource == 'agent'
+    assert movie.collections == []
+    assert movie.contentRating == 'G'
+    assert all([i.tag in ['US', 'USA'] for i in movie.countries])
+    assert [i.tag for i in movie.directors] == ['John Lasseter', 'Joe Ranft']
+    assert movie.duration >= 160000
+    assert movie.fields == []
+    assert sorted([i.tag for i in movie.genres]) == ['Adventure', 'Animation', 'Comedy', 'Family', 'Sport']
+    assert movie.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
+    assert utils.is_metadata(movie._initpath)
+    assert utils.is_metadata(movie.key)
+    if movie.lastViewedAt:
+        assert utils.is_datetime(movie.lastViewedAt)
+    assert int(movie.librarySectionID) >= 1
+    assert movie.listType == 'video'
+    assert movie.originalTitle is None
+    assert movie.originallyAvailableAt.strftime('%Y-%m-%d') == '2006-06-09'
+    assert movie.player is None
+    assert movie.playlistItemID is None
+    assert movie.primaryExtraKey is None
+    assert [i.tag for i in movie.producers] == ['Darla K. Anderson']
+    assert movie.rating == '7.4'
+    assert movie.ratingImage == 'rottentomatoes://image.rating.certified'
+    assert movie.ratingKey >= 1
+    assert sorted([i.tag for i in movie.roles]) == ['Adrian Ochoa', 'Andrew Stanton', 'Billy Crystal', 'Bob Costas', 'Bonnie Hunt', 'Cheech Marin', 'Dale Earnhardt Jr.', 'Darrell Waltrip', 'Dave Foley', 'Douglas Keever', 'E.J. Holowicki', 'Edie McClurg', 'Elissa Knight', 'George Carlin', 'Guido Quaroni', 'Humpy Wheeler', 'Jay Leno', 'Jenifer Lewis', 'Jeremy Piven', 'Joe Ranft', 'Joe Ranft', 'John Goodman', 'John Ratzenberger', 'John Ratzenberger', 'John Ratzenberger', 'John Ratzenberger', 'Jonas Rivera', 'Katherine Helmond', 'Larry Benton', 'Larry the Cable Guy', 'Lindsey Collins', 'Lou Romano', 'Lynda Petty', 'Michael Keaton', 'Michael Schumacher', 'Michael Wallis', 'Mike Nelson', 'Owen Wilson', 'Paul Dooley', 'Paul Newman', 'Ray Magliozzi', 'Richard Kind', 'Richard Petty', 'Sarah Clark', 'Tim Allen', 'Tom Hanks', 'Tom Magliozzi', 'Tony Shalhoub', 'Vanness Wu']  # noqa
+    assert movie._server._baseurl == utils.SERVER_BASEURL
+    assert movie.sessionKey is None
+    assert movie.studio == 'Walt Disney Pictures'
+    assert utils.is_string(movie.summary, gte=100)
+    assert movie.tagline == "Ahhh... it's got that new movie smell."
+    assert utils.is_thumb(movie.thumb)
+    assert movie.title == 'Cars'
+    assert movie.titleSort == 'Cars'
+    assert movie.transcodeSession is None
+    assert movie.type == 'movie'
+    assert movie.updatedAt > datetime(2017, 1, 1)
+    assert movie.userRating is None
+    assert movie.username is None
+    assert movie.viewCount == 0
+    assert utils.is_int(movie.viewOffset, gte=0)
+    assert movie.viewedAt is None
+    assert sorted([i.tag for i in movie.writers]) == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Jorgen Klubien', 'Kiel Murray', 'Phil Lorin']  # noqa
+    assert movie.year == 2006
+    # Audio
+    audio = movie.media[0].parts[0].audioStreams[0]
+    assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
+    assert audio.bitDepth is None
+    assert utils.is_int(audio.bitrate)
+    assert audio.bitrateMode is None
+    assert audio.channels in utils.AUDIOCHANNELS
+    assert audio.codec in utils.CODECS
+    assert audio.codecID is None
+    assert audio.dialogNorm is None
+    assert audio.duration is None
+    assert audio.id >= 1
+    assert audio.index == 1
+    assert utils.is_metadata(audio._initpath)
+    assert audio.language is None
+    assert audio.languageCode is None
+    assert audio.samplingRate == 48000
+    assert audio.selected is True
+    assert audio._server._baseurl == utils.SERVER_BASEURL
+    assert audio.streamType == 2
+    assert audio.title is None
+    assert audio.type == 2
+    # Media
+    media = movie.media[0]
+    assert media.aspectRatio == 1.78
+    assert media.audioChannels in utils.AUDIOCHANNELS
+    assert media.audioCodec in utils.CODECS
+    assert utils.is_int(media.bitrate)
+    assert media.container in utils.CONTAINERS
+    assert utils.is_int(media.duration, gte=160000)
+    assert utils.is_int(media.height)
+    assert utils.is_int(media.id)
+    assert utils.is_metadata(media._initpath)
+    assert media.optimizedForStreaming in [None, False]
+    assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.videoCodec in utils.CODECS
+    assert media.videoFrameRate in utils.FRAMERATES
+    assert media.videoResolution in utils.RESOLUTIONS
+    assert utils.is_int(media.width, gte=200)
+    # Video
+    video = movie.media[0].parts[0].videoStreams[0]
+    assert video.bitDepth == 8
+    assert utils.is_int(video.bitrate)
+    assert video.cabac is None
+    assert video.chromaSubsampling == '4:2:0'
+    assert video.codec in utils.CODECS
+    assert video.codecID is None
+    assert video.colorSpace is None
+    assert video.duration is None
+    assert utils.is_float(video.frameRate, gte=20.0)
+    assert video.frameRateMode is None
+    assert video.hasScallingMatrix is None
+    assert utils.is_int(video.height, gte=300)
+    assert utils.is_int(video.id)
+    assert utils.is_int(video.index, gte=0)
+    assert utils.is_metadata(video._initpath)
+    assert video.language is None
+    assert video.languageCode is None
+    assert utils.is_int(video.level)
+    assert video.profile in utils.PROFILES
+    assert utils.is_int(video.refFrames)
+    assert video.scanType is None
+    assert video.selected is False
+    assert video._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(video.streamType)
+    assert video.title is None
+    assert video.type == 1
+    assert utils.is_int(video.width, gte=400)
+    # Part
+    part = media.parts[0]
+    assert part.container in utils.CONTAINERS
+    assert utils.is_int(part.duration, 160000)
+    assert len(part.file) >= 10
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert len(part.key) >= 10
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(part.size, gte=1000000)
+    # Stream 1
+    stream1 = part.streams[0]
+    assert stream1.bitDepth == 8
+    assert utils.is_int(stream1.bitrate)
+    assert stream1.cabac is None
+    assert stream1.chromaSubsampling == '4:2:0'
+    assert stream1.codec in utils.CODECS
+    assert stream1.codecID is None
+    assert stream1.colorSpace is None
+    assert stream1.duration is None
+    assert utils.is_float(stream1.frameRate, gte=20.0)
+    assert stream1.frameRateMode is None
+    assert stream1.hasScallingMatrix is None
+    assert utils.is_int(stream1.height, gte=300)
+    assert utils.is_int(stream1.id)
+    assert utils.is_int(stream1.index, gte=0)
+    assert utils.is_metadata(stream1._initpath)
+    assert stream1.language is None
+    assert stream1.languageCode is None
+    assert utils.is_int(stream1.level)
+    assert stream1.profile in utils.PROFILES
+    assert stream1.refFrames == 1
+    assert stream1.scanType is None
+    assert stream1.selected is False
+    assert stream1._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(stream1.streamType)
+    assert stream1.title is None
+    assert stream1.type == 1
+    assert utils.is_int(stream1.width, gte=400)
+    # Stream 2
+    stream2 = part.streams[1]
+    assert stream2.audioChannelLayout in utils.AUDIOLAYOUTS
+    assert stream2.bitDepth is None
+    assert utils.is_int(stream2.bitrate)
+    assert stream2.bitrateMode is None
+    assert stream2.channels in utils.AUDIOCHANNELS
+    assert stream2.codec in utils.CODECS
+    assert stream2.codecID is None
+    assert stream2.dialogNorm is None
+    assert stream2.duration is None
+    assert utils.is_int(stream2.id)
+    assert utils.is_int(stream2.index)
+    assert utils.is_metadata(stream2._initpath)
+    assert stream2.language is None
+    assert stream2.languageCode is None
+    assert utils.is_int(stream2.samplingRate)
+    assert stream2.selected is True
+    assert stream2._server._baseurl == utils.SERVER_BASEURL
+    assert stream2.streamType == 2
+    assert stream2.title is None
+    assert stream2.type == 2
 
 
-def test_video_Show(a_show):
-    assert a_show.title == 'The 100'
+def test_video_Show(show):
+    assert show.title == 'The 100'
 
 
-def test_video_Show_attrs(a_show):
-    m = a_show
-    assert m.addedAt > datetime(2017, 1, 1)
-    assert '/library/metadata/12/art/' in m.art
-    assert '/library/metadata/12/banner/' in m.banner
-    assert m.childCount == 2
-    assert m.contentRating == 'TV-14'
-    assert m.duration == 2700000
-    assert m._initpath == '/library/sections/2/all'
+def test_video_Show_attrs(show):
+    assert show.addedAt > datetime(2017, 1, 1)
+    assert utils.is_metadata(show.art, contains='/art/')
+    assert utils.is_metadata(show.banner, contains='/banner/')
+    assert utils.is_int(show.childCount)
+    assert show.contentRating in utils.CONTENTRATINGS
+    assert utils.is_int(show.duration, gte=1600000)
+    assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
-    assert [i.tag for i in m.genres] == ['Drama', 'Science-Fiction', 'Suspense']
-    m.reload()
-    assert [i.tag for i in m.genres] == ['Drama', 'Science-Fiction', 'Suspense', 'Thriller']
+    assert sorted([i.tag for i in show.genres]) == ['Drama', 'Science-Fiction', 'Suspense']
+    show.reload()
+    assert sorted([i.tag for i in show.genres]) == ['Drama', 'Science-Fiction', 'Suspense', 'Thriller']
     # So the initkey should have changed because of the reload
-    assert m._initpath == '/library/metadata/12'
-    assert m.index == '1'
-    assert m.key == '/library/metadata/12'
-    assert m.lastViewedAt > datetime(2017, 1, 1)
-    assert m.leafCount == 9
-    assert m.listType == 'video'
-    assert m.locations == ['/media/tvshows/the 100']
-    assert str(m.originallyAvailableAt.date()) == '2014-03-19'
-    assert m.rating == 8.1
-    assert m.ratingKey == 12
-    assert [i.tag for i in m.roles][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
-    assert [i.tag for i in m.actors][:3] == ['Richard Harmon', 'Alycia Debnam-Carey', 'Lindsey Morgan']
-    assert m._server._baseurl == 'http://138.68.157.5:32400'
-    assert m.studio == 'The CW'
-    assert m.summary == u"When nuclear Armageddon destroys civilization on Earth, the only survivors are those on the 12 international space stations in orbit at the time. Three generations later, the 4,000 survivors living on a space ark of linked stations see their resources dwindle and face draconian measures established to ensure humanity's future. Desperately looking for a solution, the ark's leaders send 100 juvenile prisoners back to the planet to test its habitability. Having always lived in space, the exiles find the planet fascinating and terrifying, but with the fate of the human race in their hands, they must forge a path into the unknown."
-    assert '/library/metadata/12/theme/' in m.theme
-    assert '/library/metadata/12/thumb/' in m.thumb
-    assert m.title == 'The 100'
-    assert m.titleSort == '100'
-    assert m.type == 'show'
-    assert m.updatedAt > datetime(2017, 1, 1)
-    assert m.viewCount == 1
-    assert m.viewedLeafCount == 1
-    assert m.year == 2014
+    assert utils.is_metadata(show._initpath)
+    assert utils.is_int(show.index)
+    assert utils.is_metadata(show.key)
+    assert utils.is_datetime(show.lastViewedAt)
+    assert utils.is_int(show.leafCount)
+    assert show.listType == 'video'
+    assert len(show.locations[0]) >= 10
+    assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2014-03-19'
+    assert show.rating >= 8.0
+    assert utils.is_int(show.ratingKey)
+    assert sorted([i.tag for i in show.roles][:3]) == ['Alycia Debnam-Carey', 'Lindsey Morgan', 'Richard Harmon']
+    assert sorted([i.tag for i in show.actors][:3]) == ['Alycia Debnam-Carey', 'Lindsey Morgan', 'Richard Harmon']
+    assert show._server._baseurl == utils.SERVER_BASEURL
+    assert show.studio == 'The CW'
+    assert utils.is_string(show.summary, gte=100)
+    assert utils.is_metadata(show.theme, contains='/theme/')
+    assert utils.is_metadata(show.thumb, contains='/thumb/')
+    assert show.title == 'The 100'
+    assert show.titleSort == '100'
+    assert show.type == 'show'
+    assert utils.is_datetime(show.updatedAt)
+    assert utils.is_int(show.viewCount, gte=0)
+    assert utils.is_int(show.viewedLeafCount, gte=0)
+    assert show.year == 2014
 
 
-def test_video_Show_watched(a_show):
-    watched = a_show.watched()
+def test_video_Show_watched(show):
+    show.episodes()[0].markWatched()
+    watched = show.watched()
     assert len(watched) == 1 and watched[0].title == 'Pilot'
 
 
-def test_video_Show_unwatched(a_show):
-    assert len(a_show.unwatched()) == 8
+def test_video_Show_unwatched(show):
+    episodes = show.episodes()
+    episodes[0].markWatched()
+    unwatched = show.unwatched()
+    assert len(unwatched) == len(episodes) - 1
 
 
-def test_video_Show_location(pms):
-    # This should be a part of test test_video_Show_attrs
-    # But is excluded because of https://github.com/mjs7231/python-plexapi/issues/97
-    s = pms.library.section('TV Shows').get('The 100')
-    # This will require a reload since the xml from http://138.68.157.5:32400/library/sections/2/all
-    # Does not contain a location
-    assert s.locations == ['/media/tvshows/the 100']
-
-def test_video_Show_reload(pms):
-    s = pms.library.section('TV Shows').get('Game of Thrones')
-    assert s._initpath == '/library/sections/2/all'
-    s.reload()
-    assert s._initpath == '/library/metadata/6'
-    assert len(s.roles) > 3
+def test_video_Show_location(plex):
+    # This should be a part of test test_video_Show_attrs but is excluded
+    # because of https://github.com/mjs7231/python-plexapi/issues/97
+    show = plex.library.section('TV Shows').get('The 100')
+    assert len(show.locations) >= 1
 
 
-def test_video_Show_episodes(a_show):
-    inc_watched = a_show.episodes()
-    ex_watched = a_show.episodes(viewCount=0)
-    assert len(inc_watched) == 9
-    assert len(ex_watched) == 8
+def test_video_Show_reload(plex):
+    show = plex.library.section('TV Shows').get('Game of Thrones')
+    assert utils.is_metadata(show._initpath, prefix='/library/sections/')
+    assert len(show.roles) == 3
+    show.reload()
+    assert utils.is_metadata(show._initpath, prefix='/library/metadata/')
+    assert len(show.roles) > 3
 
 
-def test_video_Show_download(monkeydownload, tmpdir, a_show):
-    f = a_show.download(savepath=str(tmpdir))
-    assert len(f) == 9
+def test_video_Show_episodes(show):
+    episodes = show.episodes()
+    episodes[0].markWatched()
+    unwatched = show.episodes(viewCount=0)
+    assert len(unwatched) == len(episodes) - 1
 
 
-def test_video_Season_download(monkeydownload, tmpdir, a_show):
-    sn = a_show.season('Season 1')
-    f = sn.download(savepath=str(tmpdir))
-    assert len(f) == 8
+def test_video_Show_download(monkeydownload, tmpdir, show):
+    episodes = show.episodes()
+    filepaths = show.download(savepath=str(tmpdir))
+    assert len(filepaths) == len(episodes)
 
 
-def test_video_Episode_download(monkeydownload, tmpdir, a_episode):
-    f = a_episode.download(savepath=str(tmpdir))
+def test_video_Season_download(monkeydownload, tmpdir, show):
+    season = show.season('Season 1')
+    filepaths = season.download(savepath=str(tmpdir))
+    assert len(filepaths) == 8
+
+
+def test_video_Episode_download(monkeydownload, tmpdir, episode):
+    f = episode.download(savepath=str(tmpdir))
     assert len(f) == 1
-    with_sceen_size = a_episode.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
+    with_sceen_size = episode.download(savepath=str(tmpdir), **{'videoResolution': '500x300'})
     assert len(with_sceen_size) == 1
 
 
-def test_video_Show_thumbUrl(a_show):
-    assert 'http://138.68.157.5:32400/library/metadata/12/thumb/' in a_show.thumbUrl
+def test_video_Show_thumbUrl(show):
+    assert utils.SERVER_BASEURL in show.thumbUrl
+    assert '/library/metadata/' in show.thumbUrl
+    assert '/thumb/' in show.thumbUrl
 
 
-@pytest.mark.xfail
-def test_video_Show_analyze(a_show):
-    show = a_show.analyze()  # this isnt possble.. should it even be available?
+def test_video_Show_analyze(show):
+    show = show.analyze()
 
 
-def test_video_Show_markWatched(a_tv_section):
-    show = a_tv_section.get("Marvel's Daredevil")
+def test_video_Show_markWatched(tvshows):
+    show = tvshows.get("Marvel's Daredevil")
     show.markWatched()
-    assert a_tv_section.get("Marvel's Daredevil").isWatched
+    assert tvshows.get("Marvel's Daredevil").isWatched
 
 
-def test_video_Show_markUnwatched(a_tv_section):
-    show = a_tv_section.get("Marvel's Daredevil")
+def test_video_Show_markUnwatched(tvshows):
+    show = tvshows.get("Marvel's Daredevil")
     show.markUnwatched()
-    assert not a_tv_section.get("Marvel's Daredevil").isWatched
+    assert not tvshows.get("Marvel's Daredevil").isWatched
 
 
-def test_video_Show_refresh(a_tv_section):
-    show = a_tv_section.get("Marvel's Daredevil")
+def test_video_Show_refresh(tvshows):
+    show = tvshows.get("Marvel's Daredevil")
     show.refresh()
 
 
-def test_video_Show_get(a_show):
-    assert a_show.get('Pilot').title == 'Pilot'
+def test_video_Show_get(show):
+    assert show.get('Pilot').title == 'Pilot'
 
 
-def test_video_Show_isWatched(a_show):
-    assert not a_show.isWatched
+def test_video_Show_isWatched(show):
+    assert not show.isWatched
 
 
-def test_video_Show_section(a_show):
-    section = a_show.section()
+def test_video_Show_section(show):
+    section = show.section()
     assert section.title == 'TV Shows'
 
 
-def test_video_Episode(a_show):
-    pilot = a_show.episode('Pilot')
-    assert pilot == a_show.episode(season=1, episode=1)
+def test_video_Episode(show):
+    episode = show.episode('Pilot')
+    assert episode == show.episode(season=1, episode=1)
     with pytest.raises(BadRequest):
-        a_show.episode()
+        show.episode()
     with pytest.raises(NotFound):
-        a_show.episode(season=1337, episode=1337)
+        show.episode(season=1337, episode=1337)
 
 
-def test_video_Episode_analyze(a_tv_section):
-    ep = a_tv_section.get("Marvel's Daredevil").episode(season=1, episode=1)
-    ep.analyze()
+def test_video_Episode_analyze(tvshows):
+    episode = tvshows.get("Marvel's Daredevil").episode(season=1, episode=1)
+    episode.analyze()
 
 
-def test_video_Episode_attrs(a_episode):
-    ep = a_episode
-    assert ep.addedAt > datetime(2017, 1, 1)
-    assert ep.contentRating == 'TV-14'
-    assert [i.tag for i in ep.directors] == ['Bharat Nalluri']
-    assert ep.duration == 170859
-    assert ep.grandparentTitle == 'The 100'
-    assert ep.index == 1
-    assert ep._initpath == '/library/metadata/12/allLeaves'
-    assert ep.key == '/library/metadata/14'
-    assert ep.listType == 'video'
-    # Assign 0 ep.media
-    med0 = ep.media[0]
-    assert str(ep.originallyAvailableAt.date()) == '2014-03-19'
-    assert ep.parentIndex == '1'
-    assert ep.parentKey == '/library/metadata/13'
-    assert ep.parentRatingKey == 13
-    assert '/library/metadata/13/thumb/' in ep.parentThumb
-    #assert ep.parentThumb == '/library/metadata/13/thumb/1485096623'
-    assert ep.player is None
-    assert ep.rating == 7.4
-    assert ep.ratingKey == 14
-    assert ep._server._baseurl == 'http://138.68.157.5:32400'
-    assert ep.summary == u'Ninety-seven years ago, nuclear Armageddon decimated planet Earth, destroying civilization. The only survivors were the 400 inhabitants of 12 international space stations that were in orbit at the time. Three generations have been born in space, the survivors now number 4,000, and resources are running out on their dying "Ark." Among the 100 young exiles are Clarke, the bright teenage daughter of the Ark’s chief medical officer; the daredevil Finn; the brother/sister duo of Bellamy and Octavia, whose illegal sibling status has always led them to flaunt the rules, the lighthearted Jasper and the resourceful Monty. Technologically blind to what’s happening on the planet below them, the Ark’s leaders — Clarke’s widowed mother, Abby; Chancellor Jaha; and his shadowy second in command, Kane — are faced with difficult decisions about life, death and the continued existence of the human race.'
-    assert ep.thumb == '/library/metadata/14/thumb/1485115318'
-    assert ep.title == 'Pilot'
-    assert ep.titleSort == 'Pilot'
-    assert ep.transcodeSession is None
-    assert ep.type == 'episode'
-    assert ep.updatedAt > datetime(2017, 1, 1)
-    assert ep.username is None
-    assert ep.viewCount == 1
-    assert ep.viewOffset == 0
-    assert [i.tag for i in ep.writers] == ['Jason Rothenberg']
-    assert ep.year == 2014
-    assert med0.aspectRatio == 1.78
-    assert med0.audioChannels == 6
-    assert med0.audioCodec == 'aac'
-    assert med0.bitrate == 1474
-    assert med0.container == 'mp4'
-    assert med0.duration == 170859
-    assert med0.height == 720
-    assert med0.id == 12
-    assert med0._initpath == '/library/metadata/12/allLeaves'
-    assert med0.optimizedForStreaming is False
-    # Assign 0 med0.parts
-    par0 = med0.parts[0]
-    assert med0._server._baseurl == 'http://138.68.157.5:32400'
-    #assert med0.video == <Episode:14:The 100:S1:E1:Pilot>
-    assert med0.videoCodec == 'h264'
-    assert med0.videoFrameRate == 'PAL'
-    assert med0.videoResolution == '720'
-    assert med0.width == 1280
-    assert par0.container == 'mp4'
-    assert par0.duration == 170859
-    assert par0.file == '/media/tvshows/the 100/season 1/the.100.s01e01.mp4'
-    assert par0.id == 12
-    assert par0._initpath == '/library/metadata/12/allLeaves'
-    assert par0.key == '/library/parts/12/1484679008/file.mp4'
-    #assert par0.media == <Media:Pilot>
-    assert par0._server._baseurl == 'http://138.68.157.5:32400'
-    assert par0.size == 31491130
-    assert ep.isWatched is True
+def test_video_Episode_attrs(episode):
+    assert utils.is_datetime(episode.addedAt)
+    assert episode.contentRating in utils.CONTENTRATINGS
+    assert [i.tag for i in episode.directors] == ['Bharat Nalluri']
+    assert utils.is_int(episode.duration, gte=120000)
+    assert episode.grandparentTitle == 'The 100'
+    assert episode.index == 1
+    assert utils.is_metadata(episode._initpath)
+    assert utils.is_metadata(episode.key)
+    assert episode.listType == 'video'
+    assert episode.originallyAvailableAt.strftime('%Y-%m-%d') == '2014-03-19'
+    assert utils.is_int(episode.parentIndex)
+    assert utils.is_metadata(episode.parentKey)
+    assert utils.is_int(episode.parentRatingKey)
+    assert utils.is_metadata(episode.parentThumb, contains='/thumb/')
+    assert episode.player is None
+    assert episode.rating == 7.4
+    assert utils.is_int(episode.ratingKey)
+    assert episode._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_string(episode.summary, gte=100)
+    assert utils.is_metadata(episode.thumb, contains='/thumb/')
+    assert episode.title == 'Pilot'
+    assert episode.titleSort == 'Pilot'
+    assert episode.transcodeSession is None
+    assert episode.type == 'episode'
+    assert utils.is_datetime(episode.updatedAt)
+    assert episode.username is None
+    assert utils.is_int(episode.viewCount)
+    assert episode.viewOffset == 0
+    assert [i.tag for i in episode.writers] == ['Jason Rothenberg']
+    assert episode.year == 2014
+    assert episode.isWatched is True
+    # Media
+    media = episode.media[0]
+    assert media.aspectRatio == 1.78
+    assert media.audioChannels in utils.AUDIOCHANNELS
+    assert media.audioCodec in utils.CODECS
+    assert utils.is_int(media.bitrate)
+    assert media.container in utils.CONTAINERS
+    assert utils.is_int(media.duration, gte=150000)
+    assert utils.is_int(media.height, gte=200)
+    assert utils.is_int(media.id)
+    assert utils.is_metadata(media._initpath)
+    assert isinstance(media.optimizedForStreaming, bool)
+    assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.videoCodec in utils.CODECS
+    assert media.videoFrameRate in utils.FRAMERATES
+    assert media.videoResolution in utils.RESOLUTIONS
+    assert utils.is_int(media.width, gte=400)
+    # Part
+    part = media.parts[0]
+    assert part.container in utils.CONTAINERS
+    assert utils.is_int(part.duration, gte=150000)
+    assert len(part.file) >= 10
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert len(part.key) >= 10
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(part.size, gte=30000000)
 
 
-def test_video_Season(a_show):
-    seasons = a_show.seasons()
+def test_video_Season(show):
+    seasons = show.seasons()
     assert len(seasons) == 2
     assert ['Season 1', 'Season 2'] == [s.title for s in seasons]
-    assert a_show.season('Season 1') == seasons[0]
+    assert show.season('Season 1') == seasons[0]
 
 
-def test_video_Season_attrs(a_show):
-    m = a_show.season('Season 1')
-    assert m.addedAt > datetime(2017, 1, 1)
-    assert m.index == 1
-    assert m._initpath == '/library/metadata/12/children'
-    assert m.key == '/library/metadata/13'
-    assert m.lastViewedAt > datetime(2017, 1, 1)
-    assert m.leafCount == 8
-    assert m.listType == 'video'
-    assert m.parentKey == '/library/metadata/12'
-    assert m.parentRatingKey == 12
-    assert m.parentTitle == 'The 100'
-    assert m.ratingKey == 13
-    assert m._server._baseurl == 'http://138.68.157.5:32400'
-    assert m.summary == ''
-    assert '/library/metadata/13/thumb/' in m.thumb
-    #assert m.thumb == '/library/metadata/13/thumb/1485096623'
-    assert m.title == 'Season 1'
-    assert m.titleSort == 'Season 1'
-    assert m.type == 'season'
-    assert m.updatedAt > datetime(2017, 1, 1)
-    assert m.viewCount == 1
-    assert m.viewedLeafCount == 1
-    assert m.seasonNumber == 1
+def test_video_Season_attrs(show):
+    season = show.season('Season 1')
+    assert utils.is_datetime(season.addedAt)
+    assert season.index == 1
+    assert utils.is_metadata(season._initpath)
+    assert utils.is_metadata(season.key)
+    assert utils.is_datetime(season.lastViewedAt)
+    assert utils.is_int(season.leafCount, gte=3)
+    assert season.listType == 'video'
+    assert utils.is_metadata(season.parentKey)
+    assert utils.is_int(season.parentRatingKey)
+    assert season.parentTitle == 'The 100'
+    assert utils.is_int(season.ratingKey)
+    assert season._server._baseurl == utils.SERVER_BASEURL
+    assert season.summary == ''
+    assert utils.is_metadata(season.thumb, contains='/thumb/') 
+    assert season.title == 'Season 1'
+    assert season.titleSort == 'Season 1'
+    assert season.type == 'season'
+    assert utils.is_datetime(season.updatedAt)
+    assert utils.is_int(season.viewCount)
+    assert utils.is_int(season.viewedLeafCount)
+    assert utils.is_int(season.seasonNumber)
 
 
-def test_video_Season_show(a_show):
-    sn = a_show.seasons()[0]
-    season_by_name = a_show.season('Season 1')
-    assert a_show.ratingKey == sn.parentRatingKey and season_by_name.parentRatingKey
-    assert sn.ratingKey == season_by_name.ratingKey
+def test_video_Season_show(show):
+    season = show.seasons()[0]
+    season_by_name = show.season('Season 1')
+    assert show.ratingKey == season.parentRatingKey and season_by_name.parentRatingKey
+    assert season.ratingKey == season_by_name.ratingKey
 
 
-def test_video_Season_watched(a_tv_section):
-    show = a_tv_section.get("Marvel's Daredevil")
-    sn = show.season(1)
+def test_video_Season_watched(tvshows):
+    show = tvshows.get("Marvel's Daredevil")
+    season = show.season(1)
     sne = show.season('Season 1')
-    assert sn == sne
-    sn.markWatched()
-    assert sn.isWatched
+    assert season == sne
+    season.markWatched()
+    assert season.isWatched
 
 
-def test_video_Season_unwatched(a_tv_section):
-    sn = a_tv_section.get("Marvel's Daredevil").season(1)
-    sn.markUnwatched()
-    assert not sn.isWatched
+def test_video_Season_unwatched(tvshows):
+    season = tvshows.get("Marvel's Daredevil").season(1)
+    season.markUnwatched()
+    assert not season.isWatched
 
 
-def test_video_Season_get(a_show):
-    ep = a_show.season(1).get('Pilot')
-    assert ep.title == 'Pilot'
+def test_video_Season_get(show):
+    episode = show.season(1).get('Pilot')
+    assert episode.title == 'Pilot'
 
 
-def test_video_Season_episode(a_show):
-    ep = a_show.season(1).get('Pilot')
-    assert ep.title == 'Pilot'
+def test_video_Season_episode(show):
+    episode = show.season(1).get('Pilot')
+    assert episode.title == 'Pilot'
 
 
-def test_video_Season_episodes(a_show):
-    sn_eps = a_show.season(2).episodes()
-    assert len(sn_eps) == 1
+def test_video_Season_episodes(show):
+    episodes = show.season(2).episodes()
+    assert len(episodes) >= 1
 
 
-def test_that_reload_return_the_same_object(pms):
+def test_that_reload_return_the_same_object(plex):
     # we want to check this that all the urls are correct
-    movie_library_search = pms.library.section('Movies').search('16 Blocks')[0]
-    movie_search = pms.search('16 Blocks')[0]
-    movie_section_get = pms.library.section('Movies').get('16 Blocks')
+    movie_library_search = plex.library.section('Movies').search('16 Blocks')[0]
+    movie_search = plex.search('16 Blocks')[0]
+    movie_section_get = plex.library.section('Movies').get('16 Blocks')
     movie_library_search_key = movie_library_search.key
     movie_search_key = movie_search.key
     movie_section_get_key = movie_section_get.key
     assert movie_library_search_key == movie_library_search.reload().key == movie_search_key == movie_search.reload().key == movie_section_get_key == movie_section_get.reload().key
-    tvshow_library_search = pms.library.section('TV Shows').search('The 100')[0]
-    tvshow_search = pms.search('The 100')[0]
-    tvshow_section_get = pms.library.section('TV Shows').get('The 100')
+    tvshow_library_search = plex.library.section('TV Shows').search('The 100')[0]
+    tvshow_search = plex.search('The 100')[0]
+    tvshow_section_get = plex.library.section('TV Shows').get('The 100')
     tvshow_library_search_key = tvshow_library_search.key
     tvshow_search_key = tvshow_search.key
     tvshow_section_get_key = tvshow_section_get.key

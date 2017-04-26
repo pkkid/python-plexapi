@@ -1,310 +1,314 @@
 # -*- coding: utf-8 -*-
-
-def test_audio_Artist_attr(a_artist):
-    m = a_artist
-    m.reload()
-    assert str(m.addedAt.date()) == '2017-01-17'
-    assert m.countries == []
-    assert [i.tag for i in m.genres] == ['Electronic']
-    assert m.guid == 'com.plexapp.agents.lastfm://Infinite%20State?lang=en'
-    assert m.index == '1'
-    assert m._initpath == '/library/metadata/20'
-    assert m.key == '/library/metadata/20'
-    assert m.librarySectionID == '3'
-    assert m.listType == 'audio'
-    assert m.locations == ['/media/music/unmastered_impulses']
-    assert m.ratingKey == 20
-    assert m._server._baseurl == 'http://138.68.157.5:32400'
-    assert m.similar == []
-    assert m.summary == ""
-    assert m.title == 'Infinite State'
-    assert m.titleSort == 'Infinite State'
-    assert m.type == 'artist'
-    # keeps breaking because of timezone differences between us
-    # assert str(m.updatedAt.date()) == '2017-02-01'  
-    assert m.viewCount == 0
+from datetime import datetime
+from . import conftest as utils
 
 
-def test_audio_Artist_get(a_artist, a_music_section):
-    a_artist == a_music_section.searchArtists(**{'title': 'Infinite State'})[0]
-    a_artist.title == 'Infinite State'
+def test_audio_Artist_attr(artist):
+    artist.reload()
+    assert utils.is_datetime(artist.addedAt)
+    assert artist.countries == []
+    assert [i.tag for i in artist.genres] == ['Electronic']
+    assert 'lastfm' in artist.guid
+    assert artist.index == '1'
+    assert utils.is_metadata(artist._initpath)
+    assert utils.is_metadata(artist.key)
+    assert utils.is_int(artist.librarySectionID)
+    assert artist.listType == 'audio'
+    assert len(artist.locations) == 1
+    assert len(artist.locations[0]) >= 10
+    assert artist.ratingKey >= 1
+    assert artist._server._baseurl == utils.SERVER_BASEURL
+    assert artist.similar == []
+    assert artist.summary == ''
+    assert artist.title == 'Infinite State'
+    assert artist.titleSort == 'Infinite State'
+    assert artist.type == 'artist'
+    assert utils.is_datetime(artist.updatedAt)
+    assert artist.viewCount == 0
 
 
-def test_audio_Artist_track(a_artist):
-    track = a_artist.track('Holy Moment')
+def test_audio_Artist_get(artist, music):
+    artist == music.searchArtists(**{'title': 'Infinite State'})[0]
+    artist.title == 'Infinite State'
+
+
+def test_audio_Artist_track(artist):
+    track = artist.track('Holy Moment')
     assert track.title == 'Holy Moment'
 
 
-def test_audio_Artist_tracks(a_artist):
-    tracks = a_artist.tracks()
+def test_audio_Artist_tracks(artist):
+    tracks = artist.tracks()
     assert len(tracks) == 14
 
 
-def test_audio_Artist_album(a_artist):
-    album = a_artist.album('Unmastered Impulses')
+def test_audio_Artist_album(artist):
+    album = artist.album('Unmastered Impulses')
     assert album.title == 'Unmastered Impulses'
 
 
-def test_audio_Artist_albums(a_artist):
-    albums = a_artist.albums()
+def test_audio_Artist_albums(artist):
+    albums = artist.albums()
     assert len(albums) == 1 and albums[0].title == 'Unmastered Impulses'
 
 
-def test_audio_Album_attrs(a_music_album):
-    m = a_music_album
-    assert str(m.addedAt.date()) == '2017-01-17'
-    assert [i.tag for i in m.genres] == ['Electronic']
-    assert m.index == '1'
-    assert m._initpath == '/library/metadata/20/children'
-    assert m.key == '/library/metadata/21'
-    assert m.librarySectionID == '3'
-    assert m.listType == 'audio'
-    assert str(m.originallyAvailableAt.date()) == '2016-01-01'
-    assert m.parentKey == '/library/metadata/20'
-    assert m.parentRatingKey == '20'
-    assert m.parentThumb is None
-    assert m.parentTitle == 'Infinite State'
-    assert m.ratingKey == 21
-    assert m._server._baseurl == 'http://138.68.157.5:32400'
-    assert m.studio is None
-    assert m.summary == ''
-    assert m.thumb == '/library/metadata/21/thumb/1484693407'
-    assert m.title == 'Unmastered Impulses'
-    assert m.titleSort == 'Unmastered Impulses'
-    assert m.type == 'album'
-    assert str(m.updatedAt.date()) == '2017-01-17'
-    assert m.viewCount == 0
-    assert m.year == 2016
+def test_audio_Album_attrs(album):
+    assert utils.is_datetime(album.addedAt)
+    assert [i.tag for i in album.genres] == ['Electronic']
+    assert album.index == '1'
+    assert utils.is_metadata(album._initpath)
+    assert utils.is_metadata(album.key)
+    assert utils.is_int(album.librarySectionID)
+    assert album.listType == 'audio'
+    assert album.originallyAvailableAt == datetime(2016, 1, 1)
+    assert utils.is_metadata(album.parentKey)
+    assert utils.is_int(album.parentRatingKey)
+    if album.parentThumb:
+        assert utils.is_metadata(album.parentThumb, contains='/thumb/')
+    assert album.parentTitle == 'Infinite State'
+    assert album.ratingKey >= 1
+    assert album._server._baseurl == utils.SERVER_BASEURL
+    assert album.studio is None
+    assert album.summary == ''
+    assert utils.is_metadata(album.thumb, contains='/thumb/')
+    assert album.title == 'Unmastered Impulses'
+    assert album.titleSort == 'Unmastered Impulses'
+    assert album.type == 'album'
+    assert utils.is_datetime(album.updatedAt)
+    assert album.viewCount == 0
+    assert album.year == 2016
 
 
-def test_audio_Album_tracks(a_music_album):
-    tracks = a_music_album.tracks()
+def test_audio_Album_tracks(album):
+    tracks = album.tracks()
+    track = tracks[0]
     assert len(tracks) == 14
-    assert tracks[0].grandparentKey == '/library/metadata/20'
-    assert tracks[0].grandparentRatingKey == '20'
-    assert tracks[0].grandparentTitle == 'Infinite State'
-    assert tracks[0].index == '1'
-    assert tracks[0]._initpath == '/library/metadata/21/children'
-    assert tracks[0].key == '/library/metadata/22'
-    assert tracks[0].listType == 'audio'
-    assert tracks[0].originalTitle == 'Kenneth Reitz'
-    assert tracks[0].parentIndex == '1'
-    assert tracks[0].parentKey == '/library/metadata/21'
-    assert tracks[0].parentRatingKey == '21'
-    assert tracks[0].parentThumb == '/library/metadata/21/thumb/1484693407'
-    assert tracks[0].parentTitle == 'Unmastered Impulses'
-    assert tracks[0].player is None
-    assert tracks[0].ratingCount == 9
-    assert tracks[0].ratingKey == 22
-    assert tracks[0]._server._baseurl == 'http://138.68.157.5:32400'
-    assert tracks[0].summary == ""
-    assert tracks[0].thumb == '/library/metadata/21/thumb/1484693407'
-    assert tracks[0].title == 'Holy Moment'
-    assert tracks[0].titleSort == 'Holy Moment'
-    assert tracks[0].transcodeSession is None
-    assert tracks[0].type == 'track'
-    assert str(tracks[0].updatedAt.date()) == '2017-01-17'
-    assert tracks[0].username is None
-    assert tracks[0].viewCount == 0
-    assert tracks[0].viewOffset == 0
-
-
-def test_audio_Album_track(a_music_album):
-    # this is not reloaded. its not that much info missing.
-    track = a_music_album.track('Holy Moment')
-    assert str(track.addedAt.date()) == '2017-01-17'
-    assert track.duration == 298606
-    assert track.grandparentKey == '/library/metadata/20'
-    assert track.grandparentRatingKey == '20'
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == 'Infinite State'
     assert track.index == '1'
-    assert track._initpath == '/library/metadata/21/children'
-    assert track.key == '/library/metadata/22'
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
     assert track.listType == 'audio'
-    # Assign 0 track.media
-    med0 = track.media[0]
     assert track.originalTitle == 'Kenneth Reitz'
-    assert track.parentIndex == '1'
-    assert track.parentKey == '/library/metadata/21'
-    assert track.parentRatingKey == '21'
-    assert track.parentThumb == '/library/metadata/21/thumb/1484693407'
+    assert utils.is_int(track.parentIndex)
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
     assert track.ratingCount == 9
-    assert track.ratingKey == 22
-    assert track._server._baseurl == 'http://138.68.157.5:32400'
-    assert track.summary == ''
-    assert track.thumb == '/library/metadata/21/thumb/1484693407'
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
+    assert track.summary == ""
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
     assert track.transcodeSession is None
     assert track.type == 'track'
-    assert str(track.updatedAt.date()) == '2017-01-17'
+    assert utils.is_datetime(track.updatedAt)
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
-    assert med0.aspectRatio is None
-    assert med0.audioChannels == 2
-    assert med0.audioCodec == 'mp3'
-    assert med0.bitrate == 385
-    assert med0.container == 'mp3'
-    assert med0.duration == 298606
-    assert med0.height is None
-    assert med0.id == 22
-    assert med0._initpath == '/library/metadata/21/children'
-    assert med0.optimizedForStreaming is None
-    # Assign 0 med0.parts
-    par0 = med0.parts[0]
-    assert med0._server._baseurl == 'http://138.68.157.5:32400'
-    assert med0.videoCodec is None
-    assert med0.videoFrameRate is None
-    assert med0.videoResolution is None
-    assert med0.width is None
-    assert par0.container == 'mp3'
-    assert par0.duration == 298606
-    assert par0.file == '/media/music/unmastered_impulses/01-Holy_Moment.mp3'
-    assert par0.id == 22
-    assert par0._initpath == '/library/metadata/21/children'
-    assert par0.key == '/library/parts/22/1484693136/file.mp3'
-    assert par0._server._baseurl == 'http://138.68.157.5:32400'
-    assert par0.size == 14360402
 
 
-def test_audio_Album_get():
-    """ Just a alias for track(); skip it. """
-    pass
+def test_audio_Album_track(album, track=None):
+    # this is not reloaded. its not that much info missing.
+    track = track or album.track('Holy Moment')
+    assert utils.is_datetime(track.addedAt)
+    assert track.duration == 298606
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
+    assert track.grandparentTitle == 'Infinite State'
+    assert int(track.index) == 1
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
+    assert track.listType == 'audio'
+    # Assign 0 track.media
+    media = track.media[0]
+    assert track.originalTitle == 'Kenneth Reitz'
+    assert utils.is_int(track.parentIndex)
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
+    assert track.parentTitle == 'Unmastered Impulses'
+    assert track.player is None
+    assert track.ratingCount == 9
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
+    assert track.summary == ''
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
+    assert track.title == 'Holy Moment'
+    assert track.titleSort == 'Holy Moment'
+    assert track.transcodeSession is None
+    assert track.type == 'track'
+    assert utils.is_datetime(track.updatedAt)
+    assert track.username is None
+    assert track.viewCount == 0
+    assert track.viewOffset == 0
+    assert media.aspectRatio is None
+    assert media.audioChannels == 2
+    assert media.audioCodec == 'mp3'
+    assert media.bitrate == 385
+    assert media.container == 'mp3'
+    assert media.duration == 298606
+    assert media.height is None
+    assert media.id == 22
+    assert utils.is_metadata(media._initpath)
+    assert media.optimizedForStreaming is None
+    # Assign 0 media.parts
+    part = media.parts[0]
+    assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.videoCodec is None
+    assert media.videoFrameRate is None
+    assert media.videoResolution is None
+    assert media.width is None
+    assert part.container == 'mp3'
+    assert part.duration == 298606
+    assert part.file.endswith('.mp3')
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert utils.is_part(part.key)
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.size == 14360402
 
 
-def test_audio_Album_artist(a_music_album):
-    artist = a_music_album.artist()
+def test_audio_Album_get(album):
+    # alias for album.track()
+    track = album.get('Holy Moment')
+    test_audio_Album_track(album, track=track)
+
+
+def test_audio_Album_artist(album):
+    artist = album.artist()
     artist.title == 'Infinite State'
 
 
-def test_audio_Track_attrs(a_music_album):
-    track = a_music_album.get('Holy Moment')
-    track.reload()
-    assert str(track.addedAt.date()) == '2017-01-17'
+def test_audio_Track_attrs(album):
+    track = album.get('Holy Moment').reload()
+    assert utils.is_datetime(track.addedAt)
     assert track.art is None
     assert track.chapterSource is None
     assert track.duration == 298606
     assert track.grandparentArt is None
-    assert track.grandparentKey == '/library/metadata/20'
-    assert track.grandparentRatingKey == '20'
-    assert track.grandparentThumb is None
+    assert utils.is_metadata(track.grandparentKey)
+    assert utils.is_int(track.grandparentRatingKey)
+    if track.grandparentThumb:
+        assert utils.is_metadata(track.grandparentThumb, contains='/thumb/')
     assert track.grandparentTitle == 'Infinite State'
-    assert track.guid == 'local://22'
-    assert track.index == '1'
-    assert track._initpath == '/library/metadata/22'
-    assert track.key == '/library/metadata/22'
+    assert track.guid.startswith('local://')
+    assert int(track.index) == 1
+    assert utils.is_metadata(track._initpath)
+    assert utils.is_metadata(track.key)
     assert track.lastViewedAt is None
-    assert track.librarySectionID == '3'
+    assert utils.is_int(track.librarySectionID)
     assert track.listType == 'audio'
     # Assign 0 track.media
-    med0 = track.media[0]
+    media = track.media[0]
     assert track.moods == []
     assert track.originalTitle == 'Kenneth Reitz'
-    assert track.parentIndex == '1'
-    assert track.parentKey == '/library/metadata/21'
-    assert track.parentRatingKey == '21'
-    assert track.parentThumb == '/library/metadata/21/thumb/1484693407'
+    assert int(track.parentIndex) == 1
+    assert utils.is_metadata(track.parentKey)
+    assert utils.is_int(track.parentRatingKey)
+    assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.player is None
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
     assert track.ratingCount == 9
-    assert track.ratingKey == 22
-    assert track._server._baseurl == 'http://138.68.157.5:32400'
+    assert utils.is_int(track.ratingKey)
+    assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.sessionKey is None
     assert track.summary == ''
-    assert track.thumb == '/library/metadata/21/thumb/1484693407'
+    assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
     assert track.transcodeSession is None
     assert track.type == 'track'
-    assert str(track.updatedAt.date()) == '2017-01-17'
+    assert utils.is_datetime(track.updatedAt)
     assert track.username is None
     assert track.viewCount == 0
     assert track.viewOffset == 0
     assert track.viewedAt is None
     assert track.year is None
-    assert med0.aspectRatio is None
-    assert med0.audioChannels == 2
-    assert med0.audioCodec == 'mp3'
-    assert med0.bitrate == 385
-    assert med0.container == 'mp3'
-    assert med0.duration == 298606
-    assert med0.height is None
-    assert med0.id == 22
-    assert med0._initpath == '/library/metadata/22'
-    assert med0.optimizedForStreaming is None
-    # Assign 0 med0.parts
-    par0 = med0.parts[0]
-    assert med0._server._baseurl == 'http://138.68.157.5:32400'
-    assert med0.videoCodec is None
-    assert med0.videoFrameRate is None
-    assert med0.videoResolution is None
-    assert med0.width is None
-    assert par0.container == 'mp3'
-    assert par0.duration == 298606
-    assert par0.file == '/media/music/unmastered_impulses/01-Holy_Moment.mp3'
-    assert par0.id == 22
-    assert par0._initpath == '/library/metadata/22'
-    assert par0.key == '/library/parts/22/1484693136/file.mp3'
-    #assert par0.media == <Media:Holy.Moment>
-    assert par0._server._baseurl == 'http://138.68.157.5:32400'
-    assert par0.size == 14360402
-    # Assign 0 par0.streams
-    str0 = par0.streams[0]
-    assert str0.audioChannelLayout == 'stereo'
-    assert str0.bitDepth is None
-    assert str0.bitrate == 320
-    assert str0.bitrateMode is None
-    assert str0.channels == 2
-    assert str0.codec == 'mp3'
-    assert str0.codecID is None
-    assert str0.dialogNorm is None
-    assert str0.duration is None
-    assert str0.id == 44
-    assert str0.index == 0
-    assert str0._initpath == '/library/metadata/22'
-    assert str0.language is None
-    assert str0.languageCode is None
-    #assert str0.part == <MediaPart:22>
-    assert str0.samplingRate == 44100
-    assert str0.selected is True
-    assert str0._server._baseurl == 'http://138.68.157.5:32400'
-    assert str0.streamType == 2
-    assert str0.title is None
-    assert str0.type == 2
+    assert media.aspectRatio is None
+    assert media.audioChannels == 2
+    assert media.audioCodec == 'mp3'
+    assert media.bitrate == 385
+    assert media.container == 'mp3'
+    assert media.duration == 298606
+    assert media.height is None
+    assert media.id == 22
+    assert utils.is_metadata(media._initpath)
+    assert media.optimizedForStreaming is None
+    # Assign 0 media.parts
+    part = media.parts[0]
+    assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.videoCodec is None
+    assert media.videoFrameRate is None
+    assert media.videoResolution is None
+    assert media.width is None
+    assert part.container == 'mp3'
+    assert part.duration == 298606
+    assert part.file.endswith('.mp3')
+    assert utils.is_int(part.id)
+    assert utils.is_metadata(part._initpath)
+    assert utils.is_part(part.key)
+    #assert part.media == <Media:Holy.Moment>
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.size == 14360402
+    # Assign 0 part.streams
+    stream = part.streams[0]
+    assert stream.audioChannelLayout == 'stereo'
+    assert stream.bitDepth is None
+    assert stream.bitrate == 320
+    assert stream.bitrateMode is None
+    assert stream.channels == 2
+    assert stream.codec == 'mp3'
+    assert stream.codecID is None
+    assert stream.dialogNorm is None
+    assert stream.duration is None
+    assert utils.is_int(stream.id)
+    assert stream.index == 0
+    assert utils.is_metadata(stream._initpath)
+    assert stream.language is None
+    assert stream.languageCode is None
+    #assert stream.part == <MediaPart:22>
+    assert stream.samplingRate == 44100
+    assert stream.selected is True
+    assert stream._server._baseurl == utils.SERVER_BASEURL
+    assert stream.streamType == 2
+    assert stream.title is None
+    assert stream.type == 2
 
 
-def test_audio_Track_album(a_music_album):
-    tracks = a_music_album.tracks()
-    assert tracks[0].album() == a_music_album
+def test_audio_Track_album(album):
+    tracks = album.tracks()
+    assert tracks[0].album() == album
 
 
-def test_audio_Track_artist(a_music_album, a_artist):
-    tracks = a_music_album.tracks()
-    assert tracks[0].artist() == a_artist
+def test_audio_Track_artist(album, artist):
+    tracks = album.tracks()
+    assert tracks[0].artist() == artist
 
 
-def test_audio_Audio_section(a_artist, a_music_album, a_track):
-    assert a_artist.section()
-    assert a_music_album.section()
-    assert a_track.section()
-    assert a_track.section().key == a_music_album.section().key == a_artist.section().key
+def test_audio_Audio_section(artist, album, track):
+    assert artist.section()
+    assert album.section()
+    assert track.section()
+    assert track.section().key == album.section().key == artist.section().key
 
 
-def test_audio_Track_download(monkeydownload, tmpdir, a_track):
-    f = a_track.download(savepath=str(tmpdir))
+def test_audio_Track_download(monkeydownload, tmpdir, track):
+    f = track.download(savepath=str(tmpdir))
     assert f
 
 
-def test_audio_album_download(monkeydownload, a_music_album, tmpdir):
-    f = a_music_album.download(savepath=str(tmpdir))
+def test_audio_album_download(monkeydownload, album, tmpdir):
+    f = album.download(savepath=str(tmpdir))
     assert len(f) == 14
 
 
-def test_audio_Artist_download(monkeydownload, a_artist, tmpdir):
-    f = a_artist.download(savepath=str(tmpdir))
+def test_audio_Artist_download(monkeydownload, artist, tmpdir):
+    f = artist.download(savepath=str(tmpdir))
     assert len(f) == 14

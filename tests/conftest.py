@@ -1,144 +1,130 @@
 # -*- coding: utf-8 -*-
-import betamax, os, plexapi
-import pytest, requests
-from betamax_serializers import pretty_json
+import plexapi, pytest, requests
+from plexapi import compat
+from plexapi.client import PlexClient
+from datetime import datetime
+from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 from functools import partial
 
-test_baseurl = plexapi.CONFIG.get('auth.server_baseurl')
-test_token = plexapi.CONFIG.get('auth.server_token')
-test_username = plexapi.CONFIG.get('auth.myplex_username')
-test_password = plexapi.CONFIG.get('auth.myplex_password')
+SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
+SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
+MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
+MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 
+MIN_DATETIME = datetime(2017, 1, 1)
+REGEX_EMAIL = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
+REGEX_IPADDR = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
 
-@pytest.fixture(scope='session')
-def pms(request):
-    from plexapi.server import PlexServer
-    sess = requests.Session()
-    # CASSETTE_LIBRARY_DIR = 'response/'
-    # betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
-    # config = betamax.Betamax.configure()
-    # config.define_cassette_placeholder('MASKED', token)
-    # config.define_cassette_placeholder('MASKED', test_token)
-    # recorder = betamax.Betamax(sess, cassette_library_dir=CASSETTE_LIBRARY_DIR)
-    # recorder.use_cassette('http_responses', serialize_with='prettyjson') # record='new_episodes'
-    # recorder.start()
-    assert test_baseurl
-    assert test_token
-    pms = PlexServer(test_baseurl, test_token, session=sess)
-    #request.addfinalizer(recorder.stop)
-    return pms
-
-
-@pytest.fixture()
-def freshpms():
-    from plexapi.server import PlexServer
-    sess = requests.Session()
-    assert test_baseurl
-    assert test_token
-    pms = PlexServer(test_baseurl, test_token, session=sess)
-    return pms
+AUDIOCHANNELS = [2, 6]
+AUDIOLAYOUTS = ['5.1', 'stereo']
+CODECS = ['aac', 'h264', 'mp3', 'mpeg4']
+CONTAINERS = ['avi', 'mp4']
+CONTENTRATINGS = ['TV-14']
+FRAMERATES = ['24p', 'PAL']
+PROFILES = ['advanced simple', 'main']
+RESOLUTIONS = ['720', 'sd']
 
 
 def pytest_addoption(parser):
-    parser.addoption("--req_client", action="store_true",
-        help="Run tests that interact with a client")
+    parser.addoption('--client', help='Run client tests against specified baseurl.')
+    parser.addoption('--token', help='Token required to connect to client.')
 
 
 def pytest_runtest_setup(item):
-    if 'req_client' in item.keywords and not item.config.getvalue("req_client"):
-        pytest.skip("need --req_client option to run")
-    else:
-        item.config.getvalue("req_client")
+    if 'client' in item.keywords and not item.config.getvalue('client'):
+        return pytest.skip('Need --client option to run.')
+    if 'client' in item.keywords and not item.config.getvalue('token'):
+        return pytest.skip('Need --token option to run.')
+
+
+#---------------------------------
+# Fixtures
+#---------------------------------
+
+@pytest.fixture()
+def account():
+    assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
+    assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
+    return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
+
+
+@pytest.fixture(scope='session')
+def plex():
+    assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
+    assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
+    session = requests.Session()
+    return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
 
 
 @pytest.fixture()
-def plex_account():
-    from plexapi.myplex import MyPlexAccount
-    username = test_username
-    password = test_password
-    assert username and password
-    account = MyPlexAccount(username, password)
-    assert account
-    return account
+def plex2():
+    return plex()
 
 
 @pytest.fixture()
-def a_movie(pms):
-    m = pms.library.search('16 blocks')
-    assert m
-    return m[0]
+def client(request):
+    client = request.config.getoption('--client')
+    token = request.config.getoption('--token')
+    return PlexClient(baseurl=client, token=token)
 
 
 @pytest.fixture()
-def a_tv_section(pms):
-    sec = pms.library.section('TV Shows')
-    assert sec
-    return sec
+def tvshows(plex):
+    return plex.library.section('TV Shows')
 
 
 @pytest.fixture()
-def a_movie_section(pms):
-    sec = pms.library.section('Movies')
-    assert sec
-    return sec
+def movies(plex):
+    return plex.library.section('Movies')
 
 
 @pytest.fixture()
-def a_music_section(pms):
-    sec = pms.library.section('Music')
-    assert sec
-    return sec
+def music(plex):
+    return plex.library.section('Music')
 
 
 @pytest.fixture()
-def a_photo_section(pms):
-    sec = pms.library.section('Photos')
-    assert sec
-    return sec
+def photos(plex):
+    return plex.library.section('Photos')
 
 
 @pytest.fixture()
-def a_artist(a_music_section):
-    sec = a_music_section.get('Infinite State')
-    assert sec
-    return sec
+def movie(movies):
+    return movies.get('16 blocks')
 
 
 @pytest.fixture()
-def a_music_album(a_music_section):
-    sec = a_music_section.get('Infinite State').album('Unmastered Impulses')
-    assert sec
-    return sec
+def artist(music):
+    return music.get('Infinite State')
 
 
 @pytest.fixture()
-def a_track(a_music_album):
-    track = a_music_album.track('Holy Moment')
-    assert track
-    return track
+def album(artist):
+    return artist.album('Unmastered Impulses')
 
 
 @pytest.fixture()
-def a_show(a_tv_section):
-    sec = a_tv_section.get('The 100')
-    assert sec
-    return sec
+def track(album):
+    return album.track('Holy Moment')
 
 
 @pytest.fixture()
-def a_episode(a_show):
-    ep = a_show.get('Pilot')
-    assert ep
-    return ep
+def show(tvshows):
+    return tvshows.get('The 100')
 
 
 @pytest.fixture()
-def a_photo_album(pms):
-    sec = pms.library.section('Photos')
-    assert sec
-    album = sec.get('photo_album1')
-    assert album
-    return album
+def episode(show):
+    return show.get('Pilot')
+
+
+@pytest.fixture()
+def photoalbum(photos):
+    try:
+        return photos.get('Cats')
+    except:
+        return photos.get('photo_album1')
 
 
 @pytest.fixture()
@@ -146,3 +132,45 @@ def monkeydownload(request, monkeypatch):
     monkeypatch.setattr('plexapi.utils.download', partial(plexapi.utils.download, mocked=True))
     yield
     monkeypatch.undo()
+
+
+#---------------------------------
+# Utility Functions
+#---------------------------------
+
+def is_datetime(value):
+    return value > MIN_DATETIME
+
+
+def is_int(value, gte=1):
+    return int(value) >= gte
+
+
+def is_float(value, gte=1.0):
+    return float(value) >= gte
+
+
+def is_metadata(key, prefix='/library/metadata/', contains='', suffix=''):
+    try:
+        assert key.startswith(prefix)
+        assert contains in key
+        assert key.endswith(suffix)
+        return True
+    except AssertionError:
+        return False
+
+
+def is_part(key):
+    return is_metadata(key, prefix='/library/parts/')
+
+
+def is_section(key):
+    return is_metadata(key, prefix='/library/sections/')
+
+
+def is_string(value, gte=1):
+    return isinstance(value, compat.string_type) and len(value) >= gte
+
+
+def is_thumb(key):
+    return is_metadata(key, contains='/thumb/')

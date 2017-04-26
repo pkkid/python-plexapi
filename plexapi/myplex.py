@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 import requests
+import time
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
@@ -16,6 +17,13 @@ class MyPlexAccount(PlexObject):
         this object is by calling the staticmethod :func:`~plexapi.myplex.MyPlexAccount.signin`
         with your username and password. This object represents the data found Account on
         the myplex.tv servers at the url https://plex.tv/users/account.
+
+        Parameters:
+            username (str): Your MyPlex username.
+            password (str): Your MyPlex password.
+            session (requests.Session, optional): Use your own session object if you want to
+                cache the http responses from PMS
+            timeout (int): timeout in seconds on initial connect to myplex (default config.TIMEOUT).
 
         Attributes:
             SIGNIN (str): 'https://my.plexapp.com/users/sign_in.xml'
@@ -51,12 +59,12 @@ class MyPlexAccount(PlexObject):
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'
     key = 'https://plex.tv/users/account'
 
-    def __init__(self, username=None, password=None, session=None):
+    def __init__(self, username=None, password=None, session=None, timeout=None):
         self._session = session or requests.Session()
         self._token = None
         username = username or CONFIG.get('auth.myplex_username')
         password = password or CONFIG.get('auth.myplex_password')
-        data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password))
+        data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password), timeout=timeout)
         super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
 
     def _loadData(self, data):
@@ -108,14 +116,15 @@ class MyPlexAccount(PlexObject):
         data = self.query(MyPlexDevice.key)
         return [MyPlexDevice(self, elem) for elem in data]
 
-    def query(self, url, method=None, headers=None, **kwargs):
+    def query(self, url, method=None, headers=None, timeout=None, **kwargs):
         method = method or self._session.get
         delim = '&' if '?' in url else '?'
         url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
+        timeout = timeout or TIMEOUT
         log.debug('%s %s', method.__name__.upper(), url)
         allheaders = BASE_HEADERS.copy()
         allheaders.update(headers or {})
-        response = method(url, headers=allheaders, timeout=TIMEOUT, **kwargs)
+        response = method(url, headers=allheaders, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
@@ -283,7 +292,7 @@ class MyPlexResource(PlexObject):
         self.presence = utils.cast(bool, data.attrib.get('presence'))
         self.connections = self.findItems(data, ResourceConnection)
 
-    def connect(self, ssl=None):
+    def connect(self, ssl=None, timeout=None):
         """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
             one address specified for a server or client. This function will prioritize local
             connections before remote and HTTPS before HTTP. After trying to connect to all
@@ -309,26 +318,10 @@ class MyPlexResource(PlexObject):
         else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        listargs = [[c] for c in connections]
-        results = utils.threaded(self._connect, listargs)
-        # At this point we have a list of result tuples containing (url, token, PlexServer)
-        # or (url, token, None) in the case a connection could not be
-        # established.
-        for url, token, result in results:
-            okerr = 'OK' if result else 'ERR'
-            log.info('Testing resource connection: %s?X-Plex-Token=%s %s', url, token, okerr)
-        results = [r[2] for r in results if r and r[2] is not None]
-        if not results:
-            raise NotFound('Unable to connect to resource: %s' % self.name)
-        log.info('Connecting to server: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
-        return results[0]
-
-    def _connect(self, url, results, i):
-        try:
-            results[i] = (url, self.accessToken, PlexServer(url, self.accessToken))
-        except Exception as err:
-            log.error('%s: %s', url, err)
-            results[i] = (url, self.accessToken, None)
+        listargs = [[PlexServer, url, self.accessToken, timeout] for url in connections]
+        log.info('Testing %s resource connections..', len(listargs))
+        results = utils.threaded(_connect, listargs)
+        return _chooseConnection('Resource', self.name, results)
 
 
 class ResourceConnection(PlexObject):
@@ -409,38 +402,50 @@ class MyPlexDevice(PlexObject):
         self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
-    def connect(self):
+    def connect(self, timeout=None):
         """ Returns a new :class:`~plexapi.client.PlexClient` object. Sometimes there is more than
-            one address specified for a server or client. After trying to connect to all
-            available addresses for this client and assuming at least one connection was
-            successful, the PlexClient object is built and returned.
+            one address specified for a server or client. After trying to connect to all available
+            addresses for this client and assuming at least one connection was successful, the
+            PlexClient object is built and returned.
 
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
-        # Try connecting to all known clients in parellel, but
-        # only return the first server (in order) that provides a response.
-        listargs = [[c] for c in self.connections]
-        results = utils.threaded(self._connect, listargs)
-        # At this point we have a list of result tuples containing (url, token, PlexServer)
-        # or (url, token, None) in the case a connection could not be established.
-        for url, token, result in results:
-            okerr = 'OK' if result else 'ERR'
-            log.info('Testing device connection: %s?X-Plex-Token=%s %s', url, token, okerr)
-        results = [r[2] for r in results if r and r[2] is not None]
-        if not results:
-            raise NotFound('Unable to connect to client: %s' % self.name)
-        log.info('Connecting to client: %s?X-Plex-Token=%s', results[0]._baseurl, results[0]._token)
-        return results[0]
-
-    def _connect(self, url, results, i):
-        try:
-            results[i] = (url, self.token, PlexClient(baseurl=url, token=self.token))
-        except Exception as err:
-            log.error('%s: %s', url, err)
-            results[i] = (url, self.token, None)
+        listargs = [[PlexClient, url, self.token, timeout] for url in self.connections]
+        log.info('Testing %s device connections..', len(listargs))
+        results = utils.threaded(_connect, listargs)
+        _chooseConnection('Device', self.name, results)
 
     def delete(self):
         """ Remove this device from your account. """
         key = 'https://plex.tv/devices/%s.xml' % self.id
         self._server.query(key, self._server._session.delete)
+
+
+def _connect(cls, url, token, timeout, results, i):
+    """ Connects to the specified cls with url and token. Stores the connection
+        information to results[i] in a threadsafe way.
+    """
+    starttime = time.time()
+    try:
+        device = cls(baseurl=url, token=token, timeout=timeout)
+        runtime = int(time.time() - starttime)
+        results[i] = (url, token, device, runtime)
+    except Exception as err:
+        runtime = int(time.time() - starttime)
+        log.error('%s: %s', url, err)
+        results[i] = (url, token, None, runtime)
+
+
+def _chooseConnection(ctype, name, results):
+    """ Chooses the first (best) connection from the given _connect results. """
+    # At this point we have a list of result tuples containing (url, token, PlexServer, runtime)
+    # or (url, token, None, runtime) in the case a connection could not be established.
+    for url, token, result, runtime in results:
+        okerr = 'OK' if result else 'ERR'
+        log.info('%s connection %s (%ss): %s?X-Plex-Token=%s', ctype, okerr, runtime, url, token)
+    results = [r[2] for r in results if r and r[2] is not None]
+    if results:
+        log.info('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
+        return results[0]
+    raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
