@@ -208,7 +208,7 @@ class PlexServer(PlexObject):
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
                 baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
-                return PlexClient(baseurl, server=self, data=elem)
+                return PlexClient(baseurl=baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlaylist(self, title, items):

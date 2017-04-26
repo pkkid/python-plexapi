@@ -171,8 +171,8 @@ class PlexClient(PlexObject):
 
     def url(self, key):
         """ Build a URL string with proper token argument. """
-        if not self._baseurl or not self._token:
-            raise BadRequest('PlexClient object missing baseurl or token.')
+        if not self._baseurl:
+            raise BadRequest('PlexClient object missing baseurl.')
         if self._token:
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
