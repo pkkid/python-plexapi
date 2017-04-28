@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import pytest
+import pytest, time
 
 
-def test_list_clients(account, plex, client):
+def test_list_clients(account, plex):
     # List resources from MyPlex
     print('\nResources listed on MyPlex')
     print('---------------------------')
@@ -33,8 +33,38 @@ def test_list_clients(account, plex, client):
 
 
 @pytest.mark.client
-def test_test(client):
-    print(client)
+def test_client_navigation_direct(plex, client, episode, artist):
+    _navigate(plex, client, episode, artist)
+    
+
+@pytest.mark.client
+def test_client_navigation_via_proxy(plex, client, episode, artist):
+    client.proxyThroughServer()
+    _navigate(plex, client, episode, artist)
+
+
+def _navigate(plex, client, episode, artist):
+    # Browse around a bit..
+    client.moveDown(); time.sleep(0.5)
+    client.moveDown(); time.sleep(0.5)
+    client.moveDown(); time.sleep(0.5)
+    client.select(); time.sleep(3)
+    client.moveRight(); time.sleep(0.5)
+    client.moveRight(); time.sleep(0.5)
+    client.moveLeft(); time.sleep(0.5)
+    client.select(); time.sleep(3)
+    client.goBack(); time.sleep(1)
+    client.goBack(); time.sleep(3)
+    # Go directly to media
+    client.goToMedia(episode); time.sleep(5)
+    client.goToMedia(artist); time.sleep(5)
+    client.goToHome(); time.sleep(5)
+    client.moveUp(); time.sleep(0.5)
+    client.moveUp(); time.sleep(0.5)
+    client.moveUp(); time.sleep(0.5)
+    # Show context menu
+    client.contextMenu(); time.sleep(3)
+    client.goBack(); time.sleep(5)
 
 
 @pytest.mark.client

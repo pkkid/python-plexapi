@@ -55,7 +55,7 @@ class PlexClient(PlexObject):
     TAG = 'Player'
     key = '/resources'
 
-    def __init__(self, server=None, data=None, initpath=None, baseurl=None, token=None, session=None, timeout=None):
+    def __init__(self, server=None, data=None, initpath=None, baseurl=None, token=None, connect=True, session=None, timeout=None):
         super(PlexClient, self).__init__(server, data, initpath)
         self._baseurl = baseurl.strip('/') if baseurl else None
         self._token = logfilter.add_secret(token)
@@ -66,7 +66,7 @@ class PlexClient(PlexObject):
         if not any([data, initpath, baseurl, token]):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
-        if self._baseurl:
+        if connect and self._baseurl:
             self.connect(timeout=timeout)
 
     def connect(self, timeout=None):

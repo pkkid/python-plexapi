@@ -175,8 +175,7 @@ class PlexServer(PlexObject):
         return Account(self, data)
 
     def clients(self):
-        """ Returns a list of all :class:`~plexapi.client.PlexClient` objects
-            connected  to this server."""
+        """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
         items = []
         cache_resource = None
         from plexapi.myplex import MyPlexResource
@@ -195,7 +194,7 @@ class PlexServer(PlexObject):
                                 port = conn.port
                                 break
             baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
-            items.append(PlexClient(baseurl=baseurl, server=self, data=elem))
+            items.append(PlexClient(baseurl=baseurl, server=self, data=elem, connect=False))
         return items
 
     def client(self, name):
