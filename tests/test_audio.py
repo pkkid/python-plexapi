@@ -8,7 +8,7 @@ def test_audio_Artist_attr(artist):
     assert utils.is_datetime(artist.addedAt)
     assert artist.countries == []
     assert [i.tag for i in artist.genres] == ['Electronic']
-    assert 'lastfm' in artist.guid
+    assert utils.is_string(artist.guid, gte=5)
     assert artist.index == '1'
     assert utils.is_metadata(artist._initpath)
     assert utils.is_metadata(artist.key)
@@ -24,7 +24,7 @@ def test_audio_Artist_attr(artist):
     assert artist.titleSort == 'Infinite State'
     assert artist.type == 'artist'
     assert utils.is_datetime(artist.updatedAt)
-    assert artist.viewCount == 0
+    assert utils.is_int(artist.viewCount, gte=0)
 
 
 def test_audio_Artist_get(artist, music):
@@ -75,7 +75,7 @@ def test_audio_Album_attrs(album):
     assert album.titleSort == 'Unmastered Impulses'
     assert album.type == 'album'
     assert utils.is_datetime(album.updatedAt)
-    assert album.viewCount == 0
+    assert utils.is_int(album.viewCount, gte=0)
     assert album.year == 2016
 
 
@@ -108,7 +108,7 @@ def test_audio_Album_tracks(album):
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None
-    assert track.viewCount == 0
+    assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
 
 
@@ -144,7 +144,7 @@ def test_audio_Album_track(album, track=None):
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None
-    assert track.viewCount == 0
+    assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert media.aspectRatio is None
     assert media.audioChannels == 2
@@ -153,7 +153,7 @@ def test_audio_Album_track(album, track=None):
     assert media.container == 'mp3'
     assert media.duration == 298606
     assert media.height is None
-    assert media.id == 22
+    assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
     assert media.optimizedForStreaming is None
     # Assign 0 media.parts
@@ -200,7 +200,7 @@ def test_audio_Track_attrs(album):
     assert int(track.index) == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
-    assert track.lastViewedAt is None
+    assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == 'audio'
     # Assign 0 track.media
@@ -227,7 +227,7 @@ def test_audio_Track_attrs(album):
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None
-    assert track.viewCount == 0
+    assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert track.viewedAt is None
     assert track.year is None
@@ -238,7 +238,7 @@ def test_audio_Track_attrs(album):
     assert media.container == 'mp3'
     assert media.duration == 298606
     assert media.height is None
-    assert media.id == 22
+    assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
     assert media.optimizedForStreaming is None
     # Assign 0 media.parts

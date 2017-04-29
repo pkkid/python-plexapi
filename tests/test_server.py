@@ -15,7 +15,7 @@ def test_server_attr(plex):
     assert plex.myPlex is True
     assert plex.myPlexMappingState == 'mapped'
     assert plex.myPlexSigninState == 'ok'
-    assert plex.myPlexSubscription == '0'
+    assert utils.is_int(plex.myPlexSubscription, gte=0)
     assert re.match(utils.REGEX_EMAIL, plex.myPlexUsername)
     assert plex.platform in ('Linux', 'Windows')
     assert len(plex.platformVersion) >= 5
@@ -163,16 +163,11 @@ def test_server_client_not_found(plex):
         plex.client('<This-client-should-not-be-found>')
 
 
-@pytest.mark.req_client
-def test_server_client(plex):
-    assert plex.client('Plex Web (Chrome)')
-
-
 def test_server_Server_sessions(plex):
     assert len(plex.sessions()) == 0
 
 
-@pytest.mark.req_client
+@pytest.mark.client
 def test_server_clients(plex):
     assert len(plex.clients())
     client = plex.clients()[0]
@@ -207,9 +202,10 @@ def test_server_account(plex):
     assert re.match(utils.REGEX_IPADDR, account.publicAddress)
     assert int(account.publicPort) >= 1000
     assert account.signInState == 'ok'
-    assert account.subscriptionActive is False
-    assert account.subscriptionFeatures == []
-    assert account.subscriptionState == 'Unknown'
+    assert isinstance(account.subscriptionActive, bool)
+    if account.subscriptionActive: assert len(account.subscriptionFeatures)
+    else: assert account.subscriptionFeatures == []
+    assert account.subscriptionState == 'Active' if account.subscriptionActive else 'Unknown'
     assert re.match(utils.REGEX_EMAIL, account.username)
 
 

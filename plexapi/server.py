@@ -57,7 +57,7 @@ class PlexServer(PlexObject):
             myPlexSigninState (str): Unknown (ex: ok).
             myPlexSubscription (str): True if you have a myPlex subscription.
             myPlexUsername (str): Email address if signed into myPlex (user@example.com)
-            ownerFeatures (bool): List of features allowed by the server owner. This may be based
+            ownerFeatures (list): List of features allowed by the server owner. This may be based
                 on your PlexPass subscription. Features include: camera_upload, cloudsync,
                 content_filter, dvr, hardware_transcoding, home, lyrics, music_videos, pass,
                 photo_autotags, premium_music_metadata, session_bandwidth_restrictions, sync,

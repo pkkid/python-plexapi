@@ -48,11 +48,8 @@ def test_create_playlist(plex, show):
         playlist.delete()
 
 
-@pytest.mark.req_client
-def test_playlist_play(plex):
-    client = getclient(CONFIG.client, CONFIG.client_baseurl, plex)
-    artist = plex.library.section(CONFIG.audio_section).get(CONFIG.audio_artist)
-    album = artist.album(CONFIG.audio_album)
+@pytest.mark.client
+def test_playlist_play(plex, client, artist, album):
     try:
         playlist_name = 'test_play_playlist'
         playlist = plex.createPlaylist(playlist_name, album)
@@ -85,12 +82,9 @@ def test_playlist_playQueue(plex, album):
         playlist.delete()
 
 
-@pytest.mark.req_client
-def test_play_photos(account, plex):
-    client = getclient('iphone-mike', CONFIG.client_baseurl, plex)
-    photosection = plex.library.section(CONFIG.photo_section)
-    album = photosection.get(CONFIG.photo_album)
-    photos = album.photos()
+@pytest.mark.client
+def test_play_photos(plex, client, photoalbum):
+    photos = photoalbum.photos()
     for photo in photos[:4]:
         client.playMedia(photo)
         time.sleep(2)
