@@ -84,7 +84,7 @@ def test_video_Movie_attrs(movies):
     assert movie.playlistItemID is None
     assert movie.primaryExtraKey is None
     assert [i.tag for i in movie.producers] == ['Darla K. Anderson']
-    assert movie.rating == '7.4'
+    assert float(movie.rating) >= 6.4
     assert movie.ratingImage == 'rottentomatoes://image.rating.certified'
     assert movie.ratingKey >= 1
     assert sorted([i.tag for i in movie.roles])[:4] == ['Adrian Ochoa', 'Andrew Stanton', 'Billy Crystal', 'Bob Costas']  # noqa
