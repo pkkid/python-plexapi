@@ -8,7 +8,6 @@ from os.path import abspath, dirname, join
 SKIP_EXAMPLES = ['Example 4']
 
 
-@pytest.mark.xfail
 @pytest.mark.skipif(os.name == 'nt', reason='No make.bat specified for Windows')
 def test_build_documentation():
     docroot = join(dirname(dirname(abspath(__file__))), 'docs')
