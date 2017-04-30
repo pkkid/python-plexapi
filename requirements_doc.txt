@@ -5,6 +5,14 @@
 # If testing locally:
 # sudo apt-get install python3-sphinx
 #---------------------------------------------------------
+coveralls
+flake8
+pytest
+pytest-cov
+pytest-cache
+requests
+websocket-client
+
 recommonmark
 sphinx
 sphinx-rtd-theme

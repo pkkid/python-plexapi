@@ -3,4 +3,4 @@
 # pip install -r requirments.txt
 #---------------------------------------------------------
 requests
-websocket
+websocket-client

@@ -2,11 +2,8 @@
 # PlexAPI requirements to run py.test.
 # pip install -r requirments_dev.txt
 #---------------------------------------------------------
-betamax
-betamax_serializers
 coveralls
 flake8
-pillow
 pytest
 pytest-cov
 pytest-cache
