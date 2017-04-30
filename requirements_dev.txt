@@ -4,6 +4,7 @@
 #---------------------------------------------------------
 coveralls
 flake8
+pillow
 pytest
 pytest-cache
 pytest-cov
