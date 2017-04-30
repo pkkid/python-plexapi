@@ -30,7 +30,10 @@ def test_server_alert_listener(plex, movies):
         messages = []
         listener = plex.startAlertListener(messages.append)
         movies.refresh()
-        time.sleep(5)
+        starttime, runtime = time.time(), 0
+        while len(messages) < 3 and runtime <= 30:
+            time.sleep(1)
+            runtime = int(time.time() - starttime)
         assert len(messages) >= 3
     finally:
         listener.stop()
