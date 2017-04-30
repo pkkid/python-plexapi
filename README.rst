@@ -2,10 +2,10 @@ Python-PlexAPI
 ==============
 .. image:: https://readthedocs.org/projects/python-plexapi/badge/?version=latest
     :target: http://python-plexapi.readthedocs.io/en/latest/?badge=latest
-.. image:: https://travis-ci.org/pkkid/python-plexapi.svg?branch=3.0.0
+.. image:: https://travis-ci.org/pkkid/python-plexapi.svg?branch=master
     :target: https://travis-ci.org/pkkid/python-plexapi
-.. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=3.0.0
-    :target: https://coveralls.io/github/pkkid/python-plexapi?branch=3.0.0
+.. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
+    :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
 
 
 Overview
