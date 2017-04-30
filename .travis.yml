@@ -16,7 +16,6 @@ before_install:
 
 install:
   - pip install -r requirements_dev.txt
-  - pip install -r requirements_doc.txt
 
 script:
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose --cov-config .coveragerc --cov=plexapi; fi
