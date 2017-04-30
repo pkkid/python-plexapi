@@ -3,7 +3,7 @@
 # pip install -r requirments_doc.txt
 #
 # If testing locally:
-# sudo apt-get install python-sphinx
+# sudo apt-get install python3-sphinx
 #---------------------------------------------------------
 recommonmark
 sphinx-rtd-theme

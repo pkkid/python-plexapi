@@ -12,7 +12,7 @@ python:
   - "3.6"
 
 before_install:
-  - sudo apt-get install -y python-sphinx
+  - sudo apt-get install -y python3-sphinx
   - pip install -U pytest pytest-cov coveralls
 
 install:
