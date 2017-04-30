@@ -21,10 +21,11 @@ class AlertListener(threading.Thread):
     key = '/:/websockets/notifications'
 
     def __init__(self, server, callback=None):
+        super(AlertListener, self).__init__()
+        self.daemon = True
         self._server = server
         self._callback = callback
         self._ws = None
-        super(AlertListener, self).__init__()
 
     def run(self):
         # create the websocket connection

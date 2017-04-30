@@ -21,6 +21,7 @@ install:
 
 script:
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose --cov-config .coveragerc --cov=plexapi; fi
+  - sphinx-build -aE . _build
   - flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
 
 after_success:
