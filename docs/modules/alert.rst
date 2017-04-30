@@ -1,6 +1,6 @@
 .. include:: ../global.rst
 
-Notify :modname:`plexapi.alert`
+Alert :modname:`plexapi.alert`
 --------------------------------
 .. automodule:: plexapi.alert
     :members:
