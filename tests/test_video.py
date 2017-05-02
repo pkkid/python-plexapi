@@ -346,7 +346,7 @@ def test_video_Show_thumbUrl(show):
     assert '/thumb/' in show.thumbUrl
 
 
-# Test seems to fail intermittently
+# Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Show_analyze(show):
     show = show.analyze()
@@ -388,6 +388,8 @@ def test_video_Episode(show):
         show.episode(season=1337, episode=1337)
 
 
+# Analyze seems to fail intermittently
+@pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
     episode = tvshows.get('Game of Thrones').episode(season=1, episode=1)
     episode.analyze()
