@@ -188,7 +188,7 @@ def test_library_and_section_search_for_movie(plex):
 # This started failing on more recent Plex Server builds
 @pytest.mark.xfail
 def test_search_with_apostrophe(plex):
-    show_title = "Marvel's Daredevil"
+    show_title = 'Marvel\'s Daredevil'
     result_root = plex.search(show_title)
     result_shows = plex.library.section('TV Shows').search(show_title)
     assert result_root

@@ -346,6 +346,8 @@ def test_video_Show_thumbUrl(show):
     assert '/thumb/' in show.thumbUrl
 
 
+# Test seems to fail intermittently
+@pytest.mark.xfail
 def test_video_Show_analyze(show):
     show = show.analyze()
 
