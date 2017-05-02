@@ -96,9 +96,9 @@ Usage Examples
 
 .. code-block:: python
 
-    # Example 6: List all movies directed by the same person as Die Hard.
+    # Example 6: List all movies directed by the same person as Elephants Dream.
     movies = plex.library.section('Movies')
-    die_hard = movies.get('Die Hard')
+    die_hard = movies.get('Elephants Dream')
     director = die_hard.directors[0]
     for movie in movies.search(None, director=director):
         print(movie.title)
@@ -115,7 +115,7 @@ Usage Examples
 .. code-block:: python
 
     # Example 8: Get a URL to stream a movie or show in another client
-    die_hard = plex.library.section('Movies').get('Die Hard')
+    die_hard = plex.library.section('Movies').get('Elephants Dream')
     print('Run running the following command to play in VLC:')
     print('vlc "%s"' % die_hard.getStreamURL(videoResolution='800x600'))
 

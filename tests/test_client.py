@@ -2,6 +2,7 @@
 import pytest, time
 
 
+@pytest.mark.client
 def test_list_clients(account, plex):
     assert account.resources(), 'MyPlex is not listing any devlices.'
     assert account.devices(), 'MyPlex is not listing any devlices.'

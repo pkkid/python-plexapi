@@ -13,38 +13,36 @@ def test_library_Library_section(plex):
         assert plex.library.section('cant-find-me')
 
 
-def test_library_Library_sectionByID_is_equal_section(plex, plex2):
+def test_library_Library_sectionByID_is_equal_section(plex, movies):
     # test that sctionmyID refreshes the section if the key is missing
     # this is needed if there isnt any cached sections
-    assert plex2.library.sectionByID('1')
-    assert plex.library.sectionByID('1').uuid == plex.library.section('Movies').uuid
+    assert plex.library.sectionByID(movies.key).uuid == movies.uuid
 
 
-def test_library_sectionByID_with_attrs(plex):
-    section = plex.library.sectionByID('1')
-    assert section.agent == 'com.plexapp.agents.imdb'
-    assert section.allowSync is ('sync' in plex.ownerFeatures)
-    assert section.art == '/:/resources/movie-fanart.jpg'
-    assert '/library/sections/1/composite/' in section.composite
-    assert utils.is_datetime(section.createdAt)
-    assert section.filters == '1'
-    assert section._initpath == '/library/sections'
-    assert section.key == '1'
-    assert section.language == 'en'
-    assert len(section.locations) == 1
-    assert len(section.locations[0]) >= 10
-    assert section.refreshing is False
-    assert section.scanner == 'Plex Movie Scanner'
-    assert section._server._baseurl == utils.SERVER_BASEURL
-    assert section.thumb == '/:/resources/movie.png'
-    assert section.title == 'Movies'
-    assert section.type == 'movie'
-    assert utils.is_datetime(section.updatedAt)
-    assert len(section.uuid) == 36
+def test_library_sectionByID_with_attrs(plex, movies):
+    assert movies.agent == 'com.plexapp.agents.imdb'
+    assert movies.allowSync is ('sync' in plex.ownerFeatures)
+    assert movies.art == '/:/resources/movie-fanart.jpg'
+    assert utils.is_metadata(movies.composite, prefix='/library/sections/', contains='/composite/')
+    assert utils.is_datetime(movies.createdAt)
+    assert movies.filters == '1'
+    assert movies._initpath == '/library/sections'
+    assert utils.is_int(movies.key)
+    assert movies.language == 'en'
+    assert len(movies.locations) == 1
+    assert len(movies.locations[0]) >= 10
+    assert movies.refreshing is False
+    assert movies.scanner == 'Plex Movie Scanner'
+    assert movies._server._baseurl == utils.SERVER_BASEURL
+    assert movies.thumb == '/:/resources/movie.png'
+    assert movies.title == 'Movies'
+    assert movies.type == 'movie'
+    assert utils.is_datetime(movies.updatedAt)
+    assert len(movies.uuid) == 36
 
 
 def test_library_section_get_movie(plex):
-    assert plex.library.section('Movies').get('16 blocks')
+    assert plex.library.section('Movies').get('Sita Sings the Blues')
 
 
 def test_library_section_delete(monkeypatch, movies):
@@ -59,7 +57,7 @@ def test_library_section_delete(monkeypatch, movies):
 def test_library_fetchItem(plex, movie):
     item1 = plex.library.fetchItem('/library/metadata/%s' % movie.ratingKey)
     item2 = plex.library.fetchItem(movie.ratingKey)
-    assert item1.title == '16 Blocks'
+    assert item1.title == 'Elephants Dream'
     assert item1 == item2 == movie
 
 
@@ -72,16 +70,17 @@ def test_library_recentlyAdded(plex):
 
 
 def test_library_search(plex):
-    item = plex.library.search('16 blocks')[0]
-    assert item.title == '16 Blocks'
+    item = plex.library.search('Elephants Dream')[0]
+    assert item.title == 'Elephants Dream'
 
 
 def test_library_add_edit_delete(plex):
     # Dont add a location to prevent scanning scanning
-    plex.library.add(name='zomg strange11', type='movie', agent='com.plexapp.agents.imdb',
+    section_name = 'plexapi_test_section'
+    plex.library.add(name=section_name, type='movie', agent='com.plexapp.agents.imdb',
         scanner='Plex Movie Scanner', language='en')
-    assert plex.library.section('zomg strange11')
-    edited_library = plex.library.section('zomg strange11').edit(name='a renamed lib',
+    assert plex.library.section(section_name)
+    edited_library = plex.library.section(section_name).edit(name='a renamed lib',
         type='movie', agent='com.plexapp.agents.imdb')
     assert edited_library.title == 'a renamed lib'
     plex.library.section('a renamed lib').delete()
@@ -149,7 +148,7 @@ def test_library_ShowSection_searchShows(tvshows):
 
 
 def test_library_ShowSection_searchEpisodes(tvshows):
-    assert tvshows.searchEpisodes(title='Pilot')
+    assert tvshows.searchEpisodes(title='Winter Is Coming')
 
 
 def test_library_ShowSection_recentlyAdded(tvshows):

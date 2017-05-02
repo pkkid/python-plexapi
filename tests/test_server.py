@@ -87,9 +87,10 @@ def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=T
         return 'blackandwhite'
 
 
-def test_server_search(plex):
-    assert plex.search('16 Blocks')
-    assert plex.search('16 blocks', mediatype='movie')
+def test_server_search(plex, movie):
+    title = movie.title
+    assert plex.search(title)
+    assert plex.search(title, mediatype='movie')
 
 
 def test_server_playlist(plex, show):

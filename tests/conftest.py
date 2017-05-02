@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 # Running these tests requires a few things in your Plex Library.
-# 1. A Movies section containing both movies: 16 Blocks, Die Hard.
-# 2. A Music section containing the album: Infinite State - Unmastered Impulses
-#    https://github.com/kennethreitz/unmastered-impulses
-# 3. A Photos section containing the album Cats with photos named:
-#    <to-be-determined>
+# Movies section containing both movies:
+#  * Sintel - https://durian.blender.org/
+#  * Elephants Dream - https://orange.blender.org/
+#  * Sita Sings the Blues - http://www.sitasingstheblues.com/
+#  * Big Buck Bunny - https://peach.blender.org/
+# TV Show section containing the shows:
+#  * Game of Thrones (Season 1 and 2)
+#  * The 100 (Seasons 1 and 2)
+#  * (or symlink the above movies with proper names)
+# Music section containing the albums:
+#    Infinite State - Unmastered Impulses - https://github.com/kennethreitz/unmastered-impulses
+#    Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
+# 3. A Photos section containing the photoalbums:
+#    Cats (with cute cat photos inside)
 # 4. A TV Shows section containing at least two seasons of The 100.
 import plexapi, pytest, requests
 from plexapi import compat
@@ -21,7 +30,7 @@ MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
 CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
-MIN_DATETIME = datetime(2014, 1, 1)
+MIN_DATETIME = datetime(2008, 1, 1)
 REGEX_EMAIL = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
 REGEX_IPADDR = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
 
@@ -29,10 +38,10 @@ AUDIOCHANNELS = {2, 6}
 AUDIOLAYOUTS = {'5.1', '5.1(side)', 'stereo'}
 CODECS = {'aac', 'ac3', 'dca', 'h264', 'mp3', 'mpeg4'}
 CONTAINERS = {'avi', 'mp4', 'mkv'}
-CONTENTRATINGS = {'TV-14'}
+CONTENTRATINGS = {'TV-14', 'TV-MA', 'G', 'NR'}
 FRAMERATES = {'24p', 'PAL'}
-PROFILES = {'advanced simple', 'main'}
-RESOLUTIONS = {'sd', '576', '720', '1080'}
+PROFILES = {'advanced simple', 'main', 'constrained baseline'}
+RESOLUTIONS = {'sd', '480', '576', '720', '1080'}
 
 
 def pytest_addoption(parser):
@@ -95,7 +104,7 @@ def photos(plex):
 
 @pytest.fixture()
 def movie(movies):
-    return movies.get('16 blocks')
+    return movies.get('Elephants Dream')
 
 
 @pytest.fixture()
@@ -115,12 +124,12 @@ def track(album):
 
 @pytest.fixture()
 def show(tvshows):
-    return tvshows.get('The 100')
+    return tvshows.get('Game of Thrones')
 
 
 @pytest.fixture()
 def episode(show):
-    return show.get('Pilot')
+    return show.get('Winter Is Coming')
 
 
 @pytest.fixture()

@@ -5,13 +5,12 @@ from plexapi.exceptions import BadRequest, NotFound
 from . import conftest as utils
 
 
-def test_video_Movie(movies):
-    movie = movies.get('Cars')
-    assert movie.title == 'Cars'
+def test_video_Movie(movies, movie):
+    movie2 = movies.get(movie.title)
+    assert movie2.title == movie.title
 
 
-def test_video_Movie_delete(monkeypatch, plex):
-    movie = plex.library.section('Movies').get('16 blocks')
+def test_video_Movie_delete(monkeypatch, movie):
     monkeypatch.delattr('requests.sessions.Session.request')
     with pytest.raises(AttributeError):
         movie.delete()
@@ -24,15 +23,15 @@ def test_video_Movie_getStreamURL(movie):
 
 
 def test_video_Movie_isFullObject_and_reload(plex):
-    movie = plex.library.section('Movies').get('Cars')
+    movie = plex.library.section('Movies').get('Sita Sings the Blues')
     assert movie.isFullObject() is False
     movie.reload()
     assert movie.isFullObject() is True
-    movie_via_search = plex.library.search('Cars')[0]
+    movie_via_search = plex.library.search(movie.title)[0]
     assert movie_via_search.isFullObject() is False
     movie_via_search.reload()
     assert movie_via_search.isFullObject() is True
-    movie_via_section_search = plex.library.section('Movies').search('Cars')[0]
+    movie_via_section_search = plex.library.section('Movies').search(movie.title)[0]
     assert movie_via_section_search.isFullObject() is False
     movie_via_section_search.reload()
     assert movie_via_section_search.isFullObject() is True
@@ -56,22 +55,22 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 
 
 def test_video_Movie_attrs(movies):
-    movie = movies.get('Cars')
+    movie = movies.get('Sita Sings the Blues')
     assert len(movie.locations[0]) >= 10
     assert utils.is_datetime(movie.addedAt)
     assert utils.is_metadata(movie.art)
-    assert movie.audienceRating == 7.9
+    assert movie.audienceRating == 8.5
     assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     movie.reload()  # RELOAD
-    assert movie.chapterSource == 'agent'
+    assert movie.chapterSource is None
     assert movie.collections == []
-    assert movie.contentRating == 'G'
+    assert movie.contentRating in utils.CONTENTRATINGS
     assert all([i.tag in ['US', 'USA'] for i in movie.countries])
-    assert [i.tag for i in movie.directors] == ['John Lasseter', 'Joe Ranft']
+    assert [i.tag for i in movie.directors] == ['Nina Paley']
     assert movie.duration >= 160000
     assert movie.fields == []
-    assert sorted([i.tag for i in movie.genres]) == ['Adventure', 'Animation', 'Comedy', 'Family', 'Sport']
-    assert movie.guid == 'com.plexapp.agents.imdb://tt0317219?lang=en'
+    assert sorted([i.tag for i in movie.genres]) == ['Animation', 'Comedy', 'Fantasy', 'Musical', 'Romance']
+    assert movie.guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
     if movie.lastViewedAt:
@@ -79,23 +78,23 @@ def test_video_Movie_attrs(movies):
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == 'video'
     assert movie.originalTitle is None
-    assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2006-06-08', '2006-06-09')
+    assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2008-01-11', '2008-02-11')
     assert movie.player is None
     assert movie.playlistItemID is None
     assert movie.primaryExtraKey is None
-    assert [i.tag for i in movie.producers] == ['Darla K. Anderson']
+    assert [i.tag for i in movie.producers] == []
     assert float(movie.rating) >= 6.4
-    assert movie.ratingImage == 'rottentomatoes://image.rating.certified'
+    assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
-    assert sorted([i.tag for i in movie.roles])[:4] == ['Adrian Ochoa', 'Andrew Stanton', 'Billy Crystal', 'Bob Costas']  # noqa
+    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal']  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
-    assert movie.studio == 'Walt Disney Pictures'
+    assert movie.studio is None
     assert utils.is_string(movie.summary, gte=100)
-    assert movie.tagline == "Ahhh... it's got that new movie smell."
+    assert movie.tagline == 'The Greatest Break-Up Story Ever Told'
     assert utils.is_thumb(movie.thumb)
-    assert movie.title == 'Cars'
-    assert movie.titleSort == 'Cars'
+    assert movie.title == 'Sita Sings the Blues'
+    assert movie.titleSort == 'Sita Sings the Blues'
     assert movie.transcodeSession is None
     assert movie.type == 'movie'
     assert movie.updatedAt > datetime(2017, 1, 1)
@@ -104,11 +103,12 @@ def test_video_Movie_attrs(movies):
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
-    assert sorted([i.tag for i in movie.writers]) == ['Dan Fogelman', 'Joe Ranft', 'John Lasseter', 'Jorgen Klubien', 'Kiel Murray', 'Phil Lorin']  # noqa
-    assert movie.year == 2006
+    assert sorted([i.tag for i in movie.writers][:4]) == ['Nina Paley']  # noqa
+    assert movie.year == 2008
     # Audio
     audio = movie.media[0].parts[0].audioStreams[0]
-    assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
+    if audio.audioChannelLayout:
+        assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
     assert audio.bitDepth is None
     assert utils.is_int(audio.bitrate)
     assert audio.bitrateMode is None
@@ -120,8 +120,8 @@ def test_video_Movie_attrs(movies):
     assert audio.id >= 1
     assert audio.index == 1
     assert utils.is_metadata(audio._initpath)
-    assert audio.language is None
-    assert audio.languageCode is None
+    assert audio.language == 'English'
+    assert audio.languageCode == 'eng'
     assert audio.samplingRate == 48000
     assert audio.selected is True
     assert audio._server._baseurl == utils.SERVER_BASEURL
@@ -139,7 +139,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(media.height)
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
-    assert media.optimizedForStreaming in [None, False]
+    assert media.optimizedForStreaming in [None, False, True]
     assert media._server._baseurl == utils.SERVER_BASEURL
     assert media.videoCodec in utils.CODECS
     assert media.videoFrameRate in utils.FRAMERATES
@@ -153,7 +153,7 @@ def test_video_Movie_attrs(movies):
     assert video.chromaSubsampling == '4:2:0'
     assert video.codec in utils.CODECS
     assert video.codecID is None
-    assert video.colorSpace is None
+    assert video.colorSpace == 'bt709'
     assert video.duration is None
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
@@ -162,8 +162,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.id)
     assert utils.is_int(video.index, gte=0)
     assert utils.is_metadata(video._initpath)
-    assert video.language is None
-    assert video.languageCode is None
+    assert video.language == 'English'
+    assert video.languageCode == 'eng'
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert utils.is_int(video.refFrames)
@@ -192,7 +192,7 @@ def test_video_Movie_attrs(movies):
     assert stream1.chromaSubsampling == '4:2:0'
     assert stream1.codec in utils.CODECS
     assert stream1.codecID is None
-    assert stream1.colorSpace is None
+    assert stream1.colorSpace == 'bt709'
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
     assert stream1.frameRateMode is None
@@ -201,11 +201,11 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream1.id)
     assert utils.is_int(stream1.index, gte=0)
     assert utils.is_metadata(stream1._initpath)
-    assert stream1.language is None
-    assert stream1.languageCode is None
+    assert stream1.language == 'English'
+    assert stream1.languageCode == 'eng'
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
-    assert stream1.refFrames == 1
+    assert utils.is_int(stream1.refFrames)
     assert stream1.scanType is None
     assert stream1.selected is False
     assert stream1._server._baseurl == utils.SERVER_BASEURL
@@ -215,7 +215,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream1.width, gte=400)
     # Stream 2
     stream2 = part.streams[1]
-    assert stream2.audioChannelLayout in utils.AUDIOLAYOUTS
+    if stream2.audioChannelLayout:
+        assert stream2.audioChannelLayout in utils.AUDIOLAYOUTS
     assert stream2.bitDepth is None
     assert utils.is_int(stream2.bitrate)
     assert stream2.bitrateMode is None
@@ -227,8 +228,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream2.id)
     assert utils.is_int(stream2.index)
     assert utils.is_metadata(stream2._initpath)
-    assert stream2.language is None
-    assert stream2.languageCode is None
+    assert stream2.language == 'English'
+    assert stream2.languageCode == 'eng'
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
@@ -238,7 +239,7 @@ def test_video_Movie_attrs(movies):
 
 
 def test_video_Show(show):
-    assert show.title == 'The 100'
+    assert show.title == 'Game of Thrones'
 
 
 def test_video_Show_attrs(show):
@@ -250,43 +251,46 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.duration, gte=1600000)
     assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
-    assert sorted([i.tag for i in show.genres]) == ['Drama', 'Science-Fiction', 'Suspense']
+    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
     show.reload()
-    assert sorted([i.tag for i in show.genres]) == ['Drama', 'Science-Fiction', 'Suspense', 'Thriller']
+    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
     # So the initkey should have changed because of the reload
     assert utils.is_metadata(show._initpath)
     assert utils.is_int(show.index)
     assert utils.is_metadata(show.key)
-    assert utils.is_datetime(show.lastViewedAt)
+    if show.lastViewedAt:
+        assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == 'video'
     assert len(show.locations[0]) >= 10
-    assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2014-03-19'
+    assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
-    assert sorted([i.tag for i in show.roles])[:3] == ['Adina Porter', 'Alessandro Juliani', 'Alycia Debnam-Carey']
-    assert sorted([i.tag for i in show.actors])[:3] == ['Adina Porter', 'Alessandro Juliani', 'Alycia Debnam-Carey']
+    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
+    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
     assert show._server._baseurl == utils.SERVER_BASEURL
-    assert show.studio == 'The CW'
+    assert show.studio == 'HBO'
     assert utils.is_string(show.summary, gte=100)
     assert utils.is_metadata(show.theme, contains='/theme/')
     assert utils.is_metadata(show.thumb, contains='/thumb/')
-    assert show.title == 'The 100'
-    assert show.titleSort == '100'
+    assert show.title == 'Game of Thrones'
+    assert show.titleSort == 'Game of Thrones'
     assert show.type == 'show'
     assert utils.is_datetime(show.updatedAt)
     assert utils.is_int(show.viewCount, gte=0)
     assert utils.is_int(show.viewedLeafCount, gte=0)
-    assert show.year == 2014
+    assert show.year == 2011
 
 
-def test_video_Show_watched(show):
+def test_video_Show_watched(tvshows):
+    show = tvshows.get('The 100')
     show.episodes()[0].markWatched()
     watched = show.watched()
     assert len(watched) == 1 and watched[0].title == 'Pilot'
 
 
-def test_video_Show_unwatched(show):
+def test_video_Show_unwatched(tvshows):
+    show = tvshows.get('The 100')
     episodes = show.episodes()
     episodes[0].markWatched()
     unwatched = show.unwatched()
@@ -309,7 +313,8 @@ def test_video_Show_reload(plex):
     assert len(show.roles) > 3
 
 
-def test_video_Show_episodes(show):
+def test_video_Show_episodes(tvshows):
+    show = tvshows.get('The 100')
     episodes = show.episodes()
     episodes[0].markWatched()
     unwatched = show.episodes(viewCount=0)
@@ -345,25 +350,22 @@ def test_video_Show_analyze(show):
     show = show.analyze()
 
 
-def test_video_Show_markWatched(tvshows):
-    show = tvshows.get("Marvel's Daredevil")
+def test_video_Show_markWatched(show):
     show.markWatched()
-    assert tvshows.get("Marvel's Daredevil").isWatched
+    assert show.isWatched
 
 
-def test_video_Show_markUnwatched(tvshows):
-    show = tvshows.get("Marvel's Daredevil")
+def test_video_Show_markUnwatched(show):
     show.markUnwatched()
-    assert not tvshows.get("Marvel's Daredevil").isWatched
+    assert not show.isWatched
 
 
-def test_video_Show_refresh(tvshows):
-    show = tvshows.get("Marvel's Daredevil")
+def test_video_Show_refresh(show):
     show.refresh()
 
 
 def test_video_Show_get(show):
-    assert show.get('Pilot').title == 'Pilot'
+    assert show.get('Winter Is Coming').title == 'Winter Is Coming'
 
 
 def test_video_Show_isWatched(show):
@@ -376,7 +378,7 @@ def test_video_Show_section(show):
 
 
 def test_video_Episode(show):
-    episode = show.episode('Pilot')
+    episode = show.episode('Winter Is Coming')
     assert episode == show.episode(season=1, episode=1)
     with pytest.raises(BadRequest):
         show.episode()
@@ -385,42 +387,42 @@ def test_video_Episode(show):
 
 
 def test_video_Episode_analyze(tvshows):
-    episode = tvshows.get("Marvel's Daredevil").episode(season=1, episode=1)
+    episode = tvshows.get('Game of Thrones').episode(season=1, episode=1)
     episode.analyze()
 
 
 def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
     assert episode.contentRating in utils.CONTENTRATINGS
-    assert [i.tag for i in episode.directors] == ['Bharat Nalluri']
+    assert [i.tag for i in episode.directors] == ['Tim Van Patten']
     assert utils.is_int(episode.duration, gte=120000)
-    assert episode.grandparentTitle == 'The 100'
+    assert episode.grandparentTitle == 'Game of Thrones'
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == 'video'
-    assert episode.originallyAvailableAt.strftime('%Y-%m-%d') == '2014-03-19'
+    assert episode.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
     assert utils.is_int(episode.parentIndex)
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     assert utils.is_metadata(episode.parentThumb, contains='/thumb/')
     assert episode.player is None
-    assert episode.rating == 7.4
+    assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_string(episode.summary, gte=100)
     assert utils.is_metadata(episode.thumb, contains='/thumb/')
-    assert episode.title == 'Pilot'
-    assert episode.titleSort == 'Pilot'
+    assert episode.title == 'Winter Is Coming'
+    assert episode.titleSort == 'Winter Is Coming'
     assert episode.transcodeSession is None
     assert episode.type == 'episode'
     assert utils.is_datetime(episode.updatedAt)
     assert episode.username is None
-    assert utils.is_int(episode.viewCount)
+    assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
-    assert [i.tag for i in episode.writers] == ['Jason Rothenberg']
-    assert episode.year == 2014
-    assert episode.isWatched is True
+    assert [i.tag for i in episode.writers] == ['David Benioff', 'D. B. Weiss']
+    assert episode.year == 2011
+    assert episode.isWatched in [True, False]
     # Media
     media = episode.media[0]
     assert media.aspectRatio == 1.78
@@ -464,12 +466,13 @@ def test_video_Season_attrs(show):
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
-    assert utils.is_datetime(season.lastViewedAt)
+    if season.lastViewedAt:
+        assert utils.is_datetime(season.lastViewedAt)
     assert utils.is_int(season.leafCount, gte=3)
     assert season.listType == 'video'
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
-    assert season.parentTitle == 'The 100'
+    assert season.parentTitle == 'Game of Thrones'
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert season.summary == ''
@@ -478,8 +481,8 @@ def test_video_Season_attrs(show):
     assert season.titleSort == 'Season 1'
     assert season.type == 'season'
     assert utils.is_datetime(season.updatedAt)
-    assert utils.is_int(season.viewCount)
-    assert utils.is_int(season.viewedLeafCount)
+    assert utils.is_int(season.viewCount, gte=0)
+    assert utils.is_int(season.viewedLeafCount, gte=0)
     assert utils.is_int(season.seasonNumber)
 
 
@@ -491,7 +494,7 @@ def test_video_Season_show(show):
 
 
 def test_video_Season_watched(tvshows):
-    show = tvshows.get("Marvel's Daredevil")
+    show = tvshows.get('Game of Thrones')
     season = show.season(1)
     sne = show.season('Season 1')
     assert season == sne
@@ -500,19 +503,19 @@ def test_video_Season_watched(tvshows):
 
 
 def test_video_Season_unwatched(tvshows):
-    season = tvshows.get("Marvel's Daredevil").season(1)
+    season = tvshows.get('Game of Thrones').season(1)
     season.markUnwatched()
     assert not season.isWatched
 
 
 def test_video_Season_get(show):
-    episode = show.season(1).get('Pilot')
-    assert episode.title == 'Pilot'
+    episode = show.season(1).get('Winter Is Coming')
+    assert episode.title == 'Winter Is Coming'
 
 
 def test_video_Season_episode(show):
-    episode = show.season(1).get('Pilot')
-    assert episode.title == 'Pilot'
+    episode = show.season(1).get('Winter Is Coming')
+    assert episode.title == 'Winter Is Coming'
 
 
 def test_video_Season_episodes(show):
@@ -522,31 +525,31 @@ def test_video_Season_episodes(show):
 
 def test_that_reload_return_the_same_object(plex):
     # we want to check this that all the urls are correct
-    movie_library_search = plex.library.section('Movies').search('16 Blocks')[0]
-    movie_search = plex.search('16 Blocks')[0]
-    movie_section_get = plex.library.section('Movies').get('16 Blocks')
+    movie_library_search = plex.library.section('Movies').search('Elephants Dream')[0]
+    movie_search = plex.search('Elephants Dream')[0]
+    movie_section_get = plex.library.section('Movies').get('Elephants Dream')
     movie_library_search_key = movie_library_search.key
     movie_search_key = movie_search.key
     movie_section_get_key = movie_section_get.key
-    assert movie_library_search_key == movie_library_search.reload().key == movie_search_key == movie_search.reload().key == movie_section_get_key == movie_section_get.reload().key
+    assert movie_library_search_key == movie_library_search.reload().key == movie_search_key == movie_search.reload().key == movie_section_get_key == movie_section_get.reload().key  # noqa
     tvshow_library_search = plex.library.section('TV Shows').search('The 100')[0]
     tvshow_search = plex.search('The 100')[0]
     tvshow_section_get = plex.library.section('TV Shows').get('The 100')
     tvshow_library_search_key = tvshow_library_search.key
     tvshow_search_key = tvshow_search.key
     tvshow_section_get_key = tvshow_section_get.key
-    assert tvshow_library_search_key == tvshow_library_search.reload().key == tvshow_search_key == tvshow_search.reload().key == tvshow_section_get_key == tvshow_section_get.reload().key
+    assert tvshow_library_search_key == tvshow_library_search.reload().key == tvshow_search_key == tvshow_search.reload().key == tvshow_section_get_key == tvshow_section_get.reload().key  # noqa
     season_library_search = tvshow_library_search.season(1)
     season_search = tvshow_search.season(1)
     season_section_get = tvshow_section_get.season(1)
     season_library_search_key = season_library_search.key
     season_search_key = season_search.key
     season_section_get_key = season_section_get.key
-    assert season_library_search_key == season_library_search.reload().key == season_search_key == season_search.reload().key == season_section_get_key == season_section_get.reload().key
+    assert season_library_search_key == season_library_search.reload().key == season_search_key == season_search.reload().key == season_section_get_key == season_section_get.reload().key  # noqa
     episode_library_search = tvshow_library_search.episode(season=1, episode=1)
     episode_search = tvshow_search.episode(season=1, episode=1)
     episode_section_get = tvshow_section_get.episode(season=1, episode=1)
     episode_library_search_key = episode_library_search.key
     episode_search_key = episode_search.key
     episode_section_get_key = episode_section_get.key
-    assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key
+    assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key  # noqa
