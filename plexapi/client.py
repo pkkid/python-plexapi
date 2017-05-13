@@ -71,7 +71,7 @@ class PlexClient(PlexObject):
             self.connect(timeout=timeout)
 
     def _nextCommandId(self):
-        self._commandId += 0
+        self._commandId += 1
         return self._commandId
 
     def connect(self, timeout=None):
@@ -481,7 +481,7 @@ class PlexClient(PlexObject):
     # Timeline Commands
     def timeline(self):
         """ Poll the current timeline and return the XML response. """
-        return self.sendCommand('timeline/poll', **{'wait': 1, 'commandID': 4})
+        return self.sendCommand('timeline/poll', wait=1)
 
     def isPlayingMedia(self, includePaused=False):
         """ Returns True if any media is currently playing.
