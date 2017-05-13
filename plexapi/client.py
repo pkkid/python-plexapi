@@ -169,9 +169,9 @@ class PlexClient(PlexObject):
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
             raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
+        params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
-        params['commandID'] = self._nextCommandId()
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
             return self._server.query(key, headers=headers)
@@ -433,8 +433,7 @@ class PlexClient(PlexObject):
             'port': server_url[-1],
             'offset': offset,
             'key': media.key,
-            'token': self._server._token,
-            'commandID': self._nextCommandId(),
+            'token': media._server._token,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
 
