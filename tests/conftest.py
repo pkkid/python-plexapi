@@ -30,7 +30,7 @@ MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
 CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
-MIN_DATETIME = datetime(2008, 1, 1)
+MIN_DATETIME = datetime(1999, 1, 1)
 REGEX_EMAIL = r'(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)'
 REGEX_IPADDR = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
 
@@ -79,7 +79,7 @@ def plex2():
 
 @pytest.fixture()
 def client(request):
-    return PlexClient(baseurl=CLIENT_BASEURL, token=CLIENT_TOKEN)
+    return PlexClient(plex(), baseurl=CLIENT_BASEURL, token=CLIENT_TOKEN)
 
 
 @pytest.fixture()

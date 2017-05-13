@@ -81,7 +81,8 @@ def test_video_Movie_attrs(movies):
     assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2008-01-11', '2008-02-11')
     assert movie.player is None
     assert movie.playlistItemID is None
-    assert movie.primaryExtraKey is None
+    if movie.primaryExtraKey:
+        assert utils.is_metadata(movie.primaryExtraKey)
     assert [i.tag for i in movie.producers] == []
     assert float(movie.rating) >= 6.4
     assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
@@ -460,7 +461,7 @@ def test_video_Episode_attrs(episode):
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) >= 1
-    assert ['Season 1', 'Season 2'] == [s.title for s in seasons]
+    assert ['Season 1', 'Season 2'] == [s.title for s in seasons[:2]]
     assert show.season('Season 1') == seasons[0]
 
 

@@ -93,20 +93,17 @@ class MediaPart(PlexObject):
                     streams.append(cls(self._server, elem, self._initpath))
         return streams
 
-    @property
     def videoStreams(self):
         """ Returns a list of :class:`~plexapi.media.VideoStream` objects in this MediaPart. """
-        return [s for s in self.streams if s.streamType == VideoStream.STREAMTYPE]
+        return [stream for stream in self.streams if stream.streamType == VideoStream.STREAMTYPE]
 
-    @property
     def audioStreams(self):
         """ Returns a list of :class:`~plexapi.media.AudioStream` objects in this MediaPart. """
-        return [s for s in self.streams if s.streamType == AudioStream.STREAMTYPE]
+        return [stream for stream in self.streams if stream.streamType == AudioStream.STREAMTYPE]
 
-    @property
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
-        return [s for s in self.streams if s.streamType == SubtitleStream.STREAMTYPE]
+        return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
 
 
 class MediaPartStream(PlexObject):

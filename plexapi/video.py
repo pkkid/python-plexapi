@@ -144,7 +144,15 @@ class Movie(Video, Playable):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the location of the Movie/Show/Episode
         """
-        return [p.file for p in self.iterParts() if p]
+        return [part.file for part in self.iterParts() if part]
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        streams = []
+        for elem in self.media:
+            for part in elem.parts:
+                streams += part.subtitleStreams()
+        return streams
 
     def _prettyfilename(self):
         # This is just for compat.

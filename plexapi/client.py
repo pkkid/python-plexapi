@@ -70,6 +70,10 @@ class PlexClient(PlexObject):
         if connect and self._baseurl:
             self.connect(timeout=timeout)
 
+    def _nextCommandId(self):
+        self._commandId += 0
+        return self._commandId
+
     def connect(self, timeout=None):
         """ Alias of reload as any subsequent requests to this client will be
             made directly to the device even if the object attributes were initially
@@ -113,7 +117,7 @@ class PlexClient(PlexObject):
         headers.update(kwargs)
         return headers
 
-    def proxyThroughServer(self, value=True):
+    def proxyThroughServer(self, value=True, server=None):
         """ Tells this PlexClient instance to proxy all future commands through the PlexServer.
             Useful if you do not wish to connect directly to the Client device itself.
 
@@ -123,6 +127,8 @@ class PlexClient(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.Unsupported`: Cannot use client proxy with unknown server.
         """
+        if server:
+            self._server = server
         if value is True and not self._server:
             raise Unsupported('Cannot use client proxy with unknown server.')
         self._proxyThroughServer = value
@@ -165,8 +171,7 @@ class PlexClient(PlexObject):
             raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
-        self._commandId += 1
-        params['commandID'] = self._commandId
+        params['commandID'] = self._nextCommandId()
         proxy = self._proxyThroughServer if proxy is None else proxy
         if proxy:
             return self._server.query(key, headers=headers)
@@ -428,6 +433,8 @@ class PlexClient(PlexObject):
             'port': server_url[-1],
             'offset': offset,
             'key': media.key,
+            'token': self._server._token,
+            'commandID': self._nextCommandId(),
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
 

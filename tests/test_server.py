@@ -20,7 +20,7 @@ def test_server_attr(plex):
     assert plex.platform in ('Linux', 'Windows')
     assert len(plex.platformVersion) >= 5
     assert plex._token == utils.SERVER_TOKEN
-    assert plex.transcoderActiveVideoSessions == 0
+    assert utils.is_int(plex.transcoderActiveVideoSessions, gte=0)
     assert utils.is_datetime(plex.updatedAt)
     assert len(plex.version) >= 5
 
@@ -168,7 +168,7 @@ def test_server_client_not_found(plex):
 
 
 def test_server_Server_sessions(plex):
-    assert len(plex.sessions()) == 0
+    assert len(plex.sessions()) >= 0
 
 
 @pytest.mark.client
