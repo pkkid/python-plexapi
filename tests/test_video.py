@@ -107,7 +107,7 @@ def test_video_Movie_attrs(movies):
     assert sorted([i.tag for i in movie.writers][:4]) == ['Nina Paley']  # noqa
     assert movie.year == 2008
     # Audio
-    audio = movie.media[0].parts[0].audioStreams[0]
+    audio = movie.media[0].parts[0].audioStreams()[0]
     if audio.audioChannelLayout:
         assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
     assert audio.bitDepth is None
@@ -147,7 +147,7 @@ def test_video_Movie_attrs(movies):
     assert media.videoResolution in utils.RESOLUTIONS
     assert utils.is_int(media.width, gte=200)
     # Video
-    video = movie.media[0].parts[0].videoStreams[0]
+    video = movie.media[0].parts[0].videoStreams()[0]
     assert video.bitDepth == 8
     assert utils.is_int(video.bitrate)
     assert video.cabac is None
