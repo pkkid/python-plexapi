@@ -174,25 +174,36 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    def myPlexAccount(self):
+        """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
+            token to access this server. If you are not the owner of this PlexServer
+            you're likley to recieve an authentication error calling this.
+        """
+        from plexapi.myplex import MyPlexAccount
+        return MyPlexAccount(token=self._token)
+
+    def _myPlexClientPorts(self):
+        try:
+            ports = {}
+            account = self.myPlexAccount()
+            for device in account.devices():
+                if device.connections and ':' in device.connections[0][6:]:
+                    ports[device.clientIdentifier] = device.connections[0].split(':')[-1]
+            return ports
+        except Exception as err:
+            log.warn('Unable to fetch client ports from myPlex: %s', err)
+            return ports
+
     def clients(self):
         """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
         items = []
-        cache_resource = None
-        from plexapi.myplex import MyPlexResource
+        ports = None
         for elem in self.query('/clients'):
-            # Some shitty clients dont include a port..
             port = elem.attrib.get('port')
-            if port is None:
-                log.debug("%s didn't provide a port. Checking https://plex.tv/devices.xml" % elem.attrib.get('name'))
-                data = cache_resource or self._server._session.get('https://plex.tv/devices.xml?X-Plex-Token=%s' % self.token) # noqa
-                cache_resource = data
-                resources = MyPlexResource(self, data)
-                for resource in resources:
-                    if resource.clientIdentifier == elem.attrib.get('machineIdentifier'):
-                        for conn in resource.connection:
-                            if conn.local is True:
-                                port = conn.port
-                                break
+            if not port:
+                log.warn('%s did not advertise a port, checking plex.tv.', elem.attrib.get('name'))
+                ports = self._myPlexClientPorts() if ports is None else ports
+                port = ports.get(elem.attrib.get('machineIdentifier'))
             baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
             items.append(PlexClient(baseurl=baseurl, server=self, data=elem, connect=False))
         return items
@@ -208,7 +219,12 @@ class PlexServer(PlexObject):
         """
         for elem in self.query('/clients'):
             if elem.attrib.get('name').lower() == name.lower():
-                baseurl = 'http://%s:%s' % (elem.attrib['host'], elem.attrib['port'])
+                port = elem.attrib.get('port')
+                if not port:
+                    log.warn('%s did not advertise a port, checking plex.tv.', elem.attrib.get('name'))
+                    ports = self._myPlexClientPorts()
+                    port = ports.get(elem.attrib.get('machineIdentifier'))
+                baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
                 return PlexClient(baseurl=baseurl, server=self, data=elem)
         raise NotFound('Unknown client name: %s' % name)
 

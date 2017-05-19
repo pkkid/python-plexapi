@@ -59,13 +59,19 @@ class MyPlexAccount(PlexObject):
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'
     key = 'https://plex.tv/users/account'
 
-    def __init__(self, username=None, password=None, session=None, timeout=None):
+    def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
+        self._token = token
         self._session = session or requests.Session()
-        self._token = None
+        data, initpath = self._signin(username, password, timeout)
+        super(MyPlexAccount, self).__init__(self, data, initpath)
+
+    def _signin(self, username, password, timeout):
+        if self._token:
+            return self.query(self.key), self.key
         username = username or CONFIG.get('auth.myplex_username')
         password = password or CONFIG.get('auth.myplex_password')
         data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password), timeout=timeout)
-        super(MyPlexAccount, self).__init__(self, data, self.SIGNIN)
+        return data, self.SIGNIN
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
