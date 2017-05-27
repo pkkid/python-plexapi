@@ -8,7 +8,8 @@ from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.client import PlexClient
-from plexapi.compat import ElementTree
+from plexapi.compat import ElementTree, quote
+from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 
 
@@ -55,8 +56,17 @@ class MyPlexAccount(PlexObject):
             username (str): Your account username.
             uuid (str): Unknown.
     """
-    SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'
-    WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'
+    FRIENDINVITE = 'https://plex.tv/api/servers/{machineId}/shared_servers'                     # post with data
+    FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data
+    PLEXSERVERS = 'https://plex.tv/api/servers/{machineId}'                                     # get
+    FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
+    REMOVEINVITE = 'https://plex.tv/api/invites/requested/{userId}?friend=0&server=1&home=0'    # delete
+    REQUESTED = 'https://plex.tv/api/invites/requested'                                         # get
+    REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
+    SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'                                         # get with auth
+    WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
+    # Key may someday switch to the following url. For now the current value works.
+    # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
 
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
@@ -127,14 +137,15 @@ class MyPlexAccount(PlexObject):
         delim = '&' if '?' in url else '?'
         url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
         timeout = timeout or TIMEOUT
-        log.debug('%s %s', method.__name__.upper(), url)
+        log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json',''))
         allheaders = BASE_HEADERS.copy()
         allheaders.update(headers or {})
         response = method(url, headers=allheaders, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
-            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
+            errtext = response.text.replace('\n', ' ')
+            log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            raise BadRequest('(%s) %s; %s' % (response.status_code, codename, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -154,24 +165,157 @@ class MyPlexAccount(PlexObject):
         data = self.query(MyPlexResource.key)
         return [MyPlexResource(self, elem) for elem in data]
 
-    def user(self, email):
+    def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
+          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+        """ Share library content with the specified user.
+
+            Parameters:
+                user (str): MyPlexUser, username, email of the user to be added.
+                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share. 
+                sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                allowSync (Bool): Set True to allow user to sync content.
+                allowCameraUpload (Bool): Set True to allow user to upload photos.
+                allowChannels (Bool): Set True to allow user to utilize installed channels.
+                filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
+                    ex: {'label':['foo']}
+        """
+        username = user.username if isinstance(user, MyPlexUser) else user
+        machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
+        sectionIds = self._getSectionIds(machineId, sections)
+        params = {
+            'server_id': machineId,
+            'shared_server': {'library_section_ids':sectionIds, 'invited_email':username},
+            'sharing_settings': {
+                'allowSync': ('1' if allowSync else '0'),
+                'allowCameraUpload': ('1' if allowCameraUpload else '0'),
+                'allowChannels': ('1' if allowChannels else '0'),
+                'filterMovies': self._filterDictToStr(filterMovies or {}),
+                'filterTelevision': self._filterDictToStr(filterTelevision or {}),
+                'filterMusic': self._filterDictToStr(filterMusic or {}),
+            },
+        }
+        headers = {'Content-Type': 'application/json'}
+        url = self.FRIENDINVITE.format(machineId=machineId)
+        return self.query(url, self._session.post, json=params, headers=headers)
+
+    def removeFriend(self, user):
+        """ Remove the specified user from all sharing.
+
+            Parameters:
+                user (str): MyPlexUser, username, email of the user to be added.
+        """
+        user = self.user(user)
+        url = self.FRIENDUPDATE if user.friend else self.REMOVEINVITE
+        url = url.format(userId=user.id)
+        return self.query(url, self._session.delete)
+
+    def updateFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
+          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+        """ Update the specified user's share settings.
+
+            Parameters:
+                user (str): MyPlexUser, username, email of the user to be added.
+                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share. 
+                sections: ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                allowSync (Bool): Set True to allow user to sync content.
+                allowCameraUpload (Bool): Set True to allow user to upload photos.
+                allowChannels (Bool): Set True to allow user to utilize installed channels.
+                filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
+                    ex: {'label':['foo']}
+        """
+        # Update friend servers
+        user = self.user(user)
+        machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
+        serverId = [s for s in user.servers if s.machineIdentifier == machineId][0].id
+        sectionIds = self._getSectionIds(machineId, sections)
+        params = {'server_id': machineId, 'shared_server': {'library_section_ids':sectionIds}}
+        headers = {'Content-Type': 'application/json'}
+        url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
+        response_servers = self.query(url, self._session.put, json=params, headers=headers)
+        # Update friend filters
+        url = self.FRIENDUPDATE.format(userId=user.id)
+        url += '?allowSync=%s' % ('1' if allowSync else '0')
+        url += '&allowCameraUpload=%s' % ('1' if allowCameraUpload else '0')
+        url += '&allowChannels=%s' % ('1' if allowChannels else '0')
+        url += '&filterMovies=%s' % quote(self._filterDictToStr(filterMovies or {}))
+        url += '&filterTelevision=%s' % quote(self._filterDictToStr(filterTelevision or {}))
+        url += '&filterMusic=%s' % quote(self._filterDictToStr(filterMusic or {}))
+        response_filters = self.query(url, self._session.put)
+        return response_servers, response_filters
+        # https://plex.tv/api/friends/13632862?allowSync=0
+        #   &allowCameraUpload=1
+        #   &allowChannels=1
+        #   &filterMovies=contentRating%3Dg%252Cx%252Cy%7Clabel%3Dhoney%252Cdew
+        #   &filterTelevision=contentRating%3DTV-14%252Cd%7Clabel%3Dflavor%252Ccheese
+        #   &filterMusic=label%3Dmilk%252Cstrawberry
+        #   &filterPhotos=
+        #   &X-Plex-Product=Plex%20Web
+        #   &X-Plex-Version=3.7.0
+        #   &X-Plex-Client-Identifier=f9b12e31-9604-485e-a2a1-8cfe7dd8de0d
+        #   &X-Plex-Platform=Chrome
+        #   &X-Plex-Platform-Version=58.0
+        #   &X-Plex-Device=Linux
+        #   &X-Plex-Device-Name=Plex%20Web%20%28Chrome%29
+        #   &X-Plex-Device-Screen-Resolution=1808x1008%2C2560x1600
+        #   &X-Plex-Token=wLaQh6gz47ofPtWJSkZq
+
+    def user(self, username):
         """ Returns the :class:`~myplex.MyPlexUser` that matches the email or username specified.
 
             Parameters:
-                email (str): Username or email to match against.
+                username (str): Username, email or id of the user to return.
         """
         for user in self.users():
-            if email.lower() in (user.username.lower(), user.email.lower()):
+            if username.lower() in (user.username.lower(), user.email.lower(), str(user.id)):
                 return user
-        raise NotFound('Unable to find user %s' % email)
+        raise NotFound('Unable to find user %s' % username)
 
     def users(self):
-        """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account. """
-        data = self.query(MyPlexUser.key)
-        return [MyPlexUser(self, elem) for elem in data]
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account.
+            This includes both friends and pending invites. You can reference the user.friend to
+            distinguish between the two.
+        """
+        friends = [MyPlexUser(self, elem) for elem in self.query(MyPlexUser.key)]
+        requested = [MyPlexUser(self, elem, self.REQUESTED) for elem in self.query(self.REQUESTED)]
+        return friends + requested
 
-    # ---------------------
-    # Webhook Commands
+    def _getSectionIds(self, server, sections):
+        """ Converts a list of section objects or names to sectionIds needed for library sharing. """
+        if not sections: return []
+        # Get a list of all section ids for looking up each section.
+        allSectionIds = {}
+        machineIdentifier = server.machineIdentifier if isinstance(server, PlexServer) else server
+        url = self.PLEXSERVERS.replace('{machineId}', machineIdentifier)
+        data = self.query(url, self._session.get)
+        for elem in data[0]:
+            allSectionIds[elem.attrib.get('id','').lower()] = elem.attrib.get('id')
+            allSectionIds[elem.attrib.get('title','').lower()] = elem.attrib.get('id')
+            allSectionIds[elem.attrib.get('key','').lower()] = elem.attrib.get('id')
+        log.info(allSectionIds)
+        # Convert passed in section items to section ids from above lookup
+        sectionIds = []
+        for section in sections:
+            sectionKey = section.key if isinstance(section, LibrarySection) else section
+            sectionIds.append(allSectionIds[sectionKey.lower()])
+        return sectionIds
+
+    def _filterDictToStr(self, filterDict):
+        """ Converts friend filters to a string representation for transport. """
+        values = []
+        for key, vals in filterDict.items():
+            if key not in ('contentRating', 'label'):
+                raise BadRequest('Unknown filter key: %s', key)
+            values.append('%s=%s' % (key, '%2C'.join(vals)))
+        return '|'.join(values)
+
     def addWebhook(self, url):
         # copy _webhooks and append url
         urls = self._webhooks[:] + [url]
@@ -190,7 +334,6 @@ class MyPlexAccount(PlexObject):
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 
-    @property
     def webhooks(self):
         data = self.query(self.WEBHOOKS)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
@@ -230,6 +373,7 @@ class MyPlexUser(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.friend = self._initpath == self.key
         self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
         self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
         self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
@@ -247,6 +391,25 @@ class MyPlexUser(PlexObject):
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
+        self.servers = self.findItems(data, MyPlexServerShare)
+
+
+class MyPlexServerShare(PlexObject):
+    """ Represents a single user's server reference. Used for library sharing. """
+    TAG = 'Server'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.serverId = utils.cast(int, data.attrib.get('serverId'))
+        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.name = data.attrib.get('name')
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
+        self.numLibraries = utils.cast(int, data.attrib.get('numLibraries'))
+        self.allLibraries = utils.cast(int, data.attrib.get('allLibraries'))
+        self.owned = utils.cast(int, data.attrib.get('owned'))
+        self.pending = utils.cast(int, data.attrib.get('pending'))
 
 
 class MyPlexResource(PlexObject):

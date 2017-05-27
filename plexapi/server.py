@@ -97,6 +97,7 @@ class PlexServer(PlexObject):
         self._session = session or requests.Session()
         self._library = None   # cached library
         self._settings = None   # cached settings
+        self._myPlexAccount = None   # cached myPlexAccount
         data = self.query(self.key, timeout=timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
@@ -179,10 +180,17 @@ class PlexServer(PlexObject):
             token to access this server. If you are not the owner of this PlexServer
             you're likley to recieve an authentication error calling this.
         """
-        from plexapi.myplex import MyPlexAccount
-        return MyPlexAccount(token=self._token)
+        if self._myPlexAccount is None:
+            from plexapi.myplex import MyPlexAccount
+            self._myPlexAccount = MyPlexAccount(token=self._token)
+        return self._myPlexAccount
 
     def _myPlexClientPorts(self):
+        """ Sometimes the PlexServer does not properly advertise port numbers required
+            to connect. This attemps to look up device port number from plex.tv.
+            See issue #126: Make PlexServer.clients() more user friendly.
+              https://github.com/pkkid/python-plexapi/issues/126
+        """
         try:
             ports = {}
             account = self.myPlexAccount()
@@ -247,11 +255,23 @@ class PlexServer(PlexObject):
         return PlayQueue.create(self, item, **kwargs)
 
     def downloadDatabases(self, savepath=None, unpack=False):
+        """ Download databases.
+
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                unpack (bool): Unpack the zip file.
+        """
         url = self.url('/diagnostics/databases')
         filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
         return filepath
 
     def downloadLogs(self, savepath=None, unpack=False):
+        """ Download server logs.
+
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                unpack (bool): Unpack the zip file.
+        """
         url = self.url('/diagnostics/logs')
         filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
         return filepath
@@ -290,8 +310,9 @@ class PlexServer(PlexObject):
         response = method(url, headers=headers, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
-            log.warn('BadRequest (%s) %s %s' % (response.status_code, codename, response.url))
-            raise BadRequest('(%s) %s' % (response.status_code, codename))
+            errtext = response.text.replace('\n', ' ')
+            log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            raise BadRequest('(%s) %s; %s' % (response.status_code, codename, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 

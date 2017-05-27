@@ -237,7 +237,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, un
             savepath (str): Defaults to current working dir.
             chunksize (int): What chunksize read/write at the time.
             mocked (bool): Helper to do evertything except write the file.
-            unpack (bool): Unpack the zip file
+            unpack (bool): Unpack the zip file.
 
         Example:
             >>> download(a_episode.getStreamURL(), a_episode.location)
