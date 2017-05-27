@@ -15,6 +15,7 @@ syntax: glob
 bin/
 build
 config.ini
+ipython_config.py
 dist
 docs/_build/
 htmlcov

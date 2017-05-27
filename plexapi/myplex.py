@@ -137,7 +137,7 @@ class MyPlexAccount(PlexObject):
         delim = '&' if '?' in url else '?'
         url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
         timeout = timeout or TIMEOUT
-        log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json',''))
+        log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json', ''))
         allheaders = BASE_HEADERS.copy()
         allheaders.update(headers or {})
         response = method(url, headers=allheaders, timeout=timeout, **kwargs)
@@ -171,7 +171,7 @@ class MyPlexAccount(PlexObject):
 
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share. 
+                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
                 sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
@@ -188,7 +188,7 @@ class MyPlexAccount(PlexObject):
         sectionIds = self._getSectionIds(machineId, sections)
         params = {
             'server_id': machineId,
-            'shared_server': {'library_section_ids':sectionIds, 'invited_email':username},
+            'shared_server': {'library_section_ids': sectionIds, 'invited_email': username},
             'sharing_settings': {
                 'allowSync': ('1' if allowSync else '0'),
                 'allowCameraUpload': ('1' if allowCameraUpload else '0'),
@@ -219,7 +219,7 @@ class MyPlexAccount(PlexObject):
 
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share. 
+                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
                 sections: ([Section]): Library sections, names or ids to be shared (default None shares all sections).
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
@@ -236,7 +236,7 @@ class MyPlexAccount(PlexObject):
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
         serverId = [s for s in user.servers if s.machineIdentifier == machineId][0].id
         sectionIds = self._getSectionIds(machineId, sections)
-        params = {'server_id': machineId, 'shared_server': {'library_section_ids':sectionIds}}
+        params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
         headers = {'Content-Type': 'application/json'}
         url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
         response_servers = self.query(url, self._session.put, json=params, headers=headers)
@@ -280,9 +280,9 @@ class MyPlexAccount(PlexObject):
         url = self.PLEXSERVERS.replace('{machineId}', machineIdentifier)
         data = self.query(url, self._session.get)
         for elem in data[0]:
-            allSectionIds[elem.attrib.get('id','').lower()] = elem.attrib.get('id')
-            allSectionIds[elem.attrib.get('title','').lower()] = elem.attrib.get('id')
-            allSectionIds[elem.attrib.get('key','').lower()] = elem.attrib.get('id')
+            allSectionIds[elem.attrib.get('id', '').lower()] = elem.attrib.get('id')
+            allSectionIds[elem.attrib.get('title', '').lower()] = elem.attrib.get('id')
+            allSectionIds[elem.attrib.get('key', '').lower()] = elem.attrib.get('id')
         log.info(allSectionIds)
         # Convert passed in section items to section ids from above lookup
         sectionIds = []
