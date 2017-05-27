@@ -250,22 +250,6 @@ class MyPlexAccount(PlexObject):
         url += '&filterMusic=%s' % quote(self._filterDictToStr(filterMusic or {}))
         response_filters = self.query(url, self._session.put)
         return response_servers, response_filters
-        # https://plex.tv/api/friends/13632862?allowSync=0
-        #   &allowCameraUpload=1
-        #   &allowChannels=1
-        #   &filterMovies=contentRating%3Dg%252Cx%252Cy%7Clabel%3Dhoney%252Cdew
-        #   &filterTelevision=contentRating%3DTV-14%252Cd%7Clabel%3Dflavor%252Ccheese
-        #   &filterMusic=label%3Dmilk%252Cstrawberry
-        #   &filterPhotos=
-        #   &X-Plex-Product=Plex%20Web
-        #   &X-Plex-Version=3.7.0
-        #   &X-Plex-Client-Identifier=f9b12e31-9604-485e-a2a1-8cfe7dd8de0d
-        #   &X-Plex-Platform=Chrome
-        #   &X-Plex-Platform-Version=58.0
-        #   &X-Plex-Device=Linux
-        #   &X-Plex-Device-Name=Plex%20Web%20%28Chrome%29
-        #   &X-Plex-Device-Screen-Resolution=1808x1008%2C2560x1600
-        #   &X-Plex-Token=wLaQh6gz47ofPtWJSkZq
 
     def user(self, username):
         """ Returns the :class:`~myplex.MyPlexUser` that matches the email or username specified.
