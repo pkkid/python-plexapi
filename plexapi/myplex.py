@@ -14,10 +14,11 @@ from plexapi.server import PlexServer
 
 
 class MyPlexAccount(PlexObject):
-    """ MyPlex account and profile information. The easiest way to build
-        this object is by calling the staticmethod :func:`~plexapi.myplex.MyPlexAccount.signin`
-        with your username and password. This object represents the data found Account on
-        the myplex.tv servers at the url https://plex.tv/users/account.
+    """ MyPlex account and profile information. This object represents the data found Account on
+        the myplex.tv servers at the url https://plex.tv/users/account. You may create this object
+        directly by passing in your username & password (or token). There is also a convenience
+        method provided at :class:`~plexapi.server.PlexServer.myPlexAccount()` which will create
+        and return this object.
 
         Parameters:
             username (str): Your MyPlex username.
@@ -55,6 +56,8 @@ class MyPlexAccount(PlexObject):
             title (str): Unknown. - Looks like an alias for `username`.
             username (str): Your account username.
             uuid (str): Unknown.
+            _token (str): Token used to access this client.
+            _session (obj): Requests session object used to access this client.
     """
     FRIENDINVITE = 'https://plex.tv/api/servers/{machineId}/shared_servers'                     # post with data
     FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data

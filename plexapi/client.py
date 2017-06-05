@@ -30,7 +30,6 @@ class PlexClient(PlexObject):
         Attributes:
             TAG (str): 'Player'
             key (str): '/resources'
-            baseurl (str): HTTP address of the client
             device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
             deviceClass (str): Device class (pc, phone, etc).
             machineIdentifier (str): Unique ID for this device.
@@ -49,6 +48,9 @@ class PlexClient(PlexObject):
             token (str): X-Plex-Token used for authenication
             vendor (str): Unknown
             version (str): Device version (4.6.1, etc).
+            _baseurl (str): HTTP address of the client.
+            _token (str): Token used to access this client.
+            _session (obj): Requests session object used to access this client.
             _proxyThroughServer (bool): Set to True after calling
                 :func:`~plexapi.client.PlexClient.proxyThroughServer()` (default False).
     """

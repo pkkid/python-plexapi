@@ -40,7 +40,6 @@ class PlexServer(PlexObject):
             allowSharing (bool): True is server allows sharing.
             allowSync (bool): True is server allows sync.
             backgroundProcessing (bool): Unknown
-            baseurl (str): Base url for the Plex Media Server to access.
             certificate (bool): True if server has an HTTPS certificate.
             companionProxy (bool): Unknown
             diagnostics (bool): Unknown
@@ -88,6 +87,9 @@ class PlexServer(PlexObject):
             updater (bool): Unknown
             version (str): Current Plex version (ex: 1.3.2.3112-1751929)
             voiceSearch (bool): True if voice search is enabled. (is this Google Voice search?)
+            _baseurl (str): HTTP address of the client.
+            _token (str): Token used to access this client.
+            _session (obj): Requests session object used to access this client.
     """
     key = '/'
 
