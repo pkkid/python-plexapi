@@ -19,14 +19,11 @@ import plexapi, pytest, requests
 from plexapi import compat
 from plexapi.client import PlexClient
 from datetime import datetime
-from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 from functools import partial
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
-MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
-MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
 CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
@@ -53,15 +50,16 @@ def pytest_runtest_setup(item):
         return pytest.skip('Need --client option to run.')
 
 
-#---------------------------------
-# Fixtures
-#---------------------------------
+# ---------------------------------
+#  Fixtures
+# ---------------------------------
 
 @pytest.fixture()
 def account():
-    assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
-    assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
-    return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
+    return plex().myPlexAccount()
+    # assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
+    # assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
+    # return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
 
 
 @pytest.fixture(scope='session')
@@ -147,9 +145,9 @@ def monkeydownload(request, monkeypatch):
     monkeypatch.undo()
 
 
-#---------------------------------
-# Utility Functions
-#---------------------------------
+# ---------------------------------
+#  Utility Functions
+# ---------------------------------
 
 def is_datetime(value):
     return value > MIN_DATETIME
