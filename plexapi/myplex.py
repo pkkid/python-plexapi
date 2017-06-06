@@ -466,8 +466,9 @@ class MyPlexResource(PlexObject):
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
         connections = sorted(self.connections, key=lambda c: c.local, reverse=True)
-        https = [c.uri for c in self.connections if self.owned or c.local]
-        http = [c.httpuri for c in self.connections if self.owned or c.local]
+        owned_or_unowned_non_local = lambda x: self.owned or (not self.owned and not x.local)
+        https = [c.uri for c in connections if owned_or_unowned_non_local(c)]
+        http = [c.httpuri for c in connections if owned_or_unowned_non_local(c)]
         # Force ssl, no ssl, or any (default)
         if ssl is True: connections = https
         elif ssl is False: connections = http
