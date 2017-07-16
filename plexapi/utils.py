@@ -281,7 +281,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, un
 
 def tag_helper(tag, items, locked=True):
     """Simple tag helper for editing a object."""
-    if not instance(items, list):
+    if not isinstance(items, list):
         items = [items]
 
     d = {}

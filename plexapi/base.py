@@ -329,6 +329,7 @@ class PlexPartialObject(PlexObject):
                  'collection[0].tag.tag': 'Super',
                  'collection.locked': 0
                 }
+
         """
         if 'id' not in kwargs:
             kwargs['id'] = self.ratingKey
@@ -336,12 +337,12 @@ class PlexPartialObject(PlexObject):
             kwargs['type'] = utils.searchType(self.type)
 
         part = '/library/sections/%s/all?%s' % (self.librarySectionID, urlencode(kwargs))
-        r = self._server.query(part, method=self._server._session.put)
+        self._server.query(part, method=self._server._session.put)
 
     def _edit_tags(self, tag, items, locked=False):
         """Helper to edit and refresh a tags.
 
-            Args:
+            Parameters:
                 tag (str): tag name
                 items (list): list of tags to add
                 locked (bool): lock this field.
@@ -363,22 +364,22 @@ class PlexPartialObject(PlexObject):
            Returns:
                 None
         """
-        _edit_tags('collection', collections, locked=True)
+        self._edit_tags('collection', collections, locked=True)
 
     def removeCollection(self):
-        _edit_tags('collection', [], locked=False)
+        self._edit_tags('collection', [], locked=False)
 
     def addLabel(self, labels):
-        _edit_tags('collection', labels, locked=True)
+        self._edit_tags('collection', labels, locked=True)
 
     def removeLabel(self):
-        _edit_tags('label', [], locked=False)
+        self._edit_tags('label', [], locked=False)
 
     def addGenre(self, genre):
-        d = _edit_tags('genre', genre, locked=True)
+        self._edit_tags('genre', genre, locked=True)
 
     def removeGenre(self):
-        _edit_tags('genre', [], locked=False)
+        self._edit_tags('genre', [], locked=False)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
@@ -403,7 +404,7 @@ class PlexPartialObject(PlexObject):
         return self._server.library.sectionByID(self.librarySectionID)
 
     def delete(self):
-        """Delete a media elemeent. This has to be enabled under settings > server > library in plex webui."""
+        """Delete a media element. This has to be enabled under settings > server > library in plex webui."""
         try:
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:  # pragma: no cover
