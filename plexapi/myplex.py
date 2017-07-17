@@ -280,7 +280,6 @@ class MyPlexAccount(PlexObject):
         requested = [MyPlexUser(self, elem, self.REQUESTED) for elem in self.query(self.REQUESTED)]
         return friends + requested
 
-
     def _getSectionIds(self, server, sections):
         """ Converts a list of section objects or names to sectionIds needed for library sharing. """
         if not sections: return []
@@ -393,9 +392,8 @@ class MyPlexUser(PlexObject):
                 print(item.attrib.get('userID'), self.id)
                 if utils.cast(int, item.attrib.get('userID')) == self.id:
                     return item.attrib.get('accessToken')
-        except Exception as e: # fix me
-            print(e)
-
+        except Exception:
+            log.exception('Failed to get access token for %s' % self.title)
 
 
 class MyPlexServerShare(PlexObject):

@@ -70,6 +70,11 @@ def plex():
     return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
 
 
+@pytest.fixture
+def fresh_plex():
+    return PlexServer
+
+
 @pytest.fixture()
 def plex2():
     return plex()
