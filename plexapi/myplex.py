@@ -261,8 +261,14 @@ class MyPlexAccount(PlexObject):
                 username (str): Username, email or id of the user to return.
         """
         for user in self.users():
-            if username.lower() in (user.username.lower(), user.email.lower(), str(user.id)):
+            # Since home users don't have email,username etc.
+            if username.lower() == user.title:
                 return user
+
+            elif (user.username and user.email and user.id and username.lower() in
+                 (user.username.lower(), user.email.lower(), str(user.id))):
+                return user
+
         raise NotFound('Unable to find user %s' % username)
 
     def users(self):
@@ -273,6 +279,7 @@ class MyPlexAccount(PlexObject):
         friends = [MyPlexUser(self, elem) for elem in self.query(MyPlexUser.key)]
         requested = [MyPlexUser(self, elem, self.REQUESTED) for elem in self.query(self.REQUESTED)]
         return friends + requested
+
 
     def _getSectionIds(self, server, sections):
         """ Converts a list of section objects or names to sectionIds needed for library sharing. """
@@ -379,6 +386,16 @@ class MyPlexUser(PlexObject):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.servers = self.findItems(data, MyPlexServerShare)
+
+    def get_token(self, machineIdentifier):
+        try:
+            for item in self._server.query(self._server.FRIENDINVITE.format(machineId=machineIdentifier)):
+                print(item.attrib.get('userID'), self.id)
+                if utils.cast(int, item.attrib.get('userID')) == self.id:
+                    return item.attrib.get('accessToken')
+        except Exception as e: # fix me
+            print(e)
+
 
 
 class MyPlexServerShare(PlexObject):
