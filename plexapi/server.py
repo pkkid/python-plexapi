@@ -278,6 +278,13 @@ class PlexServer(PlexObject):
         filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
         return filepath
 
+    def isLatest(self):
+        return self.query('/updater/status') # get
+
+    def canUpdate(self): # fix names, it just so i dont forget.
+        # check plexpass
+        return self.query('/updater/check?download=0') # put
+
     def history(self):
         """ Returns a list of media items from watched history. """
         return self.fetchItems('/status/sessions/history/all')
