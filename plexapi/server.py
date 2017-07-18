@@ -278,12 +278,37 @@ class PlexServer(PlexObject):
         filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
         return filepath
 
-    def isLatest(self):
-        return self.query('/updater/status') # get
+    def check_for_update(self, force=True, download=False):
+        """Get release info.
 
-    def canUpdate(self): # fix names, it just so i dont forget.
-        # check plexpass
-        return self.query('/updater/check?download=0') # put
+           Parameters:
+                force (bool): Force server to check for new releases
+                download (bool): Download if a update is available.
+
+           Returns: :class:`~plexapi.base.Release` object.
+
+        """
+        part = '/updater/check?download=%s' % (1 if download else 0)
+        if force:
+            self.query(part, method=self._session.put)
+        return self.fetchItem('/updater/status')
+
+    def isLatest(self):
+        """Check if the installed version of PMS is the latest.
+           Returns: bool
+        """
+        release = self.check_for_update(force=True)
+        return bool(release.version == self.version)
+
+    def installUpdate(self):
+        # We can add this but dunno how usefull this is since it sometimes requires user
+        # action using a gui.
+        part = 'updater/apply'
+
+        release = self.check_for_update(force=True, download=True)
+        if release and release.version != pms.version:
+            # figure out what method this is..
+            return self.query(part, method=self._session.put)
 
     def history(self):
         """ Returns a list of media items from watched history. """
