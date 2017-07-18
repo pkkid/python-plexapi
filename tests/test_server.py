@@ -167,8 +167,34 @@ def test_server_client_not_found(plex):
         plex.client('<This-client-should-not-be-found>')
 
 
-def test_server_Server_sessions(plex):
+def test_server_sessions(plex):
     assert len(plex.sessions()) >= 0
+
+
+def test_server_isLatest(plex, mocker):
+    # I really need to update the testservers pms.. TODO
+    with mocker.patch('plexapi.server.PlexServer.isLatest', return_value=True):
+        assert plex.isLatest() is True
+
+
+def test_server_check_for_update(plex, mocker):
+    class R():
+        def __init__(self, **kwargs):
+            self.download_key = 'plex.tv/release/1337'
+            self.version = '1337'
+            self.added = 'gpu transcode'
+            self.fixed = 'fixed rare bug'
+            self.downloadURL = 'http://path-to-update'
+            self.state = 'downloaded'
+
+    with mocker.patch('plexapi.server.PlexServer.check_for_update', return_value=R()):
+        rel = plex.check_for_update(force=False, download=True)
+        assert rel.download_key == 'plex.tv/release/1337'
+        assert rel.version == '1337'
+        assert rel.added == 'gpu transcode'
+        assert rel.fixed == 'fixed rare bug'
+        assert rel.downloadURL == 'http://path-to-update'
+        assert rel.state == 'downloaded'
 
 
 @pytest.mark.client

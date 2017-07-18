@@ -301,8 +301,12 @@ class PlexServer(PlexObject):
         return bool(release.version == self.version)
 
     def installUpdate(self):
-        # We can add this but dunno how usefull this is since it sometimes requires user
-        # action using a gui.
+        """Install the newest version of pms.
+           Returns: None
+        """
+
+        # We can add this but dunno how useful this is since it sometimes
+        # requires user action using a gui.
         part = 'updater/apply'
 
         release = self.check_for_update(force=True, download=True)
