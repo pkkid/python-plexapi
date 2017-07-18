@@ -339,19 +339,23 @@ class PlexPartialObject(PlexObject):
         part = '/library/sections/%s/all?%s' % (self.librarySectionID, urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
 
-    def _edit_tags(self, tag, items, locked=False):
+    def _edit_tags(self, tag, items, locked=True, remove=False):
         """Helper to edit and refresh a tags.
 
             Parameters:
                 tag (str): tag name
                 items (list): list of tags to add
                 locked (bool): lock this field.
-
+                remove (bool): If this is active remove the tags in items.
             Returns:
                 None
 
         """
-        d = tag_helper(tag, items, locked)
+        if not isinstance(items, list):
+            items = [items]
+
+        existing_cols = [t.tag for t in self.collections if t and remove is False]
+        d = tag_helper(tag, existing_cols + items, locked, remove)
         self.edit(**d)
         self.refresh()
 
@@ -364,22 +368,22 @@ class PlexPartialObject(PlexObject):
            Returns:
                 None
         """
-        self._edit_tags('collection', collections, locked=True)
+        self._edit_tags('collection', collections)
 
-    def removeCollection(self):
-        self._edit_tags('collection', [], locked=False)
+    def removeCollection(self, collections):
+        self._edit_tags('collection', collections, remove=True)
 
     def addLabel(self, labels):
-        self._edit_tags('collection', labels, locked=True)
+        self._edit_tags('collection', labels)
 
-    def removeLabel(self):
-        self._edit_tags('label', [], locked=False)
+    def removeLabel(self, labels):
+        self._edit_tags('label', labels, remove=True)
 
-    def addGenre(self, genre):
-        self._edit_tags('genre', genre, locked=True)
+    def addGenre(self, genres):
+        self._edit_tags('genre', genres)
 
-    def removeGenre(self):
-        self._edit_tags('genre', [], locked=False)
+    def removeGenre(self, genres):
+        self._edit_tags('genre', genres, remove=True)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
