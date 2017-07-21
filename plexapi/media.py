@@ -124,6 +124,7 @@ class MediaPartStream(PlexObject):
                 2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
             type (int): Alias for streamType.
     """
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
@@ -314,6 +315,7 @@ class MediaTag(PlexObject):
                 * tagType (int): Tag type ID.
                 * thumb (str): URL to thumbnail image.
     """
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
@@ -347,6 +349,18 @@ class Collection(MediaTag):
     """
     TAG = 'Collection'
     FILTER = 'collection'
+
+
+@utils.registerPlexObject
+class Label(MediaTag):
+    """ Represents a single label media tag.
+
+        Attributes:
+            TAG (str): 'label'
+            FILTER (str): 'label'
+    """
+    TAG = 'Label'
+    FILTER = 'label'
 
 
 @utils.registerPlexObject

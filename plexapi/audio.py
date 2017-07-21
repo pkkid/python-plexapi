@@ -76,6 +76,7 @@ class Artist(Audio):
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
         self.similar = self.findItems(data, media.Similar)
+        self.collections = self.findItems(data, media.Collection)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -163,6 +164,7 @@ class Album(Audio):
         self.studio = data.attrib.get('studio')
         self.year = utils.cast(int, data.attrib.get('year'))
         self.genres = self.findItems(data, media.Genre)
+        self.collections = self.findItems(data, media.Collection)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.

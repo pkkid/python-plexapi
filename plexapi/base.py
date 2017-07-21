@@ -354,7 +354,9 @@ class PlexPartialObject(PlexObject):
         if not isinstance(items, list):
             items = [items]
 
-        existing_cols = [t.tag for t in self.collections if t and remove is False]
+        value = getattr(self, item + 's')
+
+        existing_cols = [t.tag for t in value if t and remove is False]
         d = tag_helper(tag, existing_cols + items, locked, remove)
         self.edit(**d)
         self.refresh()
@@ -374,7 +376,7 @@ class PlexPartialObject(PlexObject):
         self._edit_tags('collection', collections, remove=True)
 
     def addLabel(self, labels):
-        self._edit_tags('collection', labels)
+        self._edit_tags('label', labels)
 
     def removeLabel(self, labels):
         self._edit_tags('label', labels, remove=True)
