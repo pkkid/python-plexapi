@@ -354,7 +354,7 @@ class PlexPartialObject(PlexObject):
         if not isinstance(items, list):
             items = [items]
 
-        value = getattr(self, item + 's')
+        value = getattr(self, tag + 's')
 
         existing_cols = [t.tag for t in value if t and remove is False]
         d = tag_helper(tag, existing_cols + items, locked, remove)
@@ -417,6 +417,15 @@ class PlexPartialObject(PlexObject):
             log.error('Failed to delete %s. This could be because you havnt allowed '
                       'items to be deleted' % self.key)
             raise
+
+    # The photo tag cant be built atm. TODO
+    #def arts(self):
+    #    part = '%s/arts' % self.key
+    #    return self.fetchItem(part)
+
+    #def poster(self):
+    #    part = '%s/posters' % self.key
+    #    return self.fetchItem(part, etag='Photo')
 
 
 class Playable(object):
