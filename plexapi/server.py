@@ -160,8 +160,13 @@ class PlexServer(PlexObject):
     def library(self):
         """ Library to browse or search your media. """
         if not self._library:
-            data = self.query(Library.key)
-            self._library = Library(self, data)
+            try:
+                data = self.query(Library.key)
+                self._library = Library(self, data)
+            except BadRequest:
+                # Only the owner has access to /library
+                # so just return the library without the data.
+                return Library(self, {})
         return self._library
 
     @property
