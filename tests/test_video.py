@@ -15,6 +15,17 @@ def test_video_Movie_delete(monkeypatch, movie):
     with pytest.raises(AttributeError):
         movie.delete()
 
+def test_video_Movie_addCollection(movie):
+    labelname = 'random_label'
+    org_collection = [tag.tag for tag in movie.collections if tag]
+    assert labelname not in org_collection
+    movie.addCollection(labelname)
+    movie.reload()
+    assert labelname in [tag.tag for tag in movie.collections if tag]
+    movie.removeCollection(labelname)
+    movie.reload()
+    assert labelname not in [tag.tag for tag in movie.collections if tag]
+
 
 def test_video_Movie_getStreamURL(movie):
     key = movie.ratingKey
@@ -481,7 +492,7 @@ def test_video_Season_attrs(show):
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert season.summary == ''
-    assert utils.is_metadata(season.thumb, contains='/thumb/') 
+    assert utils.is_metadata(season.thumb, contains='/thumb/')
     assert season.title == 'Season 1'
     assert season.titleSort == 'Season 1'
     assert season.type == 'season'
@@ -558,3 +569,4 @@ def test_that_reload_return_the_same_object(plex):
     episode_search_key = episode_search.key
     episode_section_get_key = episode_section_get.key
     assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key  # noqa
+

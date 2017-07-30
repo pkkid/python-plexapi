@@ -277,3 +277,23 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, un
             handle.extractall(savepath)
     # finished; return fillpath
     return fullpath
+
+
+def tag_helper(tag, items, locked=True, remove=False):
+    """Simple tag helper for editing a object."""
+    if not isinstance(items, list):
+        items = [items]
+
+    d = {}
+    if not remove:
+        for i, item in enumerate(items):
+            tag_name = '%s[%s].tag.tag' % (tag, i)
+            d[tag_name] = item
+
+    if remove:
+        tag_name = '%s[].tag.tag-' % tag
+        d[tag_name] = ','.join(items)
+
+    d['%s.locked' % tag] = 1 if locked else 0
+
+    return d

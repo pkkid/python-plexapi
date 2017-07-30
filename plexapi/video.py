@@ -133,6 +133,7 @@ class Movie(Video, Playable):
         self.producers = self.findItems(data, media.Producer)
         self.roles = self.findItems(data, media.Role)
         self.writers = self.findItems(data, media.Writer)
+        self.labels = self.findItems(data, media.Label)
 
     @property
     def actors(self):
@@ -473,6 +474,8 @@ class Episode(Video, Playable):
         self.directors = self.findItems(data, media.Director)
         self.media = self.findItems(data, media.Media)
         self.writers = self.findItems(data, media.Writer)
+        self.labels = self.findItems(data, media.Label)
+        self.collections = self.findItems(data, media.Collection)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [

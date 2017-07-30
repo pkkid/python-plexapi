@@ -3,6 +3,7 @@ import re
 from plexapi import log, utils
 from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
+from plexapi.utils import tag_helper
 
 OPERATORS = {
     'exact': lambda v, q: v == q,
@@ -252,8 +253,8 @@ class PlexObject(object):
         try:
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:
-            log.error('Failed to delete %s. This could be because you havnt allowed '
-                      'items to be deleted' % self.key)
+            log.error("Failed to delete %s. This could be because you havn't allowed "
+                      "items to be deleted" % self.key)
             raise
 
 
@@ -263,6 +264,7 @@ class PlexPartialObject(PlexObject):
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
     """
+
     def __eq__(self, other):
         return other is not None and self.key == other.key
 
@@ -314,6 +316,77 @@ class PlexPartialObject(PlexObject):
         """ Returns True if this is not a full object. """
         return not self.isFullObject()
 
+    def edit(self, **kwargs):
+        """ Edit a object.
+
+            Parameters:
+                kwargs (dict): Dict of settings to edit.
+
+            Example:
+
+                {'type': 1,
+                 'id': movie.ratingKey,
+                 'collection[0].tag.tag': 'Super',
+                 'collection.locked': 0
+                }
+
+        """
+        if 'id' not in kwargs:
+            kwargs['id'] = self.ratingKey
+        if 'type' not in kwargs:
+            kwargs['type'] = utils.searchType(self.type)
+
+        part = '/library/sections/%s/all?%s' % (self.librarySectionID, urlencode(kwargs))
+        self._server.query(part, method=self._server._session.put)
+
+    def _edit_tags(self, tag, items, locked=True, remove=False):
+        """Helper to edit and refresh a tags.
+
+            Parameters:
+                tag (str): tag name
+                items (list): list of tags to add
+                locked (bool): lock this field.
+                remove (bool): If this is active remove the tags in items.
+            Returns:
+                None
+
+        """
+        if not isinstance(items, list):
+            items = [items]
+
+        value = getattr(self, tag + 's')
+
+        existing_cols = [t.tag for t in value if t and remove is False]
+        d = tag_helper(tag, existing_cols + items, locked, remove)
+        self.edit(**d)
+        self.refresh()
+
+    def addCollection(self, collections):
+        """Add collection(s).
+
+           Args:
+                collections (list): list of strings
+
+           Returns:
+                None
+        """
+        self._edit_tags('collection', collections)
+
+    def removeCollection(self, collections):
+        self._edit_tags('collection', collections, remove=True)
+
+    def addLabel(self, labels):
+        self._edit_tags('label', labels)
+
+    def removeLabel(self, labels):
+        self._edit_tags('label', labels, remove=True)
+
+    def addGenre(self, genres):
+        self._edit_tags('genre', genres)
+
+    def removeGenre(self, genres):
+        self._edit_tags('genre', genres, remove=True)
+
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
             refreshed, even if it already has metadata. You can think of refreshing as
@@ -337,13 +410,22 @@ class PlexPartialObject(PlexObject):
         return self._server.library.sectionByID(self.librarySectionID)
 
     def delete(self):
-        """Delete a media elemeent. This has to be enabled under settings > server > library in plex webui."""
+        """Delete a media element. This has to be enabled under settings > server > library in plex webui."""
         try:
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:  # pragma: no cover
             log.error('Failed to delete %s. This could be because you havnt allowed '
                       'items to be deleted' % self.key)
             raise
+
+    # The photo tag cant be built atm. TODO
+    #def arts(self):
+    #    part = '%s/arts' % self.key
+    #    return self.fetchItem(part)
+
+    #def poster(self):
+    #    part = '%s/posters' % self.key
+    #    return self.fetchItem(part, etag='Photo')
 
 
 class Playable(object):
@@ -361,6 +443,7 @@ class Playable(object):
             viewedAt (datetime): Datetime item was last viewed (history).
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
     """
+
     def _loadData(self, data):
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session
         self.usernames = self.listAttrs(data, 'title', etag='User')                 # session
@@ -401,7 +484,7 @@ class Playable(object):
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
         return self._server.url('/%s/:/transcode/universal/start.m3u8?%s' %
-            (streamtype, urlencode(sorted_params)))
+                                (streamtype, urlencode(sorted_params)))
 
     def iterParts(self):
         """ Iterates over the parts of this media item. """
@@ -425,7 +508,7 @@ class Playable(object):
                 savepath (str): Title of the track to return.
                 keep_orginal_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
-                    "<Atrist> - <Album> <Track>".
+                    "<Artist> - <Album> <Track>".
                 kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
@@ -433,6 +516,7 @@ class Playable(object):
         """
         filepaths = []
         locations = [i for i in self.iterParts() if i]
+
         for location in locations:
             filename = location.file
             if keep_orginal_name is False:
@@ -442,10 +526,14 @@ class Playable(object):
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(download_url, filename=filename,
-                savepath=savepath, session=self._server._session)
+
+            filepath = utils.download(download_url,
+                                      filename=filename,
+                                      savepath=savepath,
+                                      session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
+
         return filepaths
 
     def stop(self, reason=''):
