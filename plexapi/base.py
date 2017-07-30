@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+
 from plexapi import log, utils
 from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
@@ -534,3 +535,17 @@ class Playable(object):
         """ Stop playback for a media item. """
         key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.session[0].id, quote_plus(reason))
         return self._server.query(key)
+
+
+@utils.registerPlexObject
+class Release(PlexObject):
+    TAG = 'Release'
+    key = '/updater/status'
+
+    def _loadData(self, data):
+        self.download_key = data.attrib.get('key')
+        self.version = data.attrib.get('version')
+        self.added = data.attrib.get('added')
+        self.fixed = data.attrib.get('fixed')
+        self.downloadURL = data.attrib.get('downloadURL')
+        self.state = data.attrib.get('state')
