@@ -90,7 +90,7 @@ def test_video_Movie_attrs(movies):
     assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal']  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
-    assert movie.studio is None
+    assert movie.studio == 'Nina Paley'
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == 'The Greatest Break-Up Story Ever Told'
     assert utils.is_thumb(movie.thumb)
@@ -267,8 +267,8 @@ def test_video_Show_attrs(show):
     assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
-    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
-    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
+    assert sorted([i.tag for i in show.roles])[:4] == ['Aiden Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
+    assert sorted([i.tag for i in show.actors])[:4] == ['Aiden Gillen', 'Alexander Siddig', 'Alfie Allen', 'Amrita Acharia']
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == 'HBO'
     assert utils.is_string(show.summary, gte=100)
