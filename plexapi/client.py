@@ -150,7 +150,7 @@ class PlexClient(PlexObject):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s' % (response.status_code, codename, errtext))
+            raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -428,7 +428,20 @@ class PlexClient(PlexObject):
         """
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
+
         server_url = media._server._baseurl.split(':')
+
+        try:
+            self.sendCommand('timeline/subscribe',
+                             port=server_url[1].strip('/'),
+                             protocol='http')
+        except:
+            # some clients dont need or like this and raises http 400.
+            # We want to include the exception in the log, but it might still work
+            # so we swallow it.
+            log.exception('%s failed to subscribe ' % client.title)
+            pass
+
         playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
