@@ -462,11 +462,11 @@ class MyPlexResource(PlexObject):
         self.connections = self.findItems(data, ResourceConnection)
 
     def connect(self, ssl=None, timeout=None):
-        """ Returns a new :class:`~server.PlexServer` object. Often times there is more than
-            one address specified for a server or client. This function will prioritize local
-            connections before remote and HTTPS before HTTP. After trying to connect to all
-            available addresses for this resource and assuming at least one connection was
-            successful, the PlexServer object is built and returned.
+        """ Returns a new :class:`~server.PlexServer` or :class:`~client.PlexClient` object.
+            Often times there is more than one address specified for a server or client.
+            This function will prioritize local connections before remote and HTTPS before HTTP.
+            After trying to connect to all available addresses for this resource and
+            assuming at least one connection was successful, the PlexServer object is built and returned.
 
             Parameters:
                 ssl (optional): Set True to only connect to HTTPS connections. Set False to
@@ -482,13 +482,19 @@ class MyPlexResource(PlexObject):
         owned_or_unowned_non_local = lambda x: self.owned or (not self.owned and not x.local)
         https = [c.uri for c in connections if owned_or_unowned_non_local(c)]
         http = [c.httpuri for c in connections if owned_or_unowned_non_local(c)]
+
+        if 'server' in self.provides:
+            klass = PlexServer
+        elif 'client' in self.provides:
+            klass = PlexClient
+
         # Force ssl, no ssl, or any (default)
         if ssl is True: connections = https
         elif ssl is False: connections = http
         else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        listargs = [[PlexServer, url, self.accessToken, timeout] for url in connections]
+        listargs = [[klass, url, self.accessToken, timeout] for url in connections]
         log.info('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
@@ -573,15 +579,20 @@ class MyPlexDevice(PlexObject):
         self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
 
     def connect(self, timeout=None):
-        """ Returns a new :class:`~plexapi.client.PlexClient` object. Sometimes there is more than
-            one address specified for a server or client. After trying to connect to all available
-            addresses for this client and assuming at least one connection was successful, the
-            PlexClient object is built and returned.
+        """ Returns a new :class:`~plexapi.client.PlexClient` or :class:`~plexapi.server.PlexServer`
+            Sometimes there is more than one address specified for a server or client.
+            After trying to connect to all available addresses for this client and assuming
+            at least one connection was successful, the PlexClient object is built and returned.
 
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
-        listargs = [[PlexClient, url, self.token, timeout] for url in self.connections]
+        if 'server' in self.provides:
+            klass = PlexServer
+        elif 'client' in self.provides:
+            klass = PlexClient
+
+        listargs = [[klass, url, self.token, timeout] for url in self.connections]
         log.info('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         _chooseConnection('Device', self.name, results)
