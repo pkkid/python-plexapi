@@ -5,8 +5,10 @@ import re
 import requests
 import time
 import zipfile
+from sys import version_info
 from datetime import datetime
 from threading import Thread
+
 from plexapi import compat
 from plexapi.exceptions import NotFound
 
@@ -17,8 +19,13 @@ SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
 PLEXOBJECTS = {}
 
 
+if version_info < (3,):
+    str = unicode
+
+
 class SecretsFilter(logging.Filter):
     """ Logging filter to hide secrets. """
+
     def __init__(self, secrets=None):
         self.secrets = secrets or set()
 
