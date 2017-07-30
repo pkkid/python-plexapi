@@ -317,19 +317,16 @@ class PlexPartialObject(PlexObject):
         return not self.isFullObject()
 
     def edit(self, **kwargs):
-        """ Edit a object.
+        """ Edit an object.
 
             Parameters:
                 kwargs (dict): Dict of settings to edit.
 
             Example:
-
                 {'type': 1,
                  'id': movie.ratingKey,
                  'collection[0].tag.tag': 'Super',
-                 'collection.locked': 0
-                }
-
+                 'collection.locked': 0}
         """
         if 'id' not in kwargs:
             kwargs['id'] = self.ratingKey
@@ -340,51 +337,48 @@ class PlexPartialObject(PlexObject):
         self._server.query(part, method=self._server._session.put)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
-        """Helper to edit and refresh a tags.
+        """ Helper to edit and refresh a tags.
 
             Parameters:
                 tag (str): tag name
                 items (list): list of tags to add
                 locked (bool): lock this field.
                 remove (bool): If this is active remove the tags in items.
-            Returns:
-                None
-
         """
         if not isinstance(items, list):
             items = [items]
-
         value = getattr(self, tag + 's')
-
         existing_cols = [t.tag for t in value if t and remove is False]
         d = tag_helper(tag, existing_cols + items, locked, remove)
         self.edit(**d)
         self.refresh()
 
     def addCollection(self, collections):
-        """Add collection(s).
+        """ Add a collection(s).
 
-           Args:
+           Parameters:
                 collections (list): list of strings
-
-           Returns:
-                None
         """
         self._edit_tags('collection', collections)
 
     def removeCollection(self, collections):
+        """ Remove a collection(s). """
         self._edit_tags('collection', collections, remove=True)
 
     def addLabel(self, labels):
+        """ Add a label(s). """
         self._edit_tags('label', labels)
 
     def removeLabel(self, labels):
+        """ Remove a label(s). """
         self._edit_tags('label', labels, remove=True)
 
     def addGenre(self, genres):
+        """ Add a genre(s). """
         self._edit_tags('genre', genres)
 
     def removeGenre(self, genres):
+        """ Remove a genre(s). """
         self._edit_tags('genre', genres, remove=True)
 
     def refresh(self):
@@ -410,22 +404,22 @@ class PlexPartialObject(PlexObject):
         return self._server.library.sectionByID(self.librarySectionID)
 
     def delete(self):
-        """Delete a media element. This has to be enabled under settings > server > library in plex webui."""
+        """ Delete a media element. This has to be enabled under settings > server > library in plex webui. """
         try:
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:  # pragma: no cover
-            log.error('Failed to delete %s. This could be because you havnt allowed '
-                      'items to be deleted' % self.key)
+            log.error('Failed to delete %s. This could be because you '
+                'havnt allowed items to be deleted' % self.key)
             raise
 
     # The photo tag cant be built atm. TODO
-    #def arts(self):
-    #    part = '%s/arts' % self.key
-    #    return self.fetchItem(part)
+    # def arts(self):
+    #     part = '%s/arts' % self.key
+    #     return self.fetchItem(part)
 
-    #def poster(self):
-    #    part = '%s/posters' % self.key
-    #    return self.fetchItem(part, etag='Photo')
+    # def poster(self):
+    #     part = '%s/posters' % self.key
+    #     return self.fetchItem(part, etag='Photo')
 
 
 class Playable(object):
