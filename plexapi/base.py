@@ -279,7 +279,7 @@ class PlexPartialObject(PlexObject):
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
         objname = "%s '%s'" % (clsname, title) if title else clsname
-        log.warn("Reloading %s for attr '%s'" % (objname, attr))
+        log.warning("Reloading %s for attr '%s'" % (objname, attr))
         # Reload and return the value
         self.reload()
         return utils.getattributeOrNone(PlexPartialObject, self, attr)
