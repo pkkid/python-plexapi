@@ -261,14 +261,12 @@ class MyPlexAccount(PlexObject):
                 username (str): Username, email or id of the user to return.
         """
         for user in self.users():
-            # Since home users don't have email,username etc.
+            # Hhome users don't have email, username etc.
             if username.lower() == user.title:
                 return user
-
             elif (user.username and user.email and user.id and username.lower() in
                  (user.username.lower(), user.email.lower(), str(user.id))):
                 return user
-
         raise NotFound('Unable to find user %s' % username)
 
     def users(self):

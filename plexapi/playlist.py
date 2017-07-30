@@ -85,7 +85,6 @@ class Playlist(PlexPartialObject, Playable):
         """ Create a playlist. """
         if not isinstance(items, (list, tuple)):
             items = [items]
-
         ratingKeys = []
         for item in items:
             if item.listType != items[0].listType:
@@ -103,9 +102,8 @@ class Playlist(PlexPartialObject, Playable):
         return cls(server, data, initpath=key)
 
     def share(self, user):
-        """Share this playlist with another user."""
+        """ Share this playlist with another user. """
         from plexapi.server import PlexServer
-
         myplex = self._server.myPlexAccount()
         user = myplex.user(user)
         # Get the token for your machine.
