@@ -2,6 +2,11 @@
 # Python 2/3 compatability
 # Always try Py3 first
 import os
+from sys import version_info
+
+ustr = str
+if version_info < (3,):
+    ustr = unicode
 
 try:
     string_type = basestring

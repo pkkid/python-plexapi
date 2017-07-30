@@ -5,10 +5,8 @@ import re
 import requests
 import time
 import zipfile
-from sys import version_info
 from datetime import datetime
 from threading import Thread
-
 from plexapi import compat
 from plexapi.exceptions import NotFound
 
@@ -17,10 +15,6 @@ from plexapi.exceptions import NotFound
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
                'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
 PLEXOBJECTS = {}
-
-
-if version_info < (3,):
-    str = unicode
 
 
 class SecretsFilter(logging.Filter):
@@ -97,7 +91,7 @@ def joinArgs(args):
         return ''
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
-        value = str(args[key])
+        value = compat.ustr(args[key])
         arglist.append('%s=%s' % (key, compat.quote(value)))
     return '?%s' % '&'.join(arglist)
 
@@ -146,8 +140,8 @@ def searchType(libtype):
         Raises:
             NotFound: Unknown libtype
     """
-    libtype = str(libtype)
-    if libtype in [str(v) for v in SEARCHTYPES.values()]:
+    libtype = compat.ustr(libtype)
+    if libtype in [compat.ustr(v) for v in SEARCHTYPES.values()]:
         return libtype
     if SEARCHTYPES.get(libtype) is not None:
         return SEARCHTYPES[libtype]
