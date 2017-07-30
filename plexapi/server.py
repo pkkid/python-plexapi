@@ -279,14 +279,11 @@ class PlexServer(PlexObject):
         return filepath
 
     def check_for_update(self, force=True, download=False):
-        """Get release info.
+        """ Returns a :class:`~plexapi.base.Release` object containing release info.
 
            Parameters:
                 force (bool): Force server to check for new releases
                 download (bool): Download if a update is available.
-
-           Returns: :class:`~plexapi.base.Release` object.
-
         """
         part = '/updater/check?download=%s' % (1 if download else 0)
         if force:
@@ -294,21 +291,15 @@ class PlexServer(PlexObject):
         return self.fetchItem('/updater/status')
 
     def isLatest(self):
-        """Check if the installed version of PMS is the latest.
-           Returns: bool
-        """
+        """ Check if the installed version of PMS is the latest. """
         release = self.check_for_update(force=True)
         return bool(release.version == self.version)
 
     def installUpdate(self):
-        """Install the newest version of pms.
-           Returns: None
-        """
-
+        """ Install the newest version of pms. """
         # We can add this but dunno how useful this is since it sometimes
         # requires user action using a gui.
         part = 'updater/apply'
-
         release = self.check_for_update(force=True, download=True)
         if release and release.version != pms.version:
             # figure out what method this is..
