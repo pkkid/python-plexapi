@@ -482,19 +482,14 @@ class MyPlexResource(PlexObject):
         owned_or_unowned_non_local = lambda x: self.owned or (not self.owned and not x.local)
         https = [c.uri for c in connections if owned_or_unowned_non_local(c)]
         http = [c.httpuri for c in connections if owned_or_unowned_non_local(c)]
-
-        if 'server' in self.provides:
-            klass = PlexServer
-        elif 'client' in self.provides:
-            klass = PlexClient
-
+        cls = PlexServer if 'server' in self.provides else PlexClient
         # Force ssl, no ssl, or any (default)
         if ssl is True: connections = https
         elif ssl is False: connections = http
         else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        listargs = [[klass, url, self.accessToken, timeout] for url in connections]
+        listargs = [[cls, url, self.accessToken, timeout] for url in connections]
         log.info('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
@@ -587,12 +582,8 @@ class MyPlexDevice(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
-        if 'server' in self.provides:
-            klass = PlexServer
-        elif 'client' in self.provides:
-            klass = PlexClient
-
-        listargs = [[klass, url, self.token, timeout] for url in self.connections]
+        cls = PlexServer if 'server' in self.provides else PlexClient
+        listargs = [[cls, url, self.token, timeout] for url in self.connections]
         log.info('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         _chooseConnection('Device', self.name, results)
