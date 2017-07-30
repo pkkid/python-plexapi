@@ -301,12 +301,12 @@ class PlexServer(PlexObject):
         return bool(release.version == self.version)
 
     def installUpdate(self):
-        """ Install the newest version of pms. """
+        """ Install the newest version of Plex Media Server. """
         # We can add this but dunno how useful this is since it sometimes
         # requires user action using a gui.
         part = 'updater/apply'
         release = self.check_for_update(force=True, download=True)
-        if release and release.version != pms.version:
+        if release and release.version != self.version:
             # figure out what method this is..
             return self.query(part, method=self._session.put)
 
