@@ -1,27 +1,25 @@
-#---------------------------------------------------------
-# Travis CI Build Environment
-# https://docs.travis-ci.com/user/customizing-the-build
-#---------------------------------------------------------
 language:
-  - python
-
+- python
 python:
-  - "2.7"
-  - "3.4"
-  - "3.6"
-
+- '2.7'
+- '3.4'
+- '3.6'
 before_install:
-  - pip install -U pytest pytest-cov coveralls
-
+- pip install -U pytest pytest-cov coveralls
 install:
-  - pip install -r requirements_dev.txt
-
+- pip install -r requirements_dev.txt
 script:
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose --cov-config .coveragerc --cov=plexapi; fi
-  - flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
-
+- if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose
+  --cov-config .coveragerc --cov=plexapi; fi
+- flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
 after_success:
-  - coveralls
-
+- coveralls
 matrix:
   fast_finish: true
+deploy:
+  provider: pypi
+  user: mjs7231
+  password:
+    secure: UhuEN9GAp9zMEXdVTxSrbhfYf4HjTcj47l093Qh1HYKmZACxJM/+JkQCm7+oHPJpo7YDLk2we9oEsQ41maZBr9WgZI1lwR6m590M12vPhPI7NCVzINxJqebc0uZhCFsAFFKA3kzpRQbDfsBUG4yL/AzeMcvJMgIg3m07KRVhBywnnRhQ77trbBI0Io5MBzfW9PYDeGJqlNDBM7SbB4tK0udGZQT9wmFwvIoJODPDnM15Ry4vpkVNww/vVgyHklmnYlPzQgvhSMOXk0+MWlYtaKmu6uuLAiRccT1Fsmi1POKuFEq8S0Z7w4LmwxCVRaCvsZdNW5eXWgPDhZXNcLrKMwjgJt9Vj3VcD+NCywux/C1hTq7tecBocA13kzbgg4fd2sATOjQT5iaRPGrDtKm8e00hxr125n0StDxXdYGl2W5sH0LCkZE6Vq1GjXYjKFXZeTk3Fzav/3N8IxHBX3CliJB/vbloJ2mpz1kXL4UTORl9pghPyGOOq2yJPYSSWly/RsAD7UDrL1/lezaPSJGKbZJ0CMyfA83kd82/hgZflOuBuTcPHCZSU3zMCs0fsImZZxr6Qm1tbff+iyNS/ufoYgeVfsWhlEl9FoLv1g4HG6oA+uDHz+jKz9uSRHcGqD6P4JJK+H+yy0PeYfo7b6eSqFxgt8q8QfifUaCrVoCiY+c=
+  on:
+    tags: true
