@@ -54,7 +54,7 @@ class PlexServer(PlexObject):
             myPlex (bool): Unknown (True if logged into myPlex?).
             myPlexMappingState (str): Unknown (ex: mapped).
             myPlexSigninState (str): Unknown (ex: ok).
-            myPlexSubscription (str): True if you have a myPlex subscription.
+            myPlexSubscription (bool): True if you have a myPlex subscription.
             myPlexUsername (str): Email address if signed into myPlex (user@example.com)
             ownerFeatures (list): List of features allowed by the server owner. This may be based
                 on your PlexPass subscription. Features include: camera_upload, cloudsync,
@@ -123,7 +123,7 @@ class PlexServer(PlexObject):
         self.myPlex = cast(bool, data.attrib.get('myPlex'))
         self.myPlexMappingState = data.attrib.get('myPlexMappingState')
         self.myPlexSigninState = data.attrib.get('myPlexSigninState')
-        self.myPlexSubscription = data.attrib.get('myPlexSubscription')
+        self.myPlexSubscription = cast(bool, data.attrib.get('myPlexSubscription'))
         self.myPlexUsername = data.attrib.get('myPlexUsername')
         self.ownerFeatures = utils.toList(data.attrib.get('ownerFeatures'))
         self.photoAutoTag = cast(bool, data.attrib.get('photoAutoTag'))

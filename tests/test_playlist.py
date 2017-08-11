@@ -98,19 +98,16 @@ def test_playqueues(plex):
     assert playqueue.playQueueID, 'Play queue ID not set.'
 
 
-def test_share(plex, show, fresh_plex):
+def test_copyToUser(plex, show, fresh_plex):
+    # Skip out if we do not have plexpass
+    if not plex.myPlexSubscription:
+        pytest.skip('PlexPass subscription required for test.')
     episodes = show.episodes()
-
     playlist = plex.createPlaylist('shared_from_test_plexapi', episodes)
     try:
-
-        playlist.share('hellowlol')
-
-        # Login to testserver as hellowlol
-        user = plex.myPlexAccount().user('hellowlol')
-
+        playlist.copyToUser('plexapi2')
+        user = plex.myPlexAccount().user('plexapi2')
         user_plex = fresh_plex(plex._baseurl, user.get_token(plex.machineIdentifier))
-
         assert playlist.title in [p.title for p in user_plex.playlists()]
     finally:
         playlist.delete()

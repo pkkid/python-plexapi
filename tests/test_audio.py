@@ -18,7 +18,7 @@ def test_audio_Artist_attr(artist):
     assert len(artist.locations[0]) >= 10
     assert artist.ratingKey >= 1
     assert artist._server._baseurl == utils.SERVER_BASEURL
-    assert artist.similar == []
+    assert [a.tag for a in artist.similar] == ['Kenneth Reitz']
     assert artist.summary == ''
     assert artist.title == 'Infinite State'
     assert artist.titleSort == 'Infinite State'

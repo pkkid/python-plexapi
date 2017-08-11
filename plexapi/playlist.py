@@ -101,8 +101,8 @@ class Playlist(PlexPartialObject, Playable):
         data = server.query(key, method=server._session.post)[0]
         return cls(server, data, initpath=key)
 
-    def share(self, user):
-        """ Share this playlist with another user. """
+    def copyToUser(self, user):
+        """ Copy playlist to another user account. """
         from plexapi.server import PlexServer
         myplex = self._server.myPlexAccount()
         user = myplex.user(user)

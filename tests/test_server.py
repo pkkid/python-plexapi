@@ -116,7 +116,6 @@ def test_server_playlists(plex, show):
         playlist.delete()
 
 
-
 def test_server_history(plex):
     history = plex.history()
     assert len(history)
