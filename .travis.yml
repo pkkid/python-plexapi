@@ -7,7 +7,6 @@ python:
 before_install:
 - pip install -U pytest pytest-cov coveralls
 install:
-- pip install --upgrade setuptools  # Needed until https://github.com/pypa/setuptools/issues/1101 fixed
 - pip install -r requirements_dev.txt
 script:
 - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose
