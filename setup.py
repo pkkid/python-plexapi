@@ -29,7 +29,7 @@ setup(
     description='Python bindings for the Plex API.',
     author='Michael Shepanski',
     author_email='michael.shepanski@gmail.com',
-    url='https://github.com/pkkid/plexapi',
+    url='https://github.com/pkkid/python-plexapi',
     packages=['plexapi'],
     install_requires=requirements,
     long_description=readme,
