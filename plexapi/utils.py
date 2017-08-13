@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
-import re
-import requests
-import time
-import zipfile
+import logging, os, re, requests, time, zipfile
 from datetime import datetime
+from getpass import getpass
 from threading import Thread
 from plexapi import compat
 from plexapi.exceptions import NotFound
@@ -281,20 +277,43 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, un
 
 
 def tag_helper(tag, items, locked=True, remove=False):
-    """Simple tag helper for editing a object."""
+    """ Simple tag helper for editing a object. """
     if not isinstance(items, list):
         items = [items]
-
-    d = {}
+    data = {}
     if not remove:
         for i, item in enumerate(items):
-            tag_name = '%s[%s].tag.tag' % (tag, i)
-            d[tag_name] = item
-
+            tagname = '%s[%s].tag.tag' % (tag, i)
+            data[tagname] = item
     if remove:
-        tag_name = '%s[].tag.tag-' % tag
-        d[tag_name] = ','.join(items)
+        tagname = '%s[].tag.tag-' % tag
+        data[tagname] = ','.join(items)
+    data['%s.locked' % tag] = 1 if locked else 0
+    return data
 
-    d['%s.locked' % tag] = 1 if locked else 0
 
-    return d
+def getMyPlexAccount(opts=None):
+    """ Helper function tries to get a MyPlex Account instance by checking
+        the the following locations for a username and password. This is
+        useful to create user-friendly command line tools.
+        1. command-line options (opts).
+        2. environment variables and config.ini
+        3. Prompt on the command line.
+    """
+    from plexapi import CONFIG
+    from plexapi.myplex import MyPlexAccount
+    # 1. Check command-line options
+    if opts and opts.username and opts.password:
+        print('Authenticating with Plex.tv as %s..' % opts.username)
+        return MyPlexAccount(opts.username, opts.password)
+    # 2. Check Plexconfig (environment variables and config.ini)
+    config_username = CONFIG.get('auth.myplex_username')
+    config_password = CONFIG.get('auth.myplex_password')
+    if config_username and config_password:
+        print('Authenticating with Plex.tv as %s..' % config_username)
+        return MyPlexAccount(config_username, config_password)
+    # 3. Prompt for username and password on the command line
+    username = input('What is your plex.tv username: ')
+    password = getpass('What is your plex.tv password: ')
+    print('Authenticating with Plex.tv as %s..' % username)
+    return MyPlexAccount(username, password)

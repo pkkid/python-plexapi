@@ -92,7 +92,7 @@ class PlexObject(object):
             the first item in the result set is returned.
 
             Parameters:
-                key (str or int): Path in Plex to fetch items from. If an int is passed
+                ekey (str or int): Path in Plex to fetch items from. If an int is passed
                     in, the key will be translated to /library/metadata/<key>. This allows
                     fetching an item only knowing its key-id.
                 cls (:class:`~plexapi.base.PlexObject`): If you know the class of the

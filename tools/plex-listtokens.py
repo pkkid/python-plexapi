@@ -8,45 +8,45 @@ and password. Alternatively, if you do not wish to enter your login
 information below, you can retrieve the same information from plex.tv
 at the URL: https://plex.tv/api/resources?includeHttps=1
 """
-from getpass import getpass
+import argparse
 from plexapi import utils
 from plexapi.exceptions import BadRequest
-from plexapi.myplex import MyPlexAccount, _connect
+from plexapi.myplex import _connect
 from plexapi.server import PlexServer
 
-FORMAT = '  %-17s  %-25s  %-20s  %s'
-FORMAT2 = '  %-17s  %-25s  %-20s  %-30s  (%s)'
 SERVER = 'Plex Media Server'
+FORMAT = '%-8s  %-6s  %-17s  %-25s  %-20s  %s (%s)'
 
 
 def _list_resources(account, servers):
-    print('\nHTTPS Resources:')
-    resources = MyPlexAccount(username, password).resources()
-    for r in resources:
-        if r.accessToken:
-            for connection in r.connections:
-                print(FORMAT % (r.product, r.name, r.accessToken, connection.uri))
-                servers[connection.uri] = r.accessToken
-    print('\nDirect Resources:')
-    for r in resources:
-        if r.accessToken:
-            for connection in r.connections:
-                print(FORMAT % (r.product, r.name, r.accessToken, connection.httpuri))
-                servers[connection.httpuri] = r.accessToken
+    items = []
+    print('Finding Plex resources..')
+    resources = account.resources()
+    for r in [r for r in resources if r.accessToken]:
+        for connection in r.connections:
+            local = 'Local' if connection.local else 'Remote'
+            extras = [r.provides]
+            items.append(FORMAT % ('Resource', local, r.product, r.name, r.accessToken, connection.uri, ','.join(extras)))
+            items.append(FORMAT % ('Resource', local, r.product, r.name, r.accessToken, connection.httpuri, ','.join(extras)))
+            servers[connection.httpuri] = r.accessToken
+            servers[connection.uri] = r.accessToken
+    return items
 
 
 def _list_devices(account, servers):
-    print('\nDevices:')
-    for d in MyPlexAccount(username, password).devices():
-        if d.token:
-            for conn in d.connections:
-                print(FORMAT % (d.product, d.name, d.token, conn))
-                servers[conn] = d.token
+    items = []
+    print('Finding Plex devices..')
+    for d in [d for d in account.devices() if d.token]:
+        for connection in d.connections:
+            extras = [d.provides]
+            items.append(FORMAT % ('Device', '--', d.product, d.name, d.token, connection, ','.join(extras)))
+            servers[connection] = d.token
+    return items
 
 
 def _test_servers(servers):
-    seen = set()
-    print('\nServer Clients:')
+    items, seen = [], set()
+    print('Finding Plex clients..')
     listargs = [[PlexServer, s, t, 5] for s,t in servers.items()]
     results = utils.threaded(_connect, listargs)
     for url, token, plex, runtime in results:
@@ -54,19 +54,38 @@ def _test_servers(servers):
         if plex and clients:
             for c in plex.clients():
                 if c._baseurl not in seen:
-                    print(FORMAT2 % (c.product, c.title, token, c._baseurl, plex.friendlyName))
+                    extras = [plex.friendlyName] + c.protocolCapabilities
+                    items.append(FORMAT % ('Client', '--', c.product, c.title, token, c._baseurl, ','.join(extras)))
                     seen.add(c._baseurl)
+    return items
+
+
+def _print_items(items, _filter=None):
+    if _filter:
+        print('Displaying items matching filter: %s' % _filter)
+    print()
+    for item in items:
+        filtered_out = False
+        for f in _filter.split():
+            if f.lower() not in item.lower():
+                filtered_out = True
+        if not filtered_out:
+            print(item)
+    print()
 
 
 if __name__ == '__main__':
-    print(__doc__)
-    username = input('What is your plex.tv username: ')
-    password = getpass('What is your plex.tv password: ')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--username', help='Your Plex username')
+    parser.add_argument('--password', help='Your Plex password')
+    parser.add_argument('--filter', default='', help='Only display items containing specified filter')
+    opts = parser.parse_args()
     try:
         servers = {}
-        account = MyPlexAccount(username, password)
-        _list_resources(account, servers)
-        _list_devices(account, servers)
-        _test_servers(servers)
+        account = utils.getMyPlexAccount(opts)
+        items = _list_resources(account, servers)
+        items += _list_devices(account, servers)
+        items += _test_servers(servers)
+        _print_items(items, opts.filter)
     except BadRequest as err:
         print('Unable to login to plex.tv: %s' % err)
