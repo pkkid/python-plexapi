@@ -1,8 +1,5 @@
 General Settings
-~~~~~~~~~~~~~~~~
-**butlerTaskCheckForUpdates (bool)**
-  Automatically check for updates. (default: True)
-
+----------------
 **butlerUpdateChannel (text)**
   Update Channel. (default: 16; choices: 16:Public|8:Plex Pass)
 
@@ -23,7 +20,7 @@ General Settings
 
 
 Scheduled Task Settings
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 **butlerDatabaseBackupPath (text)**
   Backup directory. The directory in which database backups are stored. (default: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases)
 
@@ -68,7 +65,7 @@ Scheduled Task Settings
 
 
 Channels Settings
-~~~~~~~~~~~~~~~~~
+-----------------
 **disableCapabilityChecking (bool)**
   Disable capability checking. Capability checking ensures that plug-ins that are incompatible with this version of the server or the current client application you are using are hidden. Disabling capability checking is useful during development, but will enable access to plug-ins that may perform unreliably with certain client applications.
 
@@ -83,7 +80,7 @@ Channels Settings
 
 
 DLNA Settings
-~~~~~~~~~~~~~
+-------------
 **dlnaAnnouncementLeaseTime (int)**
   DLNA server announcement lease time. Duration in seconds of DLNA Server SSDP announcement lease time. (default: 1800)
 
@@ -110,7 +107,7 @@ DLNA Settings
 
 
 Extras Settings
-~~~~~~~~~~~~~~~
+---------------
 **cinemaTrailersFromBluRay (bool)**
   Include Cinema Trailers from new and upcoming movies on Blu-ray. This feature is Plex Pass only.
 
@@ -128,9 +125,9 @@ Extras Settings
 
 
 Library Settings
-~~~~~~~~~~~~~~~~
+----------------
 **allowMediaDeletion (bool)**
-  Allow media deletion. The owner of the server will be allowed to delete media files from disk.
+  Allow media deletion. The owner of the server will be allowed to delete media files from disk. (default: True)
 
 **autoEmptyTrash (bool)**
   Empty trash automatically after every scan. (default: True)
@@ -164,7 +161,7 @@ Library Settings
 
 
 Network Settings
-~~~~~~~~~~~~~~~~
+----------------
 **allowedNetworks (text)**
   List of IP addresses and networks that are allowed without auth. Comma separated list of IP addresses or IP/netmask entries for networks that are allowed to access Plex Media Server without logging in. When the server is signed out and this value is set, only localhost and addresses on this list will be allowed.
 
@@ -206,7 +203,7 @@ Network Settings
 
 
 Transcoder Settings
-~~~~~~~~~~~~~~~~~~~
+-------------------
 **hardwareAcceleratedCodecs (bool)**
   Use hardware acceleration when available (Experimental). Plex Media Server will attempt to use hardware-accelerated video codecs when encoding and decoding video. Hardware acceleration can make transcoding faster and allow more simultaneous video transcodes, but it can also reduce video quality and compatibility.
 
@@ -236,7 +233,7 @@ Transcoder Settings
 
 
 Misc Settings
-~~~~~~~~~~~~~
+-------------
 **acceptedEULA (bool)**
   Has the user accepted the EULA.
 
@@ -266,14 +263,17 @@ Misc Settings
 
 
 Undocumented Settings
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
+* **aBRKeepOldTranscodes (bool)**
 * **allowHighOutputBitrates (bool)**
 * **backgroundQueueIdlePaused (bool)**
 * **butlerTaskGenerateMediaIndexFiles (bool)**
 * **certificateVersion (int)**: default: 2
-* **disableHlsAuthorization (bool)**
+* **dvrShowUnsupportedDevices (bool)**
+* **enableABRDebugOverlay (bool)**
 * **enableAirplay (bool)**
 * **eyeQUser (text)**
+* **forceAutoAdjustQuality (bool)**
 * **generateIndexFilesDuringAnalysis (bool)**
 * **gracenoteUser (text)**
 * **hardwareDevicePath (text)**: default: /dev/dri/renderD128
@@ -291,5 +291,6 @@ Undocumented Settings
 * **transcoderH264Options (text)**
 * **transcoderH264OptionsOverride (text)**
 * **transcoderH264Preset (text)**: default: veryfast
+* **transcoderLivePruneBuffer (int)**: default: 5400
 * **transcoderLogLevel (text)**: default: error
 

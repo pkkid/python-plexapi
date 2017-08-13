@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Plex-ListTokens is a simple utility to fetch and list all known Plex
+Server tokens your plex.tv account has access to. Because this information
+comes from the plex.tv website, we need to ask for your username
+and password. Alternatively, if you do not wish to enter your login
+information below, you can retrieve the same information from plex.tv
+at the URL: https://plex.tv/api/resources?includeHttps=1
+"""
 from getpass import getpass
 from plexapi import utils
 from plexapi.exceptions import BadRequest
-from plexapi.myplex import MyPlexAccount, MyPlexResource, _connect
+from plexapi.myplex import MyPlexAccount, _connect
 from plexapi.server import PlexServer
 
 FORMAT = '  %-17s  %-25s  %-20s  %s'
@@ -51,14 +59,7 @@ def _test_servers(servers):
 
 
 if __name__ == '__main__':
-    print('List Plex Tokens')
-    print('----------------')
-    print('This is a simple utility to fetch and list all known Plex Server')
-    print('tokens your plex.tv account has access to. Because this information')
-    print('comes from the plex.tv website, we need to ask for your username')
-    print('and password. Alternatively, if you do not wish to enter your login')
-    print('information below, you can retrieve the same information from plex.tv')
-    print('directly at the URL: %s\n' % MyPlexResource.key)
+    print(__doc__)
     username = input('What is your plex.tv username: ')
     password = getpass('What is your plex.tv password: ')
     try:

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This script loops through all media items to build a collection of attributes on
-each media type. The resulting list can be compared with the current object 
-implementation in python-plex api to track new attributes and depricate old ones.
+Plex-ListAttrs is used during development of PlexAPI and loops through all media
+items to build a collection of attributes on each media type. The resulting list
+can be compared with the current object implementation in python-plexapi to track
+new attributes and depricate old ones.
 """
 import argparse, copy, pickle, plexapi, os, re, sys, time
 from os.path import abspath, dirname, join
@@ -16,7 +17,7 @@ from plexapi.server import PlexServer
 from plexapi.playqueue import PlayQueue
 
 CACHEPATH = join(dirname(abspath(__file__)), 'findattrs.pickle')
-NAMESPACE =  {
+NAMESPACE = {
     'xml': defaultdict(int),
     'obj': defaultdict(int),
     'docs': defaultdict(int),
@@ -55,8 +56,9 @@ TAGATTRS = {
     'Country': 'countries',
 }
 STOP_RECURSING_AT = (
-    #'media.MediaPart',
+    # 'media.MediaPart',
 )
+
 
 class PlexAttributes():
 
@@ -70,17 +72,17 @@ class PlexAttributes():
 
     def run(self):
         starttime = time.time()
-        # self._parse_myplex()
-        # self._parse_server()
-        # self._parse_search()
-        # self._parse_library()
+        self._parse_myplex()
+        self._parse_server()
+        self._parse_search()
+        self._parse_library()
         self._parse_audio()
-        # self._parse_photo()
-        # self._parse_movie()
-        # self._parse_show()
-        # self._parse_client()
-        # self._parse_playlist()
-        # self._parse_sync()
+        self._parse_photo()
+        self._parse_movie()
+        self._parse_show()
+        self._parse_client()
+        self._parse_playlist()
+        self._parse_sync()
         self.runtime = round((time.time() - starttime) / 60.0, 1)
         return self
 
@@ -106,7 +108,7 @@ class PlexAttributes():
     def _parse_library(self):
         cat = 'lib'
         self._load_attrs(self.plex.library, cat)
-        #self._load_attrs(self.plex.library.all()[:50], 'all')
+        # self._load_attrs(self.plex.library.all()[:50], 'all')
         self._load_attrs(self.plex.library.onDeck()[:50], 'deck')
         self._load_attrs(self.plex.library.recentlyAdded()[:50], 'add')
         for search in ('cat', 'dog', 'rat', 'gir', 'mou'):
@@ -248,7 +250,7 @@ class PlexAttributes():
             if self._clsname_match(clsname):
                 meta = self.attrs[clsname]
                 count = meta['total']
-                print(_('\n%s (%s)\n%s' % (clsname, count, '-'*30), 'yellow'))
+                print(_('\n%s (%s)\n%s' % (clsname, count, '-' * 30), 'yellow'))
                 attrs = sorted(set(list(meta['xml'].keys()) + list(meta['obj'].keys())))
                 for attr in attrs:
                     state = self._attr_state(clsname, attr, meta)
@@ -257,7 +259,7 @@ class PlexAttributes():
                     examples = '; '.join(list(meta['examples'].get(attr, ['--']))[:3])[:80]
                     print('%7s  %3s  %-30s  %-20s  %s' % (count, state, attr, categories, examples))
                     total_attrs += count
-        print(_('\nSUMMARY\n%s' % ('-'*30), 'yellow'))
+        print(_('\nSUMMARY\n%s' % ('-' * 30), 'yellow'))
         print('%7s  %3s  %3s  %3s  %-20s  %s' % ('total', 'new', 'old', 'doc', 'categories', 'clsname'))
         for clsname in sorted(self.attrs.keys()):
             if self._clsname_match(clsname):
@@ -311,6 +313,7 @@ def _(text, color):
 
 
 if __name__ == '__main__':
+    print(__doc__)
     parser = argparse.ArgumentParser(description='resize and copy starred photos')
     parser.add_argument('-f', '--force', default=False, action='store_true', help='force a full refresh of attributes.')
     parser.add_argument('-m', '--max', default=99999, help='max number of objects to load.')

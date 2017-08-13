@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Plex-ListSettings is used during development of PlexAPI and loops through available
+setting items and separates them by group as well as display the variable type. The
+resulting list is used for the creation of docs/settingslist.rst.
+"""
 from collections import defaultdict
 from os.path import abspath, dirname, join
 from plexapi import utils
 from plexapi.server import PlexServer
 
 GROUPNAMES = {'butler':'Scheduled Task', 'dlna':'DLNA'}
-OUTPUT = join(dirname(dirname(abspath(__file__))), 'docs/settingslist.rst') 
+OUTPUT = join(dirname(dirname(abspath(__file__))), 'docs/settingslist.rst')
 
 
 def _setting_group(setting):
@@ -17,8 +22,8 @@ def _setting_group(setting):
 
 def _write_settings(handle, groups, group):
     title = GROUPNAMES.get(group, group.title())
-    print('\n%s Settings\n%s' % (title, '~' * (len(title) + 9)))
-    handle.write('%s Settings\n%s\n' % (title, '~' * (len(title) + 9)))
+    print('\n%s Settings\n%s' % (title, '-' * (len(title) + 9)))
+    handle.write('%s Settings\n%s\n' % (title, '-' * (len(title) + 9)))
     for setting in groups[group]:
         print('  %s (%s)' % (utils.lowerFirst(setting.id), setting.type))
         # Special case undocumented settings
@@ -66,4 +71,5 @@ def list_settings():
 
 
 if __name__ == '__main__':
+    print(__doc__)
     list_settings()
