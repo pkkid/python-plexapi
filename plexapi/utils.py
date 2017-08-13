@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-import logging, os, re, requests, time, zipfile
+import logging
+import os
+import re
+import requests
+import time
+import zipfile
 from datetime import datetime
 from getpass import getpass
 from threading import Thread
