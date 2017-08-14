@@ -206,7 +206,7 @@ class PlexServer(PlexObject):
                     ports[device.clientIdentifier] = device.connections[0].split(':')[-1]
             return ports
         except Exception as err:
-            log.warn('Unable to fetch client ports from myPlex: %s', err)
+            log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
 
     def clients(self):
@@ -216,11 +216,13 @@ class PlexServer(PlexObject):
         for elem in self.query('/clients'):
             port = elem.attrib.get('port')
             if not port:
-                log.warn('%s did not advertise a port, checking plex.tv.', elem.attrib.get('name'))
+                log.warning('%s did not advertise a port, checking plex.tv.', elem.attrib.get('name'))
                 ports = self._myPlexClientPorts() if ports is None else ports
                 port = ports.get(elem.attrib.get('machineIdentifier'))
             baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
-            items.append(PlexClient(baseurl=baseurl, server=self, data=elem, connect=False))
+            items.append(PlexClient(baseurl=baseurl, server=self,
+                                    token=self._token, data=elem, connect=False))
+
         return items
 
     def client(self, name):
@@ -232,15 +234,10 @@ class PlexServer(PlexObject):
             Raises:
                 :class:`~plexapi.exceptions.NotFound`: Unknown client name
         """
-        for elem in self.query('/clients'):
-            if elem.attrib.get('name').lower() == name.lower():
-                port = elem.attrib.get('port')
-                if not port:
-                    log.warn('%s did not advertise a port, checking plex.tv.', elem.attrib.get('name'))
-                    ports = self._myPlexClientPorts()
-                    port = ports.get(elem.attrib.get('machineIdentifier'))
-                baseurl = 'http://%s:%s' % (elem.attrib['host'], port)
-                return PlexClient(baseurl=baseurl, server=self, data=elem)
+        for client in self.clients():
+            if client and client.title == name:
+                return client
+
         raise NotFound('Unknown client name: %s' % name)
 
     def createPlaylist(self, title, items):
@@ -345,8 +342,8 @@ class PlexServer(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s' % (response.status_code, codename, errtext))
+            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
