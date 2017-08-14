@@ -14,7 +14,7 @@ CONFIG = PlexConfig(CONFIG_PATH)
 
 # PlexAPI Settings
 PROJECT = 'PlexAPI'
-VERSION = '3.0.1'
+VERSION = '3.0.2'
 TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)
 X_PLEX_CONTAINER_SIZE = CONFIG.get('plexapi.container_size', 50, int)
 
