@@ -516,7 +516,6 @@ class LibrarySection(PlexObject):
             return '1' if value else '0'
         if not isinstance(value, (list, tuple)):
             value = [value]
-
         # convert list of values to list of keys or ids
         result = set()
         choices = self.listChoices(category, libtype)
