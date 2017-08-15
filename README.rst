@@ -19,12 +19,16 @@ Plex Web Client. A few of the many features we currently support are:
 * Listen in on all Plex Server notifications.
 
 
-Installation
-------------
+Installation & Documentation
+----------------------------
 
 .. code-block:: python
 
     pip install plexapi
+
+Documentation_ can be found at Read the Docs.
+
+.. _Documentation: http://python-plexapi.readthedocs.io/en/latest/
 
 
 Getting a PlexServer Instance
