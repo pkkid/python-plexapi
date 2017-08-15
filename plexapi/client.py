@@ -429,13 +429,14 @@ class PlexClient(PlexObject):
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
-        try:
-            self.sendCommand('timeline/subscribe', port=server_url[1].strip('/'), protocol='http')
-        except:
+        # Don't subscribe to timeline because this makes RasPlex crash
+		#try:
+        #    self.sendCommand('timeline/subscribe', port=server_url[1].strip('/'), protocol='http')
+        #except:
             # some clients dont need or like this and raises http 400.
             # We want to include the exception in the log, but it might still work
             # so we swallow it.
-            log.exception('%s failed to subscribe ' % self.title)
+        #    log.exception('%s failed to subscribe ' % self.title)
         playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
