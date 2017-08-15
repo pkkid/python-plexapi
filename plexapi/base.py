@@ -511,7 +511,6 @@ class Playable(object):
         """
         filepaths = []
         locations = [i for i in self.iterParts() if i]
-
         for location in locations:
             filename = location.file
             if keep_orginal_name is False:
@@ -521,14 +520,10 @@ class Playable(object):
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
-
-            filepath = utils.download(download_url,
-                                      filename=filename,
-                                      savepath=savepath,
-                                      session=self._server._session)
+            filepath = utils.download(download_url, filename=filename, savepath=savepath,
+                session=self._server._session, **kwargs)
             if filepath:
                 filepaths.append(filepath)
-
         return filepaths
 
     def stop(self, reason=''):

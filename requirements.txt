@@ -3,4 +3,5 @@
 # pip install -r requirments.txt
 #---------------------------------------------------------
 requests
+tqdm
 websocket-client

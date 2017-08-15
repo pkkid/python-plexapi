@@ -12,23 +12,18 @@ from plexapi import utils
 from plexapi.compat import unquote
 from plexapi.video import Episode, Movie, Show
 
-
-def choose(msg, items, attr):
-    print()
-    for index, i in enumerate(items):
-        name = attr(i) if callable(attr) else getattr(i, attr)
-        print('  %s: %s' % (index, name))
-    number = int(input('\n%s: ' % msg))
-    return items[number]
+VALID_TYPES = (Movie, Episode, Show)
 
 
 def search_for_item(url=None):
     if url: return get_item_from_url(opts.url)
-    server = choose('Choose a Server', account.resources(), 'name').connect()
+    server = utils.choose('Choose a Server', account.resources(), 'name').connect()
     query = input('What are you looking for?: ')
-    item = choose('Choose result', server.search(query), lambda x: repr(x))
+    items = [i for i in server.search(query) if i.__class__ in VALID_TYPES]
+    item = utils.choose('Choose result', items, lambda x: '(%s) %s' % (x.type.title(), x.title[0:60]))
     if isinstance(item, Show):
-        item = choose('Choose episode', item.episodes(), lambda x: x._prettyfilename())
+        display = lambda i: '%s %s %s' % (i.grandparentTitle, i.seasonEpisode, i.title)
+        item = utils.choose('Choose episode', item.episodes(), display)
     if not isinstance(item, (Movie, Episode)):
         raise SystemExit('Unable to download %s' % item.__class__.__name__)
     return item
@@ -62,6 +57,6 @@ if __name__ == '__main__':
     item = search_for_item(opts.url)
     # Download the item
     print("Downloading '%s' from %s.." % (item._prettyfilename(), item._server.friendlyName))
-    filepaths = item.download('./')
+    filepaths = item.download('./', showstatus=True)
     for filepath in filepaths:
         print('  %s' % filepath)

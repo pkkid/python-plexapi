@@ -179,7 +179,7 @@ class Movie(Video, Playable):
                 url = self.getStreamURL(**kwargs)
             else:
                 self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session)
+            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session, **kwargs)
             filepaths.append(filepath)
         return filepaths
 
@@ -481,13 +481,12 @@ class Episode(Video, Playable):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
             self.key.replace('/library/metadata/', '').replace('/children', ''),
-            '%s-s%se%s' % (self.grandparentTitle.replace(' ', '-')[:20], self.seasonNumber, self.index),
+            '%s-%s' % (self.grandparentTitle.replace(' ', '-')[:20], self.seasonEpisode),
         ] if p])
 
     def _prettyfilename(self):
         """ Returns a human friendly filename. """
-        return '%s.S%sE%s' % (self.grandparentTitle.replace(' ', '.'),
-            str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
+        return '%s.%s' % (self.grandparentTitle.replace(' ', '.'), self.seasonEpisode)
 
     @property
     def locations(self):
@@ -502,6 +501,11 @@ class Episode(Video, Playable):
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
+
+    @property
+    def seasonEpisode(self):
+        """ Returns the s00e00 string containing the season and episode. """
+        return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
 
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """

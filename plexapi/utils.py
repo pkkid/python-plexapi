@@ -8,6 +8,7 @@ import zipfile
 from datetime import datetime
 from getpass import getpass
 from threading import Thread
+from tqdm import tqdm
 from plexapi import compat
 from plexapi.exceptions import NotFound
 
@@ -229,7 +230,7 @@ def downloadSessionImages(server, filename=None, height=150, width=150, opacity=
     return info
 
 
-def download(url, filename=None, savepath=None, session=None, chunksize=4024, unpack=False, mocked=False):
+def download(url, filename=None, savepath=None, session=None, chunksize=4024, unpack=False, mocked=False, showstatus=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
 
@@ -270,9 +271,13 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024, un
         return fullpath
     # save the file to disk
     log.info('Downloading: %s', fullpath)
+    if showstatus:
+        bar = tqdm(unit='B', unit_scale=True)
     with open(fullpath, 'wb') as handle:
         for chunk in response.iter_content(chunk_size=chunksize):
             handle.write(chunk)
+            if showstatus:
+                bar.update(len(chunk))
     # check we want to unzip the contents
     if fullpath.endswith('zip') and unpack:
         with zipfile.ZipFile(fullpath, 'r') as handle:
@@ -322,3 +327,25 @@ def getMyPlexAccount(opts=None):
     password = getpass('What is your plex.tv password: ')
     print('Authenticating with Plex.tv as %s..' % username)
     return MyPlexAccount(username, password)
+
+
+def choose(msg, items, attr):
+    """ Command line helper to display a list of choices, asking the
+        user to choose one of the options.
+    """
+    # Return the first item if there is only one choice
+    if len(items) == 1:
+        return items[0]
+    # Print all choices to the command line
+    print()
+    for index, i in enumerate(items):
+        name = attr(i) if callable(attr) else getattr(i, attr)
+        print('  %s: %s' % (index, name))
+    print()
+    # Request choice from the user
+    while True:
+        try:
+            number = int(input('%s: ' % msg))
+            return items[number]
+        except (ValueError, IndexError):
+            pass
