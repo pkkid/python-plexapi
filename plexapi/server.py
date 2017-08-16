@@ -68,12 +68,10 @@ class PlexServer(PlexObject):
             pluginHost (bool): Unknown
             readOnlyLibraries (bool): Unknown
             requestParametersInCookie (bool): Unknown
-            session (Session): Requests session used for object caching.
             streamingBrainVersion (bool): Current `Streaming Brain <https://www.plex.tv/blog
                 /mcstreamy-brain-take-world-two-easy-steps/>`_ version.
             sync (bool): True if `syncing to a device <https://support.plex.tv/hc/en-us/articles
                 /201053678-Sync-Media-to-a-Device>`_ is enabled.
-            token (str): Plex authentication token to access the server.
             transcoderActiveVideoSessions (int): Number of active video transcoding sessions.
             transcoderAudio (bool): True if audio transcoding audio is available.
             transcoderLyrics (bool): True if audio transcoding lyrics is available.
