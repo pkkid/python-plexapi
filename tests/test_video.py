@@ -279,7 +279,7 @@ def test_video_Show_attrs(show):
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
     assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
-    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Anton Lesser']
+    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == 'HBO'
     assert utils.is_string(show.summary, gte=100)
