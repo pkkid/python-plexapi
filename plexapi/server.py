@@ -164,9 +164,10 @@ class PlexServer(PlexObject):
                 data = self.query(Library.key)
                 self._library = Library(self, data)
             except BadRequest:
+                data = self.query('/library/sections/')
                 # Only the owner has access to /library
                 # so just return the library without the data.
-                return Library(self, {})
+                return Library(self, data)
         return self._library
 
     @property
