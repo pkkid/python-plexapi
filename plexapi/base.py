@@ -334,7 +334,8 @@ class PlexPartialObject(PlexObject):
         if 'type' not in kwargs:
             kwargs['type'] = utils.searchType(self.type)
 
-        part = '/library/sections/%s/all?%s' % (self.librarySectionID, urlencode(kwargs))
+        part = '/library/sections/%s/all?%s' % (self.librarySectionID,
+                                                urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
@@ -520,8 +521,9 @@ class Playable(object):
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(download_url, filename=filename, savepath=savepath,
-                session=self._server._session, **kwargs)
+
+            filepath = utils.download(download_url, filename=filename,
+                                      savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
