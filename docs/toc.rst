@@ -7,7 +7,7 @@
    configuration
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
    :caption: Modules
    :titlesonly:
 

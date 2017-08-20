@@ -1,5 +1,5 @@
-General Settings
-----------------
+:title:`General Settings`
+
 **butlerUpdateChannel (text)**
   Update Channel. (default: 16; choices: 16:Public|8:Plex Pass)
 
@@ -19,8 +19,8 @@ General Settings
   Enable Plex Media Server verbose logging.
 
 
-Scheduled Task Settings
------------------------
+:title:`Scheduled Task Settings`
+
 **butlerDatabaseBackupPath (text)**
   Backup directory. The directory in which database backups are stored. (default: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases)
 
@@ -64,8 +64,8 @@ Scheduled Task Settings
   Upgrade media analysis during maintenance. (default: True)
 
 
-Channels Settings
------------------
+:title:`Channels Settings`
+
 **disableCapabilityChecking (bool)**
   Disable capability checking. Capability checking ensures that plug-ins that are incompatible with this version of the server or the current client application you are using are hidden. Disabling capability checking is useful during development, but will enable access to plug-ins that may perform unreliably with certain client applications.
 
@@ -79,8 +79,8 @@ Channels Settings
   Number of seconds to wait before a plugin times out. (default: 180)
 
 
-DLNA Settings
--------------
+:title:`DLNA Settings`
+
 **dlnaAnnouncementLeaseTime (int)**
   DLNA server announcement lease time. Duration in seconds of DLNA Server SSDP announcement lease time. (default: 1800)
 
@@ -106,8 +106,8 @@ DLNA Settings
   DLNA server timeline reporting. Enable the DLNA server to report timelines for video play activity. (default: True)
 
 
-Extras Settings
----------------
+:title:`Extras Settings`
+
 **cinemaTrailersFromBluRay (bool)**
   Include Cinema Trailers from new and upcoming movies on Blu-ray. This feature is Plex Pass only.
 
@@ -124,8 +124,8 @@ Extras Settings
   Choose Cinema Trailers from. (default: 1; choices: 0:All movies|1:Only unwatched movies)
 
 
-Library Settings
-----------------
+:title:`Library Settings`
+
 **allowMediaDeletion (bool)**
   Allow media deletion. The owner of the server will be allowed to delete media files from disk. (default: True)
 
@@ -160,8 +160,8 @@ Library Settings
   Include music libraries in automatic updates. Linux systems limit the maximum number of watched directories; this may cause problems with large music libraries.
 
 
-Network Settings
-----------------
+:title:`Network Settings`
+
 **allowedNetworks (text)**
   List of IP addresses and networks that are allowed without auth. Comma separated list of IP addresses or IP/netmask entries for networks that are allowed to access Plex Media Server without logging in. When the server is signed out and this value is set, only localhost and addresses on this list will be allowed.
 
@@ -202,8 +202,8 @@ Network Settings
   Webhooks. This feature enables your server to send events to external services. (default: True)
 
 
-Transcoder Settings
--------------------
+:title:`Transcoder Settings`
+
 **hardwareAcceleratedCodecs (bool)**
   Use hardware acceleration when available (Experimental). Plex Media Server will attempt to use hardware-accelerated video codecs when encoding and decoding video. Hardware acceleration can make transcoding faster and allow more simultaneous video transcodes, but it can also reduce video quality and compatibility.
 
@@ -232,8 +232,8 @@ Transcoder Settings
   Transcoder default throttle buffer. Amount in seconds to buffer before throttling the transcoder. (default: 60)
 
 
-Misc Settings
--------------
+:title:`Misc Settings`
+
 **acceptedEULA (bool)**
   Has the user accepted the EULA.
 
@@ -262,8 +262,8 @@ Misc Settings
   External network total upload limit (kbps). Speed at which to limit the total bandwidth not on the local network in kilobits per second. Use 0 to set no limit.
 
 
-Undocumented Settings
----------------------
+:title:`Undocumented Settings`
+
 * **aBRKeepOldTranscodes (bool)**
 * **allowHighOutputBitrates (bool)**
 * **backgroundQueueIdlePaused (bool)**
