@@ -179,8 +179,10 @@ class Movie(Video, Playable):
                 url = self.getStreamURL(**kwargs)
             else:
                 self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session, **kwargs)
-            filepaths.append(filepath)
+            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session)
+            if filepath:
+                filepaths.append(filepath)
+
         return filepaths
 
 
