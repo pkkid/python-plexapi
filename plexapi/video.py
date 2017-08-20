@@ -117,7 +117,7 @@ class Movie(Video, Playable):
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
-        self.rating = data.attrib.get('rating')
+        self.rating = utils.cast(float, data.attrib.get('rating'))
         self.ratingImage = data.attrib.get('ratingImage')
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
