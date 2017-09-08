@@ -237,15 +237,27 @@ class MyPlexAccount(PlexObject):
         # Update friend servers
         user = self.user(user)
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
-        serverId = [s for s in user.servers if s.machineIdentifier == machineId][0].id
         sectionIds = self._getSectionIds(machineId, sections)
-        params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
         headers = {'Content-Type': 'application/json'}
-        url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
+
+        # Determine whether user exists on server without shares
+        if [s for s in user.servers if s.machineIdentifier == machineId]:
+            serverId = [s for s in user.servers if s.machineIdentifier == machineId][0].id
+            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
+            url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
+        else:
+            params = {'server_id': machineId,
+                      'shared_server': {'library_section_ids': sectionIds, "invited_id": user.id}}
+            url = self.FRIENDINVITE.format(machineId=machineId)
+
+        # Remove share sections, add shares to user without shares, or update shares
         if remove_sections == True:
             response_servers = self.query(url, self._session.delete, json=params, headers=headers)
+        elif 'invited_id' in params['shared_server']:
+            response_servers = self.query(url, self._session.post, json=params, headers=headers)
         else:
             response_servers = self.query(url, self._session.put, json=params, headers=headers)
+
         # Update friend filters
         url = self.FRIENDUPDATE.format(userId=user.id)
         url += '?allowSync=%s' % ('1' if allowSync else '0')
