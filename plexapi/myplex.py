@@ -216,7 +216,7 @@ class MyPlexAccount(PlexObject):
         url = url.format(userId=user.id)
         return self.query(url, self._session.delete)
 
-    def updateFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
+    def updateFriend(self, user, server, sections=None, remove_sections=False, allowSync=False, allowCameraUpload=False,
           allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
         """ Update the specified user's share settings.
 
@@ -242,7 +242,10 @@ class MyPlexAccount(PlexObject):
         params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
         headers = {'Content-Type': 'application/json'}
         url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
-        response_servers = self.query(url, self._session.put, json=params, headers=headers)
+        if remove_sections == True:
+            response_servers = self.query(url, self._session.delete, json=params, headers=headers)
+        else:
+            response_servers = self.query(url, self._session.put, json=params, headers=headers)
         # Update friend filters
         url = self.FRIENDUPDATE.format(userId=user.id)
         url += '?allowSync=%s' % ('1' if allowSync else '0')
@@ -262,7 +265,7 @@ class MyPlexAccount(PlexObject):
         """
         for user in self.users():
             # Hhome users don't have email, username etc.
-            if username.lower() == user.title:
+            if username.lower() == user.title.lower():
                 return user
             elif (user.username and user.email and user.id and username.lower() in
                  (user.username.lower(), user.email.lower(), str(user.id))):
