@@ -6,7 +6,7 @@ from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
-from plex.compat import ElementTree
+from plexapi.compat import ElementTree
 from plexapi.exceptions import BadRequest, Unsupported
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
@@ -109,16 +109,17 @@ class PlexClient(PlexObject):
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
         # Active session details
-        # Should be check the if init path == /status/sessions before adding this?
         # Since protocolCapabilities is missing from /sessions we cant really control this player without
         # creating a client manually.
+        # Add this in next breaking release.
+        # if self._initpath == 'status/sessions':
         self.device = data.attrib.get('device')         # session
         self.model = data.attrib.get('model')           # session
         self.state = data.attrib.get('state')           # session
         self.vendor = data.attrib.get('vendor')         # session
         self.version = data.attrib.get('version')       # session
         self.local = utils.cast(bool, data.attrib.get('local', 0))
-        self.address = data.attrib.get('adress')        # session
+        self.address = data.attrib.get('address')        # session
         self.remotePublicAddress = data.attrib.get('remotePublicAddress')
         self.userID = data.attrib.get('userID')
 
