@@ -117,7 +117,7 @@ class PlexClient(PlexObject):
         self.state = data.attrib.get('state')           # session
         self.vendor = data.attrib.get('vendor')         # session
         self.version = data.attrib.get('version')       # session
-        self.local = data.attrib.get('local')           # session
+        self.local = utils.cast(bool, data.attrib.get('local', 0))
         self.address = data.attrib.get('adress')        # session
         self.remotePublicAddress = data.attrib.get('remotePublicAddress')
         self.userID = data.attrib.get('userID')
