@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
+
 import requests
+
 from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
+from plex.compat import ElementTree
 from plexapi.exceptions import BadRequest, Unsupported
 from plexapi.playqueue import PlayQueue
-from xml.etree import ElementTree
+from plexapi.utils import cast
+
 
 DEFAULT_MTYPE = 'video'
 
@@ -105,11 +109,18 @@ class PlexClient(PlexObject):
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
         # Active session details
+        # Should be check the if init path == /status/sessions before adding this?
+        # Since protocolCapabilities is missing from /sessions we cant really control this player without
+        # creating a client manually.
         self.device = data.attrib.get('device')         # session
         self.model = data.attrib.get('model')           # session
         self.state = data.attrib.get('state')           # session
         self.vendor = data.attrib.get('vendor')         # session
         self.version = data.attrib.get('version')       # session
+        self.local = data.attrib.get('local')           # session
+        self.address = data.attrib.get('adress')        # session
+        self.remotePublicAddress = data.attrib.get('remotePublicAddress')
+        self.userID = data.attrib.get('userID')
 
     def _headers(self, **kwargs):
         """ Returns a dict of all default headers for Client requests. """
