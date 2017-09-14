@@ -224,7 +224,7 @@ class MyPlexAccount(PlexObject):
                 user (str): MyPlexUser, username, email of the user to be added.
                 server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
                 sections: ([Section]): Library sections, names or ids to be shared (default None shares all sections).
-                removeSections (Bool): Set True to remove all shares.
+                removeSections (Bool): Set True to remove all shares. Supersedes sections.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
@@ -252,7 +252,7 @@ class MyPlexAccount(PlexObject):
             url = self.FRIENDINVITE.format(machineId=machineId)
 
         # Remove share sections, add shares to user without shares, or update shares
-        if removeSections:
+        if removeSections is True:
             response_servers = self.query(url, self._session.delete, json=params, headers=headers)
         elif 'invited_id' in params['shared_server']:
             response_servers = self.query(url, self._session.post, json=params, headers=headers)
