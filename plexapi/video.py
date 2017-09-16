@@ -438,6 +438,8 @@ class Episode(Video, Playable):
             parentKey (str): Key to this episodes :class:`~plexapi.video.Season`.
             parentRatingKey (int): Unique key for this episodes :class:`~plexapi.video.Season`.
             parentThumb (str): Key to this episodes thumbnail.
+            parentTitle (str): Name of this episode's season
+            title (str): Name of this Episode
             rating (float): Movie rating (7.9; 9.8; 8.1).
             viewOffset (int): View offset in milliseconds.
             year (int): Year episode was released.
@@ -470,6 +472,8 @@ class Episode(Video, Playable):
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
         self.parentThumb = data.attrib.get('parentThumb')
+        self.parentTitle = data.attrib.get('parentTitle')
+        self.title = data.attrib.get('title')
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
