@@ -507,6 +507,10 @@ class Episode(Video, Playable):
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
+		
+    def seasonEpisode(self):
+        """ Returns the s00e00 string containing the season and episode. """
+        return 'S%sE%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
 
     @property
     def seasonEpisode(self):
