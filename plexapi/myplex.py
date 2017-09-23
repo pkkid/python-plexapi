@@ -427,12 +427,9 @@ class MyPlexUser(PlexObject):
         except Exception:
             log.exception('Failed to get access token for %s' % self.title)
 
-    def shardedsections(self):
-        FRIENDSERVERS
-
 
 class Section(PlexObject):
-    """This referes to a shared section"""
+    """ This referes to a shared section. """
     TAG = 'Section'
 
     def _loadData(self, data):
