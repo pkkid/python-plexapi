@@ -11,6 +11,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, quote
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
+from plexapi.utils import joinArgs
 
 
 class MyPlexAccount(PlexObject):
@@ -148,7 +149,7 @@ class MyPlexAccount(PlexObject):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s' % (response.status_code, codename, errtext))
+            raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -216,14 +217,15 @@ class MyPlexAccount(PlexObject):
         url = url.format(userId=user.id)
         return self.query(url, self._session.delete)
 
-    def updateFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
-          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+    def updateFriend(self, user, server, sections=None, removeSections=False, allowSync=None, allowCameraUpload=None,
+                     allowChannels=None, filterMovies=None, filterTelevision=None, filterMusic=None):
         """ Update the specified user's share settings.
 
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
                 server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
                 sections: ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                removeSections (Bool): Set True to remove all shares. Supersedes sections.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
@@ -235,23 +237,55 @@ class MyPlexAccount(PlexObject):
                     ex: {'label':['foo']}
         """
         # Update friend servers
-        user = self.user(user)
+        response_filters = ''
+        response_servers = ''
+        user = self.user(user.username if isinstance(user, MyPlexUser) else user)
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
-        serverId = [s for s in user.servers if s.machineIdentifier == machineId][0].id
         sectionIds = self._getSectionIds(machineId, sections)
-        params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
         headers = {'Content-Type': 'application/json'}
-        url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
-        response_servers = self.query(url, self._session.put, json=params, headers=headers)
+
+        # Determine whether user has access to the shared server.
+        user_servers = [s for s in user.servers if s.machineIdentifier == machineId]
+        if user_servers and sectionIds:
+            serverId = user_servers[0].id
+            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
+            url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
+        else:
+            params = {'server_id': machineId,
+                      'shared_server': {'library_section_ids': sectionIds, "invited_id": user.id}}
+            url = self.FRIENDINVITE.format(machineId=machineId)
+
+        if sectionIds:
+            # Remove share sections, add shares to user without shares, or update shares
+            if removeSections is True:
+                response_servers = self.query(url, self._session.delete, json=params, headers=headers)
+            elif 'invited_id' in params.get('shared_server', ''):
+                response_servers = self.query(url, self._session.post, json=params, headers=headers)
+            else:
+                response_servers = self.query(url, self._session.put, json=params, headers=headers)
+        else:
+            log.warning('Section name, number of section object is required changing library sections')
+
         # Update friend filters
         url = self.FRIENDUPDATE.format(userId=user.id)
-        url += '?allowSync=%s' % ('1' if allowSync else '0')
-        url += '&allowCameraUpload=%s' % ('1' if allowCameraUpload else '0')
-        url += '&allowChannels=%s' % ('1' if allowChannels else '0')
-        url += '&filterMovies=%s' % quote(self._filterDictToStr(filterMovies or {}))
-        url += '&filterTelevision=%s' % quote(self._filterDictToStr(filterTelevision or {}))
-        url += '&filterMusic=%s' % quote(self._filterDictToStr(filterMusic or {}))
-        response_filters = self.query(url, self._session.put)
+        d = {}
+        if isinstance(allowSync, bool):
+            d['allowSync'] = '1' if allowSync else '0'
+        if isinstance(allowCameraUpload, bool):
+            d['allowCameraUpload'] = '1' if allowCameraUpload else '0'
+        if isinstance(allowChannels, bool):
+            d['allowChannels'] = '1' if allowChannels else '0'
+        if isinstance(filterMovies, dict):
+            d['filterMovies'] = self._filterDictToStr(filterMovies or {}) #'1' if allowChannels else '0'
+        if isinstance(filterTelevision, dict):
+            d['filterTelevision'] = self._filterDictToStr(filterTelevision or {})
+        if isinstance(allowChannels, dict):
+            d['filterMusic'] = self._filterDictToStr(filterMusic or {})
+
+        if d:
+            url += joinArgs(d)
+            response_filters = self.query(url, self._session.put)
+
         return response_servers, response_filters
 
     def user(self, username):
@@ -261,12 +295,14 @@ class MyPlexAccount(PlexObject):
                 username (str): Username, email or id of the user to return.
         """
         for user in self.users():
-            # Hhome users don't have email, username etc.
+            # Home users don't have email, username etc.
             if username.lower() == user.title.lower():
                 return user
+
             elif (user.username and user.email and user.id and username.lower() in
                  (user.username.lower(), user.email.lower(), str(user.id))):
                 return user
+
         raise NotFound('Unable to find user %s' % username)
 
     def users(self):
@@ -290,7 +326,7 @@ class MyPlexAccount(PlexObject):
             allSectionIds[elem.attrib.get('id', '').lower()] = elem.attrib.get('id')
             allSectionIds[elem.attrib.get('title', '').lower()] = elem.attrib.get('id')
             allSectionIds[elem.attrib.get('key', '').lower()] = elem.attrib.get('id')
-        log.info(allSectionIds)
+        log.debug(allSectionIds)
         # Convert passed in section items to section ids from above lookup
         sectionIds = []
         for section in sections:
@@ -387,11 +423,23 @@ class MyPlexUser(PlexObject):
     def get_token(self, machineIdentifier):
         try:
             for item in self._server.query(self._server.FRIENDINVITE.format(machineId=machineIdentifier)):
-                print(item.attrib.get('userID'), self.id)
                 if utils.cast(int, item.attrib.get('userID')) == self.id:
                     return item.attrib.get('accessToken')
         except Exception:
             log.exception('Failed to get access token for %s' % self.title)
+
+
+class Section(PlexObject):
+    """ This referes to a shared section. """
+    TAG = 'Section'
+
+    def _loadData(self, data):
+        self._data = data
+        self.sectionKey = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+        self.sectionId = data.attrib.get('id')
+        self.type = data.attrib.get('type')
+        self.shared = utils.cast(bool, data.attrib.get('shared'))
 
 
 class MyPlexServerShare(PlexObject):
@@ -410,6 +458,16 @@ class MyPlexServerShare(PlexObject):
         self.allLibraries = utils.cast(int, data.attrib.get('allLibraries'))
         self.owned = utils.cast(int, data.attrib.get('owned'))
         self.pending = utils.cast(int, data.attrib.get('pending'))
+
+    def sections(self):
+        url = MyPlexAccount.FRIENDSERVERS.format(machineId=self.machineIdentifier, serverId=self.id)
+        data = self._server.query(url)
+        sections = []
+        for section in data.iter('Section'):
+            if section:
+                sections.append(Section(self, section, url))
+
+        return sections
 
 
 class MyPlexResource(PlexObject):
