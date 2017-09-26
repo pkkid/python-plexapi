@@ -242,7 +242,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             chunksize (int): What chunksize read/write at the time.
             mocked (bool): Helper to do evertything except write the file.
             unpack (bool): Unpack the zip file.
-
+            showstatus (bool): Display progressbar.
         Example:
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
@@ -274,11 +274,16 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
     log.info('Downloading: %s', fullpath)
     if showstatus:
         bar = tqdm(unit='B', unit_scale=True)
+        print(bar)
     with open(fullpath, 'wb') as handle:
         for chunk in response.iter_content(chunk_size=chunksize):
             handle.write(chunk)
             if showstatus:
+                print(len(chunk))
                 bar.update(len(chunk))
+
+    if showstatus:
+        bar.close()
     # check we want to unzip the contents
     if fullpath.endswith('zip') and unpack:
         with zipfile.ZipFile(fullpath, 'r') as handle:
@@ -346,7 +351,12 @@ def choose(msg, items, attr):
     # Request choice from the user
     while True:
         try:
-            number = int(input('%s: ' % msg))
-            return items[number]
+            inp = input('%s: ' % msg)
+            if any(s in inp for s in (':', '::', '-')):
+                idx = slice(*map(lambda x: int(x.strip()) if x.strip() else None, inp.split(':')))
+                return items[idx]
+            else:
+                return items[int(inp)]
+
         except (ValueError, IndexError):
             pass
