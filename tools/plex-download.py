@@ -60,9 +60,13 @@ def get_item_from_url(url):
 
 if __name__ == '__main__':
     # Command line parser
+    from plexapi import CONFIG
+    from tqdm import tqdm
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-u', '--username', help='Your Plex username')
-    parser.add_argument('-p', '--password', help='Your Plex password')
+    parser.add_argument('-u', '--username', help='Your Plex username',
+                        default=CONFIG.get('auth.myplex_username'))
+    parser.add_argument('-p', '--password', help='Your Plex password',
+                        default=CONFIG.get('auth.myplex_password'))
     parser.add_argument('--url', default=None, help='Download from URL (only paste after !)')
     opts = parser.parse_args()
     # Search item to download
@@ -73,15 +77,40 @@ if __name__ == '__main__':
             for f in z.parts:
                 try:
                     # lets see if we can get the file without using pms.
-                    shutil.copyfile(f.file, os.getcwd())
+                    if os.path.exists(f.file):
+                        size = os.path.getsize(f.file)
+                        bar = tqdm(unit='B', unit_scale=True, total=size)
+
+                        def copy(src, dest, length=16 * 1024):
+                            try:
+                                fdest = os.path.join(dest, os.path.basename(src))
+                                with open(src, 'rb') as f_from:
+                                    with open(fdest, 'wb') as to:
+                                        while True:
+                                            buf = f_from.read(length)
+                                            bar.update(length)
+                                            if not buf:
+                                                break
+                                            to.write(buf)
+
+                                return fdest
+                            except Exception as e:
+                                raise IOError
+                            finally:
+                                bar.close()
+
+                        copy(f.file, os.getcwd())
+
+                    else:
+                        raise IOError
+
                 except IOError as e:
-                    print('no shutil', e)
-                    for filepath in i.download('./', showstatus=True):
-                        print('  %s' % filepath)
+                    print('Downloading from pms')
+                    # We do this manually since we dont want to add a progress to Episode etc
+                    filename = '%s.%s' % (i._prettyfilename(), f.container)
+                    url = i._server.url('%s?download=1' % f.key)
+                    filepath = utils.download(url, filename=filename, savepath=os.getcwd(),
+                                              session=i._server._session, showstatus=True)
+                    print('  %s' % filepath)
 
 
-        #print(help(i))
-        # Download the item
-        #print("Downloading '%s' from %s.." % (i._prettyfilename(), i._server.friendlyName))
-        #for filepath in i.download('./', showstatus=True):
-        #    print('  %s' % filepath)

@@ -247,6 +247,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
     """
+
     from plexapi import log
     # fetch the data to be saved
     session = session or requests.Session()
@@ -274,12 +275,11 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
     log.info('Downloading: %s', fullpath)
     if showstatus:
         bar = tqdm(unit='B', unit_scale=True)
-        print(bar)
+
     with open(fullpath, 'wb') as handle:
         for chunk in response.iter_content(chunk_size=chunksize):
             handle.write(chunk)
             if showstatus:
-                print(len(chunk))
                 bar.update(len(chunk))
 
     if showstatus:
@@ -288,7 +288,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
     if fullpath.endswith('zip') and unpack:
         with zipfile.ZipFile(fullpath, 'r') as handle:
             handle.extractall(savepath)
-    # finished; return fillpath
+
     return fullpath
 
 
