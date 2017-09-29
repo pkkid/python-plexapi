@@ -274,7 +274,8 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
     # save the file to disk
     log.info('Downloading: %s', fullpath)
     if showstatus:
-        bar = tqdm(unit='B', unit_scale=True)
+        bar = tqdm(desc=filename, unit='B', unit_scale=True,
+                   total=int(response.headers.get('content-length', 0)))
 
     with open(fullpath, 'wb') as handle:
         for chunk in response.iter_content(chunk_size=chunksize):
