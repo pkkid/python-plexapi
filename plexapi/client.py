@@ -9,7 +9,6 @@ from plexapi.base import PlexObject
 from plexapi.compat import ElementTree
 from plexapi.exceptions import BadRequest, Unsupported
 from plexapi.playqueue import PlayQueue
-from plexapi.utils import cast
 
 
 DEFAULT_MTYPE = 'video'
