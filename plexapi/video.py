@@ -44,7 +44,7 @@ class Video(PlexPartialObject):
     @property
     def isWatched(self):
         """ Returns True if this video is watched. """
-        return bool(self.viewCount > 0)
+        return bool(self.viewCount > 0) if self.viewCount else False
 
     @property
     def thumbUrl(self):
