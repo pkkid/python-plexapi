@@ -300,7 +300,7 @@ class PlexServer(PlexObject):
         """ Install the newest version of Plex Media Server. """
         # We can add this but dunno how useful this is since it sometimes
         # requires user action using a gui.
-        part = 'updater/apply'
+        part = '/updater/apply'
         release = self.check_for_update(force=True, download=True)
         if release and release.version != self.version:
             # figure out what method this is..
