@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import utils
+from plexapi import log, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -51,6 +51,15 @@ class Media(PlexObject):
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
         self.parts = self.findItems(data, MediaPart)
+
+    def delete(self):
+        part = self._initpath + '/media/%s' % self.id
+        try:
+            return self._server.query(part, method=self._server._session.delete)
+        except BadRequest:
+            log.error("Failed to delete %s. This could be because you havn't allowed "
+                      "items to be deleted" % part)
+            raise
 
 
 @utils.registerPlexObject
