@@ -34,7 +34,14 @@ def search_for_item(url=None):
     for i in items:
         if isinstance(i, Show):
             display = lambda i: '%s %s %s' % (i.grandparentTitle, i.seasonEpisode, i.title)
-            item = utils.choose('Choose episode', i.episodes(), display)
+            selected_eps = utils.choose('Choose episode', i.episodes(), display)
+            if isinstance(selected_eps, list):
+                item += selected_eps
+            else:
+                item.append(selected_eps)
+
+        else:
+            item.append(i)
 
     if not isinstance(item, list):
         item = [item]
@@ -72,45 +79,13 @@ if __name__ == '__main__':
     # Search item to download
     account = utils.getMyPlexAccount(opts)
     items = search_for_item(opts.url)
-    for i in items:
-        for z in i.media:
-            for f in z.parts:
-                try:
-                    # lets see if we can get the file without using pms.
-                    if os.path.exists(f.file):
-                        size = os.path.getsize(f.file)
-                        bar = tqdm(unit='B', unit_scale=True, total=size)
-
-                        def copy(src, dest, length=16 * 1024):
-                            try:
-                                fdest = os.path.join(dest, os.path.basename(src))
-                                with open(src, 'rb') as f_from:
-                                    with open(fdest, 'wb') as to:
-                                        while True:
-                                            buf = f_from.read(length)
-                                            bar.update(length)
-                                            if not buf:
-                                                break
-                                            to.write(buf)
-
-                                return fdest
-                            except Exception as e:
-                                raise IOError
-                            finally:
-                                bar.close()
-
-                        copy(f.file, os.getcwd())
-
-                    else:
-                        raise IOError
-
-                except IOError as e:
-                    print('Downloading from pms')
-                    # We do this manually since we dont want to add a progress to Episode etc
-                    filename = '%s.%s' % (i._prettyfilename(), f.container)
-                    url = i._server.url('%s?download=1' % f.key)
-                    filepath = utils.download(url, filename=filename, savepath=os.getcwd(),
-                                              session=i._server._session, showstatus=True)
-                    print('  %s' % filepath)
+    for item in items:
+        for part in item.iterParts():
+            # We do this manually since we dont want to add a progress to Episode etc
+            filename = '%s.%s' % (item._prettyfilename(), part.container)
+            url = item._server.url('%s?download=1' % part.key)
+            filepath = utils.download(url, filename=filename, savepath=os.getcwd(),
+                                      session=item._server._session, showstatus=True)
+            #print('  %s' % filepath)
 
 
