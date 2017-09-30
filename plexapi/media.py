@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import utils
+from plexapi import log, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -84,6 +84,16 @@ class MediaPart(PlexObject):
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
+
+    def delete(self):
+        log.debug('Deleting %s', self.file)
+        part = self._initpath + '/media/%s' % self.id
+        try:
+            return self._server.query(part, method=self._server._session.delete)
+        except BadRequest:
+            log.error("Failed to delete %s. This could be because you havn't allowed "
+                      "items to be deleted" % part)
+            raise
 
     def _buildStreams(self, data):
         streams = []
