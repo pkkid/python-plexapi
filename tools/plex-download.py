@@ -7,7 +7,11 @@ manually searching the items from the command line wizard.
 
 Original contribution by lad1337.
 """
-import argparse, re
+import argparse
+import os
+import re
+import shutil
+
 from plexapi import utils
 from plexapi.compat import unquote
 from plexapi.video import Episode, Movie, Show
@@ -17,15 +21,31 @@ VALID_TYPES = (Movie, Episode, Show)
 
 def search_for_item(url=None):
     if url: return get_item_from_url(opts.url)
-    server = utils.choose('Choose a Server', account.resources(), 'name').connect()
+    servers = [s for s in account.resources() if 'server' in s.provides]
+    server = utils.choose('Choose a Server', servers, 'name').connect()
     query = input('What are you looking for?: ')
+    item  = []
     items = [i for i in server.search(query) if i.__class__ in VALID_TYPES]
-    item = utils.choose('Choose result', items, lambda x: '(%s) %s' % (x.type.title(), x.title[0:60]))
-    if isinstance(item, Show):
-        display = lambda i: '%s %s %s' % (i.grandparentTitle, i.seasonEpisode, i.title)
-        item = utils.choose('Choose episode', item.episodes(), display)
-    if not isinstance(item, (Movie, Episode)):
-        raise SystemExit('Unable to download %s' % item.__class__.__name__)
+    items = utils.choose('Choose result', items, lambda x: '(%s) %s' % (x.type.title(), x.title[0:60]))
+
+    if not isinstance(items, list):
+        items = [items]
+
+    for i in items:
+        if isinstance(i, Show):
+            display = lambda i: '%s %s %s' % (i.grandparentTitle, i.seasonEpisode, i.title)
+            selected_eps = utils.choose('Choose episode', i.episodes(), display)
+            if isinstance(selected_eps, list):
+                item += selected_eps
+            else:
+                item.append(selected_eps)
+
+        else:
+            item.append(i)
+
+    if not isinstance(item, list):
+        item = [item]
+
     return item
 
 
@@ -47,16 +67,25 @@ def get_item_from_url(url):
 
 if __name__ == '__main__':
     # Command line parser
+    from plexapi import CONFIG
+    from tqdm import tqdm
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--username', help='Your Plex username')
-    parser.add_argument('--password', help='Your Plex password')
+    parser.add_argument('-u', '--username', help='Your Plex username',
+                        default=CONFIG.get('auth.myplex_username'))
+    parser.add_argument('-p', '--password', help='Your Plex password',
+                        default=CONFIG.get('auth.myplex_password'))
     parser.add_argument('--url', default=None, help='Download from URL (only paste after !)')
     opts = parser.parse_args()
     # Search item to download
     account = utils.getMyPlexAccount(opts)
-    item = search_for_item(opts.url)
-    # Download the item
-    print("Downloading '%s' from %s.." % (item._prettyfilename(), item._server.friendlyName))
-    filepaths = item.download('./', showstatus=True)
-    for filepath in filepaths:
-        print('  %s' % filepath)
+    items = search_for_item(opts.url)
+    for item in items:
+        for part in item.iterParts():
+            # We do this manually since we dont want to add a progress to Episode etc
+            filename = '%s.%s' % (item._prettyfilename(), part.container)
+            url = item._server.url('%s?download=1' % part.key)
+            filepath = utils.download(url, filename=filename, savepath=os.getcwd(),
+                                      session=item._server._session, showstatus=True)
+            #print('  %s' % filepath)
+
+

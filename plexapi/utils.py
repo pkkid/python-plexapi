@@ -243,11 +243,12 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             mocked (bool): Helper to do evertything except write the file.
             unpack (bool): Unpack the zip file.
             showstatus(bool): Display a progressbar.
-
+            
         Example:
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
     """
+
     from plexapi import log
     # fetch the data to be saved
     session = session or requests.Session()
@@ -356,7 +357,12 @@ def choose(msg, items, attr):
     # Request choice from the user
     while True:
         try:
-            number = int(input('%s: ' % msg))
-            return items[number]
+            inp = input('%s: ' % msg)
+            if any(s in inp for s in (':', '::', '-')):
+                idx = slice(*map(lambda x: int(x.strip()) if x.strip() else None, inp.split(':')))
+                return items[idx]
+            else:
+                return items[int(inp)]
+
         except (ValueError, IndexError):
             pass

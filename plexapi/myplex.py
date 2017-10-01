@@ -8,7 +8,7 @@ from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.client import PlexClient
-from plexapi.compat import ElementTree, quote
+from plexapi.compat import ElementTree
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.utils import joinArgs
@@ -243,7 +243,6 @@ class MyPlexAccount(PlexObject):
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
         sectionIds = self._getSectionIds(machineId, sections)
         headers = {'Content-Type': 'application/json'}
-
         # Determine whether user has access to the shared server.
         user_servers = [s for s in user.servers if s.machineIdentifier == machineId]
         if user_servers and sectionIds:
@@ -251,12 +250,11 @@ class MyPlexAccount(PlexObject):
             params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
             url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
         else:
-            params = {'server_id': machineId,
-                      'shared_server': {'library_section_ids': sectionIds, "invited_id": user.id}}
+            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds,
+                "invited_id": user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
-
+        # Remove share sections, add shares to user without shares, or update shares
         if sectionIds:
-            # Remove share sections, add shares to user without shares, or update shares
             if removeSections is True:
                 response_servers = self.query(url, self._session.delete, json=params, headers=headers)
             elif 'invited_id' in params.get('shared_server', ''):
@@ -265,27 +263,24 @@ class MyPlexAccount(PlexObject):
                 response_servers = self.query(url, self._session.put, json=params, headers=headers)
         else:
             log.warning('Section name, number of section object is required changing library sections')
-
         # Update friend filters
         url = self.FRIENDUPDATE.format(userId=user.id)
-        d = {}
+        params = {}
         if isinstance(allowSync, bool):
-            d['allowSync'] = '1' if allowSync else '0'
+            params['allowSync'] = '1' if allowSync else '0'
         if isinstance(allowCameraUpload, bool):
-            d['allowCameraUpload'] = '1' if allowCameraUpload else '0'
+            params['allowCameraUpload'] = '1' if allowCameraUpload else '0'
         if isinstance(allowChannels, bool):
-            d['allowChannels'] = '1' if allowChannels else '0'
+            params['allowChannels'] = '1' if allowChannels else '0'
         if isinstance(filterMovies, dict):
-            d['filterMovies'] = self._filterDictToStr(filterMovies or {}) #'1' if allowChannels else '0'
+            params['filterMovies'] = self._filterDictToStr(filterMovies or {})  # '1' if allowChannels else '0'
         if isinstance(filterTelevision, dict):
-            d['filterTelevision'] = self._filterDictToStr(filterTelevision or {})
+            params['filterTelevision'] = self._filterDictToStr(filterTelevision or {})
         if isinstance(allowChannels, dict):
-            d['filterMusic'] = self._filterDictToStr(filterMusic or {})
-
-        if d:
-            url += joinArgs(d)
+            params['filterMusic'] = self._filterDictToStr(filterMusic or {})
+        if params:
+            url += joinArgs(params)
             response_filters = self.query(url, self._session.put)
-
         return response_servers, response_filters
 
     def user(self, username):
