@@ -356,7 +356,7 @@ class LibrarySection(PlexObject):
 
     def edit(self, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
-            
+
             Parameters:
                 kwargs (dict): Dict of settings to edit.
         """
@@ -578,7 +578,7 @@ class ShowSection(LibrarySection):
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid')
+                       'guid', 'duplicate')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
