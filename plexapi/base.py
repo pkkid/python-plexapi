@@ -488,6 +488,11 @@ class Playable(object):
             for part in item.parts:
                 yield part
 
+    def split(self):
+        """Split a duplicate."""
+        key = '%s/split' % self.key
+        return self._server.query(key)
+
     def play(self, client):
         """ Start playback on the specified client.
 

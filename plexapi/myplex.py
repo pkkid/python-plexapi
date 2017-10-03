@@ -361,6 +361,22 @@ class MyPlexAccount(PlexObject):
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 
+    def opt(self, playback=None, library=None):
+        """Opt in or out of sharing stuff with plex. See
+
+           https://www.plex.tv/about/privacy-legal/
+
+        """
+        params = {}
+        if playback is not None:
+            params['optOutPlayback'] = int(playback)
+        if library is not None:
+            params['optOutLibraryStats'] = int(library)
+
+        url = 'https://plex.tv/api/v2/user/privacy'
+
+        return self.query(url, method=self._session.put, **dict(params=params))
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
