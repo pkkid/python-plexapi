@@ -32,11 +32,24 @@ class Playlist(PlexPartialObject, Playable):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
+        self._items = None # cache for self.items
+
+    def __len__(self):
+        return len(self.items())
+
+    def __contains__(self, other):
+        return any(i.key == other.key for i in self.items())
+
+    def __getitem__(self, key):
+        return self.items()[key]
 
     def items(self):
         """ Returns a list of all items in the playlist. """
-        key = '%s/items' % self.key
-        return self.fetchItems(key)
+        if self._items is None:
+            key = '%s/items' % self.key
+            items = self.fetchItems(key)
+            self._items = items
+        return self._items
 
     def addItems(self, items):
         """ Add items to a playlist. """
