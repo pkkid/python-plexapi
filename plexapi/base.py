@@ -271,7 +271,7 @@ class PlexPartialObject(PlexObject):
 
     def __getattribute__(self, attr):
         # Dragons inside.. :-/
-        value = utils.getattributeOrNone(PlexPartialObject, self, attr)
+        value = super(PlexPartialObject, self).__getattribute__(attr)
         # Check a few cases where we dont want to reload
         if attr == 'key' or attr.startswith('_'): return value
         if value not in (None, []): return value
@@ -283,7 +283,8 @@ class PlexPartialObject(PlexObject):
         log.warning("Reloading %s for attr '%s'" % (objname, attr))
         # Reload and return the value
         self.reload()
-        return utils.getattributeOrNone(PlexPartialObject, self, attr)
+        return super(PlexPartialObject, self).__getattribute__(attr)
+
 
     def analyze(self):
         """ Tell Plex Media Server to performs analysis on it this item to gather
