@@ -9,6 +9,9 @@ def test_video_Movie(movies, movie):
     movie2 = movies.get(movie.title)
     assert movie2.title == movie.title
 
+def test_video_Movie_attributeerror(movie):
+    with pytest.raises(AttributeError):
+        movie.asshat
 
 def test_video_Movie_delete(monkeypatch, movie):
     monkeypatch.delattr('requests.sessions.Session.request')
