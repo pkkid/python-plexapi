@@ -285,7 +285,6 @@ class PlexPartialObject(PlexObject):
         self.reload()
         return super(PlexPartialObject, self).__getattribute__(attr)
 
-
     def analyze(self):
         """ Tell Plex Media Server to performs analysis on it this item to gather
             information. Analysis includes:
