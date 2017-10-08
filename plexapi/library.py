@@ -550,7 +550,7 @@ class MovieSection(LibrarySection):
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
                 'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
-                'director', 'actor', 'country', 'studio', 'resolution', 'guid')
+                'director', 'actor', 'country', 'studio', 'resolution', 'guid', 'label')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
                 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                 'mediaHeight', 'duration')
@@ -559,7 +559,7 @@ class MovieSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
                        'collection', 'director', 'actor', 'country', 'studio', 'resolution',
-                       'guid')
+                       'guid', 'label')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                     'mediaHeight', 'duration')
     TAG = 'Directory'
@@ -571,14 +571,14 @@ class ShowSection(LibrarySection):
 
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'year', 'genre', 'contentRating', 'network', 'collection', 'guid')
+                'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
                 'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate')
+                       'guid', 'duplicate', 'label')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
