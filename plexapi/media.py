@@ -85,14 +85,18 @@ class MediaPart(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.audioProfile = data.attrib.get('audioProfile')
         self.container = data.attrib.get('container')
         self.duration = cast(int, data.attrib.get('duration'))
         self.file = data.attrib.get('file')
+        self.has64bitOffsets = data.attrib.get('has64bitOffsets')
         self.id = cast(int, data.attrib.get('id'))
-        self.indexes = data.attrib.get('indexes')
+        self.indexes = data.attrib.get('indexes') # remove?
+        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
+        self.videoProfile = data.attrib.get('videoProfile')
 
     def _buildStreams(self, data):
         streams = []
@@ -329,6 +333,7 @@ class MediaTag(PlexObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = cast(int, data.attrib.get('id'))
+        self.filter = data.attrib.get('filter')
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
         # additional attributes only from hub search
