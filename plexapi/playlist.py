@@ -32,7 +32,7 @@ class Playlist(PlexPartialObject, Playable):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
-        self._items = None # cache for self.items
+        self._items = None  # cache for self.items
 
     def __len__(self):
         return len(self.items())
