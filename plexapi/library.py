@@ -390,6 +390,11 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/onDeck' % self.key
         return self.fetchItems(key)
 
+    def newest(self):
+        """ Returns a list for the latest released media items."""
+        key = '/library/sections/%s/newest' % self.key
+        return self.fetchItems(key)
+
     def recentlyAdded(self, maxresults=50):
         """ Returns a list of media items recently added from this library section.
 
@@ -581,7 +586,7 @@ class ShowSection(LibrarySection):
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label')
+                       'guid', 'duplicate', 'label', 'episode.resolution') # this need more stuff. and tests
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
@@ -602,6 +607,14 @@ class ShowSection(LibrarySection):
                 maxresults (int): Max number of items to return (default 50).
         """
         return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
+
+    def recentlyViewed(self):
+        key = '/library/sections/%s/recentlyViewed' % self.key
+        return self.fetchItems(key)
+
+    def recentlyViewedShows(self):
+        key = '/library/sections/%s/recentlyViewedShows' % self.key
+        return self.fetchItems(key)
 
 
 class MusicSection(LibrarySection):
