@@ -228,6 +228,7 @@ class Show(Video):
         self.index = data.attrib.get('index')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.locations = self.listAttrs(data, 'path', etag='Location')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating'))
@@ -345,6 +346,7 @@ class Season(Video):
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
         self.parentTitle = data.attrib.get('parentTitle')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
 
     def __repr__(self):

@@ -23,8 +23,11 @@ class Library(PlexObject):
     def _loadData(self, data):
         self._data = data
         self._sectionsByID = {}  # cached Section UUIDs
+        self.art = data.attrib.get('art')
+        self.content = data.attrib.get('content')
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.size = data.attrib.get('size')
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
 
@@ -616,6 +619,9 @@ class MusicSection(LibrarySection):
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TAG = 'Directory'
     TYPE = 'artist'
+
+    def _loadData(self, data):
+        self.enableAutoPhotoTags = data.attrib.get('enableAutoPhotoTags')
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
