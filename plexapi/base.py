@@ -272,6 +272,9 @@ class PlexPartialObject(PlexObject):
     def __hash__(self):
         return hash(repr(self))
 
+    def __iter__(self):
+        yield self
+
     def __getattribute__(self, attr):
         # Dragons inside.. :-/
         value = utils.getattributeOrNone(PlexPartialObject, self, attr)

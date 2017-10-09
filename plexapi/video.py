@@ -24,6 +24,7 @@ class Video(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
@@ -214,6 +215,10 @@ class Show(Video):
     TAG = 'Directory'
     TYPE = 'show'
 
+    def __iter__(self):
+        for season in self.seasons():
+            yield season
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
@@ -334,6 +339,10 @@ class Season(Video):
     """
     TAG = 'Directory'
     TYPE = 'season'
+
+    def __iter__(self):
+        for episode in self.episodes():
+            yield episode
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
