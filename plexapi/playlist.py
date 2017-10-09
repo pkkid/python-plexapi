@@ -66,24 +66,32 @@ class Playlist(PlexPartialObject, Playable):
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys)
         }))
-        return self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def removeItem(self, item):
         """ Remove a file from a playlist. """
         key = '%s/items/%s' % (self.key, item.playlistItemID)
-        return self._server.query(key, method=self._server._session.delete)
+        result = self._server.query(key, method=self._server._session.delete)
+        self.reload()
+        return result
 
     def moveItem(self, item, after=None):
         """ Move a to a new position in playlist. """
         key = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
             key += '?after=%s' % after.playlistItemID
-        return self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def edit(self, title=None, summary=None):
         """ Edit playlist. """
         key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title': title, 'summary': summary}))
-        return self._server.query(key, method=self._server._session.put)
+        result =  self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def delete(self):
         """ Delete playlist. """
