@@ -179,7 +179,7 @@ class PlexAttributes():
         # TODO: Get plexattrs._parse_sync() working.
         pass
 
-    def _load_attrs(self, obj, cat=None):
+    def _load_attrs(self, obj, cat=None, url=None):
         if isinstance(obj, (list, tuple)):
             return [self._parse_objects(item, cat) for item in obj]
         self._parse_objects(obj, cat)

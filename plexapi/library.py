@@ -578,15 +578,16 @@ class ShowSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched', 'year', 'genre',
+                                         'contentRating', 'network', 'collection','guid', 'duplicate', 'label',
+                                         'episode.resolution')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
                 'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label', 'episode.resolution') # this need more stuff. and tests
+                       'guid', 'duplicate', 'label', 'episode.resolution') # <-this need more stuff. and tests
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'

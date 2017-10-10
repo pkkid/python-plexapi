@@ -96,7 +96,7 @@ class MediaPart(PlexObject):
         self.file = data.attrib.get('file')
         self.has64bitOffsets = data.attrib.get('has64bitOffsets')
         self.id = cast(int, data.attrib.get('id'))
-        #self.indexes = data.attrib.get('indexes') # remove?
+        self.indexes = data.attrib.get('indexes')
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
