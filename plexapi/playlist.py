@@ -89,7 +89,7 @@ class Playlist(PlexPartialObject, Playable):
     def edit(self, title=None, summary=None):
         """ Edit playlist. """
         key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title': title, 'summary': summary}))
-        result =  self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
         self.reload()
         return result
 
