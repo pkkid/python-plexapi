@@ -491,7 +491,7 @@ class Playable(object):
     def split(self):
         """Split a duplicate."""
         key = '%s/split' % self.key
-        return self._server.query(key)
+        return self._server.query(key, method=self._server._session.put)
 
     def play(self, client):
         """ Start playback on the specified client.
