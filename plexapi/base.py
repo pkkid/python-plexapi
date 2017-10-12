@@ -155,13 +155,22 @@ class PlexObject(object):
             kwargs['etag'] = cls.TAG
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
+
         # loop through all data elements to find matches
         items = []
-        for elem in data:
-            if self._checkAttrs(elem, **kwargs):
-                item = self._buildItemOrNone(elem, cls, initpath)
-                if item is not None:
-                    items.append(item)
+        if len(kwargs) == 1:
+            etag = kwargs['etag']
+            for elem in data:
+                if etag == elem.attrib.get('etag'):
+                    item = self._buildItemOrNone(elem, cls, initpath)
+                    if item is not None:
+                        items.append(item)
+        else:
+            for elem in data:
+                if self._checkAttrs(elem, **kwargs):
+                    item = self._buildItemOrNone(elem, cls, initpath)
+                    if item is not None:
+                        items.append(item)
         return items
 
     def firstAttr(self, *attrs):
@@ -208,6 +217,10 @@ class PlexObject(object):
         return all(attrsFound.values())
 
     def _getAttrOperator(self, attr):
+        # etag is used 99% of the time so lets check that first.
+        if attr == 'etag':
+            return attr, 'exact', OPERATORS['exact']
+
         for op, operator in OPERATORS.items():
             if attr.endswith('__%s' % op):
                 attr = attr.rsplit('__', 1)[0]
@@ -217,6 +230,9 @@ class PlexObject(object):
 
     def _getAttrValue(self, elem, attrstr, results=None):
         # log.debug('Fetching %s in %s', attrstr, elem.tag)
+        # check were looking for the tag
+        if attrstr.lower() == 'etag':
+            return [elem.tag]
         parts = attrstr.split('__', 1)
         attr = parts[0]
         attrstr = parts[1] if len(parts) == 2 else None
@@ -225,9 +241,7 @@ class PlexObject(object):
             for child in [c for c in elem if c.tag.lower() == attr.lower()]:
                 results += self._getAttrValue(child, attrstr, results)
             return [r for r in results if r is not None]
-        # check were looking for the tag
-        if attr.lower() == 'etag':
-            return [elem.tag]
+
         # loop through attrs so we can perform case-insensative match
         for _attr, value in elem.attrib.items():
             if attr.lower() == _attr.lower():
