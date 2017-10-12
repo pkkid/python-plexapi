@@ -362,19 +362,15 @@ class MyPlexAccount(PlexObject):
         return self._webhooks
 
     def optOut(self, playback=None, library=None):
-        """Opt in or out of sharing stuff with plex. See
-
-           https://www.plex.tv/about/privacy-legal/
-
+        """ Opt in or out of sharing stuff with plex.
+            See: https://www.plex.tv/about/privacy-legal/
         """
         params = {}
         if playback is not None:
             params['optOutPlayback'] = int(playback)
         if library is not None:
             params['optOutLibraryStats'] = int(library)
-
         url = 'https://plex.tv/api/v2/user/privacy'
-
         return self.query(url, method=self._session.put, params=params)
 
 
@@ -477,7 +473,6 @@ class MyPlexServerShare(PlexObject):
         for section in data.iter('Section'):
             if section:
                 sections.append(Section(self, section, url))
-
         return sections
 
 
