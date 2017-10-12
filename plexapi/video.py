@@ -242,6 +242,7 @@ class Show(Video):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.genres = self.findItems(data, media.Genre)
         self.roles = self.findItems(data, media.Role)
+        self.labels = self.findItems(data, media.Label)
 
     @property
     def actors(self):
