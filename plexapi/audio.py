@@ -78,6 +78,10 @@ class Artist(Audio):
         self.similar = self.findItems(data, media.Similar)
         self.collections = self.findItems(data, media.Collection)
 
+    def __iter__(self):
+        for album in self.albums():
+            yield album
+
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
 
@@ -150,6 +154,10 @@ class Album(Audio):
     """
     TAG = 'Directory'
     TYPE = 'album'
+
+    def __iter__(self):
+        for track in self.tracks:
+            yield track
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """

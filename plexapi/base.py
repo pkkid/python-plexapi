@@ -269,6 +269,12 @@ class PlexPartialObject(PlexObject):
     def __eq__(self, other):
         return other is not None and self.key == other.key
 
+    def __hash__(self):
+        return hash(repr(self))
+
+    def __iter__(self):
+        yield self
+
     def __getattribute__(self, attr):
         # Dragons inside.. :-/
         value = utils.getattributeOrNone(PlexPartialObject, self, attr)

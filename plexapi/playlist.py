@@ -32,11 +32,24 @@ class Playlist(PlexPartialObject, Playable):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
+        self._items = None  # cache for self.items
+
+    def __len__(self):
+        return len(self.items())
+
+    def __contains__(self, other):
+        return any(i.key == other.key for i in self.items())
+
+    def __getitem__(self, key):
+        return self.items()[key]
 
     def items(self):
         """ Returns a list of all items in the playlist. """
-        key = '%s/items' % self.key
-        return self.fetchItems(key)
+        if self._items is None:
+            key = '%s/items' % self.key
+            items = self.fetchItems(key)
+            self._items = items
+        return self._items
 
     def addItems(self, items):
         """ Add items to a playlist. """
@@ -53,24 +66,32 @@ class Playlist(PlexPartialObject, Playable):
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys)
         }))
-        return self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def removeItem(self, item):
         """ Remove a file from a playlist. """
         key = '%s/items/%s' % (self.key, item.playlistItemID)
-        return self._server.query(key, method=self._server._session.delete)
+        result = self._server.query(key, method=self._server._session.delete)
+        self.reload()
+        return result
 
     def moveItem(self, item, after=None):
         """ Move a to a new position in playlist. """
         key = '%s/items/%s/move' % (self.key, item.playlistItemID)
         if after:
             key += '?after=%s' % after.playlistItemID
-        return self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def edit(self, title=None, summary=None):
         """ Edit playlist. """
         key = '/library/metadata/%s%s' % (self.ratingKey, utils.joinArgs({'title': title, 'summary': summary}))
-        return self._server.query(key, method=self._server._session.put)
+        result = self._server.query(key, method=self._server._session.put)
+        self.reload()
+        return result
 
     def delete(self):
         """ Delete playlist. """
