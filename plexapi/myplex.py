@@ -145,7 +145,7 @@ class MyPlexAccount(PlexObject):
         allheaders = BASE_HEADERS.copy()
         allheaders.update(headers or {})
         response = method(url, headers=allheaders, timeout=timeout, **kwargs)
-        if response.status_code not in (200, 201):
+        if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
@@ -361,6 +361,18 @@ class MyPlexAccount(PlexObject):
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 
+    def optOut(self, playback=None, library=None):
+        """ Opt in or out of sharing stuff with plex.
+            See: https://www.plex.tv/about/privacy-legal/
+        """
+        params = {}
+        if playback is not None:
+            params['optOutPlayback'] = int(playback)
+        if library is not None:
+            params['optOutLibraryStats'] = int(library)
+        url = 'https://plex.tv/api/v2/user/privacy'
+        return self.query(url, method=self._session.put, params=params)
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
@@ -461,7 +473,6 @@ class MyPlexServerShare(PlexObject):
         for section in data.iter('Section'):
             if section:
                 sections.append(Section(self, section, url))
-
         return sections
 
 
