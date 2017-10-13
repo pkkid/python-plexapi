@@ -103,7 +103,7 @@ def test_audio_Album_tracks(album):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None
@@ -138,7 +138,7 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None
@@ -221,7 +221,7 @@ def test_audio_Track_attrs(album):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
     assert track.username is None

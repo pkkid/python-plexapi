@@ -440,7 +440,7 @@ class Playable(object):
             username (str): Username of the person playing this item (for active sessions).
             players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
             session (:class:`~plexapi.media.Session`): Session object, for a playing media file.
-            transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
+            transcodeSessions (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).

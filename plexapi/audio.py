@@ -246,7 +246,7 @@ class Track(Audio, Playable):
             sessionKey (int): Session Key (active sessions only).
             username (str): Username of person playing this track (active sessions only).
             player (str): :class:`~plexapi.client.PlexClient` for playing track (active sessions only).
-            transcodeSession (None): :class:`~plexapi.media.TranscodeSession` for playing
+            transcodeSessions (None): :class:`~plexapi.media.TranscodeSession` for playing
                 track (active sessions only).
     """
     TAG = 'Track'

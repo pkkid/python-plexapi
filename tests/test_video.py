@@ -109,7 +109,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_thumb(movie.thumb)
     assert movie.title == 'Sita Sings the Blues'
     assert movie.titleSort == 'Sita Sings the Blues'
-    assert movie.transcodeSession is None
+    assert not movie.transcodeSessions
     assert movie.type == 'movie'
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.userRating is None
@@ -431,7 +431,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(episode.thumb, contains='/thumb/')
     assert episode.title == 'Winter Is Coming'
     assert episode.titleSort == 'Winter Is Coming'
-    assert episode.transcodeSession is None
+    assert not episode.transcodeSessions
     assert episode.type == 'episode'
     assert utils.is_datetime(episode.updatedAt)
     assert episode.username is None
