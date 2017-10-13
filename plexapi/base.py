@@ -153,12 +153,12 @@ class PlexObject(object):
         # filter on cls attrs if specified
         if cls and cls.TAG and 'tag' not in kwargs:
             kwargs['etag'] = cls.TAG
+
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
 
-        # loop through all data elements to find matches
         items = []
-        if len(kwargs) == 1:
+        if len(kwargs) == 1 and 'etag' in kwargs:
             etag = kwargs['etag']
             for elem in data:
                 if etag == elem.attrib.get('etag'):
