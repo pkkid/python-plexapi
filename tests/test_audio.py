@@ -96,7 +96,6 @@ def test_audio_Album_tracks(album):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
@@ -132,7 +131,6 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
@@ -213,7 +211,6 @@ def test_audio_Track_attrs(album):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
     assert track.ratingCount == 9

@@ -93,7 +93,6 @@ def test_video_Movie_attrs(movies):
     assert movie.listType == 'video'
     assert movie.originalTitle is None
     assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2008-01-11', '2008-02-11')
-    assert movie.player is None
     assert movie.playlistItemID is None
     if movie.primaryExtraKey:
         assert utils.is_metadata(movie.primaryExtraKey)
@@ -425,7 +424,6 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     assert utils.is_metadata(episode.parentThumb, contains='/thumb/')
-    assert episode.player is None
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
