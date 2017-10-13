@@ -10,6 +10,10 @@ def test_video_Movie(movies, movie):
     assert movie2.title == movie.title
 
 
+def test_video_ne(movies):
+    assert len(movies.fetchItems('/library/sections/7/all', title__ne='Sintel')) == 3
+
+
 def test_video_Movie_delete(monkeypatch, movie):
     monkeypatch.delattr('requests.sessions.Session.request')
     with pytest.raises(AttributeError):
