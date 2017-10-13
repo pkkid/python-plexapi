@@ -113,7 +113,6 @@ def test_video_Movie_attrs(movies):
     assert movie.type == 'movie'
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.userRating is None
-    assert movie.username is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
@@ -434,7 +433,6 @@ def test_video_Episode_attrs(episode):
     assert not episode.transcodeSessions
     assert episode.type == 'episode'
     assert utils.is_datetime(episode.updatedAt)
-    assert episode.username is None
     assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
     assert [i.tag for i in episode.writers] == ['David Benioff', 'D. B. Weiss']

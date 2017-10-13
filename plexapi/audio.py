@@ -244,7 +244,7 @@ class Track(Audio, Playable):
             viewOffset (int): Unknown
             year (int): Year this track was released.
             sessionKey (int): Session Key (active sessions only).
-            username (str): Username of person playing this track (active sessions only).
+            usernames (str): Username of person playing this track (active sessions only).
             player (str): :class:`~plexapi.client.PlexClient` for playing track (active sessions only).
             transcodeSessions (None): :class:`~plexapi.media.TranscodeSession` for playing
                 track (active sessions only).

@@ -437,7 +437,7 @@ class Playable(object):
 
         Attributes:
             sessionKey (int): Active session key.
-            username (str): Username of the person playing this item (for active sessions).
+            usernames (str): Username of the person playing this item (for active sessions).
             players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
             session (:class:`~plexapi.media.Session`): Session object, for a playing media file.
             transcodeSessions (:class:`~plexapi.media.TranscodeSession`): Transcode Session object

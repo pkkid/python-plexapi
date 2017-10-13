@@ -106,7 +106,6 @@ def test_audio_Album_tracks(album):
     assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
 
@@ -141,7 +140,6 @@ def test_audio_Album_track(album, track=None):
     assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert media.aspectRatio is None
@@ -224,7 +222,6 @@ def test_audio_Track_attrs(album):
     assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert track.viewedAt is None
