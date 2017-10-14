@@ -96,7 +96,6 @@ def test_audio_Album_tracks(album):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
@@ -104,10 +103,9 @@ def test_audio_Album_tracks(album):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
 
@@ -132,7 +130,6 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
@@ -140,10 +137,9 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert media.aspectRatio is None
@@ -213,7 +209,6 @@ def test_audio_Track_attrs(album):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    assert track.player is None
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
     assert track.ratingCount == 9
@@ -224,10 +219,9 @@ def test_audio_Track_attrs(album):
     assert utils.is_metadata(track.thumb, contains='/thumb/')
     assert track.title == 'Holy Moment'
     assert track.titleSort == 'Holy Moment'
-    assert track.transcodeSession is None
+    assert not track.transcodeSessions
     assert track.type == 'track'
     assert utils.is_datetime(track.updatedAt)
-    assert track.username is None
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
     assert track.viewedAt is None

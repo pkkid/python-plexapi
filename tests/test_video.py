@@ -9,6 +9,9 @@ def test_video_Movie(movies, movie):
     movie2 = movies.get(movie.title)
     assert movie2.title == movie.title
 
+def test_video_Movie_attributeerror(movie):
+    with pytest.raises(AttributeError):
+        movie.asshat
 
 def test_video_Movie_delete(monkeypatch, movie):
     monkeypatch.delattr('requests.sessions.Session.request')
@@ -90,7 +93,6 @@ def test_video_Movie_attrs(movies):
     assert movie.listType == 'video'
     assert movie.originalTitle is None
     assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2008-01-11', '2008-02-11')
-    assert movie.player is None
     assert movie.playlistItemID is None
     if movie.primaryExtraKey:
         assert utils.is_metadata(movie.primaryExtraKey)
@@ -107,11 +109,10 @@ def test_video_Movie_attrs(movies):
     assert utils.is_thumb(movie.thumb)
     assert movie.title == 'Sita Sings the Blues'
     assert movie.titleSort == 'Sita Sings the Blues'
-    assert movie.transcodeSession is None
+    assert not movie.transcodeSessions
     assert movie.type == 'movie'
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.userRating is None
-    assert movie.username is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
@@ -422,7 +423,6 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     assert utils.is_metadata(episode.parentThumb, contains='/thumb/')
-    assert episode.player is None
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
@@ -430,10 +430,9 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(episode.thumb, contains='/thumb/')
     assert episode.title == 'Winter Is Coming'
     assert episode.titleSort == 'Winter Is Coming'
-    assert episode.transcodeSession is None
+    assert not episode.transcodeSessions
     assert episode.type == 'episode'
     assert utils.is_datetime(episode.updatedAt)
-    assert episode.username is None
     assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
     assert [i.tag for i in episode.writers] == ['David Benioff', 'D. B. Weiss']

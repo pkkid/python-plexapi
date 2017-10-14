@@ -277,7 +277,7 @@ class PlexPartialObject(PlexObject):
 
     def __getattribute__(self, attr):
         # Dragons inside.. :-/
-        value = utils.getattributeOrNone(PlexPartialObject, self, attr)
+        value = super(PlexPartialObject, self).__getattribute__(attr)
         # Check a few cases where we dont want to reload
         if attr == 'key' or attr.startswith('_'): return value
         if value not in (None, []): return value
@@ -289,7 +289,7 @@ class PlexPartialObject(PlexObject):
         log.warning("Reloading %s for attr '%s'" % (objname, attr))
         # Reload and return the value
         self.reload()
-        return utils.getattributeOrNone(PlexPartialObject, self, attr)
+        return super(PlexPartialObject, self).__getattribute__(attr)
 
     def analyze(self):
         """ Tell Plex Media Server to performs analysis on it this item to gather
@@ -437,10 +437,10 @@ class Playable(object):
 
         Attributes:
             sessionKey (int): Active session key.
-            username (str): Username of the person playing this item (for active sessions).
+            usernames (str): Username of the person playing this item (for active sessions).
             players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
             session (:class:`~plexapi.media.Session`): Session object, for a playing media file.
-            transcodeSession (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
+            transcodeSessions (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
