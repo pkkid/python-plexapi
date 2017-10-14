@@ -11,6 +11,7 @@ OPERATORS = {
     'iexact': lambda v, q: v.lower() == q.lower(),
     'contains': lambda v, q: q in v,
     'icontains': lambda v, q: q.lower() in v.lower(),
+    'ne': lambda v, q: v != q,
     'in': lambda v, q: v in q,
     'gt': lambda v, q: v > q,
     'gte': lambda v, q: v >= q,
