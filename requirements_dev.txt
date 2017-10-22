@@ -1,6 +1,6 @@
 #---------------------------------------------------------
 # PlexAPI requirements to run py.test.
-# pip install -r requirments_dev.txt
+# pip install -r requirements_dev.txt
 #---------------------------------------------------------
 coveralls
 flake8
