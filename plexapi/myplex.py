@@ -136,15 +136,20 @@ class MyPlexAccount(PlexObject):
         data = self.query(MyPlexDevice.key)
         return [MyPlexDevice(self, elem) for elem in data]
 
+    def _headers(self, **kwargs):
+        """ Returns dict containing base headers for all requests to the server. """
+        headers = BASE_HEADERS.copy()
+        if self._token:
+            headers['X-Plex-Token'] = self._token
+        headers.update(kwargs)
+        return headers
+
     def query(self, url, method=None, headers=None, timeout=None, **kwargs):
         method = method or self._session.get
-        delim = '&' if '?' in url else '?'
-        url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
         timeout = timeout or TIMEOUT
         log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json', ''))
-        allheaders = BASE_HEADERS.copy()
-        allheaders.update(headers or {})
-        response = method(url, headers=allheaders, timeout=timeout, **kwargs)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
