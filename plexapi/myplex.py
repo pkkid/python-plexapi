@@ -136,20 +136,15 @@ class MyPlexAccount(PlexObject):
         data = self.query(MyPlexDevice.key)
         return [MyPlexDevice(self, elem) for elem in data]
 
-    def _headers(self, **kwargs):
-        """ Returns dict containing base headers for all requests to the server. """
-        headers = BASE_HEADERS.copy()
-        if self._token:
-            headers['X-Plex-Token'] = self._token
-        headers.update(kwargs)
-        return headers
-
     def query(self, url, method=None, headers=None, timeout=None, **kwargs):
         method = method or self._session.get
+        delim = '&' if '?' in url else '?'
+        url = '%s%sX-Plex-Token=%s' % (url, delim, self._token)
         timeout = timeout or TIMEOUT
         log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json', ''))
-        headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=timeout, **kwargs)
+        allheaders = BASE_HEADERS.copy()
+        allheaders.update(headers or {})
+        response = method(url, headers=allheaders, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
@@ -314,6 +309,17 @@ class MyPlexAccount(PlexObject):
         requested = [MyPlexUser(self, elem, self.REQUESTED) for elem in self.query(self.REQUESTED)]
         return friends + requested
 
+    def users_shares(self, server):
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account.
+            This includes both friends and pending invites. You can reference the user.friend to
+            distinguish between the two.
+        """
+        machineId = server.machineIdentifier
+        friends_shares = [MyPlexUserShares(self, elem) for elem in self.query(MyPlexUserShares.key.format(
+            machineId=machineId))]
+        requested = [MyPlexUserShares(self, elem, self.REQUESTED) for elem in self.query(self.REQUESTED)]
+        return friends_shares + requested
+
     def _getSectionIds(self, server, sections):
         """ Converts a list of section objects or names to sectionIds needed for library sharing. """
         if not sections: return []
@@ -407,9 +413,10 @@ class MyPlexUser(PlexObject):
             username (str): User's username.
     """
     TAG = 'User'
-    key = 'https://plex.tv/api/users/'
+    key = 'https://plex.tv/api/users'
 
     def _loadData(self, data):
+
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.friend = self._initpath == self.key
@@ -440,6 +447,67 @@ class MyPlexUser(PlexObject):
         except Exception:
             log.exception('Failed to get access token for %s' % self.title)
 
+class MyPlexUserShares(PlexObject):
+    """ This object represents non-signed in users such as friends and linked
+        accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
+        which is your specific account. The raw xml for the data presented here
+        can be found at: https://plex.tv/api/users/
+
+        Attributes:
+            TAG (str): 'User'
+            key (str): 'https://plex.tv/api/users/'
+            allowCameraUpload (bool): True if this user can upload images.
+            allowChannels (bool): True if this user has access to channels.
+            allowSync (bool): True if this user can sync.
+            email (str): User's email address (user@gmail.com).
+            filterAll (str): Unknown.
+            filterMovies (str): Unknown.
+            filterMusic (str): Unknown.
+            filterPhotos (str): Unknown.
+            filterTelevision (str): Unknown.
+            home (bool): Unknown.
+            id (int): User's Plex account ID.
+            protected (False): Unknown (possibly SSL enabled?).
+            recommendationsPlaylistId (str): Unknown.
+            restricted (str): Unknown.
+            thumb (str): Link to the users avatar.
+            title (str): Seems to be an aliad for username.
+            username (str): User's username.
+    """
+    TAG = 'User'
+    key = 'https://plex.tv/api/servers/{machineId}/shared_servers'
+
+    def _loadData(self, data):
+
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.friend = self._initpath == self.key
+        self.acceptedAt = data.attrib.get('acceptedAt')
+        self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
+        self.allowChannels = utils.cast(bool, data.attrib.get('allowChannels'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.email = data.attrib.get('email')
+        self.filterAll = data.attrib.get('filterAll')
+        self.filterMovies = data.attrib.get('filterMovies')
+        self.filterMusic = data.attrib.get('filterMusic')
+        self.filterPhotos = data.attrib.get('filterPhotos')
+        self.filterTelevision = data.attrib.get('filterTelevision')
+        self.id = utils.cast(int, data.attrib.get('userID'))
+        self.invited = data.attrib.get('invited')
+        self.owned =  utils.cast(bool, data.attrib.get('owned'))
+        self.title = data.attrib.get('title')
+        self.username = data.attrib.get('username')
+        self.shared_sections = [{'name': d.attrib.get('title'),
+                                'id' : d.attrib.get('id'),
+                                'key' : d.attrib.get('key')} for d in data if d.attrib.get('shared') == '1']
+
+    def get_token(self, machineIdentifier):
+        try:
+            for item in self._server.query(self._server.FRIENDINVITE.format(machineId=machineIdentifier)):
+                if utils.cast(int, item.attrib.get('userID')) == self.id:
+                    return item.attrib.get('accessToken')
+        except Exception:
+            log.exception('Failed to get access token for %s' % self.title)
 
 class Section(PlexObject):
     """ This referes to a shared section. """
