@@ -437,11 +437,24 @@ class MyPlexUser(PlexObject):
 
 
 class Section(PlexObject):
-    """ This referes to a shared section. """
+    """ This refers to a shared section. The raw xml for the data presented here
+        can be found at: https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}
+
+        Attributes:
+            TAG (str): section
+            id (int): shared section id
+            sectionKey (str): what key we use for this section
+            title (str): Title of the section
+            sectionId (str): shared section id
+            type (str): movie, tvshow, artist
+            shared (bool): If this section is shared with the user
+
+    """
     TAG = 'Section'
 
     def _loadData(self, data):
         self._data = data
+        # self.id = utils.cast(int, data.attrib.get('id'))  # Havnt decided if this should be changed.
         self.sectionKey = data.attrib.get('key')
         self.title = data.attrib.get('title')
         self.sectionId = data.attrib.get('id')
@@ -450,7 +463,20 @@ class Section(PlexObject):
 
 
 class MyPlexServerShare(PlexObject):
-    """ Represents a single user's server reference. Used for library sharing. """
+    """ Represents a single user's server reference. Used for library sharing.
+
+        Attributes:
+            id (int): id for this share
+            serverId (str): what id plex uses for this.
+            machineIdentifier (str): The servers machineIdentifier
+            name (str): The servers name
+            lastSeenAt (datetime): Last connected to the server?
+            numLibraries (int): Total number of libraries
+            allLibraries (bool): True if all libraries is shared with this user.
+            owned (bool): 1 if the server is owned by the user
+            pending (bool): True if the invite is pending.
+
+    """
     TAG = 'Server'
 
     def _loadData(self, data):
@@ -462,17 +488,19 @@ class MyPlexServerShare(PlexObject):
         self.name = data.attrib.get('name')
         self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
         self.numLibraries = utils.cast(int, data.attrib.get('numLibraries'))
-        self.allLibraries = utils.cast(int, data.attrib.get('allLibraries'))
-        self.owned = utils.cast(int, data.attrib.get('owned'))
-        self.pending = utils.cast(int, data.attrib.get('pending'))
+        self.allLibraries = utils.cast(bool, data.attrib.get('allLibraries'))
+        self.owned = utils.cast(bool, data.attrib.get('owned'))
+        self.pending = utils.cast(bool, data.attrib.get('pending'))
 
     def sections(self):
         url = MyPlexAccount.FRIENDSERVERS.format(machineId=self.machineIdentifier, serverId=self.id)
         data = self._server.query(url)
         sections = []
+
         for section in data.iter('Section'):
-            if section:
+            if isinstance(section, ElementTree.Element):
                 sections.append(Section(self, section, url))
+
         return sections
 
 
