@@ -270,7 +270,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
 
     # save the file to disk
     log.info('Downloading: %s', fullpath)
-    if showstatus:
+    if showstatus:  # pragma: no cover
         total = int(response.headers.get('content-length', 0))
         bar = tqdm(unit='B', unit_scale=True, total=total, desc=filename)
 
@@ -280,7 +280,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             if showstatus:
                 bar.update(len(chunk))
 
-    if showstatus:
+    if showstatus:  # pragma: no cover
         bar.close()
     # check we want to unzip the contents
     if fullpath.endswith('zip') and unpack:
