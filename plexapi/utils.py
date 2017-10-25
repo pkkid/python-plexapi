@@ -129,7 +129,7 @@ def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
         if attrstr:
             return rget(value, attrstr, default, delim)
         return value
-    except:
+    except:  # noqa: E722
         return default
 
 
@@ -243,7 +243,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             mocked (bool): Helper to do evertything except write the file.
             unpack (bool): Unpack the zip file.
             showstatus(bool): Display a progressbar.
-            
+
         Example:
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
@@ -314,7 +314,7 @@ def tag_helper(tag, items, locked=True, remove=False):
     return data
 
 
-def getMyPlexAccount(opts=None):
+def getMyPlexAccount(opts=None): # pragma: no cover
     """ Helper function tries to get a MyPlex Account instance by checking
         the the following locations for a username and password. This is
         useful to create user-friendly command line tools.
@@ -341,7 +341,7 @@ def getMyPlexAccount(opts=None):
     return MyPlexAccount(username, password)
 
 
-def choose(msg, items, attr):
+def choose(msg, items, attr):  # pragma: no cover
     """ Command line helper to display a list of choices, asking the
         user to choose one of the options.
     """

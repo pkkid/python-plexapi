@@ -35,7 +35,7 @@ class PlexConfig(ConfigParser):
                 section, name = key.lower().split('.')
                 value = self.data.get(section, {}).get(name, default)
             return cast(value) if cast else value
-        except:
+        except:  # noqa: E722
             return default
 
     def _asDict(self):
