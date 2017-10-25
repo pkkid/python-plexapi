@@ -7,4 +7,7 @@ exclude_lines =
     except ImportError
     def __repr__
     def __bool__
+    def __iter__
+    def __hash__
+    def __len__
     if __name__ == .__main__.:
