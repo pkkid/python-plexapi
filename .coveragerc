@@ -3,6 +3,7 @@ exclude_lines =
     pragma: no cover
     raise NotImplementedError
     raise Unsupported
+    raise Exception
     except ImportError
     def __repr__
     def __bool__

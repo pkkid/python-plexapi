@@ -74,14 +74,6 @@ def cast(func, value):
     return value
 
 
-def getattributeOrNone(obj, self, attr):
-    """ Returns result from __getattribute__ or None if not found. """
-    try:
-        return super(obj, self).__getattribute__(attr)
-    except AttributeError:
-        return None
-
-
 def joinArgs(args):
     """ Returns a query string (uses for HTTP URLs) where only the value is URL encoded.
         Example return value: '?genre=action&type=1337'.
@@ -198,7 +190,7 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def downloadSessionImages(server, filename=None, height=150, width=150, opacity=100, saturation=100):
+def downloadSessionImages(server, filename=None, height=150, width=150, opacity=100, saturation=100):  # pragma: no cover
     """ Helper to download a bif image or thumb.url from plex.server.sessions.
 
        Parameters:
