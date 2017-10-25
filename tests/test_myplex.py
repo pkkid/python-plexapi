@@ -74,6 +74,8 @@ def test_myplex_users(account):
     print('Found user: %s' % user)
     assert user, 'Could not find user %s' % users[0].title
 
+    assert len(users[0].servers[0].sections()) == 7, "Could'nt info about the shared libraries"
+
 
 def test_myplex_resource(account):
     assert account.resource('pkkid-plexapi')
@@ -111,9 +113,4 @@ def test_myplex_optout(account):
     account.optOut(library=False, playback=False)
 
     assert not all(enabled())
-
-
-
-
-    reloaded_account = account.reload()
 
