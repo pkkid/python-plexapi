@@ -503,7 +503,7 @@ class MyPlexServerShare(PlexObject):
         sections = []
 
         for section in data.iter('Section'):
-            if isinstance(section, ElementTree.Element):
+            if ElementTree.iselement(section):
                 sections.append(Section(self, section, url))
 
         return sections
