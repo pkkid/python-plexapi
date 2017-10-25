@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import pytest
+from plexapi.exceptions import BadRequest
 
 
 def test_myplex_accounts(account, plex):
@@ -16,7 +18,7 @@ def test_myplex_accounts(account, plex):
     account = plex.account()
     print('Local PlexServer.account():')
     print('username: %s' % account.username)
-    print('authToken: %s' % account.authToken)
+    #print('authToken: %s' % account.authToken)
     print('signInState: %s' % account.signInState)
     assert account.username, 'Account has no username'
     assert account.authToken, 'Account has no authToken'
@@ -51,6 +53,10 @@ def test_myplex_devices(account):
     assert devices, 'No devices found for account: %s' % account.name
 
 
+def test_myplex_device(account):
+    assert account.device('pkkid-plexapi')
+
+
 def _test_myplex_connect_to_device(account):
     devices = account.devices()
     for device in devices:
@@ -67,3 +73,47 @@ def test_myplex_users(account):
     user = account.user(users[0].title)
     print('Found user: %s' % user)
     assert user, 'Could not find user %s' % users[0].title
+
+
+def test_myplex_resource(account):
+    assert account.resource('pkkid-plexapi')
+
+
+def test_myplex_webhooks(account):
+    with pytest.raises(BadRequest):
+        account.webhooks()
+
+
+def test_myplex_addwebhooks(account):
+    with pytest.raises(BadRequest):
+        account.addWebhook('http://site.com')
+
+
+def test_myplex_deletewebhooks(account):
+    with pytest.raises(BadRequest):
+        account.deleteWebhook('http://site.com')
+
+
+def test_myplex_optout(account):
+    def enabled():
+        ele = account.query('https://plex.tv/api/v2/user/privacy')
+        lib = ele.attrib.get('optOutLibraryStats')
+        play = ele.attrib.get('optOutPlayback')
+        return bool(int(lib)), bool(int(play))
+
+    # This should be False False
+    library_enabled, playback_enabled = enabled()
+
+    account.optOut(library=True, playback=True)
+
+    assert all(enabled())
+
+    account.optOut(library=False, playback=False)
+
+    assert not all(enabled())
+
+
+
+
+    reloaded_account = account.reload()
+

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import pytest, time
+import time
+import pytest
 
 
 def test_create_playlist(plex, show):
@@ -99,14 +100,11 @@ def test_playqueues(plex):
 
 
 def test_copyToUser(plex, show, fresh_plex):
-    # Skip out if we do not have plexpass
-    if not plex.myPlexSubscription:
-        pytest.skip('PlexPass subscription required for test.')
     episodes = show.episodes()
     playlist = plex.createPlaylist('shared_from_test_plexapi', episodes)
     try:
-        playlist.copyToUser('plexapi2')
-        user = plex.myPlexAccount().user('plexapi2')
+        playlist.copyToUser('PKKid')
+        user = plex.myPlexAccount().user('PKKid')
         user_plex = fresh_plex(plex._baseurl, user.get_token(plex.machineIdentifier))
         assert playlist.title in [p.title for p in user_plex.playlists()]
     finally:
