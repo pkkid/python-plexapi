@@ -70,13 +70,6 @@ class Photoalbum(PlexPartialObject):
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
 
-    def reload(self):
-        """ Reload the data for this object from self.key. """
-        self._initpath = self.key
-        data = self._server.query(self.key)
-        self._loadData(data)
-        return self
-
 
 @utils.registerPlexObject
 class Photo(PlexPartialObject):
