@@ -314,7 +314,7 @@ def tag_helper(tag, items, locked=True, remove=False):
     return data
 
 
-def getMyPlexAccount(opts=None): # pragma: no cover
+def getMyPlexAccount(opts=None):  # pragma: no cover
     """ Helper function tries to get a MyPlex Account instance by checking
         the the following locations for a username and password. This is
         useful to create user-friendly command line tools.

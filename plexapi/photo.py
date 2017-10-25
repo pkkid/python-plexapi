@@ -58,7 +58,6 @@ class Photoalbum(PlexPartialObject):
                 return album
         raise NotFound('Unable to find album: %s' % title)
 
-
     def photos(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in this album. """
         key = '/library/metadata/%s/children' % self.ratingKey
