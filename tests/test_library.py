@@ -123,6 +123,11 @@ def test_library_MovieSection_update(movies):
     movies.update()
 
 
+def test_library_MovieSection_search_genre(movie, movies):
+    # assert len(movie.genres[0].items()) # TODO
+    assert len(movies.search(genre=movie.genres[0])) > 1
+
+
 def test_library_MovieSection_cancelUpdate(movies):
     movies.cancelUpdate()
 

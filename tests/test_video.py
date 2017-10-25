@@ -72,6 +72,10 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
     assert len(filepaths2) >= 1
 
 
+def test_video_Movie_subtitlestreams(movie):
+    assert not movie.subtitleStreams()
+
+
 def test_video_Movie_attrs(movies):
     movie = movies.get('Sita Sings the Blues')
     assert len(movie.locations[0]) >= 10
