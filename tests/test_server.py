@@ -155,12 +155,6 @@ def test_server_createPlayQueue(plex, movie):
     assert playqueue.playQueueShuffled is True
 
 
-def _test_server_createPlaylist():
-    # TODO: Implement _test_server_createPlaylist()
-    # see test_playlists.py
-    pass
-
-
 def test_server_client_not_found(plex):
     with pytest.raises(NotFound):
         plex.client('<This-client-should-not-be-found>')

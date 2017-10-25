@@ -47,7 +47,7 @@ class AlertListener(threading.Thread):
         """ Called when websocket message is recieved. """
         try:
             data = json.loads(message)['NotificationContainer']
-            log.debug('Alert: %s', data)
+            log.debug('Alert: %s %s %s', *data)
             if self._callback:
                 self._callback(data)
         except Exception as err:
