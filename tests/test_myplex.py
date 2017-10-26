@@ -131,5 +131,5 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
 
         assert inv_user not in [u.title for u in account.users()]
 
-        with utils.callable_http_patch(mock):
+        with utils.callable_http_patch(mocker):
             account.removeFriend(inv_user)
