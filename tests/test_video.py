@@ -17,10 +17,9 @@ def test_video_ne(movies):
     assert len(movies.fetchItems('/library/sections/7/all', title__ne='Sintel')) == 3
 
 
-def test_video_Movie_delete(monkeypatch, movie):
-    monkeypatch.delattr('requests.sessions.Session.request')
-    with pytest.raises(AttributeError):
-        movie.delete()
+def test_video_Movie_delete(movie, patched_http_call):
+    movie.delete()
+
 
 def test_video_Movie_addCollection(movie):
     labelname = 'Random_label'
@@ -59,6 +58,15 @@ def test_video_Movie_isFullObject_and_reload(plex):
 
 def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
+
+
+def test_video_Movie_delete_part(movie, mocker):
+    # we need to reload this as there is a bug in part.delete
+    # See https://github.com/pkkid/python-plexapi/issues/201
+    m = movie.reload()
+    for part in m.iterParts():
+        with utils.callable_http_patch(mocker):
+            part.delete()
 
 
 def test_video_Movie_iterParts(movie):

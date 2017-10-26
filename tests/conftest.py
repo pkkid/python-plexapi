@@ -150,10 +150,27 @@ def monkeydownload(request, monkeypatch):
     monkeypatch.undo()
 
 
+def callable_http_patch(mocker):
+    # mocker is a fixture
+    # but this is a normal func so we can do http calls inside the tests
+    return mocker.patch('plexapi.server.requests.sessions.Session.send',
+                        return_value=mocker.MagicMock(status_code=200,
+                                                      text='<xml><child></child></xml>'))
+
+@pytest.fixture()
+def empty_response(mocker):
+    response = mocker.MagicMock(status_code=200, text='<xml><child></child></xml>')
+    return response
+
+@pytest.fixture()
+def patched_http_call(mocker):
+    return callable_http_patch(mocker)
+
+
+
 # ---------------------------------
 #  Utility Functions
 # ---------------------------------
-
 def is_datetime(value):
     return value > MIN_DATETIME
 

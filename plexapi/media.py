@@ -148,7 +148,7 @@ class MediaPartStream(PlexObject):
         self.type = cast(int, data.attrib.get('streamType'))
 
     @staticmethod
-    def parse(server, data, initpath):
+    def parse(server, data, initpath):  # pragma: no cover seems to be dead code.
         """ Factory method returns a new MediaPartStream from xml data. """
         STREAMCLS = {1: VideoStream, 2: AudioStream, 3: SubtitleStream}
         stype = cast(int, data.attrib.get('streamType'))
