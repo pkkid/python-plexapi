@@ -190,7 +190,8 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def downloadSessionImages(server, filename=None, height=150, width=150, opacity=100, saturation=100):  # pragma: no cover
+def downloadSessionImages(server, filename=None, height=150, width=150,
+                          opacity=100, saturation=100):  # pragma: no cover
     """ Helper to download a bif image or thumb.url from plex.server.sessions.
 
        Parameters:
