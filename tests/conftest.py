@@ -162,10 +162,10 @@ def empty_response(mocker):
     response = mocker.MagicMock(status_code=200, text='<xml><child></child></xml>')
     return response
 
+
 @pytest.fixture()
 def patched_http_call(mocker):
     return callable_http_patch(mocker)
-
 
 
 # ---------------------------------

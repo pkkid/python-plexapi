@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from plexapi.exceptions import BadRequest
+from . import conftest as utils
 
 
 def test_myplex_accounts(account, plex):
@@ -114,3 +115,21 @@ def test_myplex_optout(account):
 
     assert not all(enabled())
 
+
+def test_myplex_inviteFriend_remove(account, plex, mocker):
+    inv_user = 'hellowlol'
+    vid_filter = {'contentRating': ['G'], 'label': ['foo']}
+    secs = plex.library.sections()
+
+    ids = account._getSectionIds(plex.machineIdentifier, secs)
+    with mocker.patch.object(account, '_getSectionIds', return_value=ids):
+        with utils.callable_http_patch(mocker):
+
+            account.inviteFriend(inv_user, plex, secs, allowSync=True, allowCameraUpload=True,
+                         allowChannels=False, filterMovies=vid_filter, filterTelevision=vid_filter,
+                         filterMusic={'label': ['foo']})
+
+        assert inv_user not in [u.title for u in account.users()]
+
+        with utils.callable_http_patch(mock):
+            account.removeFriend(inv_user)
