@@ -175,8 +175,11 @@ def empty_response(mocker):
 
 
 @pytest.fixture()
-def patched_http_call():
-    return callable_http_patch()
+def patched_http_call(mocker):
+    return mocker.patch('plexapi.server.requests.sessions.Session.send',
+                        return_value=MagicMock(status_code=200,
+                                               text='<xml><child></child></xml>')
+                        )
 
 
 # ---------------------------------
