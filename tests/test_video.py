@@ -271,6 +271,19 @@ def test_video_Show(show):
     assert show.title == 'Game of Thrones'
 
 
+def test_video_Episode_split(episode, patched_http_call):
+    episode.split()
+
+
+def test_video_Episode_unmatch(episode, patched_http_call):
+    episode.unmatch()
+
+
+def test_video_Episode_stop(episode, mocker, patched_http_call):
+    mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
+    episode.stop(reason="It's past bedtime!")
+
+
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     assert utils.is_metadata(show.art, contains='/art/')

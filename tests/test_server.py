@@ -165,9 +165,14 @@ def test_server_sessions(plex):
 
 
 def test_server_isLatest(plex, mocker):
-    # I really need to update the testservers pms.. TODO
-    with mocker.patch('plexapi.server.PlexServer.isLatest', return_value=True):
-        assert plex.isLatest() is True
+    plex.isLatest()
+
+
+def test_server_installUpdate(plex, mocker):
+    m = mocker.MagicMock(release='aa')
+    mocker.patch('plexapi.server.PlexServer.check_for_update', return_value=m)
+    with utils.callable_http_patch():
+        plex.installUpdate()
 
 
 def test_server_check_for_update(plex, mocker):
