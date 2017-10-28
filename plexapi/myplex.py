@@ -428,8 +428,8 @@ class MyPlexUser(PlexObject):
         self.recommendationsPlaylistId = data.attrib.get('recommendationsPlaylistId')
         self.restricted = data.attrib.get('restricted')
         self.thumb = data.attrib.get('thumb')
-        self.title = data.attrib.get('title')
-        self.username = data.attrib.get('username')
+        self.title = data.attrib.get('title', '')
+        self.username = data.attrib.get('username', '')
         self.servers = self.findItems(data, MyPlexServerShare)
 
     def get_token(self, machineIdentifier):

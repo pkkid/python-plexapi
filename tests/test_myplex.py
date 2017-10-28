@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 from . import conftest as utils
 
 
@@ -83,6 +83,7 @@ def test_myplex_resource(account):
 
 
 def test_myplex_webhooks(account):
+    # Webhooks are a plex pass feature to this will fail
     with pytest.raises(BadRequest):
         account.webhooks()
 
@@ -123,13 +124,31 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
 
     ids = account._getSectionIds(plex.machineIdentifier, secs)
     with mocker.patch.object(account, '_getSectionIds', return_value=ids):
-        with utils.callable_http_patch(mocker):
+        with utils.callable_http_patch():
 
             account.inviteFriend(inv_user, plex, secs, allowSync=True, allowCameraUpload=True,
-                         allowChannels=False, filterMovies=vid_filter, filterTelevision=vid_filter,
-                         filterMusic={'label': ['foo']})
+                                 allowChannels=False, filterMovies=vid_filter, filterTelevision=vid_filter,
+                                 filterMusic={'label': ['foo']})
 
         assert inv_user not in [u.title for u in account.users()]
 
-        with utils.callable_http_patch(mocker):
-            account.removeFriend(inv_user)
+        with pytest.raises(NotFound):
+            with utils.callable_http_patch():
+                account.removeFriend(inv_user)
+
+
+def test_myplex_updateFriend(account, plex, mocker):
+    edit_user = 'PKKid'
+    vid_filter = {'contentRating': ['G'], 'label': ['foo']}
+    secs = plex.library.sections()
+    user = account.user(edit_user)
+
+    ids = account._getSectionIds(plex.machineIdentifier, secs)
+    with mocker.patch.object(account, '_getSectionIds', return_value=ids):
+        with mocker.patch.object(account, 'user', return_value=user):
+            with utils.callable_http_patch():
+
+                account.updateFriend(edit_user, plex, secs, allowSync=True, removeSections=True,
+                                 allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
+                                 filterTelevision=vid_filter, filterMusic={'label': ['foo']})
+
