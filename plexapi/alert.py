@@ -32,7 +32,7 @@ class AlertListener(threading.Thread):
         url = self._server.url(self.key).replace('http', 'ws')
         log.info('Starting AlertListener: %s', url)
         self._ws = websocket.WebSocketApp(url, on_message=self._onMessage,
-            on_error=self._onError)
+                                          on_error=self._onError)
         self._ws.run_forever()
 
     def stop(self):
@@ -47,12 +47,12 @@ class AlertListener(threading.Thread):
         """ Called when websocket message is recieved. """
         try:
             data = json.loads(message)['NotificationContainer']
-            log.debug('Alert: %s', data)
+            log.debug('Alert: %s %s %s', *data)
             if self._callback:
                 self._callback(data)
-        except Exception as err:
+        except Exception as err:  # pragma: no cover
             log.error('AlertListener Msg Error: %s', err)
 
-    def _onError(self, ws, err):
+    def _onError(self, ws, err):  # pragma: no cover
         """ Called when websocket error is recieved. """
         log.error('AlertListener Error: %s' % err)

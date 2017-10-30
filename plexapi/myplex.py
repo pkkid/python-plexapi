@@ -150,10 +150,10 @@ class MyPlexAccount(PlexObject):
         log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json', ''))
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=timeout, **kwargs)
-        if response.status_code not in (200, 201, 204):
+        if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warn('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
             raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
@@ -428,8 +428,8 @@ class MyPlexUser(PlexObject):
         self.recommendationsPlaylistId = data.attrib.get('recommendationsPlaylistId')
         self.restricted = data.attrib.get('restricted')
         self.thumb = data.attrib.get('thumb')
-        self.title = data.attrib.get('title')
-        self.username = data.attrib.get('username')
+        self.title = data.attrib.get('title', '')
+        self.username = data.attrib.get('username', '')
         self.servers = self.findItems(data, MyPlexServerShare)
 
     def get_token(self, machineIdentifier):

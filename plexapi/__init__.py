@@ -35,10 +35,12 @@ logfile = CONFIG.get('log.path')
 logformat = CONFIG.get('log.format', '%(asctime)s %(module)12s:%(lineno)-4s %(levelname)-9s %(message)s')
 loglevel = CONFIG.get('log.level', 'INFO').upper()
 loghandler = logging.NullHandler()
-if logfile:
+
+if logfile:  # pragma: no cover
     logbackups = CONFIG.get('log.backup_count', 3, int)
     logbytes = CONFIG.get('log.rotate_bytes', 512000, int)
     loghandler = RotatingFileHandler(os.path.expanduser(logfile), 'a', logbytes, logbackups)
+
 loghandler.setFormatter(logging.Formatter(logformat))
 log.addHandler(loghandler)
 log.setLevel(loglevel)

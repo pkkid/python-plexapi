@@ -34,13 +34,13 @@ class Playlist(PlexPartialObject, Playable):
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
         self._items = None  # cache for self.items
 
-    def __len__(self):
+    def __len__(self):  # pragma: no cover
         return len(self.items())
 
-    def __contains__(self, other):
+    def __contains__(self, other):  # pragma: no cover
         return any(i.key == other.key for i in self.items())
 
-    def __getitem__(self, key):
+    def __getitem__(self, key):  # pragma: no cover
         return self.items()[key]
 
     def items(self):
@@ -57,7 +57,7 @@ class Playlist(PlexPartialObject, Playable):
             items = [items]
         ratingKeys = []
         for item in items:
-            if item.listType != self.playlistType:
+            if item.listType != self.playlistType:  # pragma: no cover
                 raise BadRequest('Can not mix media types when building a playlist: %s and %s' %
                     (self.playlistType, item.listType))
             ratingKeys.append(str(item.ratingKey))
@@ -108,7 +108,7 @@ class Playlist(PlexPartialObject, Playable):
             items = [items]
         ratingKeys = []
         for item in items:
-            if item.listType != items[0].listType:
+            if item.listType != items[0].listType:  # pragma: no cover
                 raise BadRequest('Can not mix media types when building a playlist')
             ratingKeys.append(str(item.ratingKey))
         ratingKeys = ','.join(ratingKeys)

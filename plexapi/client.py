@@ -444,7 +444,7 @@ class PlexClient(PlexObject):
         if not self.product != 'OpenPHT':
             try:
                 self.sendCommand('timeline/subscribe', port=server_url[1].strip('/'), protocol='http')
-            except:
+            except:  # noqa: E722
                 # some clients dont need or like this and raises http 400.
                 # We want to include the exception in the log,
                 # but it might still work so we swallow it.

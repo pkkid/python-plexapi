@@ -54,7 +54,7 @@ class Photoalbum(PlexPartialObject):
     def album(self, title):
         """ Returns the :class:`~plexapi.photo.Photoalbum` that matches the specified title. """
         for album in self.albums():
-            if album.attrib.get('title').lower() == title.lower():
+            if album.title.lower() == title.lower():
                 return album
         raise NotFound('Unable to find album: %s' % title)
 
@@ -66,16 +66,9 @@ class Photoalbum(PlexPartialObject):
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
         for photo in self.photos():
-            if photo.attrib.get('title').lower() == title.lower():
+            if photo.title.lower() == title.lower():
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
-
-    def reload(self):
-        """ Reload the data for this object from self.key. """
-        self._initpath = self.key
-        data = self._server.query(self.key)
-        self._loadData(data)
-        return self
 
 
 @utils.registerPlexObject

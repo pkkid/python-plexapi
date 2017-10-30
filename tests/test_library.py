@@ -45,13 +45,8 @@ def test_library_section_get_movie(plex):
     assert plex.library.section('Movies').get('Sita Sings the Blues')
 
 
-def test_library_section_delete(monkeypatch, movies):
-    monkeypatch.delattr("requests.sessions.Session.request")
-    try:
-        movies.delete()
-    except AttributeError:
-        # will always raise because there is no request
-        pass
+def test_library_section_delete(movies, patched_http_call):
+    movies.delete()
 
 
 def test_library_fetchItem(plex, movie):
@@ -67,11 +62,6 @@ def test_library_onDeck(plex):
 
 def test_library_recentlyAdded(plex):
     assert len(list(plex.library.recentlyAdded()))
-
-
-def test_library_search(plex):
-    item = plex.library.search('Elephants Dream')[0]
-    assert item.title == 'Elephants Dream'
 
 
 def test_library_add_edit_delete(plex):
@@ -115,12 +105,31 @@ def test_library_Library_deleteMediaPreviews(plex):
     plex.library.deleteMediaPreviews()
 
 
-def _test_library_MovieSection_refresh(movies):
-    movies.refresh()
+def test_library_Library_all(plex):
+    assert len(plex.library.all(title__iexact='The 100'))
+
+
+def test_library_Library_search(plex):
+    item = plex.library.search('Elephants Dream')[0]
+    assert item.title == 'Elephants Dream'
+    assert len(plex.library.search(libtype='episode'))
 
 
 def test_library_MovieSection_update(movies):
     movies.update()
+
+
+def test_library_ShowSection_all(tvshows):
+    assert len(tvshows.all(title__iexact='The 100'))
+
+
+def test_library_MovieSection_refresh(movies, patched_http_call):
+    movies.refresh()
+
+
+def test_library_MovieSection_search_genre(movie, movies):
+    # assert len(movie.genres[0].items()) # TODO
+    assert len(movies.search(genre=movie.genres[0])) > 1
 
 
 def test_library_MovieSection_cancelUpdate(movies):

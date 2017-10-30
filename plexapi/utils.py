@@ -74,14 +74,6 @@ def cast(func, value):
     return value
 
 
-def getattributeOrNone(obj, self, attr):
-    """ Returns result from __getattribute__ or None if not found. """
-    try:
-        return super(obj, self).__getattribute__(attr)
-    except AttributeError:
-        return None
-
-
 def joinArgs(args):
     """ Returns a query string (uses for HTTP URLs) where only the value is URL encoded.
         Example return value: '?genre=action&type=1337'.
@@ -129,7 +121,7 @@ def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
         if attrstr:
             return rget(value, attrstr, default, delim)
         return value
-    except:
+    except:  # noqa: E722
         return default
 
 
@@ -198,7 +190,8 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def downloadSessionImages(server, filename=None, height=150, width=150, opacity=100, saturation=100):
+def downloadSessionImages(server, filename=None, height=150, width=150,
+                          opacity=100, saturation=100):  # pragma: no cover
     """ Helper to download a bif image or thumb.url from plex.server.sessions.
 
        Parameters:
@@ -243,7 +236,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             mocked (bool): Helper to do evertything except write the file.
             unpack (bool): Unpack the zip file.
             showstatus(bool): Display a progressbar.
-            
+
         Example:
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
@@ -278,7 +271,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
 
     # save the file to disk
     log.info('Downloading: %s', fullpath)
-    if showstatus:
+    if showstatus:  # pragma: no cover
         total = int(response.headers.get('content-length', 0))
         bar = tqdm(unit='B', unit_scale=True, total=total, desc=filename)
 
@@ -288,7 +281,7 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
             if showstatus:
                 bar.update(len(chunk))
 
-    if showstatus:
+    if showstatus:  # pragma: no cover
         bar.close()
     # check we want to unzip the contents
     if fullpath.endswith('zip') and unpack:
@@ -314,7 +307,7 @@ def tag_helper(tag, items, locked=True, remove=False):
     return data
 
 
-def getMyPlexAccount(opts=None):
+def getMyPlexAccount(opts=None):  # pragma: no cover
     """ Helper function tries to get a MyPlex Account instance by checking
         the the following locations for a username and password. This is
         useful to create user-friendly command line tools.
@@ -341,7 +334,7 @@ def getMyPlexAccount(opts=None):
     return MyPlexAccount(username, password)
 
 
-def choose(msg, items, attr):
+def choose(msg, items, attr):  # pragma: no cover
     """ Command line helper to display a list of choices, asking the
         user to choose one of the options.
     """

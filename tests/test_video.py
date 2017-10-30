@@ -17,10 +17,9 @@ def test_video_ne(movies):
     assert len(movies.fetchItems('/library/sections/7/all', title__ne='Sintel')) == 3
 
 
-def test_video_Movie_delete(monkeypatch, movie):
-    monkeypatch.delattr('requests.sessions.Session.request')
-    with pytest.raises(AttributeError):
-        movie.delete()
+def test_video_Movie_delete(movie, patched_http_call):
+    movie.delete()
+
 
 def test_video_Movie_addCollection(movie):
     labelname = 'Random_label'
@@ -61,6 +60,15 @@ def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
 
 
+def test_video_Movie_delete_part(movie, mocker):
+    # we need to reload this as there is a bug in part.delete
+    # See https://github.com/pkkid/python-plexapi/issues/201
+    m = movie.reload()
+    for part in m.iterParts():
+        with utils.callable_http_patch():
+            part.delete()
+
+
 def test_video_Movie_iterParts(movie):
     assert len(list(movie.iterParts())) >= 1
 
@@ -70,6 +78,10 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
     assert len(filepaths1) >= 1
     filepaths2 = movie.download(savepath=str(tmpdir), videoResolution='500x300')
     assert len(filepaths2) >= 1
+
+
+def test_video_Movie_subtitlestreams(movie):
+    assert not movie.subtitleStreams()
 
 
 def test_video_Movie_attrs(movies):
@@ -257,6 +269,19 @@ def test_video_Movie_attrs(movies):
 
 def test_video_Show(show):
     assert show.title == 'Game of Thrones'
+
+
+def test_video_Episode_split(episode, patched_http_call):
+    episode.split()
+
+
+def test_video_Episode_unmatch(episode, patched_http_call):
+    episode.unmatch()
+
+
+def test_video_Episode_stop(episode, mocker, patched_http_call):
+    mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
+    episode.stop(reason="It's past bedtime!")
 
 
 def test_video_Show_attrs(show):

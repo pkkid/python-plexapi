@@ -15,12 +15,24 @@
 # 3. A Photos section containing the photoalbums:
 #    Cats (with cute cat photos inside)
 # 4. A TV Shows section containing at least two seasons of The 100.
-import plexapi, pytest, requests
+from datetime import datetime
+from functools import partial
+
+import pytest
+import requests
+
+try:
+    from unittest.mock import patch, MagicMock
+except ImportError:
+    from mock import patch, MagicMock
+
+
+import plexapi
 from plexapi import compat
 from plexapi.client import PlexClient
-from datetime import datetime
+
 from plexapi.server import PlexServer
-from functools import partial
+
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
@@ -150,10 +162,29 @@ def monkeydownload(request, monkeypatch):
     monkeypatch.undo()
 
 
+def callable_http_patch():
+    return patch('plexapi.server.requests.sessions.Session.send',
+                 return_value=MagicMock(status_code=200,
+                 text='<xml><child></child></xml>'))
+
+
+@pytest.fixture()
+def empty_response(mocker):
+    response = mocker.MagicMock(status_code=200, text='<xml><child></child></xml>')
+    return response
+
+
+@pytest.fixture()
+def patched_http_call(mocker):
+    return mocker.patch('plexapi.server.requests.sessions.Session.send',
+                        return_value=MagicMock(status_code=200,
+                                               text='<xml><child></child></xml>')
+                        )
+
+
 # ---------------------------------
 #  Utility Functions
 # ---------------------------------
-
 def is_datetime(value):
     return value > MIN_DATETIME
 
