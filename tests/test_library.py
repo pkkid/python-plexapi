@@ -128,6 +128,7 @@ def test_library_MovieSection_refresh(movies, patched_http_call):
 
 
 def test_library_MovieSection_search_genre(movie, movies):
+    animation = [i for i in movie.genres if i.tag == 'Animation']
     assert len(movies.search(genre=animation[0])) > 1
 
 
