@@ -259,14 +259,6 @@ class PlexPartialObject(PlexObject):
         automatically and update itself.
     """
 
-    def delete(self):
-        try:
-            return self._server.query(self.key, method=self._server._session.delete)
-        except BadRequest:
-            log.error("Failed to delete %s. This could be because you havn't allowed "
-                      "items to be deleted" % self.key)
-            raise
-
     def __eq__(self, other):
         return other is not None and self.key == other.key
 
