@@ -163,6 +163,7 @@ def monkeydownload(request, monkeypatch):
 
 
 def callable_http_patch():
+    """This intented to stop some http requests inside some tests."""
     return patch('plexapi.server.requests.sessions.Session.send',
                  return_value=MagicMock(status_code=200,
                  text='<xml><child></child></xml>'))
@@ -176,6 +177,7 @@ def empty_response(mocker):
 
 @pytest.fixture()
 def patched_http_call(mocker):
+    """This will stop any http calls inside any test."""
     return mocker.patch('plexapi.server.requests.sessions.Session.send',
                         return_value=MagicMock(status_code=200,
                                                text='<xml><child></child></xml>')

@@ -251,14 +251,6 @@ class PlexObject(object):
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
 
-    def delete(self):
-        try:
-            return self._server.query(self.key, method=self._server._session.delete)
-        except BadRequest:
-            log.error("Failed to delete %s. This could be because you havn't allowed "
-                      "items to be deleted" % self.key)
-            raise
-
 
 class PlexPartialObject(PlexObject):
     """ Not all objects in the Plex listings return the complete list of elements
@@ -266,6 +258,14 @@ class PlexPartialObject(PlexObject):
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
     """
+
+    def delete(self):
+        try:
+            return self._server.query(self.key, method=self._server._session.delete)
+        except BadRequest:
+            log.error("Failed to delete %s. This could be because you havn't allowed "
+                      "items to be deleted" % self.key)
+            raise
 
     def __eq__(self, other):
         return other is not None and self.key == other.key

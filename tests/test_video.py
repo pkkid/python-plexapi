@@ -64,9 +64,9 @@ def test_video_Movie_delete_part(movie, mocker):
     # we need to reload this as there is a bug in part.delete
     # See https://github.com/pkkid/python-plexapi/issues/201
     m = movie.reload()
-    for part in m.iterParts():
+    for media in m.media:
         with utils.callable_http_patch():
-            part.delete()
+            media.delete()
 
 
 def test_video_Movie_iterParts(movie):

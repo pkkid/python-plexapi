@@ -128,8 +128,7 @@ def test_library_MovieSection_refresh(movies, patched_http_call):
 
 
 def test_library_MovieSection_search_genre(movie, movies):
-    # assert len(movie.genres[0].items()) # TODO
-    assert len(movies.search(genre=movie.genres[0])) > 1
+    assert len(movies.search(genre=animation[0])) > 1
 
 
 def test_library_MovieSection_cancelUpdate(movies):
