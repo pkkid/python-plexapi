@@ -49,9 +49,22 @@ class Video(PlexPartialObject):
 
     @property
     def thumbUrl(self):
-        """ Return url to for the thumbnail image. """
+        """ Return the first first thumbnail url starting on
+            the most specific thumbnail for that item.
+        """
         thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(thumb) if thumb else None
+
+    @property
+    def artUrl(self):
+        """ Return the first first art url starting on the most specific for that item."""
+        art = self.firstAttr('art', 'grandparentArt')
+        return self._server.url(art) if art else None
+
+    def url(self, part):
+        """ Returns the full url for something. Typically used for getting a specific image. """
+        if part:
+            return self._server.url(part)
 
     def markWatched(self):
         """ Mark video as watched. """
