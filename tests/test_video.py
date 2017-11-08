@@ -116,7 +116,7 @@ def test_video_Movie_attrs(movies):
         assert utils.is_metadata(movie.primaryExtraKey)
     assert [i.tag for i in movie.producers] == []
     assert float(movie.rating) >= 6.4
-    assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
+    #assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
     assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal']  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
