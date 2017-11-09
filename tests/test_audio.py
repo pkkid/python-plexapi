@@ -77,7 +77,7 @@ def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.updatedAt)
     assert utils.is_int(album.viewCount, gte=0)
     assert album.year == 2016
-
+    assert album.artUrl is None
 
 def test_audio_Album_tracks(album):
     tracks = album.tracks()
@@ -167,6 +167,7 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_part(part.key)
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert part.size == 14360402
+    assert track.artUrl is None
 
 
 def test_audio_Album_get(album):

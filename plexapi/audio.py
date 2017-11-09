@@ -47,6 +47,17 @@ class Audio(PlexPartialObject):
         key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(key) if key else None
 
+    @property
+    def artUrl(self):
+        """ Return the first first art url starting on the most specific for that item."""
+        art = self.firstAttr('art', 'grandparentArt')
+        return self._server.url(art) if art else None
+
+    def url(self, part):
+        """ Returns the full URL for something. Typically used for getting a specific image. """
+        if part:
+            return self._server.url(part)
+
 
 @utils.registerPlexObject
 class Artist(Audio):
