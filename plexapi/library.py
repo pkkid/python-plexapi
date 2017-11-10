@@ -635,6 +635,7 @@ class MusicSection(LibrarySection):
     TYPE = 'artist'
 
     def _loadData(self, data):
+        super(LibrarySection, self)._loadData(data)
         self.enableAutoPhotoTags = data.attrib.get('enableAutoPhotoTags')
 
     def albums(self):
