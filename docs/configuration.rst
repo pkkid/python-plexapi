@@ -3,7 +3,7 @@ Configuration
 Python-PlexAPI will work fine without any configuration. However, sometimes there are things you
 may wish to alter for more control of the default behavior. The default configuration file path
 is :samp:`~/.config/plexapi/config.ini` which can be overridden by setting the environment variable
-:samp:`PLEXAPI_CONFIG_PATH` with the filepath you desire. All configuration variables in this file
+:samp:`PLEXAPI_CONFIG_PATH` with the file path you desire. All configuration variables in this file
 are optional. An example config.ini file may look like the following with all possible value specified. 
 
 .. code-block:: ini
@@ -48,7 +48,7 @@ Section [plexapi] Options
 -------------------------
 **container_size**
     Default max results to return in on single search page. Looping through result pages is done
-    internall by the API. Therfore, tuning this setting will not affect usage of plexapi. However,
+    internally by the API. Therefore, tuning this setting will not affect usage of plexapi. However,
     it help improve performance for large media collections (default: 50).
 
 **timeout**
@@ -70,7 +70,7 @@ Section [auth] Options
     `auth.myplex_password` for more information and example usage (default: None).
 
     WARNING: When specifying a password or token in the configuration file, be sure lock it down
-    (persmission 600) to ensure no other users on the system can read them. Or better yet, only specify
+    (permission 600) to ensure no other users on the system can read them. Or better yet, only specify
     sensitive values as a local environment variables.
 
 **server_baseurl**
@@ -84,7 +84,7 @@ Section [auth] Options
     information and example usage (default: None).
 
     WARNING: When specifying a password or token in the configuration file, be sure lock it down
-    (persmission 600) to ensure no other users on the system can read them. Or better yet, only specify
+    (permission 600) to ensure no other users on the system can read them. Or better yet, only specify
     sensitive values as a local environment variables.
 
 **client_baseurl**
@@ -98,7 +98,7 @@ Section [auth] Options
     information and example usage (default: None).
 
     WARNING: When specifying a password or token in the configuration file, be sure lock it down
-    (persmission 600) to ensure no other users on the system can read them. Or better yet, only specify
+    (permission 600) to ensure no other users on the system can read them. Or better yet, only specify
     sensitive values as a local environment variables.
 
 
@@ -116,13 +116,13 @@ Section [header] Options
     Header value used for X_PLEX_IDENTIFIER to all Plex server and Plex client requests. This is generally
     a UUID, serial number, or other number unique id for the device (default: `result of hex(uuid.getnode())`).
 
-**platorm**
+**platform**
     Header value used for X_PLEX_PLATFORM to all Plex server and Plex client requests. Example platforms
     include: iOS, MacOSX, Android, LG (default: `result of platform.uname()[0]`).
 
 **platform_version**
     Header value used for X_PLEX_PLATFORM_VERSION to all Plex server and Plex client requests. This is
-    genrally the server or client operating system version: 4.3.1, 10.6.7, 3.2 (default: `result of
+    generally the server or client operating system version: 4.3.1, 10.6.7, 3.2 (default: `result of
     platform.uname()[2]`).
 
 **product**
@@ -152,7 +152,7 @@ Section [log] Options
     Log level to use when for plexapi logging (default: INFO).
 
 **path**
-    Filepath to save plexapi logs to. If not specified, plexapi will not save logs to an output
+    File path to save plexapi logs to. If not specified, plexapi will not save logs to an output
     file (default: None).
 
 **rotate_bytes**
