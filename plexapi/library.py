@@ -405,7 +405,7 @@ class LibrarySection(PlexObject):
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
         key = '/library/sections/%s/emptyTrash' % self.key
-        self._server.query(key)
+        self._server.query(key, method=self._server._session.put)
 
     def update(self):
         """ Scan this section for new media. """
