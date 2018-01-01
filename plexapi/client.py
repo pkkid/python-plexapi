@@ -182,7 +182,9 @@ class PlexClient(PlexObject):
         command = command.strip('/')
         controller = command.split('/')[0]
         if controller not in self.protocolCapabilities:
-            raise Unsupported('Client %s doesnt support %s controller.' % (self.title, controller))
+            log.debug('Client %s doesnt support %s controller.'
+                      'What your trying might not work' % (self.title, controller))
+
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
