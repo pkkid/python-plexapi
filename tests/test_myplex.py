@@ -75,7 +75,7 @@ def test_myplex_users(account):
     print('Found user: %s' % user)
     assert user, 'Could not find user %s' % users[0].title
 
-    assert len(users[0].servers[0].sections()) == 7, "Could'nt info about the shared libraries"
+    assert len(users[0].servers[0].sections()) == 10, "Could'nt info about the shared libraries"
 
 
 def test_myplex_resource(account):
