@@ -29,7 +29,7 @@ class AlertListener(threading.Thread):
 
     def run(self):
         # create the websocket connection
-        url = self._server.url(self.key).replace('http', 'ws')
+        url = self._server.url(self.key, includeToken=True).replace('http', 'ws')
         log.info('Starting AlertListener: %s', url)
         self._ws = websocket.WebSocketApp(url, on_message=self._onMessage,
                                           on_error=self._onError)

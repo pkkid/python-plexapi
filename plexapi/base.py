@@ -479,7 +479,7 @@ class Playable(object):
         # sort the keys since the randomness fucks with my tests..
         sorted_params = sorted(params.items(), key=lambda val: val[0])
         return self._server.url('/%s/:/transcode/universal/start.m3u8?%s' %
-                                (streamtype, urlencode(sorted_params)))
+            (streamtype, urlencode(sorted_params)), includeToken=True)
 
     def iterParts(self):
         """ Iterates over the parts of this media item. """
@@ -530,9 +530,8 @@ class Playable(object):
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self._server.url('%s?download=1' % location.key)
-
-            filepath = utils.download(download_url, filename=filename,
-                                      savepath=savepath, session=self._server._session)
+            filepath = utils.download(download_url, self._server._token, filename=filename,
+                savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths

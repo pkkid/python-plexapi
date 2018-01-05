@@ -65,6 +65,7 @@ class PlexClient(PlexObject):
         super(PlexClient, self).__init__(server, data, initpath)
         self._baseurl = baseurl.strip('/') if baseurl else None
         self._token = logfilter.add_secret(token)
+        self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         server_session = server._session if server else None
         self._session = session or server_session or requests.Session()
         self._proxyThroughServer = False
@@ -193,11 +194,13 @@ class PlexClient(PlexObject):
             return self._server.query(key, headers=headers)
         return self.query(key, headers=headers)
 
-    def url(self, key):
-        """ Build a URL string with proper token argument. """
+    def url(self, key, includeToken=False):
+        """ Build a URL string with proper token argument. Token will be appended to the URL
+            if either includeToken is True or CONFIG.log.show_secrets is 'true'.
+        """
         if not self._baseurl:
             raise BadRequest('PlexClient object missing baseurl.')
-        if self._token:
+        if self._token and (includeToken or self._showSecrets):
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)

@@ -53,18 +53,17 @@ class Video(PlexPartialObject):
             the most specific thumbnail for that item.
         """
         thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
-        return self._server.url(thumb) if thumb else None
+        return self._server.url(thumb, includeToken=True) if thumb else None
 
     @property
     def artUrl(self):
         """ Return the first first art url starting on the most specific for that item."""
         art = self.firstAttr('art', 'grandparentArt')
-        return self._server.url(art) if art else None
+        return self._server.url(art, includeToken=True) if art else None
 
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
-        if part:
-            return self._server.url(part)
+        return self._server.url(part, includeToken=True) if part else None
 
     def markWatched(self):
         """ Mark video as watched. """
@@ -193,10 +192,10 @@ class Movie(Video, Playable):
                 url = self.getStreamURL(**kwargs)
             else:
                 self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(url, filename=name, savepath=savepath, session=self._server._session)
+            filepath = utils.download(url, self._server._token, filename=name,
+                savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
-
         return filepaths
 
 

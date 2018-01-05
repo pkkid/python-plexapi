@@ -58,9 +58,9 @@ def test_server_transcodeImage(tmpdir, plex, show):
     width, height = 500, 500
     imgurl = plex.transcodeImage(show.banner, height, width)
     gray = imgurl = plex.transcodeImage(show.banner, height, width, saturation=0)
-    resized_img = download(imgurl, savepath=str(tmpdir), filename='resize_image')
-    original_img = download(show._server.url(show.banner), savepath=str(tmpdir), filename='original_img')
-    grayscale_img = download(gray, savepath=str(tmpdir), filename='grayscale_img')
+    resized_img = download(imgurl, plex._token, savepath=str(tmpdir), filename='resize_image')
+    original_img = download(show._server.url(show.banner), plex._token, savepath=str(tmpdir), filename='original_img')
+    grayscale_img = download(gray, plex._token, savepath=str(tmpdir), filename='grayscale_img')
     with Image.open(resized_img) as image:
         assert width, height == image.size
     with Image.open(original_img) as image:

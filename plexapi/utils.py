@@ -223,13 +223,14 @@ def downloadSessionImages(server, filename=None, height=150, width=150,
     return info
 
 
-def download(url, filename=None, savepath=None, session=None, chunksize=4024,
+def download(url, token, filename=None, savepath=None, session=None, chunksize=4024,
              unpack=False, mocked=False, showstatus=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
 
        Parameters:
             url (str): URL where the content be reached.
+            token (str): Plex auth token to include in headers.
             filename (str): Filename of the downloaded file, default None.
             savepath (str): Defaults to current working dir.
             chunksize (int): What chunksize read/write at the time.
@@ -245,7 +246,8 @@ def download(url, filename=None, savepath=None, session=None, chunksize=4024,
     from plexapi import log
     # fetch the data to be saved
     session = session or requests.Session()
-    response = session.get(url, stream=True)
+    headers = {'X-Plex-Token': token}
+    response = session.get(url, headers=headers, stream=True)
     # make sure the savepath directory exists
     savepath = savepath or os.getcwd()
     compat.makedirs(savepath, exist_ok=True)

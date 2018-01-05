@@ -94,6 +94,7 @@ class PlexServer(PlexObject):
     def __init__(self, baseurl=None, token=None, session=None, timeout=None):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
+        self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
         self._library = None   # cached library
         self._settings = None   # cached settings
@@ -265,7 +266,7 @@ class PlexServer(PlexObject):
                 unpack (bool): Unpack the zip file.
         """
         url = self.url('/diagnostics/databases')
-        filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
+        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
         return filepath
 
     def downloadLogs(self, savepath=None, unpack=False):
@@ -276,7 +277,7 @@ class PlexServer(PlexObject):
                 unpack (bool): Unpack the zip file.
         """
         url = self.url('/diagnostics/logs')
-        filepath = utils.download(url, None, savepath, self._session, unpack=unpack)
+        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
         return filepath
 
     def check_for_update(self, force=True, download=False):
@@ -410,11 +411,13 @@ class PlexServer(PlexObject):
         if media:
             transcode_url = '/photo/:/transcode?height=%s&width=%s&opacity=%s&saturation=%s&url=%s' % (
                 height, width, opacity, saturation, media)
-            return self.url(transcode_url)
+            return self.url(transcode_url, includeToken=True)
 
-    def url(self, key):
-        """ Build a URL string with proper token argument. """
-        if self._token:
+    def url(self, key, includeToken=None):
+        """ Build a URL string with proper token argument.  Token will be appended to the URL
+            if either includeToken is True or CONFIG.log.show_secrets is 'true'.
+        """
+        if self._token and (includeToken or self._showSecrets):
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
