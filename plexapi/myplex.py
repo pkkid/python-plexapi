@@ -67,7 +67,7 @@ class MyPlexAccount(PlexObject):
     REMOVEINVITE = 'https://plex.tv/api/invites/requested/{userId}?friend=0&server=1&home=0'    # delete
     REQUESTED = 'https://plex.tv/api/invites/requested'                                         # get
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
-    SIGNIN = 'https://my.plexapp.com/users/sign_in.xml'                                         # get with auth
+    SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
