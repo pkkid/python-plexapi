@@ -446,7 +446,7 @@ class PlexClient(PlexObject):
             raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
 
-        if not self.product != 'OpenPHT':
+        if self.product != 'OpenPHT':
             try:
                 self.sendCommand('timeline/subscribe', port=server_url[1].strip('/'), protocol='http')
             except:  # noqa: E722
