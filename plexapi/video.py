@@ -78,7 +78,6 @@ class Video(PlexPartialObject):
         self.reload()
 
 
-
 @utils.registerPlexObject
 class Movie(Video, Playable):
     """ Represents a single Movie.
