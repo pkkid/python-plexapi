@@ -281,6 +281,10 @@ def test_video_Episode_unmatch(episode, patched_http_call):
     episode.unmatch()
 
 
+def test_video_Episode_updateProgress(episode, patched_http_call):
+    episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
+
+
 def test_video_Episode_stop(episode, mocker, patched_http_call):
     mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
     episode.stop(reason="It's past bedtime!")
