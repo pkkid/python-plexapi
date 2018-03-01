@@ -183,6 +183,7 @@ class Album(Audio):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.genres = self.findItems(data, media.Genre)
         self.collections = self.findItems(data, media.Collection)
+        self.labels = self.findItems(data, media.Label)
 
     def track(self, title):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
