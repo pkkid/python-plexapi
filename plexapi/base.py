@@ -316,8 +316,6 @@ class PlexPartialObject(PlexObject):
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie contain.
         """
-        #print(self._details_key == self._initpath)
-        #return self._details_key == self._initpath or not self.key or self.key == self._initpath
         return not self.key or self.key == self._initpath
 
     def isPartialObject(self):

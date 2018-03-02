@@ -83,7 +83,7 @@ class Movie(Playable, Video):
     """ Represents a single Movie.
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Video'
             TYPE (str): 'movie'
             art (str): Key to movie artwork (/library/metadata/<ratingkey>/art/<artid>)
             audienceRating (float): Audience rating (usually from Rotten Tomatoes).
@@ -112,6 +112,7 @@ class Movie(Playable, Video):
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             chapters (List<:class:`~plexapi.media.Chapter`>): List of Chapter objects.
+            similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
     """
     TAG = 'Video'
     TYPE = 'movie'
@@ -213,7 +214,7 @@ class Show(Video):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Directory'
             TYPE (str): 'show'
             art (str): Key to show artwork (/library/metadata/<ratingkey>/art/<artid>)
             banner (str): Key to banner artwork (/library/metadata/<ratingkey>/art/<artid>)
@@ -232,6 +233,7 @@ class Show(Video):
             year (int): Year the show was released.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+            similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
     """
     TAG = 'Directory'
     TYPE = 'show'
@@ -351,7 +353,7 @@ class Season(Video):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Directory'
             TYPE (str): 'season'
             leafCount (int): Number of episodes in season.
             index (int): Season number.
@@ -451,7 +453,7 @@ class Episode(Playable, Video):
     """ Represents a single Shows Episode.
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Video'
             TYPE (str): 'episode'
             art (str): Key to episode artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (str): Unknown (media).
