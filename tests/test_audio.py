@@ -308,3 +308,7 @@ def test_audio_album_download(monkeydownload, album, tmpdir):
 def test_audio_Artist_download(monkeydownload, artist, tmpdir):
     f = artist.download(savepath=str(tmpdir))
     assert len(f) == 14
+
+
+def test_audio_Album_label(album, patched_http_call):
+    album.addLabel('YO')
