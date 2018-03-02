@@ -125,7 +125,6 @@ class Movie(Playable, Video):
         Video._loadData(self, data)
         Playable._loadData(self, data)
 
-        self.key = data.attrib.get('key')
         self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
