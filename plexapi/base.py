@@ -182,7 +182,12 @@ class PlexObject(object):
 
     def reload(self, key=None):
         """ Reload the data for this object from self.key. """
-        key = key or self.key
+        if key is None:
+            if hasattr(self, '_details_key'):
+                key = self._details_key
+            else:
+                key = self.key
+
         if not key:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
@@ -275,7 +280,7 @@ class PlexPartialObject(PlexObject):
         if attr == 'key' or attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
-        # Log warning that were reloading the object
+        # Log the reload.
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
         objname = "%s '%s'" % (clsname, title) if title else clsname
@@ -310,6 +315,8 @@ class PlexPartialObject(PlexObject):
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie contain.
         """
+        #print(self._details_key == self._initpath)
+        #return self._details_key == self._initpath or not self.key or self.key == self._initpath
         return not self.key or self.key == self._initpath
 
     def isPartialObject(self):
@@ -447,6 +454,14 @@ class Playable(object):
         self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
+
+    def isFullObject(self):
+        """ Retruns True if this is already a full object. A full object means all attributes
+            were populated from the api path representing only this item. For example, the
+            search result for a movie often only contain a portion of the attributes a full
+            object (main url) for that movie contain.
+        """
+        return self._details_key == self._initpath or not self.key
 
     def getStreamURL(self, **params):
         """ Returns a stream url that may be used by external applications such as VLC.

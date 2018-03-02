@@ -79,7 +79,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable):
+class Movie(Playable, Video):
     """ Represents a single Movie.
 
         Attributes:
@@ -115,14 +115,18 @@ class Movie(Video, Playable):
     """
     TAG = 'Video'
     TYPE = 'movie'
-    _include = '?checkFiles=1&includeExtras=1&includeRelated=1&includeRelatedCount=5&includeOnDeck=1&includeChapters=1&includePopularLeaves=1&includeConcerts=1&includePreferences=1'
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeConcerts=1&includePreferences=1')
+
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
 
-        self.key = data.attrib.get('key') + self._include
+        self.key = data.attrib.get('key')
+        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
@@ -442,7 +446,7 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable):
+class Episode(Playable, Video):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -476,11 +480,15 @@ class Episode(Video, Playable):
     """
     TAG = 'Video'
     TYPE = 'episode'
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
+        self._details_key = self.key + self._include
         self._seasonNumber = None  # cached season number
         self.art = data.attrib.get('art')
         self.chapterSource = data.attrib.get('chapterSource')
@@ -509,6 +517,7 @@ class Episode(Video, Playable):
         self.writers = self.findItems(data, media.Writer)
         self.labels = self.findItems(data, media.Label)
         self.collections = self.findItems(data, media.Collection)
+        self.chapters = self.findItems(data, media.Chapter)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
