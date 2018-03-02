@@ -183,12 +183,7 @@ class PlexObject(object):
 
     def reload(self, key=None):
         """ Reload the data for this object from self.key. """
-        if key is None:
-            if hasattr(self, '_details_key'):
-                key = self._details_key
-            else:
-                key = self.key
-
+        key = key or self._details_key or self.key
         if not key:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
