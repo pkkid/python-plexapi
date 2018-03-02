@@ -111,14 +111,18 @@ class Movie(Video, Playable):
             producers (List<:class:`~plexapi.media.Producer`>): List of producers objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
+            chapters (List<:class:`~plexapi.media.Chapter`>): List of Chapter objects.
     """
     TAG = 'Video'
     TYPE = 'movie'
+    _include = '?checkFiles=1&includeExtras=1&includeRelated=1&includeRelatedCount=5&includeOnDeck=1&includeChapters=1&includePopularLeaves=1&includeConcerts=1&includePreferences=1'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
+
+        self.key = data.attrib.get('key') + self._include
         self.art = data.attrib.get('art')
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
@@ -147,6 +151,7 @@ class Movie(Video, Playable):
         self.roles = self.findItems(data, media.Role)
         self.writers = self.findItems(data, media.Writer)
         self.labels = self.findItems(data, media.Label)
+        self.chapters = self.findItems(data, media.Chapter)
 
     @property
     def actors(self):
