@@ -537,7 +537,7 @@ class MyPlexResource(PlexObject):
             synced (bool): Unknown (possibly True if the resource has synced content?)
     """
     TAG = 'Device'
-    key = 'https://plex.tv/api/resources?includeHttps=1'
+    key = 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
 
     def _loadData(self, data):
         self._data = data
@@ -615,6 +615,7 @@ class ResourceConnection(PlexObject):
         self.uri = data.attrib.get('uri')
         self.local = utils.cast(bool, data.attrib.get('local'))
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
+        self.relay = utils.cast(bool, data.attrib.get('relay'))
 
 
 class MyPlexDevice(PlexObject):
