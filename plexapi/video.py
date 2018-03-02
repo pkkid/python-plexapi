@@ -119,7 +119,6 @@ class Movie(Playable, Video):
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
                 '&includeConcerts=1&includePreferences=1')
 
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
@@ -156,6 +155,7 @@ class Movie(Playable, Video):
         self.writers = self.findItems(data, media.Writer)
         self.labels = self.findItems(data, media.Label)
         self.chapters = self.findItems(data, media.Chapter)
+        self.similar = self.findItems(data, media.Similar)
 
     @property
     def actors(self):
@@ -264,6 +264,7 @@ class Show(Video):
         self.genres = self.findItems(data, media.Genre)
         self.roles = self.findItems(data, media.Role)
         self.labels = self.findItems(data, media.Label)
+        self.similar = self.findItems(data, media.Similar)
 
     @property
     def actors(self):

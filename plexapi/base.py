@@ -43,6 +43,7 @@ class PlexObject(object):
         self._server = server
         self._data = data
         self._initpath = initpath or self.key
+        self._details_key = ''
         if data is not None:
             self._loadData(data)
 

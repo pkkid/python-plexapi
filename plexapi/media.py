@@ -477,7 +477,6 @@ class Chapter(PlexObject):
     """
     TAG = 'Chapter'
 
-
     def _loadData(self, data):
         self._data = data
         self.id = cast(int, data.attrib.get('id', 0))
