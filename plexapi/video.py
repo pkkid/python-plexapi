@@ -30,7 +30,7 @@ class Video(PlexPartialObject):
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.key = data.attrib.get('key')
+        self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
