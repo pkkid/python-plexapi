@@ -297,6 +297,7 @@ class TranscodeSession(PlexObject):
         self.remaining = cast(int, data.attrib.get('remaining'))
         self.speed = cast(int, data.attrib.get('speed'))
         self.throttled = cast(int, data.attrib.get('throttled'))
+        self.sourceVideoCodec = data.attrib.get('sourceVideoCodec')
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoDecision = data.attrib.get('videoDecision')
         self.width = cast(int, data.attrib.get('width'))
