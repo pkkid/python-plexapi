@@ -251,7 +251,8 @@ class Track(Audio, Playable):
             parentThumb (str): URL to album thumbnail image.
             parentTitle (str): Name of the album for this track.
             primaryExtraKey (str): Unknown
-            ratingCount (int): Rating of this track (1-10?)
+            ratingCount (int): Unknown
+            userRating (float): Rating of this track (0.0 - 10.0) equaling (0 stars - 5 stars)
             viewOffset (int): Unknown
             year (int): Year this track was released.
             sessionKey (int): Session Key (active sessions only).
@@ -284,6 +285,7 @@ class Track(Audio, Playable):
         self.parentTitle = data.attrib.get('parentTitle')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
+        self.userRating = utils.cast(float, data.attrib.get('userRating', 0))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
