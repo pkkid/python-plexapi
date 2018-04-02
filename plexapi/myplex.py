@@ -512,11 +512,12 @@ class MyPlexServerShare(PlexObject):
 class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
         content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
-        for the data presented here can be found at: https://plex.tv/api/resources?includeHttps=1
+        for the data presented here can be found at:
+        https://plex.tv/api/resources?includeHttps=1&includeRelay=1
 
         Attributes:
             TAG (str): 'Device'
-            key (str): 'https://plex.tv/api/resources?includeHttps=1'
+            key (str): 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
             accessToken (str): This resources accesstoken.
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of :class:`~myplex.ResourceConnection` objects
@@ -537,7 +538,7 @@ class MyPlexResource(PlexObject):
             synced (bool): Unknown (possibly True if the resource has synced content?)
     """
     TAG = 'Device'
-    key = 'https://plex.tv/api/resources?includeHttps=1'
+    key = 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
 
     def _loadData(self, data):
         self._data = data
@@ -557,6 +558,11 @@ class MyPlexResource(PlexObject):
         self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
         self.connections = self.findItems(data, ResourceConnection)
+        self.publicAddressMatches = utils.cast(bool, data.attrib.get('publicAddressMatches'))
+        # This seems to only be available if its not your device (say are shared server)
+        self.httpsRequired = utils.cast(bool, data.attrib.get('httpsRequired'))
+        self.ownerid = utils.cast(int, data.attrib.get('ownerId', 0))
+        self.sourceTitle = data.attrib.get('sourceTitle')  # owners plex username.
 
     def connect(self, ssl=None, timeout=None):
         """ Returns a new :class:`~server.PlexServer` or :class:`~client.PlexClient` object.
@@ -615,6 +621,7 @@ class ResourceConnection(PlexObject):
         self.uri = data.attrib.get('uri')
         self.local = utils.cast(bool, data.attrib.get('local'))
         self.httpuri = 'http://%s:%s' % (self.address, self.port)
+        self.relay = utils.cast(bool, data.attrib.get('relay'))
 
 
 class MyPlexDevice(PlexObject):

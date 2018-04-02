@@ -470,6 +470,26 @@ class Writer(MediaTag):
 
 
 @utils.registerPlexObject
+class Chapter(PlexObject):
+    """ Represents a single Writer media tag.
+
+        Attributes:
+            TAG (str): 'Chapter'
+    """
+    TAG = 'Chapter'
+
+    def _loadData(self, data):
+        self._data = data
+        self.id = cast(int, data.attrib.get('id', 0))
+        self.filter = data.attrib.get('filter')  # I couldn't filter on it anyways
+        self.tag = data.attrib.get('tag')
+        self.title = self.tag
+        self.index = cast(int, data.attrib.get('index'))
+        self.start = cast(int, data.attrib.get('startTimeOffset'))
+        self.end = cast(int, data.attrib.get('endTimeOffset'))
+
+
+@utils.registerPlexObject
 class Field(PlexObject):
     """ Represents a single Field.
 

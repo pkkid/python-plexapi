@@ -30,7 +30,7 @@ class Video(PlexPartialObject):
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.key = data.attrib.get('key')
+        self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
@@ -79,11 +79,11 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable):
+class Movie(Playable, Video):
     """ Represents a single Movie.
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Video'
             TYPE (str): 'movie'
             art (str): Key to movie artwork (/library/metadata/<ratingkey>/art/<artid>)
             audienceRating (float): Audience rating (usually from Rotten Tomatoes).
@@ -111,14 +111,21 @@ class Movie(Video, Playable):
             producers (List<:class:`~plexapi.media.Producer`>): List of producers objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
+            chapters (List<:class:`~plexapi.media.Chapter`>): List of Chapter objects.
+            similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
     """
     TAG = 'Video'
     TYPE = 'movie'
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
+
+        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
@@ -147,6 +154,8 @@ class Movie(Video, Playable):
         self.roles = self.findItems(data, media.Role)
         self.writers = self.findItems(data, media.Writer)
         self.labels = self.findItems(data, media.Label)
+        self.chapters = self.findItems(data, media.Chapter)
+        self.similar = self.findItems(data, media.Similar)
 
     @property
     def actors(self):
@@ -204,7 +213,7 @@ class Show(Video):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Directory'
             TYPE (str): 'show'
             art (str): Key to show artwork (/library/metadata/<ratingkey>/art/<artid>)
             banner (str): Key to banner artwork (/library/metadata/<ratingkey>/art/<artid>)
@@ -223,6 +232,7 @@ class Show(Video):
             year (int): Year the show was released.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+            similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
     """
     TAG = 'Directory'
     TYPE = 'show'
@@ -255,6 +265,7 @@ class Show(Video):
         self.genres = self.findItems(data, media.Genre)
         self.roles = self.findItems(data, media.Role)
         self.labels = self.findItems(data, media.Label)
+        self.similar = self.findItems(data, media.Similar)
 
     @property
     def actors(self):
@@ -341,7 +352,7 @@ class Season(Video):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Directory'
             TYPE (str): 'season'
             leafCount (int): Number of episodes in season.
             index (int): Season number.
@@ -437,11 +448,11 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable):
+class Episode(Playable, Video):
     """ Represents a single Shows Episode.
 
         Attributes:
-            TAG (str): 'Diectory'
+            TAG (str): 'Video'
             TYPE (str): 'episode'
             art (str): Key to episode artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (str): Unknown (media).
@@ -471,11 +482,15 @@ class Episode(Video, Playable):
     """
     TAG = 'Video'
     TYPE = 'episode'
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
+        self._details_key = self.key + self._include
         self._seasonNumber = None  # cached season number
         self.art = data.attrib.get('art')
         self.chapterSource = data.attrib.get('chapterSource')
@@ -504,6 +519,7 @@ class Episode(Video, Playable):
         self.writers = self.findItems(data, media.Writer)
         self.labels = self.findItems(data, media.Label)
         self.collections = self.findItems(data, media.Collection)
+        self.chapters = self.findItems(data, media.Chapter)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
