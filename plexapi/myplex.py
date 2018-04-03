@@ -690,7 +690,7 @@ class MyPlexDevice(PlexObject):
         listargs = [[cls, url, self.token, timeout] for url in self.connections]
         log.info('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
-        _chooseConnection('Device', self.name, results)
+        return _chooseConnection('Device', self.name, results)
 
     def delete(self):
         """ Remove this device from your account. """
