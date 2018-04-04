@@ -255,6 +255,7 @@ class Show(Video):
         self.index = data.attrib.get('index')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.locations = self.listAttrs(data, 'path', etag='Location')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.rating = utils.cast(float, data.attrib.get('rating'))
@@ -360,6 +361,10 @@ class Season(Video):
             parentRatingKey (int): Unique key for this seasons :class:`~plexapi.video.Show`.
             parentTitle (str): Title of this seasons :class:`~plexapi.video.Show`.
             viewedLeafCount (int): Number of watched episodes in season.
+            parentTheme (str) Relative url for the shows theme.
+            primaryExtraKey (str):  Relative url for extras.
+
+
     """
     TAG = 'Directory'
     TYPE = 'season'
@@ -376,8 +381,12 @@ class Season(Video):
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.index = utils.cast(int, data.attrib.get('index'))
         self.parentKey = data.attrib.get('parentKey')
+        self.parentIndex = data.attrib.get('parentIndex')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
+        self.parentSummary = data.attrib.get('parentSummary')
         self.parentTitle = data.attrib.get('parentTitle')
+        self.parentTheme = data.attrib.get('parentTheme')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
 
     def __repr__(self):

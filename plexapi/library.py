@@ -23,8 +23,11 @@ class Library(PlexObject):
     def _loadData(self, data):
         self._data = data
         self._sectionsByID = {}  # cached Section UUIDs
+        self.art = data.attrib.get('art')
+        self.content = data.attrib.get('content')
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.size = data.attrib.get('size')
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
 
@@ -387,6 +390,11 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/onDeck' % self.key
         return self.fetchItems(key)
 
+    def newest(self):
+        """ Returns a list for the latest released media items."""
+        key = '/library/sections/%s/newest' % self.key
+        return self.fetchItems(key)
+
     def recentlyAdded(self, maxresults=50):
         """ Returns a list of media items recently added from this library section.
 
@@ -570,15 +578,16 @@ class ShowSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
+            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched', 'year', 'genre',
+                                         'contentRating', 'network', 'collection','guid', 'duplicate', 'label',
+                                         'episode.resolution')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
                 'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label')
+                       'guid', 'duplicate', 'label', 'episode.resolution') # <-this need more stuff. and tests
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
@@ -600,6 +609,14 @@ class ShowSection(LibrarySection):
         """
         return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
 
+    def recentlyViewed(self):
+        key = '/library/sections/%s/recentlyViewed' % self.key
+        return self.fetchItems(key)
+
+    def recentlyViewedShows(self):
+        key = '/library/sections/%s/recentlyViewedShows' % self.key
+        return self.fetchItems(key)
+
 
 class MusicSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
@@ -616,6 +633,10 @@ class MusicSection(LibrarySection):
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TAG = 'Directory'
     TYPE = 'artist'
+
+    def _loadData(self, data):
+        super(LibrarySection, self)._loadData(data)
+        self.enableAutoPhotoTags = data.attrib.get('enableAutoPhotoTags')
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """

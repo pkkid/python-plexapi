@@ -27,6 +27,7 @@ class Media(PlexObject):
             optimizedForStreaming (bool): True if video is optimized for streaming.
             videoCodec (str): Video codec used within the video (ex: ac3).
             videoFrameRate (str): Video frame rate (ex: 24p).
+            videoProfile (str): high; constrained baseline
             videoResolution (str): Video resolution (ex: sd).
             width (int): Width of the video in pixels (ex: 608).
             parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
@@ -39,6 +40,7 @@ class Media(PlexObject):
         self.aspectRatio = cast(float, data.attrib.get('aspectRatio'))
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
+        self.audioProfile = data.attrib.get('audioProfile')
         self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.container = data.attrib.get('container')
         self.duration = cast(int, data.attrib.get('duration'))
@@ -48,6 +50,7 @@ class Media(PlexObject):
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoFrameRate = data.attrib.get('videoFrameRate')
+        self.videoProfile = data.attrib.get('videoProfile')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
         self.parts = self.findItems(data, MediaPart)
@@ -85,14 +88,20 @@ class MediaPart(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.accessible = cast(bool, data.attrib.get('accessible', 0))
+        self.audioProfile = data.attrib.get('audioProfile')
         self.container = data.attrib.get('container')
+        self.exists = cast(bool, data.attrib.get('exists', 0))
         self.duration = cast(int, data.attrib.get('duration'))
         self.file = data.attrib.get('file')
+        self.has64bitOffsets = data.attrib.get('has64bitOffsets')
         self.id = cast(int, data.attrib.get('id'))
         self.indexes = data.attrib.get('indexes')
+        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
+        self.videoProfile = data.attrib.get('videoProfile')
 
     def _buildStreams(self, data):
         streams = []
@@ -330,6 +339,7 @@ class MediaTag(PlexObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = cast(int, data.attrib.get('id'))
+        self.filter = data.attrib.get('filter')
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
         # additional attributes only from hub search
