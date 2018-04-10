@@ -735,16 +735,17 @@ class Collections(PlexObject):
     TYPE = 'collection'
 
     def _loadData(self, data):
-        self.ratingKey = data.attrib.get('ratingKey')
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.key = data.attrib.get('key')
         self.type = data.attrib.get('type')
         self.title = data.attrib.get('title')
         self.subtype = data.attrib.get('subtype')
         self.summary = data.attrib.get('summary')
-        self.index = data.attrib.get('index')
+        self.index = utils.cast(int, data.attrib.get('index'))
         self.thumb = data.attrib.get('thumb')
-        self.addedAt = data.attrib.get('addedAt')
-        self.updatedAt = data.attrib.get('updatedAt')
-        self.childCount = data.attrib.get('childCount')
-        self.maxYear = data.attrib.get('maxYear')
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.childCount = utils.cast(int, data.attrib.get('childCount'))
+        self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.children = self.fetchItems(self.key)
