@@ -727,6 +727,7 @@ class Hub(PlexObject):
     def __len__(self):
         return self.size
 
+
 @utils.registerPlexObject
 class Collections(PlexObject):
 
@@ -747,4 +748,3 @@ class Collections(PlexObject):
         self.childCount = data.attrib.get('childCount')
         self.maxYear = data.attrib.get('maxYear')
         self.children = self.fetchItems(self.key)
-
