@@ -15,7 +15,8 @@ from plexapi.exceptions import NotFound
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4,
-               'artist': 8, 'album': 9, 'track': 10, 'photo': 14}
+               'artist': 8, 'album': 9, 'track': 10, 'photo': 14,
+               'collection': 18}
 PLEXOBJECTS = {}
 
 
@@ -129,8 +130,8 @@ def searchType(libtype):
     """ Returns the integer value of the library string type.
 
         Parameters:
-            libtype (str): LibType to lookup (movie, show, season, episode, artist, album, track)
-
+            libtype (str): LibType to lookup (movie, show, season, episode, artist, album, track,
+                                              collection)
         Raises:
             NotFound: Unknown libtype
     """

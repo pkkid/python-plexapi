@@ -565,6 +565,10 @@ class MovieSection(LibrarySection):
     TAG = 'Directory'
     TYPE = 'movie'
 
+    def collection(self, **kwargs):
+        """ Returns a list of collections from this library section. """
+        return self.search(libtype='collection', **kwargs)
+
 
 class ShowSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
@@ -600,6 +604,10 @@ class ShowSection(LibrarySection):
         """
         return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
 
+    def collection(self, **kwargs):
+        """ Returns a list of collections from this library section. """
+        return self.search(libtype='collection', **kwargs)
+
 
 class MusicSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
@@ -633,6 +641,10 @@ class MusicSection(LibrarySection):
     def searchTracks(self, **kwargs):
         """ Search for a track. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='track', **kwargs)
+
+    def collection(self, **kwargs):
+        """ Returns a list of collections from this library section. """
+        return self.search(libtype='collection', **kwargs)
 
 
 class PhotoSection(LibrarySection):
@@ -714,3 +726,25 @@ class Hub(PlexObject):
 
     def __len__(self):
         return self.size
+
+@utils.registerPlexObject
+class Collections(PlexObject):
+
+    TAG = 'Directory'
+    TYPE = 'collection'
+
+    def _loadData(self, data):
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.key = data.attrib.get('key')
+        self.type = data.attrib.get('type')
+        self.title = data.attrib.get('title')
+        self.subtype = data.attrib.get('subtype')
+        self.summary = data.attrib.get('summary')
+        self.index = data.attrib.get('index')
+        self.thumb = data.attrib.get('thumb')
+        self.addedAt = data.attrib.get('addedAt')
+        self.updatedAt = data.attrib.get('updatedAt')
+        self.childCount = data.attrib.get('childCount')
+        self.maxYear = data.attrib.get('maxYear')
+        self.children = self.fetchItems(self.key)
+
