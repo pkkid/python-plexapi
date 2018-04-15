@@ -748,4 +748,17 @@ class Collections(PlexObject):
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
-        self.children = self.fetchItems(self.key)
+
+    @property
+    def children(self):
+        return self.fetchItems(self.key)
+
+    def __len__(self):
+        return self.childCount
+
+    def delete(self):
+        part = '/library/metadata/%s' % self.ratingKey
+        return self._server.query(part, method=self._server._session.delete)
+
+    # def edit(self, **kwargs):
+    #    TODO
