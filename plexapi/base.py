@@ -572,6 +572,7 @@ class Playable(object):
             Parameters:
                 time (int): milliseconds watched
                 state (string): state of the video, default 'stopped'
+                duration (int): duration of the item
         """
         durationStr = ''
         if duration != None:
