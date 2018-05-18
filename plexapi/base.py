@@ -574,9 +574,11 @@ class Playable(object):
                 state (string): state of the video, default 'stopped'
                 duration (int): duration of the item
         """
-        durationStr = ''
+        durationStr = '&duration='
         if duration != None:
-            durationStr = '&duration=' + str(duration)
+            durationStr = durationStr + str(duration)
+        else:
+            durationStr = durationStr + str(self.duration)
         key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s' % (self.ratingKey, self.key,
                                                                                               time, state, durationStr)
         self._server.query(key)
