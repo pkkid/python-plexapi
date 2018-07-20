@@ -445,10 +445,11 @@ class PlexClient(PlexObject):
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
+        server_port = server_url[-1].strip('/')
 
         if self.product != 'OpenPHT':
             try:
-                self.sendCommand('timeline/subscribe', port=server_url[1].strip('/'), protocol='http')
+                self.sendCommand('timeline/subscribe', port=server_port, protocol='http')
             except:  # noqa: E722
                 # some clients dont need or like this and raises http 400.
                 # We want to include the exception in the log,
@@ -459,7 +460,7 @@ class PlexClient(PlexObject):
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
-            'port': server_url[-1],
+            'port': server_port,
             'offset': offset,
             'key': media.key,
             'token': media._server._token,
