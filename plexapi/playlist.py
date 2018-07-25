@@ -132,3 +132,14 @@ class Playlist(PlexPartialObject, Playable):
         # Login to your server using your friends credentials.
         user_server = PlexServer(self._server._baseurl, token)
         return self.create(user_server, self.title, self.items())
+    
+    def deleteFromUser(self, user):
+        """ Delete playlist to another user account. """
+        from plexapi.server import PlexServer
+        myplex = self._server.myPlexAccount()
+        user = myplex.user(user)
+        # Get the token for your machine.
+        token = user.get_token(self._server.machineIdentifier)
+        # Login to your server using your friends credentials.
+        user_server = PlexServer(self._server._baseurl, token)
+        return [playlist.delete() for playlist in user_server.playlists() if playlist.title == self.title]
