@@ -3,7 +3,7 @@ import copy
 import requests
 import time
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_IDENTIFIER
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
@@ -11,6 +11,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
+from plexapi.sync import SyncList
 from plexapi.utils import joinArgs
 
 
@@ -377,6 +378,14 @@ class MyPlexAccount(PlexObject):
             params['optOutLibraryStats'] = int(library)
         url = 'https://plex.tv/api/v2/user/privacy'
         return self.query(url, method=self._session.put, params=params)
+
+    def syncItems(self, clientId=None):
+        if clientId is None:
+            clientId = X_PLEX_IDENTIFIER
+
+        data = self.query(SyncList.key.format(clientId=clientId))
+
+        return SyncList(self, data)
 
 
 class MyPlexUser(PlexObject):

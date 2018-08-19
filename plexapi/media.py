@@ -92,6 +92,11 @@ class MediaPart(PlexObject):
         self.indexes = data.attrib.get('indexes')
         self.key = data.attrib.get('key')
         self.size = cast(int, data.attrib.get('size'))
+        self.decision = data.attrib.get('decision')
+        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.syncItemId = cast(int, data.attrib.get('syncItemId'))
+        self.syncState = data.attrib.get('syncState')
+        self.videoProfile = data.attrib.get('videoProfile')
         self.streams = self._buildStreams(data)
 
     def _buildStreams(self, data):
