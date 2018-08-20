@@ -84,7 +84,7 @@ class Status(PlexObject):
         self._data = data
         self.failureCode = data.attrib.get('failureCode')
         self.failure = data.attrib.get('failure')
-        self.state = data.attrib.get('complete')
+        self.state = data.attrib.get('state')
         self.itemsCount = plexapi.utils.cast(int, data.attrib.get('itemsCount'))
         self.itemsCompleteCount = plexapi.utils.cast(int, data.attrib.get('itemsCompleteCount'))
         self.totalSize = plexapi.utils.cast(int, data.attrib.get('totalSize'))
