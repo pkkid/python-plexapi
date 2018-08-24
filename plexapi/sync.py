@@ -2,28 +2,33 @@
 import requests
 import plexapi
 from plexapi.exceptions import NotFound
-from plexapi.base import PlexObject, Playable
+from plexapi.base import PlexObject
 
+"""
+You can work with Mobile Sync on other devices straight away, but if you'd like to use your app as sync-target you
+need to init some variables.
 
-def init(replace_provides=False):
-    if replace_provides or not plexapi.X_PLEX_PROVIDES:
+Example:
+    def init_sync():
+        import plexapi
         plexapi.X_PLEX_PROVIDES = 'sync-target'
-    else:
-        plexapi.X_PLEX_PROVIDES += ',sync-target'
+        plexapi.BASE_HEADERS['X-Plex-Sync-Version'] = '2'
+        plexapi.BASE_HEADERS['X-Plex-Provides'] = plexapi.X_PLEX_PROVIDES
 
-    plexapi.BASE_HEADERS['X-Plex-Sync-Version'] = '2'
-    plexapi.BASE_HEADERS['X-Plex-Provides'] = plexapi.X_PLEX_PROVIDES
+        # mimic iPhone SE
+        plexapi.X_PLEX_PLATFORM = 'iOS'
+        plexapi.X_PLEX_PLATFORM_VERSION = '11.4.1'
+        plexapi.X_PLEX_DEVICE = 'iPhone'
 
-    # mimic iPhone SE
-    plexapi.X_PLEX_PLATFORM = 'iOS'
-    plexapi.X_PLEX_PLATFORM_VERSION = '11.4.1'
-    plexapi.X_PLEX_DEVICE = 'iPhone'
+        plexapi.BASE_HEADERS['X-Plex-Platform'] = plexapi.X_PLEX_PLATFORM
+        plexapi.BASE_HEADERS['X-Plex-Platform-Version'] = plexapi.X_PLEX_PLATFORM_VERSION
+        plexapi.BASE_HEADERS['X-Plex-Device'] = plexapi.X_PLEX_DEVICE
+        plexapi.BASE_HEADERS['X-Plex-Model'] = '8,4'
+        plexapi.BASE_HEADERS['X-Plex-Vendor'] = 'Apple'
 
-    plexapi.BASE_HEADERS['X-Plex-Platform'] = plexapi.X_PLEX_PLATFORM
-    plexapi.BASE_HEADERS['X-Plex-Platform-Version'] = plexapi.X_PLEX_PLATFORM_VERSION
-    plexapi.BASE_HEADERS['X-Plex-Device'] = plexapi.X_PLEX_DEVICE
-    plexapi.BASE_HEADERS['X-Plex-Model'] = '8,4'
-    plexapi.BASE_HEADERS['X-Plex-Vendor'] = 'Apple'
+    You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
+    to explicitly specify that your app supports `sync-target`
+"""
 
 
 class SyncItem(PlexObject):
