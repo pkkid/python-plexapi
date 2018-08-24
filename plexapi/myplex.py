@@ -601,7 +601,7 @@ class MyPlexResource(PlexObject):
         else: connections = https + http
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
-        listargs = [[cls, url, self.accessToken, timeout, X_PLEX_ENABLE_FAST_CONNECT] for url in connections]
+        listargs = [[cls, url, self.accessToken, timeout] for url in connections]
         log.info('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
@@ -696,7 +696,7 @@ class MyPlexDevice(PlexObject):
                 :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
         cls = PlexServer if 'server' in self.provides else PlexClient
-        listargs = [[cls, url, self.token, timeout, X_PLEX_ENABLE_FAST_CONNECT] for url in self.connections]
+        listargs = [[cls, url, self.token, timeout] for url in self.connections]
         log.info('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Device', self.name, results)
@@ -707,7 +707,7 @@ class MyPlexDevice(PlexObject):
         self._server.query(key, self._server._session.delete)
 
 
-def _connect(cls, url, token, timeout, fast, results, i, connected_event=None):
+def _connect(cls, url, token, timeout, results, i, connected_event=None):
     """ Connects to the specified cls with url and token. Stores the connection
         information to results[i] in a threadsafe way.
     """
@@ -716,7 +716,7 @@ def _connect(cls, url, token, timeout, fast, results, i, connected_event=None):
         device = cls(baseurl=url, token=token, timeout=timeout)
         runtime = int(time.time() - starttime)
         results[i] = (url, token, device, runtime)
-        if fast and connected_event:
+        if X_PLEX_ENABLE_FAST_CONNECT and connected_event:
             connected_event.set()
     except Exception as err:
         runtime = int(time.time() - starttime)
