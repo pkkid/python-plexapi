@@ -92,3 +92,12 @@ class Status(PlexObject):
         self.itemsDownloadedCount = plexapi.utils.cast(int, data.attrib.get('itemsDownloadedCount'))
         self.itemsReadyCount = plexapi.utils.cast(int, data.attrib.get('itemsReadyCount'))
         self.itemsSuccessfulCount = plexapi.utils.cast(int, data.attrib.get('itemsSuccessfulCount'))
+
+    def __repr__(self):
+        return str(dict(
+            itemsCount=self.itemsCount,
+            itemsCompleteCount=self.itemsCompleteCount,
+            itemsDownloadedCount=self.itemsDownloadedCount,
+            itemsReadyCount=self.itemsReadyCount,
+            itemsSuccessfulCount=self.itemsSuccessfulCount
+        ))
