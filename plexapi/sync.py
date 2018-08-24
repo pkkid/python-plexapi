@@ -2,7 +2,7 @@
 import requests
 import plexapi
 from plexapi.exceptions import NotFound
-from plexapi.base import PlexObject
+from plexapi.base import PlexObject, Playable
 
 
 def init(replace_provides=False):
@@ -57,11 +57,9 @@ class SyncItem(PlexObject):
         key = '/sync/items/%s' % self.id
         return server.fetchItems(key, timeout=timeout)
 
-    def markAsDone(self):
-        server = self.server().connect()
-        url = '/sync/%s/%s/files/%s/downloaded' % (
-            self.clientIdentifier, server.machineIdentifier, self.id)
-        server.query(url, method=requests.put)
+    def markDownloaded(self, media: Playable):
+        url = '/sync/%s/item/%s/downloaded' % (self.clientIdentifier, media.ratingKey)
+        media._server.query(url, method=requests.put)
 
 
 class SyncList(PlexObject):
