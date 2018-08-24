@@ -144,7 +144,8 @@ class PlexObject(object):
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
         """
-        data = self._server.query(ekey)
+        timeout = kwargs.pop('timeout', None)
+        data = self._server.query(ekey, timeout=timeout)
         return self.findItems(data, cls, ekey, **kwargs)
 
     def findItems(self, data, cls=None, initpath=None, **kwargs):
