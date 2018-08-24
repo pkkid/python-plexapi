@@ -52,7 +52,7 @@ class SyncItem(PlexObject):
         self.location = data.find('Location').attrib.copy()
 
     def server(self):
-        server = list(filter(lambda x: x.clientIdentifier == self.machineIdentifier, self._server.resources()))
+        server = [s for s in self._server.resources() if s.clientIdentifier == self.machineIdentifier]
         if 0 == len(server):
             raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
         return server[0]

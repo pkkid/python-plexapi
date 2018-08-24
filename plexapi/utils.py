@@ -163,7 +163,7 @@ def threaded(callback, listargs):
         if all([not t.is_alive() for t in threads]):
             break
         time.sleep(0.05)
-    return list(filter(lambda r: r is not None, results))
+    return [r for r in results if r is not None]
 
 
 def toDatetime(value, format=None):
