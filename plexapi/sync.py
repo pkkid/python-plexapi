@@ -69,10 +69,13 @@ class SyncList(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.clientId = data.attrib.get('clientIdentifier')
+        self.items = []
 
         for elem in data:
             if elem.tag == 'SyncItems':
-                self.items = self.findItems(elem, SyncItem)
+                for sync_item in elem:
+                    item = SyncItem(self._server, sync_item, clientIdentifier=self.clientId)
+                    self.items.append(item)
 
 
 class Status(PlexObject):
