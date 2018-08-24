@@ -57,7 +57,13 @@ class SyncItem(PlexObject):
         key = '/sync/items/%s' % self.id
         return server.fetchItems(key, timeout=timeout)
 
-    def markDownloaded(self, media: Playable):
+    def markDownloaded(self, media):
+        """
+        Mark the file as downloaded within current SyncItem
+
+        :param media:
+        :type media: base.Playable
+        """
         url = '/sync/%s/item/%s/downloaded' % (self.clientIdentifier, media.ratingKey)
         media._server.query(url, method=requests.put)
 
