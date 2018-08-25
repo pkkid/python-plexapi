@@ -139,12 +139,12 @@ class PlexObject(object):
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
-    def fetchItems(self, ekey, cls=None, timeout=None, **kwargs):
+    def fetchItems(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
         """
-        data = self._server.query(ekey, timeout=timeout)
+        data = self._server.query(ekey)
         return self.findItems(data, cls, ekey, **kwargs)
 
     def findItems(self, data, cls=None, initpath=None, **kwargs):

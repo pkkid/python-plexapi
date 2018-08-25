@@ -57,10 +57,10 @@ class SyncItem(PlexObject):
             raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
         return server[0]
 
-    def getMedia(self, timeout=None):
+    def getMedia(self):
         server = self.server().connect()
         key = '/sync/items/%s' % self.id
-        return server.fetchItems(key, timeout=timeout)
+        return server.fetchItems(key)
 
     def markDownloaded(self, media):
         """
