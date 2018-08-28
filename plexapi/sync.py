@@ -35,7 +35,7 @@ class SyncItem(PlexObject):
     TAG = 'SyncItem'
 
     def __init__(self, server, data, initpath=None, clientIdentifier=None):
-        super().__init__(server, data, initpath)
+        super(SyncItem, self).__init__(server, data, initpath)
         self.clientIdentifier = clientIdentifier
 
     def _loadData(self, data):
