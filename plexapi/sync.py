@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-import requests
-import plexapi
-from plexapi.exceptions import NotFound
-from plexapi.base import PlexObject
-
 """
 You can work with Mobile Sync on other devices straight away, but if you'd like to use your app as sync-target you
 need to init some variables.
@@ -29,6 +24,11 @@ Example:
     You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
     to explicitly specify that your app supports `sync-target`
 """
+
+import requests
+import plexapi
+from plexapi.exceptions import NotFound
+from plexapi.base import PlexObject
 
 
 class SyncItem(PlexObject):
