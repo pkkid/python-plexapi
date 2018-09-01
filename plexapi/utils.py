@@ -7,7 +7,7 @@ import time
 import zipfile
 from datetime import datetime
 from getpass import getpass
-import threading
+from threading import Thread
 from tqdm import tqdm
 from plexapi import compat
 from plexapi.exceptions import NotFound
@@ -152,18 +152,15 @@ def threaded(callback, listargs):
             listargs (list): List of lists; \*args to pass each thread.
     """
     threads, results = [], []
-    connected_event = threading.Event()
     for args in listargs:
         args += [results, len(results)]
         results.append(None)
-        threads.append(threading.Thread(target=callback, args=args, kwargs=dict(connected_event=connected_event)))
+        threads.append(Thread(target=callback, args=args))
         threads[-1].setDaemon(True)
         threads[-1].start()
-    while not connected_event.is_set():
-        if all([not t.is_alive() for t in threads]):
-            break
-        time.sleep(0.05)
-    return [r for r in results if r is not None]
+    for thread in threads:
+        thread.join()
+    return results
 
 
 def toDatetime(value, format=None):
