@@ -3,7 +3,7 @@ import copy
 import requests
 import time
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
@@ -698,15 +698,28 @@ class MyPlexDevice(PlexObject):
         self._server.query(key, self._server._session.delete)
 
 
-def _connect(cls, url, token, timeout, results, i):
+def _connect(cls, url, token, timeout, results, i, job_is_done_event=None):
     """ Connects to the specified cls with url and token. Stores the connection
         information to results[i] in a threadsafe way.
+
+        Arguments:
+            cls: the class which is responsible for establishing connection, basically it's
+                 :class:`~plexapi.client.PlexClient` or :class:`~plexapi.server.PlexServer`
+            url (str): url which should be passed as `baseurl` argument to cls.__init__()
+            token (str): authentication token which should be passed as `baseurl` argument to cls.__init__()
+            timeout (int): timeout which should be passed as `baseurl` argument to cls.__init__()
+            results (list): pre-filled list for results
+            i (int): index of current job, should be less than len(results)
+            job_is_done_event (:class:`~threading.Event`): is X_PLEX_ENABLE_FAST_CONNECT is True then the
+                  event would be set as soon the connection is established
     """
     starttime = time.time()
     try:
         device = cls(baseurl=url, token=token, timeout=timeout)
         runtime = int(time.time() - starttime)
         results[i] = (url, token, device, runtime)
+        if X_PLEX_ENABLE_FAST_CONNECT and job_is_done_event:
+            job_is_done_event.set()
     except Exception as err:
         runtime = int(time.time() - starttime)
         log.error('%s: %s', url, err)

@@ -7,7 +7,7 @@ import time
 import zipfile
 from datetime import datetime
 from getpass import getpass
-from threading import Thread
+from threading import Thread, Event
 from tqdm import tqdm
 from plexapi import compat
 from plexapi.exceptions import NotFound
@@ -145,22 +145,26 @@ def searchType(libtype):
 
 def threaded(callback, listargs):
     """ Returns the result of <callback> for each set of \*args in listargs. Each call
-        to <callback. is called concurrently in their own separate threads.
+        to <callback> is called concurrently in their own separate threads.
 
         Parameters:
             callback (func): Callback function to apply to each set of \*args.
             listargs (list): List of lists; \*args to pass each thread.
     """
     threads, results = [], []
+    job_is_done_event = Event()
     for args in listargs:
         args += [results, len(results)]
         results.append(None)
-        threads.append(Thread(target=callback, args=args))
+        threads.append(Thread(target=callback, args=args, kwargs=dict(job_is_done_event=job_is_done_event)))
         threads[-1].setDaemon(True)
         threads[-1].start()
-    for thread in threads:
-        thread.join()
-    return results
+    while not job_is_done_event.is_set():
+        if all([not t.is_alive() for t in threads]):
+            break
+        time.sleep(0.05)
+
+    return [r for r in results if r is not None]
 
 
 def toDatetime(value, format=None):
