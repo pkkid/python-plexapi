@@ -28,7 +28,7 @@ to explicitly specify that your app supports `sync-target`.
 
 import requests
 import plexapi
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import NotFound, BadRequest
 from plexapi.base import PlexObject
 
 
@@ -72,10 +72,10 @@ class SyncItem(PlexObject):
         self.metadataType = data.attrib.get('metadataType')
         self.contentType = data.attrib.get('contentType')
         self.machineIdentifier = data.find('Server').get('machineIdentifier')
-        self.status = Status(self._server, data.find(Status.TAG))
-        self.mediaSettings = MediaSettings(self._server, data.find(MediaSettings.TAG))
-        self.policy = Policy(self._server, data.find(Policy.TAG))
-        self.location = data.find('Location').attrib.copy()
+        self.status = Status(**data.find('Status').attrib)
+        self.mediaSettings = MediaSettings(**data.find('MediaSettings').attrib)
+        self.policy = Policy(**data.find('Policy').attrib)
+        self.location = data.find('Location').attrib.get('uri', '')
 
     def server(self):
         """ Returns :class:`~plexapi.myplex.MyPlexResource` with server of current item.
@@ -126,7 +126,7 @@ class SyncList(PlexObject):
                     self.items.append(item)
 
 
-class Status(PlexObject):
+class Status(object):
     """ Represents a current status of specific :class:`~plexapi.sync.SyncItem`.
 
         Attributes:
@@ -140,21 +140,21 @@ class Status(PlexObject):
             totalSize (int): total size in bytes of complete items
             itemsSuccessfulCount (int): unknown, in my experience it always was equal to `itemsCompleteCount`
     """
-    TAG = 'Status'
 
-    def _loadData(self, data):
-        self._data = data
-        self.failureCode = data.attrib.get('failureCode')
-        self.failure = data.attrib.get('failure')
-        self.state = data.attrib.get('state')
-        self.itemsCount = plexapi.utils.cast(int, data.attrib.get('itemsCount'))
-        self.itemsCompleteCount = plexapi.utils.cast(int, data.attrib.get('itemsCompleteCount'))
-        self.totalSize = plexapi.utils.cast(int, data.attrib.get('totalSize'))
-        self.itemsDownloadedCount = plexapi.utils.cast(int, data.attrib.get('itemsDownloadedCount'))
-        self.itemsReadyCount = plexapi.utils.cast(int, data.attrib.get('itemsReadyCount'))
-        self.itemsSuccessfulCount = plexapi.utils.cast(int, data.attrib.get('itemsSuccessfulCount'))
+    def __init__(self, itemsCount, itemsCompleteCount, state, totalSize, itemsDownloadedCount, itemsReadyCount,
+                 itemsSuccessfulCount, failureCode, failure):
+        self.itemsDownloadedCount = plexapi.utils.cast(int, itemsDownloadedCount)
+        self.totalSize = plexapi.utils.cast(int, totalSize)
+        self.itemsReadyCount = plexapi.utils.cast(int, itemsReadyCount)
+        self.failureCode = failureCode
+        self.failure = failure
+        self.itemsSuccessfulCount = plexapi.utils.cast(int, itemsSuccessfulCount)
+        self.state = state
+        self.itemsCompleteCount = plexapi.utils.cast(int, itemsCompleteCount)
+        self.itemsCount = plexapi.utils.cast(int, itemsCount)
 
-    def __repr__(self):
+
+def __repr__(self):
         return '<%s>:%s' % (self.__class__.__name__, dict(
             itemsCount=self.itemsCount,
             itemsCompleteCount=self.itemsCompleteCount,
@@ -164,34 +164,49 @@ class Status(PlexObject):
         ))
 
 
-class MediaSettings(PlexObject):
+class MediaSettings(object):
     """ Transcoding settings used for all media within :class:`~plexapi.sync.SyncItem`.
 
         Attributes:
             audioBoost (int): unknown
-            maxVideoBitrate (int): unknown
+            maxVideoBitrate (str): unknown, may be empty
             musicBitrate (int): unknown
             photoQuality (int): unknown
             photoResolution (str): maximum photo resolution, formatted as WxH (e.g. `1920x1080`)
-            videoResolution (str): maximum video resolution, formatted as WxH (e.g. `1280x720`)
-            subtitleSize (int): unknown
+            videoResolution (str): maximum video resolution, formatted as WxH (e.g. `1280x720`, may be empty)
+            subtitleSize (str): unknown, usually equals to 0, but sometimes empty string
             videoQuality (int): unknown
     """
-    TAG = 'MediaSettings'
 
-    def _loadData(self, data):
-        self._data = data
-        self.audioBoost = plexapi.utils.cast(int, data.attrib.get('audioBoost'))
-        self.maxVideoBitrate = plexapi.utils.cast(int, data.attrib.get('maxVideoBitrate'))
-        self.musicBitrate = plexapi.utils.cast(int, data.attrib.get('musicBitrate'))
-        self.photoQuality = plexapi.utils.cast(int, data.attrib.get('photoQuality'))
-        self.photoResolution = data.attrib.get('photoResolution')
-        self.videoResolution = data.attrib.get('videoResolution')
-        self.subtitleSize = plexapi.utils.cast(int, data.attrib.get('subtitleSize'))
-        self.videoQuality = plexapi.utils.cast(int, data.attrib.get('videoQuality'))
+    def __init__(self, maxVideoBitrate, videoQuality, videoResolution, audioBoost=100, musicBitrate=192,
+                 photoQuality=74, photoResolution='1920x1080', subtitleSize=''):
+        self.audioBoost = plexapi.utils.cast(int, audioBoost)
+        self.maxVideoBitrate = plexapi.utils.cast(int, maxVideoBitrate)
+        self.musicBitrate = plexapi.utils.cast(int, musicBitrate)
+        self.photoQuality = plexapi.utils.cast(int, photoQuality)
+        self.photoResolution = photoResolution
+        self.videoResolution = videoResolution
+        self.subtitleSize = subtitleSize
+        self.videoQuality = plexapi.utils.cast(int, videoQuality)
+
+    @staticmethod
+    def create(video_quality):
+        """ Create a :class:`~MediaSettings` object, based on provided video quality value
+
+        Raises:
+             :class:`plexapi.exceptions.BadRequest` when provided unknown video quality
+        """
+        if video_quality == VIDEO_QUALITY_ORIGINAL:
+            return MediaSettings('', '', '')
+        elif video_quality < len(VIDEO_QUALITIES['bitrate']):
+            return MediaSettings(VIDEO_QUALITIES['bitrate'][video_quality],
+                                 VIDEO_QUALITIES['videoQuality'][video_quality],
+                                 VIDEO_QUALITIES['videoResolution'][video_quality])
+        else:
+            raise BadRequest('Unexpected video quality')
 
 
-class Policy(PlexObject):
+class Policy(object):
     """ Policy of syncing the media.
 
         Attributes:
@@ -199,10 +214,9 @@ class Policy(PlexObject):
             value (int): valid only when `scope=count`, means amount of media to sync
             unwatched (bool): True means disallow to sync watched media
     """
-    TAG = 'Policy'
 
-    def _loadData(self, data):
-        self._data = data
-        self.scope = data.attrib.get('scope')
-        self.value = plexapi.utils.cast(int, data.attrib.get('value'))
-        self.unwatched = plexapi.utils.cast(bool, data.attrib.get('unwatched'))
+    def __init__(self, scope, unwatched, value=0):
+        self.scope = scope
+        self.unwatched = plexapi.utils.cast(bool, unwatched)
+        self.value = plexapi.utils.cast(int, value)
+
