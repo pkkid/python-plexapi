@@ -159,10 +159,13 @@ class PlexObject(object):
             kwargs['type'] = cls.TYPE
         # loop through all data elements to find matches
         items = []
+        librarySectionID = data.attrib.get('librarySectionID')
         for elem in data:
             if self._checkAttrs(elem, **kwargs):
                 item = self._buildItemOrNone(elem, cls, initpath)
                 if item is not None:
+                    if librarySectionID:
+                        item.librarySectionID = librarySectionID
                     items.append(item)
         return items
 
