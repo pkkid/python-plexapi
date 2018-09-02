@@ -220,3 +220,22 @@ class Policy(object):
         self.unwatched = plexapi.utils.cast(bool, unwatched)
         self.value = plexapi.utils.cast(int, value)
 
+
+VIDEO_QUALITIES = {
+    'bitrate': [64, 96, 208, 320, 720, 1500, 2e3, 3e3, 4e3, 8e3, 1e4, 12e3, 2e4],
+    'videoResolution': ["220x128", "220x128", "284x160", "420x240", "576x320", "720x480", "1280x720", "1280x720", "1280x720", "1920x1080", "1920x1080", "1920x1080", "1920x1080"],
+    'videoQuality': [10, 20, 30, 30, 40, 60, 60, 75, 100, 60, 75, 90, 100],
+}
+
+VIDEO_QUALITY_0_2_MBPS = 2
+VIDEO_QUALITY_0_3_MBPS = 3
+VIDEO_QUALITY_0_7_MBPS = 4
+VIDEO_QUALITY_1_5_MBPS_480p = 5
+VIDEO_QUALITY_2_MBPS_720p = 6
+VIDEO_QUALITY_3_MBPS_720p = 7
+VIDEO_QUALITY_4_MBPS_720p = 8
+VIDEO_QUALITY_8_MBPS_1080p = 9
+VIDEO_QUALITY_10_MBPS_1080p = 10
+VIDEO_QUALITY_12_MBPS_1080p = 11
+VIDEO_QUALITY_20_MBPS_1080p = 12
+VIDEO_QUALITY_ORIGINAL = -1

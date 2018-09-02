@@ -543,6 +543,53 @@ class LibrarySection(PlexObject):
             raise BadRequest('Unknown sort dir: %s' % sdir)
         return '%s:%s' % (lookup[scol], sdir)
 
+    def sync(self, client, policy, media_settings, title=None, sort=None, libtype=None, **kwargs):
+        """ Add current library section as sync item for specified device.
+            See description of :func:`plexapi.library.LibraySection.search()` for details about filtering / sorting.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi import myplex
+                    from plexapi.sync import Policy, MediaSettings, VIDEO_QUALITY_3_MBPS_720p
+
+                    c = myplex.MyPlexAccount()
+                    target = c.device('Plex Client')
+                    sync_items_wd = c.syncItems(target.clientIdentifier)
+                    srv = c.resource('Server Name').connect()
+                    movies = srv.library.section('Movies')
+                    policy = Policy('count', True, 1)
+                    media_settings = MediaSettings.create(VIDEO_QUALITY_3_MBPS_720p)
+                    movies.sync(target, policy, media_settings, title='Next best movie', sort='rating:desc')
+
+        """
+        from plexapi.sync import SyncItem
+
+        args = {}
+        for category, value in kwargs.items():
+            args[category] = self._cleanSearchFilter(category, value, libtype)
+        if sort is not None:
+            args['sort'] = self._cleanSearchSort(sort)
+        if libtype is not None:
+            args['type'] = utils.searchType(libtype)
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self.title
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.CONTENT_TYPE
+        sync_item.metadataType = self.METADATA_TYPE
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        key = '/library/sections/%s/all' % self.key
+
+        sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key + utils.joinArgs(args)))
+        sync_item.policy = policy
+        sync_item.mediaSettings = media_settings
+
+        return myplex.sync(client, sync_item)
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
@@ -564,6 +611,8 @@ class MovieSection(LibrarySection):
                     'mediaHeight', 'duration')
     TAG = 'Directory'
     TYPE = 'movie'
+    METADATA_TYPE = 'movie'
+    CONTENT_TYPE = 'video'
 
     def collection(self, **kwargs):
         """ Returns a list of collections from this library section. """
@@ -587,6 +636,8 @@ class ShowSection(LibrarySection):
                     'rating', 'unwatched')
     TAG = 'Directory'
     TYPE = 'show'
+    METADATA_TYPE = 'episode'
+    CONTENT_TYPE = 'video'
 
     def searchShows(self, **kwargs):
         """ Search for a show. See :func:`~plexapi.library.LibrarySection.search()` for usage. """

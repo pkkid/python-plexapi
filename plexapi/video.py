@@ -2,6 +2,7 @@
 from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
+from plexapi.compat import quote_plus
 
 
 class Video(PlexPartialObject):
@@ -77,6 +78,28 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def sync(self, client, policy, media_settings, title=None):
+        """ Add current video as sync item for specified device.
+        """
+
+        from plexapi.sync import SyncItem
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self._pretty_filename()
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.listType
+        sync_item.metadataType = self.METADATA_TYPE
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        section = self._server.library.sectionByID(self.librarySectionID)
+
+        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.policy = policy
+        sync_item.mediaSettings = media_settings
+
+        return myplex.sync(client, sync_item)
+
 
 @utils.registerPlexObject
 class Movie(Playable, Video):
@@ -116,6 +139,7 @@ class Movie(Playable, Video):
     """
     TAG = 'Video'
     TYPE = 'movie'
+    METADATA_TYPE = 'movie'
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
                 '&includeConcerts=1&includePreferences=1')
@@ -236,6 +260,7 @@ class Show(Video):
     """
     TAG = 'Directory'
     TYPE = 'show'
+    METADATA_TYPE = 'episode'
 
     def __iter__(self):
         for season in self.seasons():
@@ -363,6 +388,7 @@ class Season(Video):
     """
     TAG = 'Directory'
     TYPE = 'season'
+    METADATA_TYPE = 'episode'
 
     def __iter__(self):
         for episode in self.episodes():
@@ -482,6 +508,8 @@ class Episode(Playable, Video):
     """
     TAG = 'Video'
     TYPE = 'episode'
+    METADATA_TYPE = 'episode'
+
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
                 '&includeConcerts=1&includePreferences=1')
