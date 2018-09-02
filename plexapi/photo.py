@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import NotFound, BadRequest
 
 
 @utils.registerPlexObject
@@ -122,4 +122,9 @@ class Photo(PlexPartialObject):
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        return self._server.library.sectionByID(self.photoalbum().librarySectionID)
+        if hasattr(self, 'librarySectionID'):
+            return self._server.library.sectionByID(self.librarySectionID)
+        elif self.parentKey:
+            return self._server.library.sectionByID(self.photoalbum().librarySectionID)
+        else:
+            raise BadRequest('Unable to get section for photo, can`t find librarySectionID')
