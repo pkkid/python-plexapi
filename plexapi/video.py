@@ -78,6 +78,9 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def _default_sync_title(self):
+        return self._prettyfilename()
+
     def sync(self, client, policy, media_settings, title=None):
         """ Add current video as sync item for specified device.
         """
@@ -86,7 +89,7 @@ class Video(PlexPartialObject):
 
         myplex = self._server.myPlexAccount()
         sync_item = SyncItem(self._server, None)
-        sync_item.title = title if title else self._pretty_filename()
+        sync_item.title = title if title else self._default_sync_title()
         sync_item.rootTitle = self.title
         sync_item.contentType = self.listType
         sync_item.metadataType = self.METADATA_TYPE
@@ -371,6 +374,9 @@ class Show(Video):
             filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
 
+    def _default_sync_title(self):
+        return self.title
+
 
 @utils.registerPlexObject
 class Season(Video):
@@ -471,6 +477,9 @@ class Season(Video):
         for episode in self.episodes():
             filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
+
+    def _default_sync_title(self):
+        return self.title
 
 
 @utils.registerPlexObject
