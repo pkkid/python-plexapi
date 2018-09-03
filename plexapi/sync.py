@@ -102,6 +102,11 @@ class SyncItem(PlexObject):
         url = '/sync/%s/item/%s/downloaded' % (self.clientIdentifier, media.ratingKey)
         media._server.query(url, method=requests.put)
 
+    def delete(self):
+        url = SyncList.key.format(clientId=self.clientIdentifier)
+        url += '/' + str(self.id)
+        self._server.query(url, self._server._session.delete)
+
 
 class SyncList(PlexObject):
     """ Represents a Mobile Sync state, specific for single client, within one SyncList may be presented
