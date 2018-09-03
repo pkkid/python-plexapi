@@ -423,12 +423,15 @@ class PlexServer(PlexObject):
         return '%s%s' % (self._baseurl, key)
 
     def refreshSynclist(self):
+        """ TODO """
         return self.query('/sync/refreshSynclists', self._session.put)
 
     def refreshContent(self):
+        """ TODO """
         return self.query('/sync/refreshContent', self._session.put)
 
     def refreshSync(self):
+        """ TODO """
         self.refreshSynclist()
         self.refreshContent()
 

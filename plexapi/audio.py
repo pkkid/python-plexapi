@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
+from plexapi.compat import quote_plus
 
 
 class Audio(PlexPartialObject):
@@ -23,6 +24,9 @@ class Audio(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
+
+    METADATA_TYPE = 'track'
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
@@ -56,6 +60,38 @@ class Audio(PlexPartialObject):
     def url(self, part):
         """ Returns the full URL for this audio item. Typically used for getting a specific track. """
         return self._server.url(part, includeToken=True) if part else None
+
+    def _defaultSyncTitle(self):
+        return self.title
+
+    def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
+        """ Add current video as sync item for specified device.
+
+            Parameters:
+                bitrate (int): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                limit (int): TODO
+                title (str): TODO
+        """
+
+        from plexapi.sync import SyncItem, Policy, MediaSettings
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self._defaultSyncTitle()
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.listType
+        sync_item.metadataType = self.METADATA_TYPE
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        section = self._server.library.sectionByID(self.librarySectionID)
+
+        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.policy = Policy.create(limit)
+        sync_item.mediaSettings = MediaSettings.createMusic(bitrate)
+
+        return myplex.sync(sync_item, client=client, clientId=clientId)
 
 
 @utils.registerPlexObject
@@ -225,6 +261,9 @@ class Album(Audio):
             filepaths += track.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
 
+    def _defaultSyncTitle(self):
+        return '%s - %s' % (self.parentTitle, self.title)
+
 
 @utils.registerPlexObject
 class Track(Audio, Playable):
@@ -302,3 +341,6 @@ class Track(Audio, Playable):
     def artist(self):
         """ Return this track's :class:`~plexapi.audio.Artist`. """
         return self.fetchItem(self.grandparentKey)
+
+    def _defaultSyncTitle(self):
+        return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)

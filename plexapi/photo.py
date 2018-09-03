@@ -2,6 +2,7 @@
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import NotFound
+from plexapi.compat import quote_plus
 
 
 @utils.registerPlexObject
@@ -96,6 +97,7 @@ class Photo(PlexPartialObject):
     """
     TAG = 'Photo'
     TYPE = 'photo'
+    METADATA_TYPE = 'photo'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -123,3 +125,32 @@ class Photo(PlexPartialObject):
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
         return self._server.library.sectionByID(self.photoalbum().librarySectionID)
+
+    def sync(self, resolution, client=None, clientId=None, limit=None, title=None):
+        """ Add current video as sync item for specified device.
+
+            Parameters:
+                resolution (string): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                limit (int): TODO
+                title (str): TODO
+        """
+
+        from plexapi.sync import SyncItem, Policy, MediaSettings
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self.title
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.listType
+        sync_item.metadataType = self.METADATA_TYPE
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        section = self._server.library.sectionByID(self.librarySectionID)
+
+        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.policy = Policy.create(limit)
+        sync_item.mediaSettings = MediaSettings.createPhoto(resolution)
+
+        return myplex.sync(sync_item, client=client, clientId=clientId)

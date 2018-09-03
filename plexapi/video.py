@@ -78,18 +78,27 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
-    def _default_sync_title(self):
-        return self._prettyfilename()
+    def _defaultSyncTitle(self):
+        """ TODO """
+        return self.title
 
-    def sync(self, client, policy, media_settings, title=None):
+    def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video as sync item for specified device.
+
+            Parameters:
+                videoQuality (int): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                limit (int): TODO
+                unwatched (bool): TODO
+                title (str): TODO
         """
 
-        from plexapi.sync import SyncItem
+        from plexapi.sync import SyncItem, Policy, MediaSettings
 
         myplex = self._server.myPlexAccount()
         sync_item = SyncItem(self._server, None)
-        sync_item.title = title if title else self._default_sync_title()
+        sync_item.title = title if title else self._defaultSyncTitle()
         sync_item.rootTitle = self.title
         sync_item.contentType = self.listType
         sync_item.metadataType = self.METADATA_TYPE
@@ -98,10 +107,10 @@ class Video(PlexPartialObject):
         section = self._server.library.sectionByID(self.librarySectionID)
 
         sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
-        sync_item.policy = policy
-        sync_item.mediaSettings = media_settings
+        sync_item.policy = Policy.create(limit, unwatched)
+        sync_item.mediaSettings = MediaSettings.createVideo(videoQuality)
 
-        return myplex.sync(client, sync_item)
+        return myplex.sync(sync_item, client=client, clientId=clientId)
 
 
 @utils.registerPlexObject
@@ -374,9 +383,6 @@ class Show(Video):
             filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
 
-    def _default_sync_title(self):
-        return self.title
-
 
 @utils.registerPlexObject
 class Season(Video):
@@ -478,8 +484,9 @@ class Season(Video):
             filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
 
-    def _default_sync_title(self):
-        return self.title
+    def _defaultSyncTitle(self):
+        """ TODO """
+        return '%s - %s' % (self.parentTitle, self.title)
 
 
 @utils.registerPlexObject
@@ -595,3 +602,6 @@ class Episode(Playable, Video):
     def show(self):
         """" Return this episodes :func:`~plexapi.video.Show`.. """
         return self.fetchItem(self.grandparentKey)
+
+    def _defaultSyncTitle(self):
+        return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)

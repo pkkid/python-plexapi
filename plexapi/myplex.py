@@ -379,27 +379,48 @@ class MyPlexAccount(PlexObject):
         url = 'https://plex.tv/api/v2/user/privacy'
         return self.query(url, method=self._session.put, params=params)
 
-    def syncItems(self, clientId=None):
-        """ Returns an instance of :class:`~plexapi.sync.SyncItems` for specified client
+    def syncItems(self, client=None, clientId=None):
+        """ Returns an instance of :class:`~plexapi.sync.SyncList` for specified client
 
-            Arguments:
-                 clientId (str): an identifier of a client for which you need to get SyncItems. Would be set to current
-                    id if None.
+            Parameters:
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): an identifier of a client for which you need to get SyncItems
+
+            If both `client` and `clientId` provided the client would be preferred.
+            If neither `client` nor `clientId` provided the clientId would be set to :ref:`identifier header<identifier>`.
         """
-        if clientId is None:
+        if client:
+            clientId = client.clientIdentifier
+        elif clientId is None:
             clientId = X_PLEX_IDENTIFIER
 
         data = self.query(SyncList.key.format(clientId=clientId))
 
         return SyncList(self, data)
 
-    def sync(self, client, sync_item):
+    def sync(self, sync_item, client=None, clientId=None):
         """ Adds specified sync item for the client
 
-            Arguments:
-                 client (:class:`~plexapi.myplex.MyPlexDevice`): pass
-                 sync_item (:class:`~plexapi.sync.SyncItem`): pass
+            Parameters:
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                sync_item (:class:`~plexapi.sync.SyncItem`): TODO
+
+            Returns:
+                  :class:`~plexapi.sync.SyncItem`: an instance of created syncItem
         """
+        if not client and not clientId:
+            clientId = X_PLEX_IDENTIFIER
+
+        if not client:
+            for device in self.devices():
+                if device.clientIdentifier == clientId:
+                    client = device
+                    break
+
+            if not client:
+                raise BadRequest('Unable to find client by clientId=%s', clientId)
+
         if 'sync-target' not in client.provides:
             raise BadRequest('Received client doesn`t provides sync-target')
 
@@ -748,6 +769,17 @@ class MyPlexDevice(PlexObject):
         """ Remove this device from your account. """
         key = 'https://plex.tv/devices/%s.xml' % self.id
         self._server.query(key, self._server._session.delete)
+
+    def syncItems(self):
+        """ TODO
+
+            Returns:
+                :class:`~plexapi.sync.SyncList`
+        """
+        if 'sync-target' not in self.provides:
+            raise BadRequest('Requested syncList for device which do not provides sync-target')
+
+        return self._server.syncItems(client=self)
 
 
 def _connect(cls, url, token, timeout, results, i):

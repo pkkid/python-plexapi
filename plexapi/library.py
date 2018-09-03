@@ -543,9 +543,19 @@ class LibrarySection(PlexObject):
             raise BadRequest('Unknown sort dir: %s' % sdir)
         return '%s:%s' % (lookup[scol], sdir)
 
-    def sync(self, client, policy, media_settings, title=None, sort=None, libtype=None, **kwargs):
+    def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
+             **kwargs):
         """ Add current library section as sync item for specified device.
             See description of :func:`plexapi.library.LibraySection.search()` for details about filtering / sorting.
+
+            Parameters:
+                policy (:class:`~plexapi.sync.Policy`): TODO
+                mediaSettings (:class:`~plexapi.sync.MediaSettings`): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                title (str): TODO
+                sort (str): TODO
+                libtype (str): TODO
 
             Example:
 
@@ -586,9 +596,9 @@ class LibrarySection(PlexObject):
 
         sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key + utils.joinArgs(args)))
         sync_item.policy = policy
-        sync_item.mediaSettings = media_settings
+        sync_item.mediaSettings = mediaSettings
 
-        return myplex.sync(client, sync_item)
+        return myplex.sync(client=client, clientId=clientId, sync_item=sync_item)
 
 
 class MovieSection(LibrarySection):
@@ -617,6 +627,19 @@ class MovieSection(LibrarySection):
     def collection(self, **kwargs):
         """ Returns a list of collections from this library section. """
         return self.search(libtype='collection', **kwargs)
+
+    def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
+        """ TODO
+
+            Parameters:
+                 videoQuality (int): TODO
+                 limit (int): TODO
+                 unwatched (bool): TODO
+        """
+        from .sync import Policy, MediaSettings
+        kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
+        kwargs['policy'] = Policy.create(limit, unwatched)
+        return super(MovieSection, self).sync(**kwargs)
 
 
 class ShowSection(LibrarySection):
@@ -659,6 +682,19 @@ class ShowSection(LibrarySection):
         """ Returns a list of collections from this library section. """
         return self.search(libtype='collection', **kwargs)
 
+    def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
+        """ TODO
+
+            Parameters:
+                 videoQuality (int): TODO
+                 limit (int): TODO
+                 unwatched (bool): TODO
+        """
+        from .sync import Policy, MediaSettings
+        kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
+        kwargs['policy'] = Policy.create(limit, unwatched)
+        return super(ShowSection, self).sync(**kwargs)
+
 
 class MusicSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
@@ -675,6 +711,9 @@ class MusicSection(LibrarySection):
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
     TAG = 'Directory'
     TYPE = 'artist'
+
+    CONTENT_TYPE = 'audio'
+    METADATA_TYPE = 'track'
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
@@ -697,6 +736,18 @@ class MusicSection(LibrarySection):
         """ Returns a list of collections from this library section. """
         return self.search(libtype='collection', **kwargs)
 
+    def sync(self, bitrate, limit=None, **kwargs):
+        """ TODO
+
+            Parameters:
+                 bitrate (int): TODO
+                 limit (int): TODO
+        """
+        from .sync import Policy, MediaSettings
+        kwargs['mediaSettings'] = MediaSettings.createMusic(bitrate)
+        kwargs['policy'] = Policy.create(limit)
+        return super(MusicSection, self).sync(**kwargs)
+
 
 class PhotoSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
@@ -712,6 +763,8 @@ class PhotoSection(LibrarySection):
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
+    CONTENT_TYPE = 'photo'
+    METADATA_TYPE = 'photo'
 
     def searchAlbums(self, title, **kwargs):
         """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
@@ -722,6 +775,18 @@ class PhotoSection(LibrarySection):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         key = '/library/sections/%s/all?type=13' % self.key
         return self.fetchItems(key, title=title)
+
+    def sync(self, resolution, limit=None, **kwargs):
+        """ TODO
+
+            Parameters:
+                 resolution (str): TODO
+                 limit (int): TODO
+        """
+        from .sync import Policy, MediaSettings
+        kwargs['mediaSettings'] = MediaSettings.createPhoto(resolution)
+        kwargs['policy'] = Policy.create(limit)
+        return super(PhotoSection, self).sync(**kwargs)
 
 
 class FilterChoice(PlexObject):

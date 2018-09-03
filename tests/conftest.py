@@ -107,7 +107,7 @@ def device(account):
 
 @pytest.fixture()
 def clear_sync_device(device, account_synctarget, plex):
-    sync_items = account_synctarget.syncItems(device.clientIdentifier)
+    sync_items = account_synctarget.syncItems(clientId=device.clientIdentifier)
     for item in sync_items.items:
         item.delete()
     plex.refreshSync()

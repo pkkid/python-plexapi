@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from plexapi import utils
 from plexapi.base import PlexPartialObject, Playable
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, Unsupported
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
+from plexapi.compat import quote_plus
 
 
 @utils.registerPlexObject
@@ -32,10 +33,34 @@ class Playlist(PlexPartialObject, Playable):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
+        self.allowSync = cast(bool, data.attrib.get('allowSync'))
         self._items = None  # cache for self.items
 
     def __len__(self):  # pragma: no cover
         return len(self.items())
+
+    @property
+    def metadataType(self):
+        if self.isVideo:
+            return 'movie'
+        elif self.isAudio:
+            return 'track'
+        elif self.isPhoto:
+            return 'photo'
+        else:
+            raise Unsupported('Unexpected playlist type')
+
+    @property
+    def isVideo(self):
+        return self.playlistType == 'video'
+
+    @property
+    def isAudio(self):
+        return self.playlistType == 'audio'
+
+    @property
+    def isPhoto(self):
+        return self.playlistType == 'photo'
 
     def __contains__(self, other):  # pragma: no cover
         return any(i.key == other.key for i in self.items())
@@ -132,3 +157,46 @@ class Playlist(PlexPartialObject, Playable):
         # Login to your server using your friends credentials.
         user_server = PlexServer(self._server._baseurl, token)
         return self.create(user_server, self.title, self.items())
+
+    def sync(self, videoQuality=None, photoResolution=None, audioBitrate=None, client=None, clientId=None, limit=None,
+             unwatched=False, title=None):
+        """ Add current video as sync item for specified device.
+
+            Parameters:
+                videoQuality (int): TODO
+                photoResolution (str): TODO
+                audioBitrate (int): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
+                clientId (str): TODO
+                limit (int): TODO
+                unwatched (bool): TODO
+                title (str): TODO
+
+            Raises:
+                :class:`~plexapi.exceptions.BadRequest`: when playlist is not allowed to sync
+        """
+
+        if not self.allowSync:
+            raise BadRequest('The playlist is not allowed to sync')
+
+        from plexapi.sync import SyncItem, Policy, MediaSettings
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self.title
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.playlistType
+        sync_item.metadataType = self.metadataType
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        sync_item.location = 'playlist:///%s' % quote_plus(self.guid)
+        sync_item.policy = Policy.create(limit, unwatched)
+
+        if self.isVideo:
+            sync_item.mediaSettings = MediaSettings.createVideo(videoQuality)
+        elif self.isAudio:
+            sync_item.mediaSettings = MediaSettings.createMusic(audioBitrate)
+        elif self.isPhoto:
+            sync_item.mediaSettings = MediaSettings.createPhoto(photoResolution)
+
+        return myplex.sync(sync_item, client=client, clientId=clientId)
