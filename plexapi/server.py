@@ -422,6 +422,16 @@ class PlexServer(PlexObject):
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
 
+    def refreshSynclist(self):
+        return self.query('/sync/refreshSynclists', self._session.put)
+
+    def refreshContent(self):
+        return self.query('/sync/refreshContent', self._session.put)
+
+    def refreshSync(self):
+        self.refreshSynclist()
+        self.refreshContent()
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
