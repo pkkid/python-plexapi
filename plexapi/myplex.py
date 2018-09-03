@@ -479,9 +479,9 @@ class MyPlexAccount(PlexObject):
         return SyncItem(self, data, None, clientIdentifier=client.clientIdentifier)
 
     def claimToken(self):
-        """
-        Returns a str, a new "claim-token", which you can use to register your new Plex Server instance to your account
-        See: https://hub.docker.com/r/plexinc/pms-docker/, https://www.plex.tv/claim/
+        """ Returns a str, a new "claim-token", which you can use to register your new Plex Server instance to your
+            account.
+            See: https://hub.docker.com/r/plexinc/pms-docker/, https://www.plex.tv/claim/
         """
         response = self._session.get('https://plex.tv/api/claim/token.json', headers=self._headers(), timeout=TIMEOUT)
         if response.status_code not in (200, 201, 204):  # pragma: no cover
