@@ -76,8 +76,12 @@ def account():
 
 @pytest.fixture()
 def account_synctarget():
-    assert 'sync-target' in plexapi.X_PLEX_PROVIDES
+    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
+                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
     assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
+    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATORM=iOS'
+    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
+    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
     return plex().myPlexAccount()
 
 
@@ -102,10 +106,11 @@ def device(account):
 
 
 @pytest.fixture()
-def clear_sync_device(device, account_synctarget):
+def clear_sync_device(device, account_synctarget, plex):
     sync_items = account_synctarget.syncItems(device.clientIdentifier)
     for item in sync_items.items:
         item.delete()
+    plex.refreshSync()
     return device
 
 
