@@ -74,12 +74,39 @@ def account():
     # return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
 
 
+@pytest.fixture()
+def account_synctarget():
+    assert 'sync-target' in plexapi.X_PLEX_PROVIDES
+    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
+    return plex().myPlexAccount()
+
+
 @pytest.fixture(scope='session')
 def plex():
     assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
     assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
     session = requests.Session()
     return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
+
+
+@pytest.fixture()
+def device(account):
+    d = None
+    for device in account.devices():
+        if device.clientIdentifier == plexapi.X_PLEX_IDENTIFIER:
+            d = device
+            break
+
+    assert d
+    return d
+
+
+@pytest.fixture()
+def clear_sync_device(device, account_synctarget):
+    sync_items = account_synctarget.syncItems(device.clientIdentifier)
+    for item in sync_items.items:
+        item.delete()
+    return device
 
 
 @pytest.fixture
