@@ -225,6 +225,16 @@ class Policy(object):
         self.unwatched = plexapi.utils.cast(bool, unwatched)
         self.value = plexapi.utils.cast(int, value)
 
+    @staticmethod
+    def create(limit=None, unwatched=False):
+        scope = 'all'
+        if limit is None:
+            limit = 0
+        else:
+            scope = 'count'
+
+        return Policy(scope, unwatched, limit)
+
 
 VIDEO_QUALITIES = {
     'bitrate': [64, 96, 208, 320, 720, 1500, 2e3, 3e3, 4e3, 8e3, 1e4, 12e3, 2e4],
