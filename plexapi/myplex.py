@@ -119,22 +119,19 @@ class MyPlexAccount(PlexObject):
         self.subscriptionPlan = subscription.attrib.get('plan')
 
         self.subscriptionFeatures = []
-        for tag in subscription:
-            if tag.tag == 'feature':
-                self.subscriptionFeatures.append(tag.attrib.get('id'))
+        for feature in subscription.iter('feature'):
+            self.subscriptionFeatures.append(feature.attrib.get('id'))
 
         roles = data.find('roles')
         self.roles = []
         if roles:
-            for tag in roles:
-                if tag.tag == 'role':
-                    self.roles.append(tag.attrib('id'))
+            for role in roles.iter('role'):
+                self.roles.append(role.attrib('id'))
 
         entitlements = data.find('entitlements')
         self.entitlements = []
-        for tag in entitlements:
-            if tag.tag == 'entitlement':
-                self.entitlements.append(tag.attrib.get('id'))
+        for entitlement in entitlements.iter('entitlement'):
+            self.entitlements.append(entitlement.attrib.get('id'))
 
         # TODO: Fetch missing MyPlexAccount attributes
         self.profile_settings = None
