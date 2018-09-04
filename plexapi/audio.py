@@ -62,6 +62,7 @@ class Audio(PlexPartialObject):
         return self._server.url(part, includeToken=True) if part else None
 
     def _defaultSyncTitle(self):
+        """ TODO """
         return self.title
 
     def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
@@ -262,6 +263,7 @@ class Album(Audio):
         return filepaths
 
     def _defaultSyncTitle(self):
+        """ TODO """
         return '%s - %s' % (self.parentTitle, self.title)
 
 
@@ -343,4 +345,5 @@ class Track(Audio, Playable):
         return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
+        """ TODO """
         return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)
