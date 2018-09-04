@@ -125,8 +125,9 @@ class SyncList(PlexObject):
         self.clientId = data.attrib.get('clientIdentifier')
         self.items = []
 
-        for elem in data.iter('SyncItems'):
-            for sync_item in elem:
+        syncItems = data.find('SyncItems')
+        if syncItems:
+            for sync_item in syncItems.iter('SyncItem'):
                 item = SyncItem(self._server, sync_item, clientIdentifier=self.clientId)
                 self.items.append(item)
 
