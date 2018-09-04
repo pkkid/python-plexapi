@@ -604,4 +604,5 @@ class Episode(Playable, Video):
         return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
+        """ TODO """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
