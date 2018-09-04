@@ -145,7 +145,12 @@ class PlexObject(object):
             on how this is used.
         """
         data = self._server.query(ekey)
-        return self.findItems(data, cls, ekey, **kwargs)
+        items = self.findItems(data, cls, ekey, **kwargs)
+        librarySectionID = data.attrib.get('librarySectionID')
+        if librarySectionID:
+            for item in items:
+                item.librarySectionID = librarySectionID
+        return items
 
     def findItems(self, data, cls=None, initpath=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
@@ -159,13 +164,10 @@ class PlexObject(object):
             kwargs['type'] = cls.TYPE
         # loop through all data elements to find matches
         items = []
-        librarySectionID = data.attrib.get('librarySectionID')
         for elem in data:
             if self._checkAttrs(elem, **kwargs):
                 item = self._buildItemOrNone(elem, cls, initpath)
                 if item is not None:
-                    if librarySectionID:
-                        item.librarySectionID = librarySectionID
                     items.append(item)
         return items
 
