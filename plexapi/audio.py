@@ -62,18 +62,25 @@ class Audio(PlexPartialObject):
         return self._server.url(part, includeToken=True) if part else None
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return self.title
 
     def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
-        """ Add current video as sync item for specified device.
+        """ Add current audio (artist, album or track) as sync item for specified device.
+            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
 
             Parameters:
-                bitrate (int): TODO
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): TODO
-                limit (int): TODO
-                title (str): TODO
+                bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
+                               module :mod:`plexapi.sync`.
+                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                limit (int): maximum count of items to sync, unlimited if `None`.
+                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current media.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
@@ -263,7 +270,7 @@ class Album(Audio):
         return filepaths
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return '%s - %s' % (self.parentTitle, self.title)
 
 
@@ -345,5 +352,5 @@ class Track(Audio, Playable):
         return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)

@@ -79,19 +79,26 @@ class Video(PlexPartialObject):
         self.reload()
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return self.title
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
-        """ Add current video as sync item for specified device.
+        """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
+            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
 
             Parameters:
-                videoQuality (int): TODO
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): TODO
-                limit (int): TODO
-                unwatched (bool): TODO
-                title (str): TODO
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
+                                    :mod:`plexapi.sync` module.
+                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                limit (int): maximum count of items to sync, unlimited if `None`.
+                unwatched (bool): if `True` watched videos wouldn't be synced.
+                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current media.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
@@ -485,7 +492,7 @@ class Season(Video):
         return filepaths
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return '%s - %s' % (self.parentTitle, self.title)
 
 
@@ -604,5 +611,5 @@ class Episode(Playable, Video):
         return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
-        """ TODO """
+        """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)

@@ -290,7 +290,7 @@ class MyPlexAccount(PlexObject):
         return response_servers, response_filters
 
     def user(self, username):
-        """ Returns the :class:`~myplex.MyPlexUser` that matches the email or username specified.
+        """ Returns the :class:`~plexapi.myplex.MyPlexUser` that matches the email or username specified.
 
             Parameters:
                 username (str): Username, email or id of the user to return.
@@ -380,14 +380,14 @@ class MyPlexAccount(PlexObject):
         return self.query(url, method=self._session.put, params=params)
 
     def syncItems(self, client=None, clientId=None):
-        """ Returns an instance of :class:`~plexapi.sync.SyncList` for specified client
+        """ Returns an instance of :class:`plexapi.sync.SyncList` for specified client.
 
             Parameters:
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): an identifier of a client for which you need to get SyncItems
+                client (:class:`~plexapi.myplex.MyPlexDevice`): a client to query SyncItems for.
+                clientId (str): an identifier of a client to query SyncItems for.
 
             If both `client` and `clientId` provided the client would be preferred.
-            If neither `client` nor `clientId` provided the clientId would be set to :ref:`identifier header<identifier>`.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
         """
         if client:
             clientId = client.clientIdentifier
@@ -399,15 +399,23 @@ class MyPlexAccount(PlexObject):
         return SyncList(self, data)
 
     def sync(self, sync_item, client=None, clientId=None):
-        """ Adds specified sync item for the client
+        """ Adds specified sync item for the client. It's always easier to use methods defined directly in the media
+            objects, e.g. :func:`plexapi.video.Video.sync`, :func:`plexapi.audio.Audio.sync`.
 
             Parameters:
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): TODO
-                sync_item (:class:`~plexapi.sync.SyncItem`): TODO
+                client (:class:`~plexapi.myplex.MyPlexDevice`): a client for which you need to add SyncItem to.
+                clientId (str): an identifier of a client for which you need to add SyncItem to.
+                sync_item (:class:`plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
+
+            If both `client` and `clientId` provided the client would be preferred.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
 
             Returns:
-                  :class:`~plexapi.sync.SyncItem`: an instance of created syncItem
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest` when client with provided clientId wasn`t found.
+                :class:`plexapi.exceptions.BadRequest` provided client doesn`t provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -771,10 +779,10 @@ class MyPlexDevice(PlexObject):
         self._server.query(key, self._server._session.delete)
 
     def syncItems(self):
-        """ TODO
+        """ Returns an instance of :class:`plexapi.sync.SyncList` for current device.
 
-            Returns:
-                :class:`~plexapi.sync.SyncList`
+            Raises:
+                :class:`plexapi.exceptions.BadRequest` when the device doesn`t provides `sync-target`.
         """
         if 'sync-target' not in self.provides:
             raise BadRequest('Requested syncList for device which do not provides sync-target')

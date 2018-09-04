@@ -546,16 +546,32 @@ class LibrarySection(PlexObject):
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
         """ Add current library section as sync item for specified device.
-            See description of :func:`plexapi.library.LibraySection.search()` for details about filtering / sorting.
+            See description of :func:`~plexapi.library.LibrarySection.search()` for details about filtering / sorting
+            and :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
 
             Parameters:
-                policy (:class:`~plexapi.sync.Policy`): TODO
-                mediaSettings (:class:`~plexapi.sync.MediaSettings`): TODO
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): TODO
-                title (str): TODO
-                sort (str): TODO
-                libtype (str): TODO
+                policy (:class:`plexapi.sync.Policy`): policy of syncing the media (how many items to sync and process
+                                                       watched media or not), generated automatically when method
+                                                       called on specific LibrarySection object.
+                mediaSettings (:class:`plexapi.sync.MediaSettings`): Transcoding settings used for the media, generated
+                                                                     automatically when method called on specific
+                                                                     LibrarySection object.
+                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current media.
+                sort (str): formatted as `column:dir`; column can be any of {`addedAt`, `originallyAvailableAt`,
+                            `lastViewedAt`, `titleSort`, `rating`, `mediaHeight`, `duration`}. dir can be `asc` or
+                            `desc`.
+                libtype (str): Filter results to a specific libtype (`movie`, `show`, `episode`, `artist`, `album`,
+                               `track`).
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: when the library is not allowed to sync
 
             Example:
 
@@ -568,13 +584,16 @@ class LibrarySection(PlexObject):
                     target = c.device('Plex Client')
                     sync_items_wd = c.syncItems(target.clientIdentifier)
                     srv = c.resource('Server Name').connect()
-                    movies = srv.library.section('Movies')
-                    policy = Policy('count', True, 1)
+                    section = srv.library.section('Movies')
+                    policy = Policy('count', unwatched=True, value=1)
                     media_settings = MediaSettings.create(VIDEO_QUALITY_3_MBPS_720p)
-                    movies.sync(target, policy, media_settings, title='Next best movie', sort='rating:desc')
+                    section.sync(target, policy, media_settings, title='Next best movie', sort='rating:desc')
 
         """
         from plexapi.sync import SyncItem
+
+        if not self.allowSync:
+            raise BadRequest('The requested library is not allowed to sync')
 
         args = {}
         for category, value in kwargs.items():
@@ -629,12 +648,34 @@ class MovieSection(LibrarySection):
         return self.search(libtype='collection', **kwargs)
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
-        """ TODO
+        """ Add current Movie library section as sync item for specified device.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
+            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
 
             Parameters:
-                 videoQuality (int): TODO
-                 limit (int): TODO
-                 unwatched (bool): TODO
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
+                                    :mod:`plexapi.sync` module.
+                limit (int): maximum count of movies to sync, unlimited if `None`.
+                unwatched (bool): if `True` watched videos wouldn't be synced.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi import myplex
+                    from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p
+
+                    c = myplex.MyPlexAccount()
+                    target = c.device('Plex Client')
+                    sync_items_wd = c.syncItems(target.clientIdentifier)
+                    srv = c.resource('Server Name').connect()
+                    section = srv.library.section('Movies')
+                    section.sync(VIDEO_QUALITY_3_MBPS_720p, client=target, limit=1, unwatched=True,
+                                 title='Next best movie', sort='rating:desc')
+
         """
         from .sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
@@ -683,12 +724,34 @@ class ShowSection(LibrarySection):
         return self.search(libtype='collection', **kwargs)
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
-        """ TODO
+        """ Add current Show library section as sync item for specified device.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
+            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
 
             Parameters:
-                 videoQuality (int): TODO
-                 limit (int): TODO
-                 unwatched (bool): TODO
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
+                                    :mod:`plexapi.sync` module.
+                limit (int): maximum count of episodes to sync, unlimited if `None`.
+                unwatched (bool): if `True` watched videos wouldn't be synced.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi import myplex
+                    from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p
+
+                    c = myplex.MyPlexAccount()
+                    target = c.device('Plex Client')
+                    sync_items_wd = c.syncItems(target.clientIdentifier)
+                    srv = c.resource('Server Name').connect()
+                    section = srv.library.section('TV-Shows')
+                    section.sync(VIDEO_QUALITY_3_MBPS_720p, client=target, limit=1, unwatched=True,
+                                 title='Next unwatched episode')
+
         """
         from .sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
@@ -737,11 +800,33 @@ class MusicSection(LibrarySection):
         return self.search(libtype='collection', **kwargs)
 
     def sync(self, bitrate, limit=None, **kwargs):
-        """ TODO
+        """ Add current Music library section as sync item for specified device.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
+            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
 
             Parameters:
-                 bitrate (int): TODO
-                 limit (int): TODO
+                bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
+                               module :mod:`plexapi.sync`.
+                limit (int): maximum count of tracks to sync, unlimited if `None`.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi import myplex
+                    from plexapi.sync import AUDIO_BITRATE_320_KBPS
+
+                    c = myplex.MyPlexAccount()
+                    target = c.device('Plex Client')
+                    sync_items_wd = c.syncItems(target.clientIdentifier)
+                    srv = c.resource('Server Name').connect()
+                    section = srv.library.section('Music')
+                    section.sync(AUDIO_BITRATE_320_KBPS, client=target, limit=100, sort='addedAt:desc',
+                                 title='New music')
+
         """
         from .sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createMusic(bitrate)
@@ -777,11 +862,33 @@ class PhotoSection(LibrarySection):
         return self.fetchItems(key, title=title)
 
     def sync(self, resolution, limit=None, **kwargs):
-        """ TODO
+        """ Add current Music library section as sync item for specified device.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
+            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
 
             Parameters:
-                 resolution (str): TODO
-                 limit (int): TODO
+                resolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in the
+                                  module :mod:`plexapi.sync`.
+                limit (int): maximum count of tracks to sync, unlimited if `None`.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi import myplex
+                    from plexapi.sync import PHOTO_QUALITY_HIGH
+
+                    c = myplex.MyPlexAccount()
+                    target = c.device('Plex Client')
+                    sync_items_wd = c.syncItems(target.clientIdentifier)
+                    srv = c.resource('Server Name').connect()
+                    section = srv.library.section('Photos')
+                    section.sync(PHOTO_QUALITY_HIGH, client=target, limit=100, sort='addedAt:desc',
+                                 title='Fresh photos')
+
         """
         from .sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createPhoto(resolution)

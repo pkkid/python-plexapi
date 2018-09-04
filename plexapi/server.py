@@ -423,15 +423,17 @@ class PlexServer(PlexObject):
         return '%s%s' % (self._baseurl, key)
 
     def refreshSynclist(self):
-        """ TODO """
+        """ Force PMS to download new SyncList from Plex.tv. """
         return self.query('/sync/refreshSynclists', self._session.put)
 
     def refreshContent(self):
-        """ TODO """
+        """ Force PMS to refresh content for known SyncLists. """
         return self.query('/sync/refreshContent', self._session.put)
 
     def refreshSync(self):
-        """ TODO """
+        """ Calls :func:`~plexapi.server.PlexServer.refreshSynclist` and
+            :func:`~plexapi.server.PlexServer.refreshContent`, just like the Plex Web UI does when you click 'refresh'.
+        """
         self.refreshSynclist()
         self.refreshContent()
 

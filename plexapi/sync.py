@@ -19,8 +19,6 @@ you can set items to be synced to your app) you need to init some variables.
         plexapi.BASE_HEADERS['X-Plex-Platform'] = plexapi.X_PLEX_PLATFORM
         plexapi.BASE_HEADERS['X-Plex-Platform-Version'] = plexapi.X_PLEX_PLATFORM_VERSION
         plexapi.BASE_HEADERS['X-Plex-Device'] = plexapi.X_PLEX_DEVICE
-        plexapi.BASE_HEADERS['X-Plex-Model'] = '8,4'
-        plexapi.BASE_HEADERS['X-Plex-Vendor'] = 'Apple'
 
 You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
 to explicitly specify that your app supports `sync-target`.
@@ -39,25 +37,25 @@ class SyncItem(PlexObject):
     you're basically creating a sync item.
 
     Attributes:
-        id (int): unique id of the item
-        clientIdentifier (str): an identifier of Plex Client device, to which the item is belongs
-        machineIdentifier (str): the id of server which holds all this content
+        id (int): unique id of the item.
+        clientIdentifier (str): an identifier of Plex Client device, to which the item is belongs.
+        machineIdentifier (str): the id of server which holds all this content.
         version (int): current version of the item. Each time you modify the item (e.g. by changing amount if media to
-            sync) the new version is created
+                       sync) the new version is created.
         rootTitle (str): the title of library/media from which the sync item was created. E.g.:
 
             * when you create an item for an episode 3 of season 3 of show Example, the value would be `Title of
               Episode 3`
             * when you create an item for a season 3 of show Example, the value would be `Season 3`
-            * when you set to sync all your movies in library named "My Movies" to value would be `My Movies`
+            * when you set to sync all your movies in library named "My Movies" to value would be `My Movies`.
 
-        title (str): the title which you've set when created the sync item
+        title (str): the title which you've set when created the sync item.
         metadataType (str): the type of media which hides inside, can be `episode`, `movie`, etc.
-        contentType (str): basic type of the content: `video` or `audio`
-        status (:class:`~plexapi.sync.Status`): current status of the sync
-        mediaSettings (:class:`~plexapi.sync.MediaSettings`): media transcoding settings used for the item
-        policy (:class:`~plexapi.sync.Policy`): the policy of which media to sync
-        location (str): unknown
+        contentType (str): basic type of the content: `video` or `audio`.
+        status (:class:`~plexapi.sync.Status`): current status of the sync.
+        mediaSettings (:class:`~plexapi.sync.MediaSettings`): media transcoding settings used for the item.
+        policy (:class:`~plexapi.sync.Policy`): the policy of which media to sync.
+        location (str): plex-style library url with all required filters / sorting.
     """
     TAG = 'SyncItem'
 
@@ -80,7 +78,7 @@ class SyncItem(PlexObject):
         self.location = data.find('Location').attrib.get('uri', '')
 
     def server(self):
-        """ Returns :class:`~plexapi.myplex.MyPlexResource` with server of current item. """
+        """ Returns :class:`plexapi.myplex.MyPlexResource` with server of current item. """
         server = [s for s in self._server.resources() if s.clientIdentifier == self.machineIdentifier]
         if len(server) == 0:
             raise NotFound('Unable to find server with uuid %s' % self.machineIdentifier)
@@ -97,13 +95,13 @@ class SyncItem(PlexObject):
             any SyncItem where it presented).
 
             Parameters:
-                media (base.Playable): the media to be marked as downloaded
+                media (base.Playable): the media to be marked as downloaded.
         """
         url = '/sync/%s/item/%s/downloaded' % (self.clientIdentifier, media.ratingKey)
         media._server.query(url, method=requests.put)
 
     def delete(self):
-        """ TODO """
+        """ Removes current SyncItem """
         url = SyncList.key.format(clientId=self.clientIdentifier)
         url += '/' + str(self.id)
         self._server.query(url, self._server._session.delete)
@@ -114,8 +112,8 @@ class SyncList(PlexObject):
         items from different servers.
 
         Attributes:
-            clientId (str): an identifier of the client
-            items (List<:class:`~plexapi.sync.SyncItem`>): list of registered items to sync
+            clientId (str): an identifier of the client.
+            items (List<:class:`~plexapi.sync.SyncItem`>): list of registered items to sync.
     """
     key = 'https://plex.tv/devices/{clientId}/sync_items'
     TAG = 'SyncList'
@@ -136,15 +134,16 @@ class Status(object):
     """ Represents a current status of specific :class:`~plexapi.sync.SyncItem`.
 
         Attributes:
-            failureCode: unknown, never got one yet
-            failure: unknown
-            state (str): server-side status of the item, can be `completed`, `pending`, empty, and probably something else
-            itemsCount (int): total items count
-            itemsCompleteCount (int): count of transcoded and/or downloaded items
-            itemsDownloadedCount (int): count of downloaded items
-            itemsReadyCount (int): count of transcoded items, which can be downloaded
-            totalSize (int): total size in bytes of complete items
-            itemsSuccessfulCount (int): unknown, in my experience it always was equal to `itemsCompleteCount`
+            failureCode: unknown, never got one yet.
+            failure: unknown.
+            state (str): server-side status of the item, can be `completed`, `pending`, empty, and probably something
+                         else.
+            itemsCount (int): total items count.
+            itemsCompleteCount (int): count of transcoded and/or downloaded items.
+            itemsDownloadedCount (int): count of downloaded items.
+            itemsReadyCount (int): count of transcoded items, which can be downloaded.
+            totalSize (int): total size in bytes of complete items.
+            itemsSuccessfulCount (int): unknown, in my experience it always was equal to `itemsCompleteCount`.
     """
 
     def __init__(self, itemsCount, itemsCompleteCount, state, totalSize, itemsDownloadedCount, itemsReadyCount,
@@ -173,36 +172,36 @@ class MediaSettings(object):
     """ Transcoding settings used for all media within :class:`~plexapi.sync.SyncItem`.
 
         Attributes:
-            audioBoost (int): unknown
-            maxVideoBitrate (str): unknown, may be empty
-            musicBitrate (int): unknown
-            photoQuality (int): unknown
-            photoResolution (str): maximum photo resolution, formatted as WxH (e.g. `1920x1080`)
-            videoResolution (str): maximum video resolution, formatted as WxH (e.g. `1280x720`, may be empty)
-            subtitleSize (str): unknown, usually equals to 0, but sometimes empty string
-            videoQuality (int): unknown
+            audioBoost (int): unknown.
+            maxVideoBitrate (int|str): maximum bitrate for video, may be empty string.
+            musicBitrate (int|str): maximum bitrate for music, may be an empty string.
+            photoQuality (int): photo quality on scale 0 to 100.
+            photoResolution (str): maximum photo resolution, formatted as WxH (e.g. `1920x1080`).
+            videoResolution (str): maximum video resolution, formatted as WxH (e.g. `1280x720`, may be empty).
+            subtitleSize (int|str): unknown, usually equals to 0, may be empty string.
+            videoQuality (int): video quality on scale 0 to 100.
     """
 
     def __init__(self, maxVideoBitrate=4000, videoQuality=100, videoResolution='1280x720', audioBoost=100,
                  musicBitrate=192, photoQuality=74, photoResolution='1920x1080', subtitleSize=''):
         self.audioBoost = plexapi.utils.cast(int, audioBoost)
-        self.maxVideoBitrate = plexapi.utils.cast(int, maxVideoBitrate)
-        self.musicBitrate = plexapi.utils.cast(int, musicBitrate)
-        self.photoQuality = plexapi.utils.cast(int, photoQuality)
+        self.maxVideoBitrate = plexapi.utils.cast(int, maxVideoBitrate) if maxVideoBitrate != '' else ''
+        self.musicBitrate = plexapi.utils.cast(int, musicBitrate) if musicBitrate != '' else ''
+        self.photoQuality = plexapi.utils.cast(int, photoQuality) if photoQuality != '' else ''
         self.photoResolution = photoResolution
         self.videoResolution = videoResolution
         self.subtitleSize = subtitleSize
-        self.videoQuality = plexapi.utils.cast(int, videoQuality)
+        self.videoQuality = plexapi.utils.cast(int, videoQuality) if videoQuality != '' else ''
 
     @staticmethod
     def createVideo(videoQuality):
-        """ Returns a :class:`~MediaSettings` object, based on provided video quality value
+        """ Returns a :class:`~plexapi.sync.MediaSettings` object, based on provided video quality value.
 
             Parameters:
-                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in this module
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in this module.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest` when provided unknown video quality
+                :class:`plexapi.exceptions.BadRequest` when provided unknown video quality.
         """
         if videoQuality == VIDEO_QUALITY_ORIGINAL:
             return MediaSettings('', '', '')
@@ -215,23 +214,24 @@ class MediaSettings(object):
 
     @staticmethod
     def createMusic(bitrate):
-        """ Returns a :class:`~MediaSettings` object, based on provided music quality value
+        """ Returns a :class:`~plexapi.sync.MediaSettings` object, based on provided music quality value
 
             Parameters:
-                bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values
+                bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
+                               module
         """
         return MediaSettings(musicBitrate=bitrate)
 
     @staticmethod
     def createPhoto(resolution):
-        """ Returns a :class:`~MediaSettings` object, based on provided photo quality value
+        """ Returns a :class:`~plexapi.sync.MediaSettings` object, based on provided photo quality value.
 
             Parameters:
-                resolution (str): maximum allowed resolution for synchronized photos, better use one of PHOTO_QUALITY_*
-                                  values
+                resolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in the
+                                  module.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest` when provided unknown video quality
+                :class:`plexapi.exceptions.BadRequest` when provided unknown video quality.
         """
         if resolution in PHOTO_QUALITIES:
             return MediaSettings(photoQuality=PHOTO_QUALITIES[resolution], photoResolution=resolution)
@@ -240,12 +240,12 @@ class MediaSettings(object):
 
 
 class Policy(object):
-    """ Policy of syncing the media (how many items to sync and process watched media or not)
+    """ Policy of syncing the media (how many items to sync and process watched media or not).
 
         Attributes:
-            scope (str): type of limitation policy, can be `count` or `all`
-            value (int): amount of media to sync, valid only when `scope=count`
-            unwatched (bool): True means disallow to sync watched media
+            scope (str): type of limitation policy, can be `count` or `all`.
+            value (int): amount of media to sync, valid only when `scope=count`.
+            unwatched (bool): True means disallow to sync watched media.
     """
 
     def __init__(self, scope, unwatched, value=0):
@@ -255,7 +255,16 @@ class Policy(object):
 
     @staticmethod
     def create(limit=None, unwatched=False):
-        """ TODO """
+        """ Creates a :class:`~plexapi.sync.Policy` object for provided options and automatically sets proper `scope`
+            value.
+
+            Parameters:
+                limit (int): limit items by count.
+                unwatched (bool): if True then watched items wouldn't be synced.
+
+            Returns:
+                :class:`~plexapi.sync.Policy`.
+        """
         scope = 'all'
         if limit is None:
             limit = 0

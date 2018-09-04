@@ -127,14 +127,21 @@ class Photo(PlexPartialObject):
         return self._server.library.sectionByID(self.photoalbum().librarySectionID)
 
     def sync(self, resolution, client=None, clientId=None, limit=None, title=None):
-        """ Add current video as sync item for specified device.
+        """ Add current photo as sync item for specified device.
+            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
 
             Parameters:
-                resolution (string): TODO
-                client (:class:`~plexapi.myplex.MyPlexDevice`): TODO
-                clientId (str): TODO
-                limit (int): TODO
-                title (str): TODO
+                resolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in the
+                                  module :mod:`plexapi.sync`.
+                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                limit (int): maximum count of items to sync, unlimited if `None`.
+                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current photo.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
