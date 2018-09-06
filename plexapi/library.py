@@ -677,7 +677,7 @@ class MovieSection(LibrarySection):
                                  title='Next best movie', sort='rating:desc')
 
         """
-        from .sync import Policy, MediaSettings
+        from plexapi.sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
         kwargs['policy'] = Policy.create(limit, unwatched)
         return super(MovieSection, self).sync(**kwargs)
@@ -753,7 +753,7 @@ class ShowSection(LibrarySection):
                                  title='Next unwatched episode')
 
         """
-        from .sync import Policy, MediaSettings
+        from plexapi.sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createVideo(videoQuality)
         kwargs['policy'] = Policy.create(limit, unwatched)
         return super(ShowSection, self).sync(**kwargs)
@@ -828,7 +828,7 @@ class MusicSection(LibrarySection):
                                  title='New music')
 
         """
-        from .sync import Policy, MediaSettings
+        from plexapi.sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createMusic(bitrate)
         kwargs['policy'] = Policy.create(limit)
         return super(MusicSection, self).sync(**kwargs)
@@ -890,7 +890,7 @@ class PhotoSection(LibrarySection):
                                  title='Fresh photos')
 
         """
-        from .sync import Policy, MediaSettings
+        from plexapi.sync import Policy, MediaSettings
         kwargs['mediaSettings'] = MediaSettings.createPhoto(resolution)
         kwargs['policy'] = Policy.create(limit)
         return super(PhotoSection, self).sync(**kwargs)
