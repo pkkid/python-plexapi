@@ -91,7 +91,7 @@ class PlexServer(PlexObject):
     """
     key = '/'
 
-    def __init__(self, baseurl=None, token=None, session=None, timeout=None):
+    def __init__(self, baseurl=None, token=None, session=None, timeout=None, **kwargs):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
@@ -99,7 +99,7 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
-        data = self.query(self.key, timeout=timeout)
+        data = self.query(self.key, timeout=timeout, **kwargs)
         super(PlexServer, self).__init__(self, data, self.key)
 
     def _loadData(self, data):
