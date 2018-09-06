@@ -4,8 +4,6 @@ import pytest
 
 from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p, AUDIO_BITRATE_192_KBPS, PHOTO_QUALITY_MEDIUM
 
-MAX_RETRIES = 3
-
 
 def ensure_sync_item(device, sync_item, timeout=3):
     start = time()
