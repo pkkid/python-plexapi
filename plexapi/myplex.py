@@ -127,7 +127,7 @@ class MyPlexAccount(PlexObject):
         self.roles = []
         if roles:
             for role in roles.iter('role'):
-                self.roles.append(role.attrib('id'))
+                self.roles.append(role.attrib.get('id'))
 
         entitlements = data.find('entitlements')
         self.entitlements = []
