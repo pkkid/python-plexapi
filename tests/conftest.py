@@ -74,12 +74,44 @@ def account():
     # return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
 
 
+@pytest.fixture()
+def account_synctarget():
+    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
+                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
+    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
+    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATORM=iOS'
+    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
+    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
+    return plex().myPlexAccount()
+
+
 @pytest.fixture(scope='session')
 def plex():
     assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
     assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
     session = requests.Session()
     return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
+
+
+@pytest.fixture()
+def device(account):
+    d = None
+    for device in account.devices():
+        if device.clientIdentifier == plexapi.X_PLEX_IDENTIFIER:
+            d = device
+            break
+
+    assert d
+    return d
+
+
+@pytest.fixture()
+def clear_sync_device(device, account_synctarget, plex):
+    sync_items = account_synctarget.syncItems(clientId=device.clientIdentifier)
+    for item in sync_items.items:
+        item.delete()
+    plex.refreshSync()
+    return device
 
 
 @pytest.fixture
