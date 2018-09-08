@@ -20,7 +20,7 @@ X_PLEX_CONTAINER_SIZE = CONFIG.get('plexapi.container_size', 100, int)
 
 # Plex Header Configuation
 X_PLEX_PROVIDES = CONFIG.get('header.provides', 'controller')
-X_PLEX_PLATFORM = CONFIG.get('header.platorm', uname()[0])
+X_PLEX_PLATFORM = CONFIG.get('header.platform', CONFIG.get('header.platorm', uname()[0]))
 X_PLEX_PLATFORM_VERSION = CONFIG.get('header.platform_version', uname()[2])
 X_PLEX_PRODUCT = CONFIG.get('header.product', PROJECT)
 X_PLEX_VERSION = CONFIG.get('header.version', VERSION)
