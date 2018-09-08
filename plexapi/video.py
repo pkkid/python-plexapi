@@ -34,7 +34,7 @@ class Video(PlexPartialObject):
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self.ratingKey = data.attrib.get('ratingKey')
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
@@ -613,3 +613,49 @@ class Episode(Playable, Video):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+@utils.registerPlexObject
+class Clip(Playable, Video):
+    """ Represents a single Clip.
+
+        Attributes:
+            TAG (str): 'Video'
+            TYPE (str): 'episode'
+            art (str): Key to episode artwork (/library/metadata/<ratingkey>/art/<artid>)
+            chapterSource (str): Unknown (media).
+            contentRating (str) Content rating (PG-13; NR; TV-G).
+            duration (int): Duration of episode in milliseconds.
+            grandparentArt (str): Key to this episodes :class:`~plexapi.video.Show` artwork.
+            grandparentKey (str): Key to this episodes :class:`~plexapi.video.Show`.
+            grandparentRatingKey (str): Unique key for this episodes :class:`~plexapi.video.Show`.
+            grandparentTheme (str): Key to this episodes :class:`~plexapi.video.Show` theme.
+            grandparentThumb (str): Key to this episodes :class:`~plexapi.video.Show` thumb.
+            grandparentTitle (str): Title of this episodes :class:`~plexapi.video.Show`.
+            guid (str): Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+            index (int): Episode number.
+            originallyAvailableAt (datetime): Datetime episode was released.
+            parentIndex (str): Season number of episode.
+            parentKey (str): Key to this episodes :class:`~plexapi.video.Season`.
+            parentRatingKey (int): Unique key for this episodes :class:`~plexapi.video.Season`.
+            parentThumb (str): Key to this episodes thumbnail.
+            parentTitle (str): Name of this episode's season
+            title (str): Name of this Episode
+            rating (float): Movie rating (7.9; 9.8; 8.1).
+            viewOffset (int): View offset in milliseconds.
+            year (int): Year episode was released.
+            directors (List<:class:`~plexapi.media.Director`>): List of director objects.
+            media (List<:class:`~plexapi.media.Media`>): List of media objects.
+            writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
+    """
+    TAG = 'Video'
+    TYPE = 'clip'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Video._loadData(self, data)
+        Playable._loadData(self, data)
+        self.saved = utils.cast(bool, data.attrib.get('saved'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
+        self.originallyAvailableAt = utils.toDatetime(
+            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')

@@ -491,6 +491,36 @@ class MyPlexAccount(PlexObject):
             raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         return response.json()['token']
 
+    def provider(self, title):
+        """ Return an external provider with required title.
+
+            Parameters:
+                title (str): the title to look for.
+
+            Returns:
+                Provider
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest` when the provider wasn't found
+        """
+        for provider in self.providers():
+            if provider.title == title:
+                return provider
+        raise BadRequest('Requested provider wasn`t found')
+
+    def providers(self):
+        if hasattr(self, '_providers'):
+            return self._providers
+
+        import plexapi.providers as providers
+        data = self.query('https://plex.tv/media/providers')
+        ret = []
+        for mediaProvider in data.iter('MediaProvider'):
+            ret.append(providers.MediaProvider(self, mediaProvider))
+
+        self._providers = ret
+        return ret
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
