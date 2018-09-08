@@ -113,13 +113,31 @@ class MyPlexAccount(PlexObject):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
+        subscription = data.find('subscription')
+
+        self.subscriptionActive = utils.cast(bool, subscription.attrib.get('active'))
+        self.subscriptionStatus = subscription.attrib.get('status')
+        self.subscriptionPlan = subscription.attrib.get('plan')
+
+        self.subscriptionFeatures = []
+        for feature in subscription.iter('feature'):
+            self.subscriptionFeatures.append(feature.attrib.get('id'))
+
+        roles = data.find('roles')
+        self.roles = []
+        if roles:
+            for role in roles.iter('role'):
+                self.roles.append(role.attrib('id'))
+
+        entitlements = data.find('entitlements')
+        self.entitlements = []
+        for entitlement in entitlements.iter('entitlement'):
+            self.entitlements.append(entitlement.attrib.get('id'))
+
         # TODO: Fetch missing MyPlexAccount attributes
-        self.subscriptionActive = None      # renamed on server
-        self.subscriptionStatus = None      # renamed on server
-        self.subscriptionPlan = None        # renmaed on server
-        self.subscriptionFeatures = None    # renamed on server
-        self.roles = None
-        self.entitlements = None
+        self.profile_settings = None
+        self.services = None
+        self.joined_at = None
 
     def device(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
