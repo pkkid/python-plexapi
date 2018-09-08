@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import platform
 from glob import glob
@@ -12,6 +13,8 @@ from requests import codes
 import plexapi
 from plexapi.compat import which, makedirs
 from plexapi.exceptions import BadRequest
+from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 from plexapi.utils import download, SEARCHTYPES
 
 DOCKER_CMD = [
@@ -61,14 +64,6 @@ def get_ips():
                      if i[4][0] not in ('127.0.0.1', '::1') and not i[4][0].startswith('fe80:')]))
 
 
-# Unfortunately plex ignore hardlinks created on OS X host machine, so we have to copy here
-def cp(src, dst):
-    if platform.system() == 'Darwin':
-        copyfile(src, dst)
-    else:
-        os.link(src, dst)
-
-
 if __name__ == '__main__':
     if which('docker') is None:
         print('Docker is required to be available')
@@ -82,6 +77,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--username', help='Your Plex username')
     parser.add_argument('--password', help='Your Plex password')
+    parser.add_argument('--token', help='Plex.tv authentication token', default=plexapi.CONFIG.get('auth.server_token'))
     parser.add_argument('--timezone', help='Timezone to set inside plex', default='UTC')
     parser.add_argument('--destination', help='Local path where to store all the media',
                         default=os.path.join(os.getcwd(), 'plex'))
@@ -103,14 +99,20 @@ if __name__ == '__main__':
                         action='store_false')
     parser.add_argument('--without-album', help='Do not create Photo Album', default=True, dest='with_photo_album',
                         action='store_false')
+    parser.add_argument('--show-token', help='Display access token after bootstrap', default=False, action='store_true')
     opts = parser.parse_args()
     print('I`m going to create a plex instance named %s with advertised ip "%s", be prepared!' % (opts.server_name,
                                                                                                   opts.advertise_ip))
     if call(['docker', 'pull', 'plexinc/pms-docker:%s' % opts.docker_tag]) != 0:
         print('Got an error when executing docker pull!')
         exit(1)
-    account = plexapi.utils.getMyPlexAccount(opts)
+
+    if opts.token:
+        account = MyPlexAccount(token=opts.token)
+    else:
+        account = plexapi.utils.getMyPlexAccount(opts)
     path = os.path.realpath(os.path.expanduser(opts.destination))
+    makedirs(os.path.join(path, 'media'), exist_ok=True)
     arg_bindings = {
         'destination': path,
         'hostname': opts.server_name,
@@ -155,14 +157,14 @@ if __name__ == '__main__':
         def get_movie_path(name, year):
             return os.path.join(movies_path, '%s (%d).mp4' % (name, year))
 
-        media_stub_path = os.path.join(opts.destination, 'media', 'video_stub.mp4')
+        media_stub_path = os.path.join(path, 'media', 'video_stub.mp4')
         if not os.path.isfile(media_stub_path):
             download('http://www.mytvtestpatterns.com/mytvtestpatterns/Default/GetFile?p=PhilipsCircleMP4', '',
-                     filename='video_stub.mp4', savepath=os.path.join(opts.destination, 'media'), showstatus=True)
+                     filename='video_stub.mp4', savepath=os.path.join(path, 'media'), showstatus=True)
 
     sections = []
     if opts.with_movies:
-        movies_path = os.path.join(opts.destination, 'media', 'Movies')
+        movies_path = os.path.join(path, 'media', 'Movies')
         makedirs(movies_path, exist_ok=True)
 
         required_movies = {
@@ -175,14 +177,14 @@ if __name__ == '__main__':
         for name, year in required_movies.items():
             expected_media_count += 1
             if not os.path.isfile(get_movie_path(name, year)):
-                cp(media_stub_path, get_movie_path(name, year))
+                copyfile(media_stub_path, get_movie_path(name, year))
 
         print('Finished with movies...')
         sections.append(dict(name='Movies', type='movie', location='/data/Movies', agent='com.plexapp.agents.imdb',
                              scanner='Plex Movie Scanner'))
 
     if opts.with_shows:
-        tvshows_path = os.path.join(opts.destination, 'media', 'TV-Shows')
+        tvshows_path = os.path.join(path, 'media', 'TV-Shows')
         makedirs(os.path.join(tvshows_path, 'Game of Thrones'), exist_ok=True)
         makedirs(os.path.join(tvshows_path, 'The 100'), exist_ok=True)
 
@@ -203,14 +205,14 @@ if __name__ == '__main__':
                     expected_media_count += 1
                     episode_path = get_tvshow_path(show_name, season_id, episode_id)
                     if not os.path.isfile(episode_path):
-                        cp(get_movie_path('Sintel', 2010), episode_path)
+                        copyfile(get_movie_path('Sintel', 2010), episode_path)
 
         print('Finished with TV Shows...')
         sections.append(dict(name='TV Shows', type='show', location='/data/TV-Shows', agent='com.plexapp.agents.thetvdb',
                              scanner='Plex Series Scanner'))
 
     if opts.with_music:
-        music_path = os.path.join(opts.destination, 'media', 'Music')
+        music_path = os.path.join(path, 'media', 'Music')
         makedirs(music_path, exist_ok=True)
 
         artist_dst = os.path.join(music_path, 'Infinite State')
@@ -234,7 +236,7 @@ if __name__ == '__main__':
         if not os.path.isdir(dest_path):
             zip_path = os.path.join(artist_dst, 'Layers.zip')
             if not os.path.isfile(zip_path):
-                download('https://freemusicarchive.org/music/zip/2803d3e9c9510c17d180b821b43b248e9db83487', '',
+                download('https://archive.org/compress/Layers-11520/formats=VBR%20MP3&file=/Layers-11520.zip', '',
                          filename='Layers.zip', savepath=artist_dst, showstatus=True)
             makedirs(dest_path, exist_ok=True)
             import zipfile
@@ -248,7 +250,7 @@ if __name__ == '__main__':
                              scanner='Plex Music Scanner'))
 
     if opts.with_photos:
-        photos_path = os.path.join(opts.destination, 'media', 'Photos')
+        photos_path = os.path.join(path, 'media', 'Photos')
         makedirs(photos_path, exist_ok=True)
 
         has_photos = len(glob(os.path.join(photos_path, '*.jpg')))
@@ -279,8 +281,8 @@ if __name__ == '__main__':
                                                   SEARCHTYPES['photo']):
                         processed_media += 1
 
-            if processed_media == expected_media_count:
-                finished = True
+                        if processed_media == expected_media_count:
+                            finished = True
 
         notifier = server.startAlertListener(alert_callback)
 
@@ -324,6 +326,7 @@ if __name__ == '__main__':
             sleep(3)
 
     print('Base URL is %s' % server.url('', False))
-    print('Auth token is %s' % account.authenticationToken)
+    if opts.show_token:
+        print('Auth token is %s' % account.authenticationToken)
 
     print('Server %s is ready to use!' % opts.server_name)

@@ -20,6 +20,8 @@ from functools import partial
 import pytest
 import requests
 
+from plexapi.myplex import MyPlexAccount
+
 try:
     from unittest.mock import patch, MagicMock
 except ImportError:
@@ -34,7 +36,8 @@ from plexapi.server import PlexServer
 
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
-SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
+MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
+MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
 CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
@@ -47,7 +50,7 @@ AUDIOLAYOUTS = {'5.1', '5.1(side)', 'stereo'}
 CODECS = {'aac', 'ac3', 'dca', 'h264', 'mp3', 'mpeg4'}
 CONTAINERS = {'avi', 'mp4', 'mkv'}
 CONTENTRATINGS = {'TV-14', 'TV-MA', 'G', 'NR'}
-FRAMERATES = {'24p', 'PAL'}
+FRAMERATES = {'24p', 'PAL', 'NTSC'}
 PROFILES = {'advanced simple', 'main', 'constrained baseline'}
 RESOLUTIONS = {'sd', '480', '576', '720', '1080'}
 
@@ -65,31 +68,29 @@ def pytest_runtest_setup(item):
 #  Fixtures
 # ---------------------------------
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def account():
-    return plex().myPlexAccount()
-    # assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
-    # assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
-    # return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
-
-
-@pytest.fixture()
-def account_synctarget():
-    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
-                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
-    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
-    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATORM=iOS'
-    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
-    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
-    return plex().myPlexAccount()
+    assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
+    assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
+    return MyPlexAccount()
 
 
 @pytest.fixture(scope='session')
-def plex():
+def account_synctarget(account):
+    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
+                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
+    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
+    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATFORM=iOS'
+    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
+    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
+    return account
+
+
+@pytest.fixture(scope='session')
+def plex(account):
     assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
-    assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
     session = requests.Session()
-    return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
+    return PlexServer(SERVER_BASEURL, account.authenticationToken, session=session)
 
 
 @pytest.fixture()

@@ -168,8 +168,8 @@ class Playlist(PlexPartialObject, Playable):
                                     :mod:`plexapi.sync` module. Used only when playlist contains video.
                 photoResolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in
                                        the module :mod:`plexapi.sync`. Used only when playlist contains photos.
-                audioBitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
-                                    module :mod:`plexapi.sync`. Used only when playlist contains audio.
+                audioBitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values
+                                    from the module :mod:`plexapi.sync`. Used only when playlist contains audio.
                 client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
                                                                :func:`plexapi.myplex.MyPlexAccount.sync`.
                 clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.

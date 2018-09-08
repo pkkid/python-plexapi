@@ -8,7 +8,7 @@ from requests import Session
 from . import conftest as utils
 
 
-def test_server_attr(plex):
+def test_server_attr(plex, account):
     assert plex._baseurl == utils.SERVER_BASEURL
     assert len(plex.friendlyName) >= 1
     assert len(plex.machineIdentifier) == 40
@@ -19,7 +19,7 @@ def test_server_attr(plex):
     assert re.match(utils.REGEX_EMAIL, plex.myPlexUsername)
     assert plex.platform in ('Linux', 'Windows')
     assert len(plex.platformVersion) >= 5
-    assert plex._token == utils.SERVER_TOKEN
+    assert plex._token == account.authenticationToken
     assert utils.is_int(plex.transcoderActiveVideoSessions, gte=0)
     assert utils.is_datetime(plex.updatedAt)
     assert len(plex.version) >= 5
@@ -131,14 +131,14 @@ def test_server_Server_query(plex):
         PlexServer(utils.SERVER_BASEURL, '1234')
 
 
-def test_server_Server_session():
+def test_server_Server_session(account):
     # Mock Sesstion
     class MySession(Session):
         def __init__(self):
             super(self.__class__, self).__init__()
             self.plexapi_session_test = True
     # Test Code
-    plex = PlexServer(utils.SERVER_BASEURL, utils.SERVER_TOKEN, session=MySession())
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken, session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
 
 

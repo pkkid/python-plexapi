@@ -14,7 +14,7 @@ def test_video_Movie_attributeerror(movie):
         movie.asshat
 
 def test_video_ne(movies):
-    assert len(movies.fetchItems('/library/sections/7/all', title__ne='Sintel')) == 3
+    assert len(movies.fetchItems('/library/sections/1/all', title__ne='Sintel')) == 3
 
 
 def test_video_Movie_delete(movie, patched_http_call):
@@ -33,10 +33,10 @@ def test_video_Movie_addCollection(movie):
     assert labelname not in [tag.tag for tag in movie.collections if tag]
 
 
-def test_video_Movie_getStreamURL(movie):
+def test_video_Movie_getStreamURL(movie, account):
     key = movie.ratingKey
-    assert movie.getStreamURL() == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
-    assert movie.getStreamURL(videoResolution='800x600') == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
+    assert movie.getStreamURL() == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, account.authenticationToken)  # noqa
+    assert movie.getStreamURL(videoResolution='800x600') == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, account.authenticationToken)  # noqa
 
 
 def test_video_Movie_isFullObject_and_reload(plex):
@@ -118,7 +118,7 @@ def test_video_Movie_attrs(movies):
     assert float(movie.rating) >= 6.4
     #assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
-    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal']  # noqa
+    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Bhavana Nagulapally']  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
     assert movie.studio == 'Nina Paley'
@@ -301,7 +301,7 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.duration, gte=1600000)
     assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
-    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
+    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama']
     show.reload()
     assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
     # So the initkey should have changed because of the reload
@@ -316,8 +316,8 @@ def test_video_Show_attrs(show):
     assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
-    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
-    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
+    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Aimee Richardson', 'Alexander Siddig', 'Alfie Allen']  # noqa
+    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Aimee Richardson', 'Alexander Siddig', 'Alfie Allen']  # noqa
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == 'HBO'
     assert utils.is_string(show.summary, gte=100)
@@ -503,7 +503,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
-    assert utils.is_int(part.size, gte=30000000)
+    assert part.size == 18184197
 
 
 def test_video_Season(show):
