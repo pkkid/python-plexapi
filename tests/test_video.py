@@ -151,9 +151,9 @@ def test_video_Movie_attrs(movies):
     assert audio.id >= 1
     assert audio.index == 1
     assert utils.is_metadata(audio._initpath)
-    assert audio.language == 'English'
-    assert audio.languageCode == 'eng'
-    assert audio.samplingRate == 48000
+    assert audio.language is None
+    assert audio.languageCode is None
+    assert audio.samplingRate == 44100
     assert audio.selected is True
     assert audio._server._baseurl == utils.SERVER_BASEURL
     assert audio.streamType == 2
@@ -184,7 +184,7 @@ def test_video_Movie_attrs(movies):
     assert video.chromaSubsampling == '4:2:0'
     assert video.codec in utils.CODECS
     assert video.codecID is None
-    assert video.colorSpace == 'bt709'
+    assert video.colorSpace is None
     assert video.duration is None
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
@@ -193,8 +193,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.id)
     assert utils.is_int(video.index, gte=0)
     assert utils.is_metadata(video._initpath)
-    assert video.language == 'English'
-    assert video.languageCode == 'eng'
+    assert video.language is None
+    assert video.languageCode is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert utils.is_int(video.refFrames)
@@ -223,7 +223,7 @@ def test_video_Movie_attrs(movies):
     assert stream1.chromaSubsampling == '4:2:0'
     assert stream1.codec in utils.CODECS
     assert stream1.codecID is None
-    assert stream1.colorSpace == 'bt709'
+    assert stream1.colorSpace is None
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
     assert stream1.frameRateMode is None
@@ -232,8 +232,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream1.id)
     assert utils.is_int(stream1.index, gte=0)
     assert utils.is_metadata(stream1._initpath)
-    assert stream1.language == 'English'
-    assert stream1.languageCode == 'eng'
+    assert stream1.language is None
+    assert stream1.languageCode is None
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
@@ -259,8 +259,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream2.id)
     assert utils.is_int(stream2.index)
     assert utils.is_metadata(stream2._initpath)
-    assert stream2.language == 'English'
-    assert stream2.languageCode == 'eng'
+    assert stream2.language is None
+    assert stream2.languageCode is None
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
@@ -508,7 +508,7 @@ def test_video_Episode_attrs(episode):
 
 def test_video_Season(show):
     seasons = show.seasons()
-    assert len(seasons) >= 1
+    assert len(seasons) == 2
     assert ['Season 1', 'Season 2'] == [s.title for s in seasons[:2]]
     assert show.season('Season 1') == seasons[0]
 

@@ -323,7 +323,7 @@ class Show(Video):
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
         return self.fetchItems(key, **kwargs)
 
     def season(self, title=None):
