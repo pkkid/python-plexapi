@@ -470,8 +470,8 @@ class LibrarySection(PlexObject):
                 libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist,
                     album, track; optional).
                 **kwargs (dict): Any of the available filters for the current library section. Partial string
-                        matches allowed. Multiple matches OR together. All inputs will be compared with the
-                        available options and a warning logged if the option does not appear valid.
+                        matches allowed. Multiple matches OR together. Negative filtering also possible, just add an
+                        exclamation mark to the end of filter name, e.g. `resolution!=1x1`.
 
                         * unwatched: Display or hide unwatched content (True, False). [all]
                         * duplicate: Display or hide duplicate items (True, False). [movie]
@@ -486,6 +486,9 @@ class LibrarySection(PlexObject):
                         * resolution: List of video resolutions to search within ([resolution_or_key, ...]). [movie]
                         * studio: List of studios to search within ([studio_or_key, ...]). [music]
                         * year: List of years to search within ([yyyy, ...]). [all]
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: when applying unknown filter
         """
         # cleanup the core arguments
         args = {}
@@ -510,7 +513,10 @@ class LibrarySection(PlexObject):
 
     def _cleanSearchFilter(self, category, value, libtype=None):
         # check a few things before we begin
-        if category not in self.ALLOWED_FILTERS:
+        if category.endswith('!'):
+            if category[:-1] not in self.ALLOWED_FILTERS:
+                raise BadRequest('Unknown filter category: %s' % category[:-1])
+        elif category not in self.ALLOWED_FILTERS:
             raise BadRequest('Unknown filter category: %s' % category)
         if category in self.BOOLEAN_FILTERS:
             return '1' if value else '0'
@@ -839,12 +845,12 @@ class PhotoSection(LibrarySection):
 
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('all', 'iso',
-                'make', 'lens', 'aperture', 'exposure')
+                'make', 'lens', 'aperture', 'exposure', 'device', 'resolution')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt')
             TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device')
+    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution')
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
