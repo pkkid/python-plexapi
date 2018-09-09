@@ -45,6 +45,9 @@ after_script:
 jobs:
   include:
     - python: 3.6
+      env:
+        - PLEX_CONTAINER_TAG=1.3.2.3112-1751929
+    - python: 3.6
       name: "Flake8"
       install:
         - pip install -r requirements_dev.txt
