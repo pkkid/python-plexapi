@@ -246,7 +246,7 @@ if __name__ == '__main__':
         expected_media_count += len(glob(os.path.join(dest_path, '*.mp3')))
 
         print('Finished with Music...')
-        sections.append(dict(name='Music', type='artist', location='/data/Music', agent='com.plexapp.agents.none',
+        sections.append(dict(name='Music', type='artist', location='/data/Music', agent='com.plexapp.agents.lastfm',
                              scanner='Plex Music Scanner'))
 
     if opts.with_photos:
