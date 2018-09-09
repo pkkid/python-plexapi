@@ -18,7 +18,6 @@ python:
 env:
   global:
     - PLEXAPI_AUTH_SERVER_BASEURL=http://127.0.0.1:32400
-    - PLEXAPI_PLEXAPI_TIMEOUT=10
   matrix:
     - PLEX_CONTAINER_TAG=latest
 
