@@ -65,6 +65,63 @@ def get_ips():
                      if i[4][0] not in ('127.0.0.1', '::1') and not i[4][0].startswith('fe80:')]))
 
 
+def create_section(server, section):
+    processed_media = 0
+    expected_media_count = section.pop('expected_media_count', 0)
+
+    bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
+
+    expected_media_type = section['type']
+    if section['type'] == 'show':
+        expected_media_type = 'episode'
+    elif section['type'] == 'artist':
+        expected_media_type = 'track'
+
+    def alert_callback(data):
+        global processed_media
+        if data['type'] == 'timeline':
+            for entry in data['TimelineEntry']:
+                if entry['identifier'] == 'com.plexapp.plugins.library':
+                    # Missed mediaState means that media was processed (analyzed & thumbnailed)
+                    if 'mediaState' not in entry and entry['type'] == SEARCHTYPES[expected_media_type]:
+                        # state=5 means record processed, applicable only when metadata source was set
+                        if entry['state'] == 5:
+                            bar.update()
+
+                        # state=1 means record processed, when no metadata source was set
+                        elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
+                            bar.update()
+
+    notifier = server.startAlertListener(alert_callback)
+
+    # I don't know how to determinate of plex successfully started, so let's do it in creepy way
+    success = False
+    start_time = time()
+    while not success and (time() - start_time < opts.bootstrap_timeout):
+        try:
+            server.library.add(**section)
+            success = True
+        except BadRequest as e:
+            if 'the server is still starting up. Please retry later' in str(e):
+                sleep(1)
+            else:
+                raise
+
+    if not success:
+        print('Something went wrong :(')
+        exit(1)
+
+    while bar.n < bar.total:
+        if time() - start_time >= opts.bootstrap_timeout:
+            print('Metadata scan takes too long, probably something went really wrong')
+            exit(1)
+        sleep(3)
+
+    bar.close()
+
+    notifier.stop()
+
+
 if __name__ == '__main__':
     if which('docker') is None:
         print('Docker is required to be available')
@@ -147,8 +204,6 @@ if __name__ == '__main__':
 
     print('Ok, I got the server instance, let`s download what you`re missing')
 
-    expected_media_count = 0
-
     def get_tvshow_path(name, season, episode):
         return os.path.join(tvshows_path, name, 'S%02dE%02d.mp4' % (season, episode))
 
@@ -173,6 +228,7 @@ if __name__ == '__main__':
             'Sintel': 2010,
         }
 
+        expected_media_count = 0
         for name, year in required_movies.items():
             expected_media_count += 1
             if not os.path.isfile(get_movie_path(name, year)):
@@ -180,7 +236,7 @@ if __name__ == '__main__':
 
         print('Finished with movies...')
         sections.append(dict(name='Movies', type='movie', location='/data/Movies', agent='com.plexapp.agents.imdb',
-                             scanner='Plex Movie Scanner'))
+                             scanner='Plex Movie Scanner', expected_media_count=expected_media_count))
 
     if opts.with_shows:
         tvshows_path = os.path.join(path, 'media', 'TV-Shows')
@@ -198,6 +254,7 @@ if __name__ == '__main__':
             ]
         }
 
+        expected_media_count = 0
         for show_name, seasons in required_tv_shows.items():
             for season_id, episodes in enumerate(seasons, start=1):
                 for episode_id in episodes:
@@ -208,11 +265,12 @@ if __name__ == '__main__':
 
         print('Finished with TV Shows...')
         sections.append(dict(name='TV Shows', type='show', location='/data/TV-Shows', agent='com.plexapp.agents.thetvdb',
-                             scanner='Plex Series Scanner'))
+                             scanner='Plex Series Scanner', expected_media_count=expected_media_count))
 
     if opts.with_music:
         music_path = os.path.join(path, 'media', 'Music')
         makedirs(music_path, exist_ok=True)
+        expected_media_count = 0
 
         artist_dst = os.path.join(music_path, 'Infinite State')
         dest_path = os.path.join(artist_dst, 'Unmastered Impulses')
@@ -246,11 +304,12 @@ if __name__ == '__main__':
 
         print('Finished with Music...')
         sections.append(dict(name='Music', type='artist', location='/data/Music', agent='com.plexapp.agents.lastfm',
-                             scanner='Plex Music Scanner'))
+                             scanner='Plex Music Scanner', expected_media_count=expected_media_count))
 
     if opts.with_photos:
         photos_path = os.path.join(path, 'media', 'Photos')
         makedirs(photos_path, exist_ok=True)
+        expected_photo_count = 0
 
         folders = {
             ('Cats', ): 3,
@@ -271,57 +330,13 @@ if __name__ == '__main__':
 
         print('Finished with photos...')
         sections.append(dict(name='Photos', type='photo', location='/data/Photos', agent='com.plexapp.agents.none',
-                             scanner='Plex Photo Scanner'))
+                             scanner='Plex Photo Scanner', expected_media_count=has_photos))
 
     if sections:
         print('Ok, got the media, it`s time to create a library for you!')
 
-        library = server.library
-
-        bar = tqdm(desc='Scanning libraries', total=expected_media_count)
-
-        def alert_callback(data):
-            if data['type'] == 'timeline':
-                for entry in data['TimelineEntry']:
-                    if entry['identifier'] == 'com.plexapp.plugins.library' and entry['state'] == 5 \
-                            and entry['type'] in (SEARCHTYPES['movie'], SEARCHTYPES['episode'], SEARCHTYPES['track'],
-                                                  SEARCHTYPES['photo']):
-                        bar.update()
-
-        notifier = server.startAlertListener(alert_callback)
-
-        first_section = sections.pop(0)
-
-        # I don't know how to determinate of plex successfully started, so let's do it in creepy way
-        success = False
-        start_time = time()
-        while not success and (time() - start_time < opts.bootstrap_timeout):
-            try:
-                library.add(**first_section)
-                success = True
-            except BadRequest as e:
-                if 'the server is still starting up. Please retry later' in str(e):
-                    sleep(1)
-                else:
-                    raise
-
-        if not success:
-            print('Something went wrong :(')
-            exit(1)
-
         for section in sections:
-            library.add(**section)
-
-        print('Sections created, almost done! Please wait while metadata will be collected, it may take a couple '
-              'minutes...')
-
-        start_time = time()
-        while bar.n < bar.total:
-            if time() - start_time >= opts.bootstrap_timeout:
-                print('Metadata scan takes too long, probably something went really wrong')
-                exit(1)
-            sleep(3)
-        bar.close()
+            create_section(server, section)
 
     print('Base URL is %s' % server.url('', False))
     if opts.show_token:
