@@ -1,7 +1,8 @@
+""" The script is used to create bootstrap a docker container with Plex and with all the libraries required for testing.
+"""
+
 import argparse
-import logging
 import os
-import platform
 from glob import glob
 from shutil import copyfile, rmtree
 from subprocess import call
@@ -14,7 +15,6 @@ import plexapi
 from plexapi.compat import which, makedirs
 from plexapi.exceptions import BadRequest
 from plexapi.myplex import MyPlexAccount
-from plexapi.server import PlexServer
 from plexapi.utils import download, SEARCHTYPES
 
 DOCKER_CMD = [
@@ -96,8 +96,6 @@ if __name__ == '__main__':
     parser.add_argument('--without-music', help='Do not create Music section', default=True, dest='with_music',
                         action='store_false')
     parser.add_argument('--without-photos', help='Do not create Photos section', default=True, dest='with_photos',
-                        action='store_false')
-    parser.add_argument('--without-album', help='Do not create Photo Album', default=True, dest='with_photo_album',
                         action='store_false')
     parser.add_argument('--show-token', help='Display access token after bootstrap', default=False, action='store_true')
     opts = parser.parse_args()
@@ -270,10 +268,7 @@ if __name__ == '__main__':
                          filename='photo%d.jpg' % photos_in_folder, savepath=folder_path)
             has_photos += photos_in_folder
 
-        if opts.with_photo_album:
-            print('Photos collected, but we need to create an album later...')
-        else:
-            print('Photos collected...')
+        print('Photos collected...')
         sections.append(dict(name='Photos', type='photo', location='/data/Photos', agent='com.plexapp.agents.none',
                              scanner='Plex Photo Scanner'))
 
@@ -281,8 +276,6 @@ if __name__ == '__main__':
         print('Ok, got the media, it`s time to create a library for you!')
 
         library = server.library
-
-        finished = expected_media_count == 0
 
         processed_media = 0
 
@@ -294,9 +287,6 @@ if __name__ == '__main__':
                             and entry['type'] in (SEARCHTYPES['movie'], SEARCHTYPES['episode'], SEARCHTYPES['track'],
                                                   SEARCHTYPES['photo']):
                         processed_media += 1
-
-                        if processed_media == expected_media_count:
-                            finished = True
 
         notifier = server.startAlertListener(alert_callback)
 
@@ -325,18 +315,11 @@ if __name__ == '__main__':
         print('Sections created, almost done! Please wait while metadata will be collected, it may take a couple '
               'minutes...')
 
-        album_created = False
         start_time = time()
-        while not finished and not (album_created and opts.with_photos and opts.with_photo_album):
+        while processed_media < expected_media_count:
             if time() - start_time >= opts.bootstrap_timeout:
                 print('Metadata scan takes too long, probably something went really wrong')
                 exit(1)
-            if not album_created and opts.with_photos and opts.with_photo_album:
-                photos = library.section('Photos').all()
-                if len(photos) == has_photos:
-                    server.createPlaylist('photo_album1', photos)
-                    album_created = True
-                    print('Photo album created')
             sleep(3)
 
     print('Base URL is %s' % server.url('', False))
