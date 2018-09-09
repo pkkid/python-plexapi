@@ -57,7 +57,7 @@ def test_library_fetchItem(plex, movie):
 
 
 def test_library_onDeck(plex, movie):
-    movie.updateProgress(5000)
+    movie.updateProgress(movie.duration * 1000 / 10)  # set progress to 10%
     assert len(list(plex.library.onDeck()))
     movie.markUnwatched()
 
@@ -143,11 +143,12 @@ def test_librarty_deleteMediaPreviews(movies):
 
 
 def test_library_MovieSection_onDeck(movie, movies, tvshows, episode):
-    movie.updateProgress(5000)
-    episode.markWatched()
-    assert len(movies.onDeck()) + len(tvshows.onDeck())
-    episode.markUnwatched()
+    movie.updateProgress(movie.duration * 1000 / 10)  # set progress to 10%
+    assert movies.onDeck()
     movie.markUnwatched()
+    episode.markWatched()
+    assert tvshows.onDeck()
+    episode.markUnwatched()
 
 
 def test_library_MovieSection_recentlyAdded(movies):
