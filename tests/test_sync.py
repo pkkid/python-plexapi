@@ -227,7 +227,7 @@ def test_sync_entire_library_photos(clear_sync_device, photos):
     new_item = photos.sync(PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     photos._server.refreshSync()
     item = ensure_sync_item(clear_sync_device, new_item)
-    # It's not that easy, to just get all the photos within the library, so let`s query for photos with resolution!=0x0
+    # It's not that easy, to just get all the photos within the library, so let`s query for photos with device!=0x0
     section_content = photos.search(libtype='photo', **{'device!': '0x0'})
     media_list = item.getMedia()
     assert len(section_content) == len(media_list)
