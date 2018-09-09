@@ -183,10 +183,8 @@ def test_add_music_track_to_sync(clear_sync_device, track):
     assert track.ratingKey == media_list[0].ratingKey
 
 
-def test_add_photo_to_sync(clear_sync_device, photos):
-    photo = photos.all()[0]
-    if not hasattr(photo, 'librarySectionID'):
-        pytest.skip('Photos are not ready for individual synchronization yet')
+def test_add_photo_to_sync(clear_sync_device, photoalbum):
+    photo = photoalbum.photo('photo1')
     new_item = photo.sync(PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     photo._server.refreshSync()
     item = ensure_sync_item(clear_sync_device, new_item)
@@ -229,7 +227,7 @@ def test_sync_entire_library_photos(clear_sync_device, photos):
     new_item = photos.sync(PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     photos._server.refreshSync()
     item = ensure_sync_item(clear_sync_device, new_item)
-    section_content = photos.all()
+    section_content = photos.search(libtype='photo')
     media_list = item.getMedia()
     assert len(section_content) == len(media_list)
     assert [e.ratingKey for e in section_content] == [m.ratingKey for m in media_list]
@@ -283,10 +281,8 @@ def test_playlist_music_sync(plex, clear_sync_device, artist):
     playlist.delete()
 
 
-def test_playlist_photos_sync(plex, clear_sync_device, photos):
-    items = photos.all()
-    if not hasattr(items[0], 'librarySectionID'):
-        pytest.skip('Photos are not ready for individual synchronization yet')
+def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
+    items = photoalbum.photos()
     playlist = plex.createPlaylist('Sync: Photos', items)
     new_item = playlist.sync(photoResolution=PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     playlist._server.refreshSync()

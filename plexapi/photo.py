@@ -154,7 +154,7 @@ class Photo(PlexPartialObject):
         sync_item.metadataType = self.METADATA_TYPE
         sync_item.machineIdentifier = self._server.machineIdentifier
 
-        section = self._server.library.sectionByID(self.librarySectionID)
+        section = self.section()
 
         sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
         sync_item.policy = Policy.create(limit)

@@ -844,7 +844,7 @@ class PhotoSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure')
+    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device')
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
