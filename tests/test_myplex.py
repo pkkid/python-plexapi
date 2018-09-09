@@ -152,3 +152,12 @@ def test_myplex_updateFriend(account, plex, mocker):
                                  allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
                                  filterTelevision=vid_filter, filterMusic={'label': ['foo']})
 
+
+def test_myplex_plexpass_attributes(account_plexpass):
+    assert account_plexpass.subscriptionActive
+    assert account_plexpass.subscriptionStatus == 'Active'
+    assert account_plexpass.subscriptionPlan
+    assert 'sync' in account_plexpass.subscriptionFeatures
+    assert 'premium_music_metadata' in account_plexpass.subscriptionFeatures
+    assert 'plexpass' in account_plexpass.roles
+    assert 'all' in account_plexpass.entitlements
