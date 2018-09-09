@@ -12,7 +12,8 @@ def test_settings_get(plex):
 def test_settings_set(plex):
     cd = plex.settings.get('sendCrashReports')
     old_value = cd.value
-    cd.set(not old_value)
+    new_value = not old_value
+    cd.set(new_value)
     plex.settings.save()
-    delattr(plex, '_settings')
-    assert plex.settings.get('sendCrashReports').value == (not old_value)
+    plex._settings = None
+    assert plex.settings.get('sendCrashReports').value == new_value
