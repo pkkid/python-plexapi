@@ -56,6 +56,7 @@ jobs:
       after_script: true
       env:
         - PLEX_CONTAINER_TAG=latest
+        - TEST_ACCOUNT_ONCE=1
     - stage: deploy
       name: "Deploy to PyPi"
       python: 3.6

@@ -98,9 +98,9 @@ def test_myplex_deletewebhooks(account):
         account.deleteWebhook('http://site.com')
 
 
-def test_myplex_optout(account):
+def test_myplex_optout(account_once):
     def enabled():
-        ele = account.query('https://plex.tv/api/v2/user/privacy')
+        ele = account_once.query('https://plex.tv/api/v2/user/privacy')
         lib = ele.attrib.get('optOutLibraryStats')
         play = ele.attrib.get('optOutPlayback')
         return bool(int(lib)), bool(int(play))
@@ -108,11 +108,11 @@ def test_myplex_optout(account):
     # This should be False False
     library_enabled, playback_enabled = enabled()
 
-    account.optOut(library=True, playback=True)
+    account_once.optOut(library=True, playback=True)
 
     assert all(enabled())
 
-    account.optOut(library=False, playback=False)
+    account_once.optOut(library=False, playback=False)
 
     assert not all(enabled())
 

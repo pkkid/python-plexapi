@@ -77,6 +77,14 @@ def account():
 
 
 @pytest.fixture(scope='session')
+def account_once(account):
+    from os import environ
+    if environ.get('TEST_ACCOUNT_ONCE') != '1':
+        pytest.skip('Do not forget to test this by providing TEST_ACCOUNT_ONCE=1')
+    return account
+
+
+@pytest.fixture(scope='session')
 def account_plexpass(account):
     if not account.subscriptionActive:
         pytest.skip('PlexPass subscription is not active, unable to test sync-stuff, be careful!')
