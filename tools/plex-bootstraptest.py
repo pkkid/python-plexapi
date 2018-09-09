@@ -10,6 +10,7 @@ from time import time, sleep
 from uuid import uuid4
 
 from requests import codes
+from tqdm import tqdm
 
 import plexapi
 from plexapi.compat import which, makedirs
@@ -277,18 +278,15 @@ if __name__ == '__main__':
 
         library = server.library
 
-        processed_media = 0
-        print('Expected media count: %d' % expected_media_count)
+        bar = tqdm(desc='Scanning libraries', total=expected_media_count)
 
         def alert_callback(data):
-            global processed_media
             if data['type'] == 'timeline':
                 for entry in data['TimelineEntry']:
                     if entry['identifier'] == 'com.plexapp.plugins.library' and entry['state'] == 5 \
                             and entry['type'] in (SEARCHTYPES['movie'], SEARCHTYPES['episode'], SEARCHTYPES['track'],
                                                   SEARCHTYPES['photo']):
-                        processed_media += 1
-                        print('Processed media count: %d' % processed_media)
+                        bar.update()
 
         notifier = server.startAlertListener(alert_callback)
 
@@ -318,11 +316,12 @@ if __name__ == '__main__':
               'minutes...')
 
         start_time = time()
-        while processed_media < expected_media_count:
+        while bar.n < bar.total:
             if time() - start_time >= opts.bootstrap_timeout:
                 print('Metadata scan takes too long, probably something went really wrong')
                 exit(1)
             sleep(3)
+        bar.close()
 
     print('Base URL is %s' % server.url('', False))
     if opts.show_token:
