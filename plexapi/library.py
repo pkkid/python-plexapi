@@ -853,13 +853,11 @@ class PhotoSection(LibrarySection):
 
     def searchAlbums(self, title, **kwargs):
         """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        key = '/library/sections/%s/all?type=14' % self.key
-        return self.fetchItems(key, title=title)
+        return self.search(libtype='photoalbum', title=title, **kwargs)
 
     def searchPhotos(self, title, **kwargs):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
-        key = '/library/sections/%s/all?type=13' % self.key
-        return self.fetchItems(key, title=title)
+        return self.search(libtype='photo', title=title, **kwargs)
 
     def sync(self, resolution, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
