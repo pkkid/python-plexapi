@@ -72,21 +72,23 @@ def create_section(server, section):
     bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
 
     expected_media_type = section['type']
-    if section['type'] == 'show':
-        expected_media_type = 'episode'
-    elif section['type'] == 'artist':
+    if expected_media_type == 'artist':
         expected_media_type = 'track'
 
     def alert_callback(data):
         global processed_media
         if data['type'] == 'timeline':
             for entry in data['TimelineEntry']:
-                if entry['identifier'] == 'com.plexapp.plugins.library':
+                if entry.get('identifier', 'com.plexapp.plugins.library') == 'com.plexapp.plugins.library':
                     # Missed mediaState means that media was processed (analyzed & thumbnailed)
                     if 'mediaState' not in entry and entry['type'] == SEARCHTYPES[expected_media_type]:
                         # state=5 means record processed, applicable only when metadata source was set
                         if entry['state'] == 5:
-                            bar.update()
+                            cnt = 1
+                            if expected_media_type == 'show':
+                                show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
+                                cnt = show.leafCount
+                            bar.update(cnt)
 
                         # state=1 means record processed, when no metadata source was set
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
