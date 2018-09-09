@@ -10,10 +10,10 @@ def test_settings_get(plex):
 
 
 def test_settings_set(plex):
-    cd = plex.settings.get('sendCrashReports')
+    cd = plex.settings.get('autoEmptyTrash')
     old_value = cd.value
     new_value = not old_value
     cd.set(new_value)
     plex.settings.save()
     plex._settings = None
-    assert plex.settings.get('sendCrashReports').value == new_value
+    assert plex.settings.get('autoEmptyTrash').value == new_value

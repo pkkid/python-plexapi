@@ -178,10 +178,10 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(media.width, gte=200)
     # Video
     video = movie.media[0].parts[0].videoStreams()[0]
-    assert video.bitDepth == 8
+    assert video.bitDepth in (8, None)  # Different versions of Plex Server return different values
     assert utils.is_int(video.bitrate)
     assert video.cabac is None
-    assert video.chromaSubsampling == '4:2:0'
+    assert video.chromaSubsampling in ('4:2:0', None)
     assert video.codec in utils.CODECS
     assert video.codecID is None
     assert video.colorSpace is None
@@ -198,7 +198,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert utils.is_int(video.refFrames)
-    assert video.scanType is None
+    assert video.scanType in ('progressive', None)
     assert video.selected is False
     assert video._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(video.streamType)
@@ -217,10 +217,10 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(part.size, gte=1000000)
     # Stream 1
     stream1 = part.streams[0]
-    assert stream1.bitDepth == 8
+    assert stream1.bitDepth in (8, None)
     assert utils.is_int(stream1.bitrate)
     assert stream1.cabac is None
-    assert stream1.chromaSubsampling == '4:2:0'
+    assert stream1.chromaSubsampling in ('4:2:0', None)
     assert stream1.codec in utils.CODECS
     assert stream1.codecID is None
     assert stream1.colorSpace is None
@@ -237,7 +237,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
-    assert stream1.scanType is None
+    assert stream1.scanType in ('progressive', None)
     assert stream1.selected is False
     assert stream1._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(stream1.streamType)
@@ -301,7 +301,7 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.duration, gte=1600000)
     assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
-    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama']
+    assert not {'Adventure', 'Drama'} - {i.tag for i in show.genres}
     show.reload()
     assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
     # So the initkey should have changed because of the reload
