@@ -580,12 +580,12 @@ class Playable(object):
                 duration (int): duration of the item
         """
         durationStr = '&duration='
-        if duration != None:
+        if duration is not None:
             durationStr = durationStr + str(duration)
         else:
             durationStr = durationStr + str(self.duration)
-        key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s' % (self.ratingKey, self.key,
-                                                                                              time, state, durationStr)
+        key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
+        key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
         self.reload()
 
