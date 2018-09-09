@@ -253,13 +253,27 @@ if __name__ == '__main__':
         photos_path = os.path.join(path, 'media', 'Photos')
         makedirs(photos_path, exist_ok=True)
 
-        has_photos = len(glob(os.path.join(photos_path, '*.jpg')))
-        while has_photos < 10:
-            has_photos += 1
-            download('https://picsum.photos/800/600/?random', '',
-                     filename='photo%d.jpg' % has_photos, savepath=photos_path)
+        folders = {
+            ('Cats', ): 3,
+            ('Cats', 'Cats in bed'): 7,
+            ('Cats', 'Cats not in bed'): 1,
+            ('Cats', 'Not cats in bed'): 1,
+        }
 
-        print('Photos collected, but we need to create an album later...')
+        has_photos = 0
+        for folder_path, required_cnt in folders.items():
+            folder_path = os.path.join(photos_path, *folder_path)
+            photos_in_folder = len(glob(os.path.join(folder_path, '*.jpg')))
+            while photos_in_folder < required_cnt:
+                photos_in_folder += 1
+                download('https://picsum.photos/800/600/?random', '',
+                         filename='photo%d.jpg' % photos_in_folder, savepath=folder_path)
+            has_photos += photos_in_folder
+
+        if opts.with_photo_album:
+            print('Photos collected, but we need to create an album later...')
+        else:
+            print('Photos collected...')
         sections.append(dict(name='Photos', type='photo', location='/data/Photos', agent='com.plexapp.agents.none',
                              scanner='Plex Photo Scanner'))
 
