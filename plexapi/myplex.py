@@ -395,7 +395,7 @@ class MyPlexAccount(PlexObject):
         if library is not None:
             params['optOutLibraryStats'] = int(library)
         url = 'https://plex.tv/api/v2/user/privacy'
-        return self.query(url, method=self._session.put, params=params)
+        return self.query(url, method=self._session.put, data=params)
 
     def syncItems(self, client=None, clientId=None):
         """ Returns an instance of :class:`plexapi.sync.SyncList` for specified client.
