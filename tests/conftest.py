@@ -76,14 +76,21 @@ def account():
 
 
 @pytest.fixture(scope='session')
-def account_synctarget(account):
+def account_plexpass(account):
+    if not account.subscriptionActive:
+        pytest.skip('PlexPass subscription is not active, unable to test sync-stuff, be careful!')
+    return account
+
+
+@pytest.fixture(scope='session')
+def account_synctarget(account_plexpass):
     assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
                                                      'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
     assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
     assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATFORM=iOS'
     assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
     assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
-    return account
+    return account_plexpass
 
 
 @pytest.fixture(scope='session')
