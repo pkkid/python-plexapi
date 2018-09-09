@@ -71,13 +71,14 @@ def _test_myplex_connect_to_device(account):
 
 def test_myplex_users(account):
     users = account.users()
-    assert users, 'Found no users on account: %s' % account.name
+    if not len(users):
+        return pytest.skip('You have to add a shared account into your MyPlex')
     print('Found %s users.' % len(users))
     user = account.user(users[0].title)
     print('Found user: %s' % user)
     assert user, 'Could not find user %s' % users[0].title
 
-    assert len(users[0].servers[0].sections()) == 10, "Could'nt info about the shared libraries"
+    assert len(users[0].servers[0].sections()) > 0, "Couldn't info about the shared libraries"
 
 
 def test_myplex_resource(account, plex):
