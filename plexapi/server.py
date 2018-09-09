@@ -422,6 +422,21 @@ class PlexServer(PlexObject):
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
 
+    def refreshSynclist(self):
+        """ Force PMS to download new SyncList from Plex.tv. """
+        return self.query('/sync/refreshSynclists', self._session.put)
+
+    def refreshContent(self):
+        """ Force PMS to refresh content for known SyncLists. """
+        return self.query('/sync/refreshContent', self._session.put)
+
+    def refreshSync(self):
+        """ Calls :func:`~plexapi.server.PlexServer.refreshSynclist` and
+            :func:`~plexapi.server.PlexServer.refreshContent`, just like the Plex Web UI does when you click 'refresh'.
+        """
+        self.refreshSynclist()
+        self.refreshContent()
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't

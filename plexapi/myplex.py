@@ -3,7 +3,7 @@ import copy
 import requests
 import time
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_IDENTIFIER, X_PLEX_ENABLE_FAST_CONNECT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
@@ -11,6 +11,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
+from plexapi.sync import SyncList, SyncItem
 from plexapi.utils import joinArgs
 
 
@@ -112,13 +113,31 @@ class MyPlexAccount(PlexObject):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
+        subscription = data.find('subscription')
+
+        self.subscriptionActive = utils.cast(bool, subscription.attrib.get('active'))
+        self.subscriptionStatus = subscription.attrib.get('status')
+        self.subscriptionPlan = subscription.attrib.get('plan')
+
+        self.subscriptionFeatures = []
+        for feature in subscription.iter('feature'):
+            self.subscriptionFeatures.append(feature.attrib.get('id'))
+
+        roles = data.find('roles')
+        self.roles = []
+        if roles:
+            for role in roles.iter('role'):
+                self.roles.append(role.attrib.get('id'))
+
+        entitlements = data.find('entitlements')
+        self.entitlements = []
+        for entitlement in entitlements.iter('entitlement'):
+            self.entitlements.append(entitlement.attrib.get('id'))
+
         # TODO: Fetch missing MyPlexAccount attributes
-        self.subscriptionActive = None      # renamed on server
-        self.subscriptionStatus = None      # renamed on server
-        self.subscriptionPlan = None        # renmaed on server
-        self.subscriptionFeatures = None    # renamed on server
-        self.roles = None
-        self.entitlements = None
+        self.profile_settings = None
+        self.services = None
+        self.joined_at = None
 
     def device(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
@@ -289,7 +308,7 @@ class MyPlexAccount(PlexObject):
         return response_servers, response_filters
 
     def user(self, username):
-        """ Returns the :class:`~myplex.MyPlexUser` that matches the email or username specified.
+        """ Returns the :class:`~plexapi.myplex.MyPlexUser` that matches the email or username specified.
 
             Parameters:
                 username (str): Username, email or id of the user to return.
@@ -377,6 +396,86 @@ class MyPlexAccount(PlexObject):
             params['optOutLibraryStats'] = int(library)
         url = 'https://plex.tv/api/v2/user/privacy'
         return self.query(url, method=self._session.put, params=params)
+
+    def syncItems(self, client=None, clientId=None):
+        """ Returns an instance of :class:`plexapi.sync.SyncList` for specified client.
+
+            Parameters:
+                client (:class:`~plexapi.myplex.MyPlexDevice`): a client to query SyncItems for.
+                clientId (str): an identifier of a client to query SyncItems for.
+
+            If both `client` and `clientId` provided the client would be preferred.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+        """
+        if client:
+            clientId = client.clientIdentifier
+        elif clientId is None:
+            clientId = X_PLEX_IDENTIFIER
+
+        data = self.query(SyncList.key.format(clientId=clientId))
+
+        return SyncList(self, data)
+
+    def sync(self, sync_item, client=None, clientId=None):
+        """ Adds specified sync item for the client. It's always easier to use methods defined directly in the media
+            objects, e.g. :func:`plexapi.video.Video.sync`, :func:`plexapi.audio.Audio.sync`.
+
+            Parameters:
+                client (:class:`~plexapi.myplex.MyPlexDevice`): a client for which you need to add SyncItem to.
+                clientId (str): an identifier of a client for which you need to add SyncItem to.
+                sync_item (:class:`plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
+
+            If both `client` and `clientId` provided the client would be preferred.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest` when client with provided clientId wasn`t found.
+                :class:`plexapi.exceptions.BadRequest` provided client doesn`t provides `sync-target`.
+        """
+        if not client and not clientId:
+            clientId = X_PLEX_IDENTIFIER
+
+        if not client:
+            for device in self.devices():
+                if device.clientIdentifier == clientId:
+                    client = device
+                    break
+
+            if not client:
+                raise BadRequest('Unable to find client by clientId=%s', clientId)
+
+        if 'sync-target' not in client.provides:
+            raise BadRequest('Received client doesn`t provides sync-target')
+
+        params = {
+            'SyncItem[title]': sync_item.title,
+            'SyncItem[rootTitle]': sync_item.rootTitle,
+            'SyncItem[metadataType]': sync_item.metadataType,
+            'SyncItem[machineIdentifier]': sync_item.machineIdentifier,
+            'SyncItem[contentType]': sync_item.contentType,
+            'SyncItem[Policy][scope]': sync_item.policy.scope,
+            'SyncItem[Policy][unwatched]': str(int(sync_item.policy.unwatched)),
+            'SyncItem[Policy][value]': str(sync_item.policy.value if hasattr(sync_item.policy, 'value') else 0),
+            'SyncItem[Location][uri]': sync_item.location,
+            'SyncItem[MediaSettings][audioBoost]': str(sync_item.mediaSettings.audioBoost),
+            'SyncItem[MediaSettings][maxVideoBitrate]': str(sync_item.mediaSettings.maxVideoBitrate),
+            'SyncItem[MediaSettings][musicBitrate]': str(sync_item.mediaSettings.musicBitrate),
+            'SyncItem[MediaSettings][photoQuality]': str(sync_item.mediaSettings.photoQuality),
+            'SyncItem[MediaSettings][photoResolution]': sync_item.mediaSettings.photoResolution,
+            'SyncItem[MediaSettings][subtitleSize]': str(sync_item.mediaSettings.subtitleSize),
+            'SyncItem[MediaSettings][videoQuality]': str(sync_item.mediaSettings.videoQuality),
+            'SyncItem[MediaSettings][videoResolution]': sync_item.mediaSettings.videoResolution,
+        }
+
+        url = SyncList.key.format(clientId=client.clientIdentifier)
+        data = self.query(url, method=self._session.post, headers={
+            'Content-type': 'x-www-form-urlencoded',
+        }, params=params)
+
+        return SyncItem(self, data, None, clientIdentifier=client.clientIdentifier)
 
 
 class MyPlexUser(PlexObject):
@@ -696,6 +795,17 @@ class MyPlexDevice(PlexObject):
         """ Remove this device from your account. """
         key = 'https://plex.tv/devices/%s.xml' % self.id
         self._server.query(key, self._server._session.delete)
+
+    def syncItems(self):
+        """ Returns an instance of :class:`plexapi.sync.SyncList` for current device.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest` when the device doesn`t provides `sync-target`.
+        """
+        if 'sync-target' not in self.provides:
+            raise BadRequest('Requested syncList for device which do not provides sync-target')
+
+        return self._server.syncItems(client=self)
 
 
 def _connect(cls, url, token, timeout, results, i, job_is_done_event=None):
