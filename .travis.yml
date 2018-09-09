@@ -28,7 +28,7 @@ before_install:
 install:
   - pip install -r requirements_dev.txt
   - PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py --destination plex --advertise-ip=127.0.0.1
-    --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG --accept-eula
+    --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG
 
 script:
   - py.test tests --ignore=tests/test_sync.py --tb=native --verbose --cov-config .coveragerc --cov=plexapi
