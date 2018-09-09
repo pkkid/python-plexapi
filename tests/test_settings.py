@@ -10,9 +10,9 @@ def test_settings_get(plex):
 
 
 def test_settings_set(plex):
-    cd = plex.settings.get('collectUsageData')
+    cd = plex.settings.get('sendCrashReports')
     old_value = cd.value
     cd.set(not old_value)
     plex.settings.save()
     delattr(plex, '_settings')
-    assert plex.settings.get('collectUsageData').value == (not old_value)
+    assert plex.settings.get('sendCrashReports').value == (not old_value)
