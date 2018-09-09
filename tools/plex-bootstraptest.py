@@ -268,7 +268,7 @@ if __name__ == '__main__':
                          filename='photo%d.jpg' % photos_in_folder, savepath=folder_path)
             has_photos += photos_in_folder
 
-        print('Photos collected...')
+        print('Finished with photos...')
         sections.append(dict(name='Photos', type='photo', location='/data/Photos', agent='com.plexapp.agents.none',
                              scanner='Plex Photo Scanner'))
 
@@ -278,15 +278,17 @@ if __name__ == '__main__':
         library = server.library
 
         processed_media = 0
+        print('Expected media count: %d' % expected_media_count)
 
         def alert_callback(data):
-            global finished, processed_media
+            global processed_media
             if data['type'] == 'timeline':
                 for entry in data['TimelineEntry']:
                     if entry['identifier'] == 'com.plexapp.plugins.library' and entry['state'] == 5 \
                             and entry['type'] in (SEARCHTYPES['movie'], SEARCHTYPES['episode'], SEARCHTYPES['track'],
                                                   SEARCHTYPES['photo']):
                         processed_media += 1
+                        print('Processed media count: %d' % processed_media)
 
         notifier = server.startAlertListener(alert_callback)
 

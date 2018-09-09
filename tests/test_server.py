@@ -116,9 +116,11 @@ def test_server_playlists(plex, show):
         playlist.delete()
 
 
-def test_server_history(plex):
+def test_server_history(plex, movie):
+    movie.markWatched()
     history = plex.history()
     assert len(history)
+    movie.markUnwatched()
 
 
 def test_server_Server_query(plex):
@@ -230,13 +232,20 @@ def test_server_account(plex):
     # assert account.mappingError == 'publisherror'
     assert account.mappingErrorMessage is None
     assert account.mappingState == 'mapped'
-    assert re.match(utils.REGEX_IPADDR, account.privateAddress)
-    assert int(account.privatePort) >= 1000
-    assert re.match(utils.REGEX_IPADDR, account.publicAddress)
-    assert int(account.publicPort) >= 1000
+    if account.mappingError != 'unreachable':
+        assert re.match(utils.REGEX_IPADDR, account.privateAddress)
+        assert int(account.privatePort) >= 1000
+        assert re.match(utils.REGEX_IPADDR, account.publicAddress)
+        assert int(account.publicPort) >= 1000
+    else:
+        assert account.privateAddress == ''
+        assert int(account.privatePort) == 0
+        assert account.publicAddress == ''
+        assert int(account.publicPort) == 0
     assert account.signInState == 'ok'
     assert isinstance(account.subscriptionActive, bool)
-    if account.subscriptionActive: assert len(account.subscriptionFeatures)
+    if account.subscriptionActive:
+        assert len(account.subscriptionFeatures)
     # Below check keeps failing.. it should go away.
     # else: assert sorted(account.subscriptionFeatures) == ['adaptive_bitrate',
     #     'download_certificates', 'federated-auth', 'news']

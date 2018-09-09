@@ -376,7 +376,8 @@ class MyPlexAccount(PlexObject):
 
     def setWebhooks(self, urls):
         log.info('Setting webhooks: %s' % urls)
-        data = self.query(self.WEBHOOKS, self._session.post, data={'urls[]': urls})
+        data = {'urls[]': urls} if len(urls) else {'urls': ''}
+        data = self.query(self.WEBHOOKS, self._session.post, data=data)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 

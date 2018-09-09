@@ -54,8 +54,10 @@ def test_myplex_devices(account):
     assert devices, 'No devices found for account: %s' % account.name
 
 
-def test_myplex_device(account):
-    assert account.device('pkkid-plexapi')
+def test_myplex_device(account, plex):
+    from plexapi import X_PLEX_DEVICE_NAME
+    assert account.device(plex.friendlyName)
+    assert account.device(X_PLEX_DEVICE_NAME)
 
 
 def _test_myplex_connect_to_device(account):
@@ -78,24 +80,32 @@ def test_myplex_users(account):
     assert len(users[0].servers[0].sections()) == 10, "Could'nt info about the shared libraries"
 
 
-def test_myplex_resource(account):
-    assert account.resource('pkkid-plexapi')
+def test_myplex_resource(account, plex):
+    assert account.resource(plex.friendlyName)
 
 
 def test_myplex_webhooks(account):
-    # Webhooks are a plex pass feature to this will fail
-    with pytest.raises(BadRequest):
-        account.webhooks()
+    if account.subscriptionActive:
+        assert not account.webhooks()
+    else:
+        with pytest.raises(BadRequest):
+            account.webhooks()
 
 
 def test_myplex_addwebhooks(account):
-    with pytest.raises(BadRequest):
-        account.addWebhook('http://site.com')
+    if account.subscriptionActive:
+        assert len(account.addWebhook('http://example.com')) == 1
+    else:
+        with pytest.raises(BadRequest):
+            account.addWebhook('http://example.com')
 
 
 def test_myplex_deletewebhooks(account):
-    with pytest.raises(BadRequest):
-        account.deleteWebhook('http://site.com')
+    if account.subscriptionActive:
+        assert not account.deleteWebhook('http://example.com')
+    else:
+        with pytest.raises(BadRequest):
+            account.deleteWebhook('http://example.com')
 
 
 def test_myplex_optout(account_once):
@@ -137,20 +147,19 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
                 account.removeFriend(inv_user)
 
 
-def test_myplex_updateFriend(account, plex, mocker):
-    edit_user = 'PKKid'
+def test_myplex_updateFriend(account, plex, mocker, shared_username):
     vid_filter = {'contentRating': ['G'], 'label': ['foo']}
     secs = plex.library.sections()
-    user = account.user(edit_user)
+    user = account.user(shared_username)
 
     ids = account._getSectionIds(plex.machineIdentifier, secs)
     with mocker.patch.object(account, '_getSectionIds', return_value=ids):
         with mocker.patch.object(account, 'user', return_value=user):
             with utils.callable_http_patch():
 
-                account.updateFriend(edit_user, plex, secs, allowSync=True, removeSections=True,
-                                 allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
-                                 filterTelevision=vid_filter, filterMusic={'label': ['foo']})
+                account.updateFriend(shared_username, plex, secs, allowSync=True, removeSections=True,
+                                     allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
+                                     filterTelevision=vid_filter, filterMusic={'label': ['foo']})
 
 
 def test_myplex_plexpass_attributes(account_plexpass):

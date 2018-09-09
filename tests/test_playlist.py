@@ -99,12 +99,12 @@ def test_playqueues(plex):
     assert playqueue.playQueueID, 'Play queue ID not set.'
 
 
-def test_copyToUser(plex, show, fresh_plex):
+def test_copyToUser(plex, show, fresh_plex, shared_username):
     episodes = show.episodes()
     playlist = plex.createPlaylist('shared_from_test_plexapi', episodes)
     try:
-        playlist.copyToUser('PKKid')
-        user = plex.myPlexAccount().user('PKKid')
+        playlist.copyToUser(shared_username)
+        user = plex.myPlexAccount().user(shared_username)
         user_plex = fresh_plex(plex._baseurl, user.get_token(plex.machineIdentifier))
         assert playlist.title in [p.title for p in user_plex.playlists()]
     finally:

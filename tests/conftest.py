@@ -16,6 +16,7 @@
 #    Cats (with cute cat photos inside)
 from datetime import datetime
 from functools import partial
+from os import environ
 
 import pytest
 import requests
@@ -78,8 +79,7 @@ def account():
 
 @pytest.fixture(scope='session')
 def account_once(account):
-    from os import environ
-    if environ.get('TEST_ACCOUNT_ONCE') != '1':
+    if environ.get('TEST_ACCOUNT_ONCE') != '1' and environ.get('CI') == 'true':
         pytest.skip('Do not forget to test this by providing TEST_ACCOUNT_ONCE=1')
     return account
 
@@ -201,6 +201,15 @@ def photoalbum(photos):
         return photos.get('Cats')
     except:
         return photos.get('photo_album1')
+
+
+@pytest.fixture()
+def shared_username(account):
+    username = environ.get('SHARED_USERNAME', 'PKKid')
+    for user in account.users():
+        if user.username == username:
+            return username
+    pytest.skip('Shared user wasn`t found')
 
 
 @pytest.fixture()
