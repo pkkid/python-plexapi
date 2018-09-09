@@ -69,11 +69,11 @@ def create_section(server, section):
     processed_media = 0
     expected_media_count = section.pop('expected_media_count', 0)
 
-    bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
+    expected_media_type = (section['type'], )
+    if section['type'] == 'artist':
+        expected_media_type = ('artist', 'album', 'track')
 
-    expected_media_type = section['type']
-    if expected_media_type == 'artist':
-        expected_media_type = 'track'
+    expected_media_type = tuple(SEARCHTYPES[t] for t in expected_media_type)
 
     def alert_callback(data):
         global processed_media
@@ -81,11 +81,13 @@ def create_section(server, section):
             for entry in data['TimelineEntry']:
                 if entry.get('identifier', 'com.plexapp.plugins.library') == 'com.plexapp.plugins.library':
                     # Missed mediaState means that media was processed (analyzed & thumbnailed)
-                    if 'mediaState' not in entry and entry['type'] == SEARCHTYPES[expected_media_type]:
+                    if 'mediaState' not in entry and entry['type'] in expected_media_type:
                         # state=5 means record processed, applicable only when metadata source was set
                         if entry['state'] == 5:
                             cnt = 1
-                            if expected_media_type == 'show':
+
+                            # Workaround for old Plex versions which not reports individual episodes' progress
+                            if entry['type'] == SEARCHTYPES['show']:
                                 show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
                                 cnt = show.leafCount
                             bar.update(cnt)
@@ -94,6 +96,7 @@ def create_section(server, section):
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
                             bar.update()
 
+    bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
     notifier = server.startAlertListener(alert_callback)
 
     # I don't know how to determinate of plex successfully started, so let's do it in creepy way
@@ -288,7 +291,7 @@ if __name__ == '__main__':
             os.rename(os.path.join(artist_dst, 'unmastered-impulses-master', 'mp3'), dest_path)
             rmtree(os.path.join(artist_dst, 'unmastered-impulses-master'))
 
-        expected_media_count += len(glob(os.path.join(dest_path, '*.mp3')))
+        expected_media_count += len(glob(os.path.join(dest_path, '*.mp3'))) + 2  # wait for artist & album
 
         artist_dst = os.path.join(music_path, 'Broke For Free')
         dest_path = os.path.join(artist_dst, 'Layers')
@@ -302,7 +305,7 @@ if __name__ == '__main__':
             with zipfile.ZipFile(zip_path, 'r') as handle:
                 handle.extractall(dest_path)
 
-        expected_media_count += len(glob(os.path.join(dest_path, '*.mp3')))
+        expected_media_count += len(glob(os.path.join(dest_path, '*.mp3'))) + 2  # wait for artist & album
 
         print('Finished with Music...')
         sections.append(dict(name='Music', type='artist', location='/data/Music', agent='com.plexapp.agents.lastfm',
