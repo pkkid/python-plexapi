@@ -1,19 +1,4 @@
 # -*- coding: utf-8 -*-
-# Running these tests requires a few things in your Plex Library.
-# 1. Movies section containing both movies:
-#  * Sintel - https://durian.blender.org/
-#  * Elephants Dream - https://orange.blender.org/
-#  * Sita Sings the Blues - http://www.sitasingstheblues.com/
-#  * Big Buck Bunny - https://peach.blender.org/
-# 2. TV Show section containing the shows:
-#  * Game of Thrones (Season 1 and 2)
-#  * The 100 (Seasons 1 and 2)
-#  * (or symlink the above movies with proper names)
-# 3. Music section containing the albums:
-#    Infinite State - Unmastered Impulses - https://github.com/kennethreitz/unmastered-impulses
-#    Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
-# 4. A Photos section containing the photoalbums:
-#    Cats (with cute cat photos inside)
 import time
 from datetime import datetime
 from functools import partial
