@@ -21,6 +21,7 @@ from plexapi.utils import download, SEARCHTYPES
 DOCKER_CMD = [
     'docker', 'run', '-d',
     '--name', 'plex-test-%(image_tag)s',
+    '--restart', 'on-failure',
     '-p', '32400:32400/tcp',
     '-p', '3005:3005/tcp',
     '-p', '8324:8324/tcp',
