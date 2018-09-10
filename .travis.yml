@@ -5,7 +5,6 @@ stages:
   - name: deploy
     if: tag IS present
 
-cache: pip
 sudo: required
 services:
   - docker
