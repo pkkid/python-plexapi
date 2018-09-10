@@ -1,4 +1,4 @@
-""" The script is used to create bootstrap a docker container with Plex and with all the libraries required for testing.
+""" The script is used to bootstrap a docker container with Plex and with all the libraries required for testing.
 """
 
 import argparse
@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 import plexapi
 from plexapi.compat import which, makedirs
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.myplex import MyPlexAccount
 from plexapi.utils import download, SEARCHTYPES
 
@@ -343,6 +343,16 @@ if __name__ == '__main__':
 
         for section in sections:
             create_section(server, section)
+
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    shared_username = os.environ.get('SHARED_USERNAME', 'PKKid')
+    try:
+        user = account.user(shared_username)
+        account.updateFriend(user, server)
+        print('The server was shared with user "%s"' % shared_username)
+    except NotFound:
+        pass
 
     print('Base URL is %s' % server.url('', False))
     if opts.show_token:
