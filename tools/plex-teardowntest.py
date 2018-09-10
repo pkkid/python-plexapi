@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Listen to plex alerts and print them to the console.
-Because we're using print as a function, example only works in Python3.
+Remove current Plex Server and a Client from MyPlex account. Useful when running tests in CI.
 """
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
