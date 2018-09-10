@@ -286,10 +286,12 @@ def is_thumb(key):
 def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
     start = time.time()
     ready = condition_function(*args, **kwargs)
+    retries = 1
     while not ready and time.time() - start < timeout:
+        retries += 1
         time.sleep(delay)
         ready = condition_function(*args, **kwargs)
 
-    assert ready, 'Wait timeout'
+    assert ready, 'Wait timeout after %d retries, %.2f seconds' % (retries, time.time() - start)
 
     return ready
