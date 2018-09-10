@@ -9,7 +9,6 @@ pytest
 pytest-cache
 pytest-cov
 pytest-mock
-pytest-rerunfailures
 recommonmark
 requests
 sphinx

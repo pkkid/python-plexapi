@@ -109,7 +109,6 @@ def test_myplex_deletewebhooks(account):
             account.deleteWebhook('http://example.com')
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_myplex_optout(account_once):
     def enabled():
         ele = account_once.query('https://plex.tv/api/v2/user/privacy')
