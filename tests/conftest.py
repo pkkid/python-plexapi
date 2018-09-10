@@ -14,6 +14,7 @@
 #    Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
 # 4. A Photos section containing the photoalbums:
 #    Cats (with cute cat photos inside)
+import time
 from datetime import datetime
 from functools import partial
 from os import environ
@@ -280,3 +281,15 @@ def is_string(value, gte=1):
 
 def is_thumb(key):
     return is_metadata(key, contains='/thumb/')
+
+
+def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
+    start = time.time()
+    ready = condition_function(*args, **kwargs)
+    while not ready and time.time() - start < timeout:
+        time.sleep(delay)
+        ready = condition_function(*args, **kwargs)
+
+    assert ready, 'Wait timeout'
+
+    return ready

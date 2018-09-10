@@ -1,37 +1,17 @@
-from time import sleep, time
-
-import pytest
+from . import conftest as utils
 
 from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p, AUDIO_BITRATE_192_KBPS, PHOTO_QUALITY_MEDIUM
 
 
-def ensure_sync_item(device, sync_item, timeout=3):
-    start = time()
-    while time() - start < timeout:
-        sync_list = device.syncItems()
-        for item in sync_list.items:
-            if item.id == sync_item.id:
-                return item
-        sleep(0.5)
-
-    assert False, 'Failed to ensure that required sync_item is exist'
+def get_sync_item_from_server(device, sync_item):
+    sync_list = device.syncItems()
+    for item in sync_list.items:
+        if item.id == sync_item.id:
+            return item
 
 
-def ensure_sync_item_missing(device, sync_item, timeout=3):
-    start = time()
-    ret = None
-    while time() - start < timeout:
-        sync_list = device.syncItems()
-        for item in sync_list.items:
-            if item.id == sync_item.id:
-                ret = item
-
-        if ret:
-            sleep(0.5)
-        else:
-            break
-
-    assert not ret, 'Failed to ensure that required sync_item is missing'
+def is_sync_item_missing(device, sync_item):
+    return not get_sync_item_from_server(device, sync_item)
 
 
 def test_current_device_got_sync_target(clear_sync_device):
@@ -41,7 +21,8 @@ def test_current_device_got_sync_target(clear_sync_device):
 def test_add_movie_to_sync(clear_sync_device, movie):
     new_item = movie.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     movie._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(media_list) == 1
     assert media_list[0].ratingKey == movie.ratingKey
@@ -50,17 +31,19 @@ def test_add_movie_to_sync(clear_sync_device, movie):
 def test_delete_sync_item(clear_sync_device, movie):
     new_item = movie.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     movie._server.refreshSync()
-    new_item_in_myplex = ensure_sync_item(clear_sync_device, new_item)
+    new_item_in_myplex = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                                          sync_item=new_item)
     sync_items = clear_sync_device.syncItems()
     for item in sync_items.items:
         item.delete()
-    ensure_sync_item_missing(clear_sync_device, new_item_in_myplex)
+    utils.wait_until(is_sync_item_missing, delay=0.5, timeout=3, device=clear_sync_device, sync_item=new_item_in_myplex)
 
 
 def test_add_show_to_sync(clear_sync_device, show):
     new_item = show.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     show._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = show.episodes()
     media_list = item.getMedia()
     assert len(episodes) == len(media_list)
@@ -71,7 +54,8 @@ def test_add_season_to_sync(clear_sync_device, show):
     season = show.season('Season 1')
     new_item = season.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     season._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = season.episodes()
     media_list = item.getMedia()
     assert len(episodes) == len(media_list)
@@ -81,7 +65,8 @@ def test_add_season_to_sync(clear_sync_device, show):
 def test_add_episode_to_sync(clear_sync_device, episode):
     new_item = episode.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     episode._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert 1 == len(media_list)
     assert episode.ratingKey == media_list[0].ratingKey
@@ -91,7 +76,8 @@ def test_limited_watched(clear_sync_device, show):
     show.markUnwatched()
     new_item = show.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, limit=5, unwatched=False)
     show._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = show.episodes()[:5]
     media_list = item.getMedia()
     assert 5 == len(media_list)
@@ -107,7 +93,8 @@ def test_limited_unwatched(clear_sync_device, show):
     show.markUnwatched()
     new_item = show.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, limit=5, unwatched=True)
     show._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = show.episodes(viewCount=0)[:5]
     media_list = item.getMedia()
     assert len(episodes) == len(media_list)
@@ -124,7 +111,8 @@ def test_unlimited_and_watched(clear_sync_device, show):
     show.markUnwatched()
     new_item = show.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, unwatched=False)
     show._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = show.episodes()
     media_list = item.getMedia()
     assert len(episodes) == len(media_list)
@@ -141,7 +129,8 @@ def test_unlimited_and_unwatched(clear_sync_device, show):
     show.markUnwatched()
     new_item = show.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, unwatched=True)
     show._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     episodes = show.episodes(viewCount=0)
     media_list = item.getMedia()
     assert len(episodes) == len(media_list)
@@ -157,7 +146,8 @@ def test_unlimited_and_unwatched(clear_sync_device, show):
 def test_add_music_artist_to_sync(clear_sync_device, artist):
     new_item = artist.sync(AUDIO_BITRATE_192_KBPS, client=clear_sync_device)
     artist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     tracks = artist.tracks()
     media_list = item.getMedia()
     assert len(tracks) == len(media_list)
@@ -167,7 +157,8 @@ def test_add_music_artist_to_sync(clear_sync_device, artist):
 def test_add_music_album_to_sync(clear_sync_device, album):
     new_item = album.sync(AUDIO_BITRATE_192_KBPS, client=clear_sync_device)
     album._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     tracks = album.tracks()
     media_list = item.getMedia()
     assert len(tracks) == len(media_list)
@@ -177,7 +168,8 @@ def test_add_music_album_to_sync(clear_sync_device, album):
 def test_add_music_track_to_sync(clear_sync_device, track):
     new_item = track.sync(AUDIO_BITRATE_192_KBPS, client=clear_sync_device)
     track._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert 1 == len(media_list)
     assert track.ratingKey == media_list[0].ratingKey
@@ -187,7 +179,8 @@ def test_add_photo_to_sync(clear_sync_device, photoalbum):
     photo = photoalbum.photo('photo1')
     new_item = photo.sync(PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     photo._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert 1 == len(media_list)
     assert photo.ratingKey == media_list[0].ratingKey
@@ -196,7 +189,8 @@ def test_add_photo_to_sync(clear_sync_device, photoalbum):
 def test_sync_entire_library_movies(clear_sync_device, movies):
     new_item = movies.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     movies._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     section_content = movies.all()
     media_list = item.getMedia()
     assert len(section_content) == len(media_list)
@@ -206,7 +200,8 @@ def test_sync_entire_library_movies(clear_sync_device, movies):
 def test_sync_entire_library_tvshows(clear_sync_device, tvshows):
     new_item = tvshows.sync(VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     tvshows._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     section_content = tvshows.searchEpisodes()
     media_list = item.getMedia()
     assert len(section_content) == len(media_list)
@@ -216,7 +211,8 @@ def test_sync_entire_library_tvshows(clear_sync_device, tvshows):
 def test_sync_entire_library_music(clear_sync_device, music):
     new_item = music.sync(AUDIO_BITRATE_192_KBPS, client=clear_sync_device)
     music._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     section_content = music.searchTracks()
     media_list = item.getMedia()
     assert len(section_content) == len(media_list)
@@ -226,7 +222,8 @@ def test_sync_entire_library_music(clear_sync_device, music):
 def test_sync_entire_library_photos(clear_sync_device, photos):
     new_item = photos.sync(PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     photos._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     # It's not that easy, to just get all the photos within the library, so let`s query for photos with device!=0x0
     section_content = photos.search(libtype='photo', **{'device!': '0x0'})
     media_list = item.getMedia()
@@ -239,7 +236,8 @@ def test_playlist_movie_sync(plex, clear_sync_device, movies):
     playlist = plex.createPlaylist('Sync: Movies', items)
     new_item = playlist.sync(videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     playlist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
@@ -251,7 +249,8 @@ def test_playlist_tvshow_sync(plex, clear_sync_device, show):
     playlist = plex.createPlaylist('Sync: TV Show', items)
     new_item = playlist.sync(videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     playlist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
@@ -263,7 +262,8 @@ def test_playlist_mixed_sync(plex, clear_sync_device, movie, episode):
     playlist = plex.createPlaylist('Sync: Mixed', items)
     new_item = playlist.sync(videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device)
     playlist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
@@ -275,7 +275,8 @@ def test_playlist_music_sync(plex, clear_sync_device, artist):
     playlist = plex.createPlaylist('Sync: Music', items)
     new_item = playlist.sync(audioBitrate=AUDIO_BITRATE_192_KBPS, client=clear_sync_device)
     playlist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
@@ -287,7 +288,8 @@ def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
     playlist = plex.createPlaylist('Sync: Photos', items)
     new_item = playlist.sync(photoResolution=PHOTO_QUALITY_MEDIUM, client=clear_sync_device)
     playlist._server.refreshSync()
-    item = ensure_sync_item(clear_sync_device, new_item)
+    item = utils.wait_until(get_sync_item_from_server, delay=0.5, timeout=3, device=clear_sync_device,
+                            sync_item=new_item)
     media_list = item.getMedia()
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]

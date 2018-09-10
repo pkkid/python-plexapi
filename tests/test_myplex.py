@@ -116,16 +116,10 @@ def test_myplex_optout(account_once):
         play = ele.attrib.get('optOutPlayback')
         return bool(int(lib)), bool(int(play))
 
-    # This should be False False
-    library_enabled, playback_enabled = enabled()
-
     account_once.optOut(library=True, playback=True)
-
-    assert all(enabled())
-
+    utils.wait_until(lambda: enabled() == (True, True))
     account_once.optOut(library=False, playback=False)
-
-    assert not all(enabled())
+    utils.wait_until(lambda: enabled() == (False, False))
 
 
 def test_myplex_inviteFriend_remove(account, plex, mocker):
