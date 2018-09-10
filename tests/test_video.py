@@ -503,7 +503,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
-    assert part.size == 18184197
+    assert utils.is_int(part.size, gte=18184197)
 
 
 def test_video_Season(show):
