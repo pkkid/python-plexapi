@@ -263,7 +263,7 @@ class MyPlexAccount(PlexObject):
         # Update friend servers
         response_filters = ''
         response_servers = ''
-        user = self.user(user.username if isinstance(user, MyPlexUser) else user)
+        user = user if isinstance(user, MyPlexUser) else self.user(user)
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
         sectionIds = self._getSectionIds(machineId, sections)
         headers = {'Content-Type': 'application/json'}
