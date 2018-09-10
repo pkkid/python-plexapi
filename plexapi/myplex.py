@@ -278,7 +278,7 @@ class MyPlexAccount(PlexObject):
                 "invited_id": user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
         # Remove share sections, add shares to user without shares, or update shares
-        if sectionIds:
+        if not user_servers or sectionIds:
             if removeSections is True:
                 response_servers = self.query(url, self._session.delete, json=params, headers=headers)
             elif 'invited_id' in params.get('shared_server', ''):
