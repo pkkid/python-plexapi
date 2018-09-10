@@ -208,9 +208,12 @@ def photoalbum(photos):
 def shared_username(account):
     username = environ.get('SHARED_USERNAME', 'PKKid')
     for user in account.users():
-        if user.username == username:
+        if user.title.lower() == username.lower():
             return username
-    pytest.skip('Shared user wasn`t found')
+        elif (user.username and user.email and user.id and username.lower() in
+              (user.username.lower(), user.email.lower(), str(user.id))):
+            return username
+    pytest.skip('Shared user %s wasn`t found in your MyPlex account' % username)
 
 
 @pytest.fixture()
