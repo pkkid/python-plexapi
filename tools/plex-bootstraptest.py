@@ -51,12 +51,19 @@ def get_claim_token(myplex):
     Arguments:
         myplex (:class:`~plexapi.myplex.MyPlexAccount`)
     """
-    response = myplex._session.get('https://plex.tv/api/claim/token.json', headers=myplex._headers(),
-                                   timeout=plexapi.TIMEOUT)
-    if response.status_code not in (200, 201, 204):
-        codename = codes.get(response.status_code)[0]
+    retry = 0
+    status_code = None
+    while retry < 3 and status_code not in (200, 201, 204):
+        if retry > 0:
+            sleep(2)
+        response = myplex._session.get('https://plex.tv/api/claim/token.json', headers=myplex._headers(),
+                                       timeout=plexapi.TIMEOUT)
+        status_code = response.status_code
+        retry += 1
+
+    if status_code not in (200, 201, 204):
         errtext = response.text.replace('\n', ' ')
-        raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+        raise BadRequest('(%s) unable to get status code %s; %s' % (response.status_code, response.url, errtext))
     return response.json()['token']
 
 
