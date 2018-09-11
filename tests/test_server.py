@@ -13,7 +13,8 @@ def test_server_attr(plex, account):
     assert len(plex.friendlyName) >= 1
     assert len(plex.machineIdentifier) == 40
     assert plex.myPlex is True
-    assert plex.myPlexMappingState == 'mapped'
+    # if you run the tests very shortly after server creation the state in rare cases may be `unknown`
+    assert plex.myPlexMappingState in ('mapped', 'unknown')
     assert plex.myPlexSigninState == 'ok'
     assert utils.is_int(plex.myPlexSubscription, gte=0)
     assert re.match(utils.REGEX_EMAIL, plex.myPlexUsername)
