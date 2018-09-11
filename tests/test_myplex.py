@@ -87,7 +87,7 @@ def test_myplex_resource(account, plex):
 
 def test_myplex_webhooks(account):
     if account.subscriptionActive:
-        assert not account.webhooks()
+        assert type(account.webhooks()) is list
     else:
         with pytest.raises(BadRequest):
             account.webhooks()
@@ -95,7 +95,7 @@ def test_myplex_webhooks(account):
 
 def test_myplex_addwebhooks(account):
     if account.subscriptionActive:
-        assert len(account.addWebhook('http://example.com')) == 1
+        assert 'http://example.com' in account.addWebhook('http://example.com')
     else:
         with pytest.raises(BadRequest):
             account.addWebhook('http://example.com')
@@ -103,7 +103,7 @@ def test_myplex_addwebhooks(account):
 
 def test_myplex_deletewebhooks(account):
     if account.subscriptionActive:
-        assert not account.deleteWebhook('http://example.com')
+        assert 'http://example.com' not in account.deleteWebhook('http://example.com')
     else:
         with pytest.raises(BadRequest):
             account.deleteWebhook('http://example.com')
