@@ -87,7 +87,7 @@ def test_myplex_resource(account, plex):
 
 def test_myplex_webhooks(account):
     if account.subscriptionActive:
-        assert type(account.webhooks()) is list
+        assert isinstance(account.webhooks(), list)
     else:
         with pytest.raises(BadRequest):
             account.webhooks()
