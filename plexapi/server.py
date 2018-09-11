@@ -293,8 +293,6 @@ class PlexServer(PlexObject):
         releases = self.fetchItems('/updater/status')
         if len(releases):
             return releases[0]
-        else:
-            return None
 
     def isLatest(self):
         """ Check if the installed version of PMS is the latest. """
