@@ -54,8 +54,10 @@ def test_myplex_devices(account):
     assert devices, 'No devices found for account: %s' % account.name
 
 
-def test_myplex_device(account):
-    assert account.device('pkkid-plexapi')
+def test_myplex_device(account, plex):
+    from plexapi import X_PLEX_DEVICE_NAME
+    assert account.device(plex.friendlyName)
+    assert account.device(X_PLEX_DEVICE_NAME)
 
 
 def _test_myplex_connect_to_device(account):
@@ -69,52 +71,55 @@ def _test_myplex_connect_to_device(account):
 
 def test_myplex_users(account):
     users = account.users()
-    assert users, 'Found no users on account: %s' % account.name
+    if not len(users):
+        return pytest.skip('You have to add a shared account into your MyPlex')
     print('Found %s users.' % len(users))
     user = account.user(users[0].title)
     print('Found user: %s' % user)
     assert user, 'Could not find user %s' % users[0].title
 
-    assert len(users[0].servers[0].sections()) == 10, "Could'nt info about the shared libraries"
+    assert len(users[0].servers[0].sections()) > 0, "Couldn't info about the shared libraries"
 
 
-def test_myplex_resource(account):
-    assert account.resource('pkkid-plexapi')
+def test_myplex_resource(account, plex):
+    assert account.resource(plex.friendlyName)
 
 
 def test_myplex_webhooks(account):
-    # Webhooks are a plex pass feature to this will fail
-    with pytest.raises(BadRequest):
-        account.webhooks()
+    if account.subscriptionActive:
+        assert isinstance(account.webhooks(), list)
+    else:
+        with pytest.raises(BadRequest):
+            account.webhooks()
 
 
 def test_myplex_addwebhooks(account):
-    with pytest.raises(BadRequest):
-        account.addWebhook('http://site.com')
+    if account.subscriptionActive:
+        assert 'http://example.com' in account.addWebhook('http://example.com')
+    else:
+        with pytest.raises(BadRequest):
+            account.addWebhook('http://example.com')
 
 
 def test_myplex_deletewebhooks(account):
-    with pytest.raises(BadRequest):
-        account.deleteWebhook('http://site.com')
+    if account.subscriptionActive:
+        assert 'http://example.com' not in account.deleteWebhook('http://example.com')
+    else:
+        with pytest.raises(BadRequest):
+            account.deleteWebhook('http://example.com')
 
 
-def test_myplex_optout(account):
+def test_myplex_optout(account_once):
     def enabled():
-        ele = account.query('https://plex.tv/api/v2/user/privacy')
+        ele = account_once.query('https://plex.tv/api/v2/user/privacy')
         lib = ele.attrib.get('optOutLibraryStats')
         play = ele.attrib.get('optOutPlayback')
         return bool(int(lib)), bool(int(play))
 
-    # This should be False False
-    library_enabled, playback_enabled = enabled()
-
-    account.optOut(library=True, playback=True)
-
-    assert all(enabled())
-
-    account.optOut(library=False, playback=False)
-
-    assert not all(enabled())
+    account_once.optOut(library=True, playback=True)
+    utils.wait_until(lambda: enabled() == (True, True))
+    account_once.optOut(library=False, playback=False)
+    utils.wait_until(lambda: enabled() == (False, False))
 
 
 def test_myplex_inviteFriend_remove(account, plex, mocker):
@@ -137,18 +142,26 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
                 account.removeFriend(inv_user)
 
 
-def test_myplex_updateFriend(account, plex, mocker):
-    edit_user = 'PKKid'
+def test_myplex_updateFriend(account, plex, mocker, shared_username):
     vid_filter = {'contentRating': ['G'], 'label': ['foo']}
     secs = plex.library.sections()
-    user = account.user(edit_user)
+    user = account.user(shared_username)
 
     ids = account._getSectionIds(plex.machineIdentifier, secs)
     with mocker.patch.object(account, '_getSectionIds', return_value=ids):
         with mocker.patch.object(account, 'user', return_value=user):
             with utils.callable_http_patch():
 
-                account.updateFriend(edit_user, plex, secs, allowSync=True, removeSections=True,
-                                 allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
-                                 filterTelevision=vid_filter, filterMusic={'label': ['foo']})
+                account.updateFriend(shared_username, plex, secs, allowSync=True, removeSections=True,
+                                     allowCameraUpload=True, allowChannels=False, filterMovies=vid_filter,
+                                     filterTelevision=vid_filter, filterMusic={'label': ['foo']})
 
+
+def test_myplex_plexpass_attributes(account_plexpass):
+    assert account_plexpass.subscriptionActive
+    assert account_plexpass.subscriptionStatus == 'Active'
+    assert account_plexpass.subscriptionPlan
+    assert 'sync' in account_plexpass.subscriptionFeatures
+    assert 'premium_music_metadata' in account_plexpass.subscriptionFeatures
+    assert 'plexpass' in account_plexpass.roles
+    assert set(account_plexpass.entitlements) == utils.ENTITLEMENTS

@@ -8,18 +8,19 @@ from requests import Session
 from . import conftest as utils
 
 
-def test_server_attr(plex):
+def test_server_attr(plex, account):
     assert plex._baseurl == utils.SERVER_BASEURL
     assert len(plex.friendlyName) >= 1
     assert len(plex.machineIdentifier) == 40
     assert plex.myPlex is True
-    assert plex.myPlexMappingState == 'mapped'
+    # if you run the tests very shortly after server creation the state in rare cases may be `unknown`
+    assert plex.myPlexMappingState in ('mapped', 'unknown')
     assert plex.myPlexSigninState == 'ok'
     assert utils.is_int(plex.myPlexSubscription, gte=0)
     assert re.match(utils.REGEX_EMAIL, plex.myPlexUsername)
     assert plex.platform in ('Linux', 'Windows')
     assert len(plex.platformVersion) >= 5
-    assert plex._token == utils.SERVER_TOKEN
+    assert plex._token == account.authenticationToken
     assert utils.is_int(plex.transcoderActiveVideoSessions, gte=0)
     assert utils.is_datetime(plex.updatedAt)
     assert len(plex.version) >= 5
@@ -30,10 +31,7 @@ def test_server_alert_listener(plex, movies):
         messages = []
         listener = plex.startAlertListener(messages.append)
         movies.refresh()
-        starttime, runtime = time.time(), 0
-        while len(messages) < 3 and runtime <= 30:
-            time.sleep(1)
-            runtime = int(time.time() - starttime)
+        utils.wait_until(lambda: len(messages) >= 3, delay=1, timeout=30)
         assert len(messages) >= 3
     finally:
         listener.stop()
@@ -116,9 +114,11 @@ def test_server_playlists(plex, show):
         playlist.delete()
 
 
-def test_server_history(plex):
+def test_server_history(plex, movie):
+    movie.markWatched()
     history = plex.history()
     assert len(history)
+    movie.markUnwatched()
 
 
 def test_server_Server_query(plex):
@@ -131,14 +131,14 @@ def test_server_Server_query(plex):
         PlexServer(utils.SERVER_BASEURL, '1234')
 
 
-def test_server_Server_session():
+def test_server_Server_session(account):
     # Mock Sesstion
     class MySession(Session):
         def __init__(self):
             super(self.__class__, self).__init__()
             self.plexapi_session_test = True
     # Test Code
-    plex = PlexServer(utils.SERVER_BASEURL, utils.SERVER_TOKEN, session=MySession())
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken, session=MySession())
     assert hasattr(plex._session, 'plexapi_session_test')
 
 
@@ -165,7 +165,12 @@ def test_server_sessions(plex):
 
 
 def test_server_isLatest(plex, mocker):
-    plex.isLatest()
+    from os import environ
+    is_latest = plex.isLatest()
+    if environ.get('PLEX_CONTAINER_TAG') and environ['PLEX_CONTAINER_TAG'] != 'latest':
+        assert not is_latest
+    else:
+        return pytest.skip('Do not forget to run with PLEX_CONTAINER_TAG != latest to ensure that update is available')
 
 
 def test_server_installUpdate(plex, mocker):
@@ -225,13 +230,20 @@ def test_server_account(plex):
     # assert account.mappingError == 'publisherror'
     assert account.mappingErrorMessage is None
     assert account.mappingState == 'mapped'
-    assert re.match(utils.REGEX_IPADDR, account.privateAddress)
-    assert int(account.privatePort) >= 1000
-    assert re.match(utils.REGEX_IPADDR, account.publicAddress)
-    assert int(account.publicPort) >= 1000
+    if account.mappingError != 'unreachable':
+        assert re.match(utils.REGEX_IPADDR, account.privateAddress)
+        assert int(account.privatePort) >= 1000
+        assert re.match(utils.REGEX_IPADDR, account.publicAddress)
+        assert int(account.publicPort) >= 1000
+    else:
+        assert account.privateAddress == ''
+        assert int(account.privatePort) == 0
+        assert account.publicAddress == ''
+        assert int(account.publicPort) == 0
     assert account.signInState == 'ok'
     assert isinstance(account.subscriptionActive, bool)
-    if account.subscriptionActive: assert len(account.subscriptionFeatures)
+    if account.subscriptionActive:
+        assert len(account.subscriptionFeatures)
     # Below check keeps failing.. it should go away.
     # else: assert sorted(account.subscriptionFeatures) == ['adaptive_bitrate',
     #     'download_certificates', 'federated-auth', 'news']

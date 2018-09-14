@@ -9,9 +9,11 @@ def test_settings_get(plex):
     assert plex.settings.get('FriendlyName').value == ''
 
 
-def test_settings_get(plex):
-    cd = plex.settings.get('collectUsageData')
-    cd.set(False)
-    # Save works but since we reload asap the data isnt changed.
-    # or it might be our caching that does this. ## TODO
+def test_settings_set(plex):
+    cd = plex.settings.get('autoEmptyTrash')
+    old_value = cd.value
+    new_value = not old_value
+    cd.set(new_value)
     plex.settings.save()
+    plex._settings = None
+    assert plex.settings.get('autoEmptyTrash').value == new_value

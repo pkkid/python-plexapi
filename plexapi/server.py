@@ -290,12 +290,14 @@ class PlexServer(PlexObject):
         part = '/updater/check?download=%s' % (1 if download else 0)
         if force:
             self.query(part, method=self._session.put)
-        return self.fetchItem('/updater/status')
+        releases = self.fetchItems('/updater/status')
+        if len(releases):
+            return releases[0]
 
     def isLatest(self):
         """ Check if the installed version of PMS is the latest. """
         release = self.check_for_update(force=True)
-        return bool(release.version == self.version)
+        return release is None
 
     def installUpdate(self):
         """ Install the newest version of Plex Media Server. """

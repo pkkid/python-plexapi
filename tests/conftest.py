@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
-# Running these tests requires a few things in your Plex Library.
-# 1. Movies section containing both movies:
-#  * Sintel - https://durian.blender.org/
-#  * Elephants Dream - https://orange.blender.org/
-#  * Sita Sings the Blues - http://www.sitasingstheblues.com/
-#  * Big Buck Bunny - https://peach.blender.org/
-# 2. TV Show section containing the shows:
-#  * Game of Thrones (Season 1 and 2)
-#  * The 100 (Seasons 1 and 2)
-#  * (or symlink the above movies with proper names)
-# 3. Music section containing the albums:
-#    Infinite State - Unmastered Impulses - https://github.com/kennethreitz/unmastered-impulses
-#    Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
-# 4. A Photos section containing the photoalbums:
-#    Cats (with cute cat photos inside)
+import time
 from datetime import datetime
 from functools import partial
+from os import environ
 
 import pytest
 import requests
+
+from plexapi.myplex import MyPlexAccount
 
 try:
     from unittest.mock import patch, MagicMock
@@ -34,7 +23,8 @@ from plexapi.server import PlexServer
 
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
-SERVER_TOKEN = plexapi.CONFIG.get('auth.server_token')
+MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
+MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
 CLIENT_BASEURL = plexapi.CONFIG.get('auth.client_baseurl')
 CLIENT_TOKEN = plexapi.CONFIG.get('auth.client_token')
 
@@ -47,9 +37,10 @@ AUDIOLAYOUTS = {'5.1', '5.1(side)', 'stereo'}
 CODECS = {'aac', 'ac3', 'dca', 'h264', 'mp3', 'mpeg4'}
 CONTAINERS = {'avi', 'mp4', 'mkv'}
 CONTENTRATINGS = {'TV-14', 'TV-MA', 'G', 'NR'}
-FRAMERATES = {'24p', 'PAL'}
+FRAMERATES = {'24p', 'PAL', 'NTSC'}
 PROFILES = {'advanced simple', 'main', 'constrained baseline'}
 RESOLUTIONS = {'sd', '480', '576', '720', '1080'}
+ENTITLEMENTS = {'ios', 'cpms', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'windows_phone'}
 
 
 def pytest_addoption(parser):
@@ -65,31 +56,43 @@ def pytest_runtest_setup(item):
 #  Fixtures
 # ---------------------------------
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def account():
-    return plex().myPlexAccount()
-    # assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
-    # assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
-    # return MyPlexAccount(MYPLEX_USERNAME, MYPLEX_PASSWORD)
-
-
-@pytest.fixture()
-def account_synctarget():
-    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
-                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
-    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
-    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATORM=iOS'
-    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
-    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
-    return plex().myPlexAccount()
+    assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
+    assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
+    return MyPlexAccount()
 
 
 @pytest.fixture(scope='session')
-def plex():
+def account_once(account):
+    if environ.get('TEST_ACCOUNT_ONCE') != '1' and environ.get('CI') == 'true':
+        pytest.skip('Do not forget to test this by providing TEST_ACCOUNT_ONCE=1')
+    return account
+
+
+@pytest.fixture(scope='session')
+def account_plexpass(account):
+    if not account.subscriptionActive:
+        pytest.skip('PlexPass subscription is not active, unable to test sync-stuff, be careful!')
+    return account
+
+
+@pytest.fixture(scope='session')
+def account_synctarget(account_plexpass):
+    assert 'sync-target' in plexapi.X_PLEX_PROVIDES, 'You have to set env var ' \
+                                                     'PLEXAPI_HEADER_PROVIDES=sync-target,controller'
+    assert 'sync-target' in plexapi.BASE_HEADERS['X-Plex-Provides']
+    assert 'iOS' == plexapi.X_PLEX_PLATFORM, 'You have to set env var PLEXAPI_HEADER_PLATFORM=iOS'
+    assert '11.4.1' == plexapi.X_PLEX_PLATFORM_VERSION, 'You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1'
+    assert 'iPhone' == plexapi.X_PLEX_DEVICE, 'You have to set env var PLEXAPI_HEADER_DEVICE=iPhone'
+    return account_plexpass
+
+
+@pytest.fixture(scope='session')
+def plex(account):
     assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
-    assert SERVER_TOKEN, 'Requred SERVER_TOKEN not specified.'
     session = requests.Session()
-    return PlexServer(SERVER_BASEURL, SERVER_TOKEN, session=session)
+    return PlexServer(SERVER_BASEURL, account.authenticationToken, session=session)
 
 
 @pytest.fixture()
@@ -187,6 +190,18 @@ def photoalbum(photos):
 
 
 @pytest.fixture()
+def shared_username(account):
+    username = environ.get('SHARED_USERNAME', 'PKKid')
+    for user in account.users():
+        if user.title.lower() == username.lower():
+            return username
+        elif (user.username and user.email and user.id and username.lower() in
+              (user.username.lower(), user.email.lower(), str(user.id))):
+            return username
+    pytest.skip('Shared user %s wasn`t found in your MyPlex account' % username)
+
+
+@pytest.fixture()
 def monkeydownload(request, monkeypatch):
     monkeypatch.setattr('plexapi.utils.download', partial(plexapi.utils.download, mocked=True))
     yield
@@ -254,3 +269,17 @@ def is_string(value, gte=1):
 
 def is_thumb(key):
     return is_metadata(key, contains='/thumb/')
+
+
+def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
+    start = time.time()
+    ready = condition_function(*args, **kwargs)
+    retries = 1
+    while not ready and time.time() - start < timeout:
+        retries += 1
+        time.sleep(delay)
+        ready = condition_function(*args, **kwargs)
+
+    assert ready, 'Wait timeout after %d retries, %.2f seconds' % (retries, time.time() - start)
+
+    return ready

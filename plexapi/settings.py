@@ -99,7 +99,7 @@ class Setting(PlexObject):
             group (str): Group name this setting is categorized as.
             enumValues (list,dict): List or dictionary of valis values for this setting.
     """
-    _bool_cast = lambda x: True if x == 'true' else False
+    _bool_cast = lambda x: True if x == 'true' or x == '1' else False
     _bool_str = lambda x: str(x).lower()
     TYPES = {
         'bool': {'type': bool, 'cast': _bool_cast, 'tostr': _bool_str},

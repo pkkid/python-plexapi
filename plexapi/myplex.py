@@ -263,7 +263,7 @@ class MyPlexAccount(PlexObject):
         # Update friend servers
         response_filters = ''
         response_servers = ''
-        user = self.user(user.username if isinstance(user, MyPlexUser) else user)
+        user = user if isinstance(user, MyPlexUser) else self.user(user)
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
         sectionIds = self._getSectionIds(machineId, sections)
         headers = {'Content-Type': 'application/json'}
@@ -278,7 +278,7 @@ class MyPlexAccount(PlexObject):
                 "invited_id": user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
         # Remove share sections, add shares to user without shares, or update shares
-        if sectionIds:
+        if not user_servers or sectionIds:
             if removeSections is True:
                 response_servers = self.query(url, self._session.delete, json=params, headers=headers)
             elif 'invited_id' in params.get('shared_server', ''):
@@ -376,7 +376,8 @@ class MyPlexAccount(PlexObject):
 
     def setWebhooks(self, urls):
         log.info('Setting webhooks: %s' % urls)
-        data = self.query(self.WEBHOOKS, self._session.post, data={'urls[]': urls})
+        data = {'urls[]': urls} if len(urls) else {'urls': ''}
+        data = self.query(self.WEBHOOKS, self._session.post, data=data)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
         return self._webhooks
 
@@ -395,7 +396,7 @@ class MyPlexAccount(PlexObject):
         if library is not None:
             params['optOutLibraryStats'] = int(library)
         url = 'https://plex.tv/api/v2/user/privacy'
-        return self.query(url, method=self._session.put, params=params)
+        return self.query(url, method=self._session.put, data=params)
 
     def syncItems(self, client=None, clientId=None):
         """ Returns an instance of :class:`plexapi.sync.SyncList` for specified client.

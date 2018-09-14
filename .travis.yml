@@ -1,27 +1,72 @@
-language:
-- python
+language: python
+
+stages:
+  - test
+  - name: deploy
+    if: tag IS present
+
+sudo: required
+services:
+  - docker
+
 python:
-- '2.7'
-- '3.4'
-- '3.6'
+  - 2.7
+  - 3.4
+  - 3.6
+
+env:
+  global:
+    - PLEXAPI_AUTH_SERVER_BASEURL=http://127.0.0.1:32400
+  matrix:
+    - PLEX_CONTAINER_TAG=latest
+
 before_install:
-- pip install --upgrade pip
-- pip install --upgrade setuptools
-- pip install --upgrade pytest pytest-cov coveralls
+  - pip install --upgrade pip
+  - pip install --upgrade setuptools
+  - pip install --upgrade pytest pytest-cov coveralls
 install:
-- pip install -r requirements_dev.txt
+  - pip install -r requirements_dev.txt
+  - PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py --destination plex --advertise-ip=127.0.0.1
+    --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG
+
 script:
-- if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then py.test tests --tb=native --verbose
-  --cov-config .coveragerc --cov=plexapi; fi
-- flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
+  - py.test tests -rxXs --ignore=tests/test_sync.py --tb=native --verbose --cov-config .coveragerc --cov=plexapi
+  - PLEXAPI_HEADER_PROVIDES='controller,sync-target' PLEXAPI_HEADER_PLATFORM=iOS PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1
+    PLEXAPI_HEADER_DEVICE=iPhone py.test tests/test_sync.py -rxXs --tb=native --verbose --cov-config .coveragerc
+    --cov=plexapi --cov-append
+
 after_success:
-- coveralls
-matrix:
-  fast_finish: true
-deploy:
-  provider: pypi
-  user: mjs7231
-  password:
-    secure: UhuEN9GAp9zMEXdVTxSrbhfYf4HjTcj47l093Qh1HYKmZACxJM/+JkQCm7+oHPJpo7YDLk2we9oEsQ41maZBr9WgZI1lwR6m590M12vPhPI7NCVzINxJqebc0uZhCFsAFFKA3kzpRQbDfsBUG4yL/AzeMcvJMgIg3m07KRVhBywnnRhQ77trbBI0Io5MBzfW9PYDeGJqlNDBM7SbB4tK0udGZQT9wmFwvIoJODPDnM15Ry4vpkVNww/vVgyHklmnYlPzQgvhSMOXk0+MWlYtaKmu6uuLAiRccT1Fsmi1POKuFEq8S0Z7w4LmwxCVRaCvsZdNW5eXWgPDhZXNcLrKMwjgJt9Vj3VcD+NCywux/C1hTq7tecBocA13kzbgg4fd2sATOjQT5iaRPGrDtKm8e00hxr125n0StDxXdYGl2W5sH0LCkZE6Vq1GjXYjKFXZeTk3Fzav/3N8IxHBX3CliJB/vbloJ2mpz1kXL4UTORl9pghPyGOOq2yJPYSSWly/RsAD7UDrL1/lezaPSJGKbZJ0CMyfA83kd82/hgZflOuBuTcPHCZSU3zMCs0fsImZZxr6Qm1tbff+iyNS/ufoYgeVfsWhlEl9FoLv1g4HG6oA+uDHz+jKz9uSRHcGqD6P4JJK+H+yy0PeYfo7b6eSqFxgt8q8QfifUaCrVoCiY+c=
-  on:
-    tags: true
+  - coveralls
+
+after_script:
+  - PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-teardowntest.py
+
+jobs:
+  include:
+    - python: 3.6
+      env:
+        - PLEX_CONTAINER_TAG=1.3.2.3112-1751929
+        - TEST_ACCOUNT_ONCE=1
+    - python: 3.6
+      name: "Flake8"
+      install:
+        - pip install -r requirements_dev.txt
+      script: flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
+      after_success: true
+      after_script: true
+      env:
+        - PLEX_CONTAINER_TAG=latest
+    - stage: deploy
+      name: "Deploy to PyPi"
+      python: 3.6
+      install: true
+      script: true
+      env:
+        - PLEX_CONTAINER_TAG=latest
+      deploy:
+        provider: pypi
+        user: mjs7231
+        password:
+          secure: UhuEN9GAp9zMEXdVTxSrbhfYf4HjTcj47l093Qh1HYKmZACxJM/+JkQCm7+oHPJpo7YDLk2we9oEsQ41maZBr9WgZI1lwR6m590M12vPhPI7NCVzINxJqebc0uZhCFsAFFKA3kzpRQbDfsBUG4yL/AzeMcvJMgIg3m07KRVhBywnnRhQ77trbBI0Io5MBzfW9PYDeGJqlNDBM7SbB4tK0udGZQT9wmFwvIoJODPDnM15Ry4vpkVNww/vVgyHklmnYlPzQgvhSMOXk0+MWlYtaKmu6uuLAiRccT1Fsmi1POKuFEq8S0Z7w4LmwxCVRaCvsZdNW5eXWgPDhZXNcLrKMwjgJt9Vj3VcD+NCywux/C1hTq7tecBocA13kzbgg4fd2sATOjQT5iaRPGrDtKm8e00hxr125n0StDxXdYGl2W5sH0LCkZE6Vq1GjXYjKFXZeTk3Fzav/3N8IxHBX3CliJB/vbloJ2mpz1kXL4UTORl9pghPyGOOq2yJPYSSWly/RsAD7UDrL1/lezaPSJGKbZJ0CMyfA83kd82/hgZflOuBuTcPHCZSU3zMCs0fsImZZxr6Qm1tbff+iyNS/ufoYgeVfsWhlEl9FoLv1g4HG6oA+uDHz+jKz9uSRHcGqD6P4JJK+H+yy0PeYfo7b6eSqFxgt8q8QfifUaCrVoCiY+c=
+        on:
+          tags: true
