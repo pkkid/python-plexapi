@@ -1,9 +1,11 @@
 language: python
 
 stages:
-  - test
+  - syntax
+  - name: test
+    if: type != pull_request
   - name: deploy
-    if: tag IS present
+    if: tag = present
 
 sudo: required
 services:
@@ -43,11 +45,8 @@ after_script:
 
 jobs:
   include:
-    - python: 3.6
-      env:
-        - PLEX_CONTAINER_TAG=1.3.2.3112-1751929
-        - TEST_ACCOUNT_ONCE=1
-    - python: 3.6
+    - stage: syntax
+      python: 3.6
       name: "Flake8"
       install:
         - pip install -r requirements_dev.txt
@@ -56,6 +55,11 @@ jobs:
       after_script: true
       env:
         - PLEX_CONTAINER_TAG=latest
+    - stage: test
+      python: 3.6
+      env:
+        - PLEX_CONTAINER_TAG=1.3.2.3112-1751929
+        - TEST_ACCOUNT_ONCE=1
     - stage: deploy
       name: "Deploy to PyPi"
       python: 3.6
