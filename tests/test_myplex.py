@@ -165,3 +165,7 @@ def test_myplex_plexpass_attributes(account_plexpass):
     assert 'premium_music_metadata' in account_plexpass.subscriptionFeatures
     assert 'plexpass' in account_plexpass.roles
     assert set(account_plexpass.entitlements) == utils.ENTITLEMENTS
+
+
+def test_myplex_claimToken(account):
+    assert account.claimToken().startswith('claim-')
