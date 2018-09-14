@@ -10,7 +10,7 @@ def test_utils_toDatetime():
 
 
 def test_utils_threaded():
-    def _squared(num, results, i):
+    def _squared(num, results, i, job_is_done_event=None):
         time.sleep(0.5)
         results[i] = num * num
     starttime = time.time()
