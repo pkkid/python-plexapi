@@ -145,7 +145,12 @@ class PlexObject(object):
             on how this is used.
         """
         data = self._server.query(ekey)
-        return self.findItems(data, cls, ekey, **kwargs)
+        items = self.findItems(data, cls, ekey, **kwargs)
+        librarySectionID = data.attrib.get('librarySectionID')
+        if librarySectionID:
+            for item in items:
+                item.librarySectionID = librarySectionID
+        return items
 
     def findItems(self, data, cls=None, initpath=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
