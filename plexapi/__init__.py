@@ -17,6 +17,7 @@ PROJECT = 'PlexAPI'
 VERSION = '3.0.6'
 TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)
 X_PLEX_CONTAINER_SIZE = CONFIG.get('plexapi.container_size', 100, int)
+X_PLEX_ENABLE_FAST_CONNECT = CONFIG.get('plexapi.enable_fast_connect', False, bool)
 
 # Plex Header Configuation
 X_PLEX_PROVIDES = CONFIG.get('header.provides', 'controller')
