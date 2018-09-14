@@ -2,7 +2,6 @@
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import NotFound, BadRequest
-from plexapi.exceptions import NotFound
 from plexapi.compat import quote_plus
 
 
