@@ -1,9 +1,7 @@
 language: python
 
 stages:
-  - syntax
-  - name: test
-    if: type != pull_request
+  - test
   - name: deploy
     if: tag = present
 
@@ -28,8 +26,10 @@ before_install:
   - pip install --upgrade pytest pytest-cov coveralls
 install:
   - pip install -r requirements_dev.txt
-  - PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py --destination plex --advertise-ip=127.0.0.1
-    --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG
+  - '[ -z "${PLEXAPI_AUTH_MYPLEX_USERNAME}" ] && PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py
+     --destination plex --advertise-ip=127.0.0.1 --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG --unclaimed ||
+     PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py --destination plex --advertise-ip=127.0.0.1
+    --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG'
 
 script:
   - py.test tests -rxXs --ignore=tests/test_sync.py --tb=native --verbose --cov-config .coveragerc --cov=plexapi
@@ -41,12 +41,11 @@ after_success:
   - coveralls
 
 after_script:
-  - PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-teardowntest.py
+  - '[ -z "${PLEXAPI_AUTH_MYPLEX_USERNAME}" ] || PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-teardowntest.py'
 
 jobs:
   include:
-    - stage: syntax
-      python: 3.6
+    - python: 3.6
       name: "Flake8"
       install:
         - pip install -r requirements_dev.txt
@@ -60,6 +59,11 @@ jobs:
       env:
         - PLEX_CONTAINER_TAG=1.3.2.3112-1751929
         - TEST_ACCOUNT_ONCE=1
+    - stage: test
+      python: 3.6
+      if: type != 'pull_request'  # pull requests always run over unclaimed server
+      env:
+        - PLEX_CONTAINER_TAG=latest PLEXAPI_AUTH_MYPLEX_USERNAME=
     - stage: deploy
       name: "Deploy to PyPi"
       python: 3.6
