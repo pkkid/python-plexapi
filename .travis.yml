@@ -1,7 +1,6 @@
 language: python
 
 stages:
-  - syntax
   - test
   - name: deploy
     if: tag = present
@@ -46,8 +45,7 @@ after_script:
 
 jobs:
   include:
-    - stage: syntax
-      python: 3.6
+    - python: 3.6
       name: "Flake8"
       install:
         - pip install -r requirements_dev.txt
