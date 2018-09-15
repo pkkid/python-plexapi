@@ -42,25 +42,52 @@ PROFILES = {'advanced simple', 'main', 'constrained baseline'}
 RESOLUTIONS = {'sd', '480', '576', '720', '1080'}
 ENTITLEMENTS = {'ios', 'cpms', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'windows_phone'}
 
+TEST_AUTHENTICATED = 'authenticated'
+TEST_ANONYMOUSLY = 'anonymously'
+
+
+ANON_PARAM = pytest.param(TEST_ANONYMOUSLY, marks=pytest.mark.anonymous)
+AUTH_PARAM = pytest.param(TEST_AUTHENTICATED, marks=pytest.mark.authenticated)
+
 
 def pytest_addoption(parser):
     parser.addoption('--client', action='store_true', default=False, help='Run client tests.')
 
 
+def pytest_generate_tests(metafunc):
+    if 'plex' in metafunc.fixturenames:
+        if 'account' in metafunc.fixturenames or TEST_AUTHENTICATED in metafunc.definition.keywords:
+            metafunc.parametrize('plex', [AUTH_PARAM], indirect=True)
+        else:
+            metafunc.parametrize('plex', [ANON_PARAM, AUTH_PARAM], indirect=True)
+    elif 'account' in metafunc.fixturenames:
+        metafunc.parametrize('account', [AUTH_PARAM], indirect=True)
+
+
 def pytest_runtest_setup(item):
     if 'client' in item.keywords and not item.config.getvalue('client'):
         return pytest.skip('Need --client option to run.')
+    if TEST_AUTHENTICATED in item.keywords and not (MYPLEX_USERNAME and MYPLEX_PASSWORD):
+        return pytest.skip('You have to specify MYPLEX_USERNAME and MYPLEX_PASSWORD to run authenticated tests')
+    if TEST_ANONYMOUSLY in item.keywords and MYPLEX_USERNAME and MYPLEX_PASSWORD:
+        return pytest.skip('Anonymous tests should be ran on unclaimed server, without providing MYPLEX_USERNAME and '
+                           'MYPLEX_PASSWORD')
 
 
 # ---------------------------------
 #  Fixtures
 # ---------------------------------
 
+
+def get_account():
+    return MyPlexAccount()
+
+
 @pytest.fixture(scope='session')
 def account():
     assert MYPLEX_USERNAME, 'Required MYPLEX_USERNAME not specified.'
     assert MYPLEX_PASSWORD, 'Required MYPLEX_PASSWORD not specified.'
-    return MyPlexAccount()
+    return get_account()
 
 
 @pytest.fixture(scope='session')
@@ -89,10 +116,14 @@ def account_synctarget(account_plexpass):
 
 
 @pytest.fixture(scope='session')
-def plex(account):
+def plex(request):
     assert SERVER_BASEURL, 'Required SERVER_BASEURL not specified.'
     session = requests.Session()
-    return PlexServer(SERVER_BASEURL, account.authenticationToken, session=session)
+    if request.param == TEST_AUTHENTICATED:
+        token = get_account().authenticationToken
+    else:
+        token = None
+    return PlexServer(SERVER_BASEURL, token, session=session)
 
 
 @pytest.fixture()

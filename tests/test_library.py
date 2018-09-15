@@ -146,7 +146,7 @@ def test_library_MovieSection_onDeck(movie, movies, tvshows, episode):
     movie.updateProgress(movie.duration * 1000 / 10)  # set progress to 10%
     assert movies.onDeck()
     movie.markUnwatched()
-    episode.markWatched()
+    episode.updateProgress(episode.duration * 1000 / 10)
     assert tvshows.onDeck()
     episode.markUnwatched()
 
