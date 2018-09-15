@@ -121,7 +121,15 @@ def test_server_history(plex, movie):
     movie.markUnwatched()
 
 
+@pytest.mark.anonymous
 def test_server_Server_query(plex):
+    assert plex.query('/')
+    with pytest.raises(BadRequest):
+        assert plex.query('/asdf/1234/asdf', headers={'random_headers': '1234'})
+
+
+@pytest.mark.authenticated
+def test_server_Server_query_authenticated(plex):
     assert plex.query('/')
     with pytest.raises(BadRequest):
         assert plex.query('/asdf/1234/asdf', headers={'random_headers': '1234'})
@@ -142,6 +150,7 @@ def test_server_Server_session(account):
     assert hasattr(plex._session, 'plexapi_session_test')
 
 
+@pytest.mark.authenticated
 def test_server_token_in_headers(plex):
     headers = plex._headers()
     assert 'X-Plex-Token' in headers
@@ -223,6 +232,7 @@ def test_server_clients(plex):
     assert client.version == '2.12.5'
 
 
+@pytest.mark.authenticated
 def test_server_account(plex):
     account = plex.account()
     assert account.authToken
