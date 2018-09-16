@@ -38,7 +38,7 @@ script:
     --cov=plexapi --cov-append
 
 after_success:
-  - coveralls
+  - COVERALLS_PARALLEL=true coveralls
 
 after_script:
   - '[ -z "${PLEXAPI_AUTH_MYPLEX_USERNAME}" ] || PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-teardowntest.py'
