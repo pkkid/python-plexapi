@@ -25,6 +25,8 @@ class Media(PlexObject):
             id (int): Plex ID of this media item (ex: 46184).
             has64bitOffsets (bool): True if video has 64 bit offsets (?).
             optimizedForStreaming (bool): True if video is optimized for streaming.
+            target (str): Media version target name.
+            title (str): Media version title.
             videoCodec (str): Video codec used within the video (ex: ac3).
             videoFrameRate (str): Video frame rate (ex: 24p).
             videoResolution (str): Video resolution (ex: sd).
@@ -46,8 +48,11 @@ class Media(PlexObject):
         self.id = cast(int, data.attrib.get('id'))
         self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.target = data.attrib.get('target')
+        self.title = data.attrib.get('title')
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoFrameRate = data.attrib.get('videoFrameRate')
+        self.videoProfile = data.attrib.get('videoProfile')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
         self.parts = self.findItems(data, MediaPart)
