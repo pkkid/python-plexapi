@@ -30,6 +30,7 @@ class Media(PlexObject):
             videoCodec (str): Video codec used within the video (ex: ac3).
             videoFrameRate (str): Video frame rate (ex: 24p).
             videoResolution (str): Video resolution (ex: sd).
+            videoProfile (str): Video profile (ex: high).
             width (int): Width of the video in pixels (ex: 608).
             parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
     """
