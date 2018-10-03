@@ -351,8 +351,8 @@ class Show(Video):
                 episode (int): Episode number (default:None; required if title not specified).
 
            Raises:
-                BadRequest: If season and episode is missing.
-                NotFound: If the episode is missing.
+                :class:`plexapi.exceptions.BadRequest`: If season and episode is missing.
+                :class:`plexapi.exceptions.NotFound`: If the episode is missing.
         """
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey

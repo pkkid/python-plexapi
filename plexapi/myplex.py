@@ -433,8 +433,8 @@ class MyPlexAccount(PlexObject):
                 :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest` when client with provided clientId wasn`t found.
-                :class:`plexapi.exceptions.BadRequest` provided client doesn`t provides `sync-target`.
+                :class:`plexapi.exceptions.BadRequest`: when client with provided clientId wasn`t found.
+                :class:`plexapi.exceptions.BadRequest`: provided client doesn`t provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -690,7 +690,7 @@ class MyPlexResource(PlexObject):
                     HTTP or HTTPS connection.
 
             Raises:
-                :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
+                :class:`plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
@@ -797,7 +797,7 @@ class MyPlexDevice(PlexObject):
             at least one connection was successful, the PlexClient object is built and returned.
 
             Raises:
-                :class:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
+                :class:`plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
         cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.token, timeout] for url in self.connections]
@@ -814,7 +814,7 @@ class MyPlexDevice(PlexObject):
         """ Returns an instance of :class:`plexapi.sync.SyncList` for current device.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest` when the device doesn`t provides `sync-target`.
+                :class:`plexapi.exceptions.BadRequest`: when the device doesn`t provides `sync-target`.
         """
         if 'sync-target' not in self.provides:
             raise BadRequest('Requested syncList for device which do not provides sync-target')
