@@ -16,11 +16,12 @@ import plexapi
 from plexapi.compat import which, makedirs
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 from plexapi.utils import download, SEARCHTYPES
 
 DOCKER_CMD = [
     'docker', 'run', '-d',
-    '--name', 'plex-test-%(image_tag)s',
+    '--name', 'plex-test-%(container_name_extra)s%(image_tag)s',
     '--restart', 'on-failure',
     '-p', '32400:32400/tcp',
     '-p', '3005:3005/tcp',
@@ -41,30 +42,6 @@ DOCKER_CMD = [
     '-v', '%(destination)s/media:/data',
     'plexinc/pms-docker:%(image_tag)s'
 ]
-
-
-def get_claim_token(myplex):
-    """
-    Returns a str, a new "claim-token", which you can use to register your new Plex Server instance to your account
-    See: https://hub.docker.com/r/plexinc/pms-docker/, https://www.plex.tv/claim/
-
-    Arguments:
-        myplex (:class:`~plexapi.myplex.MyPlexAccount`)
-    """
-    retry = 0
-    status_code = None
-    while retry < 3 and status_code not in (200, 201, 204):
-        if retry > 0:
-            sleep(2)
-        response = myplex._session.get('https://plex.tv/api/claim/token.json', headers=myplex._headers(),
-                                       timeout=plexapi.TIMEOUT)
-        status_code = response.status_code
-        retry += 1
-
-    if status_code not in (200, 201, 204):
-        errtext = response.text.replace('\n', ' ')
-        raise BadRequest('(%s) unable to get status code %s; %s' % (response.status_code, response.url, errtext))
-    return response.json()['token']
 
 
 def get_ips():
@@ -146,9 +123,15 @@ if __name__ == '__main__':
         default_ip = available_ips[0]
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--username', help='Your Plex username')
-    parser.add_argument('--password', help='Your Plex password')
-    parser.add_argument('--token', help='Plex.tv authentication token', default=plexapi.CONFIG.get('auth.server_token'))
+
+    mg = parser.add_mutually_exclusive_group()
+
+    g = mg.add_argument_group()
+    g.add_argument('--username', help='Your Plex username')
+    g.add_argument('--password', help='Your Plex password')
+    mg.add_argument('--token', help='Plex.tv authentication token', default=plexapi.CONFIG.get('auth.server_token'))
+    mg.add_argument('--unclaimed', help='Do not claim the server', default=False, action='store_true')
+
     parser.add_argument('--timezone', help='Timezone to set inside plex', default='UTC')
     parser.add_argument('--destination', help='Local path where to store all the media',
                         default=os.path.join(os.getcwd(), 'plex'))
@@ -176,33 +159,40 @@ if __name__ == '__main__':
         print('Got an error when executing docker pull!')
         exit(1)
 
-    if opts.token:
-        account = MyPlexAccount(token=opts.token)
-    else:
-        account = plexapi.utils.getMyPlexAccount(opts)
+    account = None
+    if not opts.unclaimed:
+        if opts.token:
+            account = MyPlexAccount(token=opts.token)
+        else:
+            account = plexapi.utils.getMyPlexAccount(opts)
     path = os.path.realpath(os.path.expanduser(opts.destination))
     makedirs(os.path.join(path, 'media'), exist_ok=True)
     arg_bindings = {
         'destination': path,
         'hostname': opts.server_name,
-        'claim_token': get_claim_token(account),
+        'claim_token': account.claimToken() if account else '',
         'timezone': opts.timezone,
         'advertise_ip': opts.advertise_ip,
         'image_tag': opts.docker_tag,
+        'container_name_extra': '' if account else 'unclaimed-'
     }
+
     docker_cmd = [c % arg_bindings for c in DOCKER_CMD]
     exit_code = call(docker_cmd)
 
     if exit_code != 0:
         exit(exit_code)
 
-    print('Let`s wait while the instance register in your plex account...')
+    print('Let`s wait while the instance boots...')
     start_time = time()
     server = None
     while not server and (time() - start_time < opts.bootstrap_timeout):
         try:
-            device = account.device(opts.server_name)
-            server = device.connect()
+            if account:
+                device = account.device(opts.server_name)
+                server = device.connect()
+            else:
+                server = PlexServer('http://%s:32400' % opts.advertise_ip)
             if opts.accept_eula:
                 server.settings.get('acceptedEULA').set(True)
                 server.settings.save()
@@ -351,18 +341,17 @@ if __name__ == '__main__':
         for section in sections:
             create_section(server, section)
 
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    shared_username = os.environ.get('SHARED_USERNAME', 'PKKid')
-    try:
-        user = account.user(shared_username)
-        account.updateFriend(user, server)
-        print('The server was shared with user "%s"' % shared_username)
-    except NotFound:
-        pass
+    if account:
+        shared_username = os.environ.get('SHARED_USERNAME', 'PKKid')
+        try:
+            user = account.user(shared_username)
+            account.updateFriend(user, server)
+            print('The server was shared with user "%s"' % shared_username)
+        except NotFound:
+            pass
 
     print('Base URL is %s' % server.url('', False))
-    if opts.show_token:
+    if account and opts.show_token:
         print('Auth token is %s' % account.authenticationToken)
 
     print('Server %s is ready to use!' % opts.server_name)
