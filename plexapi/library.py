@@ -443,7 +443,7 @@ class LibrarySection(PlexObject):
                 **kwargs (dict): Additional kwargs to narrow down the choices.
 
             Raises:
-                :class:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
+                :class:`plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
         """
         # TODO: Should this be moved to base?
         if category in kwargs:
