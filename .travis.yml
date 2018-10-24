@@ -49,7 +49,7 @@ jobs:
       name: "Flake8"
       install:
         - pip install -r requirements_dev.txt
-      script: flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293
+      script: flake8 plexapi --exclude=compat.py --max-line-length=120 --ignore=E128,E701,E702,E731,W293,W605
       after_success: skip
       env:
         - PLEX_CONTAINER_TAG=latest
