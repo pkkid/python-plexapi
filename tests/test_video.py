@@ -14,7 +14,7 @@ def test_video_Movie_attributeerror(movie):
         movie.asshat
 
 def test_video_ne(movies):
-    assert len(movies.fetchItems('/library/sections/7/all', title__ne='Sintel')) == 3
+    assert len(movies.fetchItems('/library/sections/1/all', title__ne='Sintel')) == 3
 
 
 def test_video_Movie_delete(movie, patched_http_call):
@@ -33,10 +33,10 @@ def test_video_Movie_addCollection(movie):
     assert labelname not in [tag.tag for tag in movie.collections if tag]
 
 
-def test_video_Movie_getStreamURL(movie):
+def test_video_Movie_getStreamURL(movie, account):
     key = movie.ratingKey
-    assert movie.getStreamURL() == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
-    assert movie.getStreamURL(videoResolution='800x600') == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, utils.SERVER_TOKEN)  # noqa
+    assert movie.getStreamURL() == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, account.authenticationToken)  # noqa
+    assert movie.getStreamURL(videoResolution='800x600') == '{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}'.format(utils.SERVER_BASEURL, key, account.authenticationToken)  # noqa
 
 
 def test_video_Movie_isFullObject_and_reload(plex):
@@ -118,7 +118,7 @@ def test_video_Movie_attrs(movies):
     assert float(movie.rating) >= 6.4
     #assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
-    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal']  # noqa
+    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Bhavana Nagulapally']  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
     assert movie.studio == 'Nina Paley'
@@ -151,9 +151,9 @@ def test_video_Movie_attrs(movies):
     assert audio.id >= 1
     assert audio.index == 1
     assert utils.is_metadata(audio._initpath)
-    assert audio.language == 'English'
-    assert audio.languageCode == 'eng'
-    assert audio.samplingRate == 48000
+    assert audio.language is None
+    assert audio.languageCode is None
+    assert audio.samplingRate == 44100
     assert audio.selected is True
     assert audio._server._baseurl == utils.SERVER_BASEURL
     assert audio.streamType == 2
@@ -178,13 +178,13 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(media.width, gte=200)
     # Video
     video = movie.media[0].parts[0].videoStreams()[0]
-    assert video.bitDepth == 8
+    assert video.bitDepth in (8, None)  # Different versions of Plex Server return different values
     assert utils.is_int(video.bitrate)
     assert video.cabac is None
-    assert video.chromaSubsampling == '4:2:0'
+    assert video.chromaSubsampling in ('4:2:0', None)
     assert video.codec in utils.CODECS
     assert video.codecID is None
-    assert video.colorSpace == 'bt709'
+    assert video.colorSpace is None
     assert video.duration is None
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
@@ -193,12 +193,12 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.id)
     assert utils.is_int(video.index, gte=0)
     assert utils.is_metadata(video._initpath)
-    assert video.language == 'English'
-    assert video.languageCode == 'eng'
+    assert video.language is None
+    assert video.languageCode is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert utils.is_int(video.refFrames)
-    assert video.scanType is None
+    assert video.scanType in ('progressive', None)
     assert video.selected is False
     assert video._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(video.streamType)
@@ -217,13 +217,13 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(part.size, gte=1000000)
     # Stream 1
     stream1 = part.streams[0]
-    assert stream1.bitDepth == 8
+    assert stream1.bitDepth in (8, None)
     assert utils.is_int(stream1.bitrate)
     assert stream1.cabac is None
-    assert stream1.chromaSubsampling == '4:2:0'
+    assert stream1.chromaSubsampling in ('4:2:0', None)
     assert stream1.codec in utils.CODECS
     assert stream1.codecID is None
-    assert stream1.colorSpace == 'bt709'
+    assert stream1.colorSpace is None
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
     assert stream1.frameRateMode is None
@@ -232,12 +232,12 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream1.id)
     assert utils.is_int(stream1.index, gte=0)
     assert utils.is_metadata(stream1._initpath)
-    assert stream1.language == 'English'
-    assert stream1.languageCode == 'eng'
+    assert stream1.language is None
+    assert stream1.languageCode is None
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
-    assert stream1.scanType is None
+    assert stream1.scanType in ('progressive', None)
     assert stream1.selected is False
     assert stream1._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(stream1.streamType)
@@ -259,8 +259,8 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(stream2.id)
     assert utils.is_int(stream2.index)
     assert utils.is_metadata(stream2._initpath)
-    assert stream2.language == 'English'
-    assert stream2.languageCode == 'eng'
+    assert stream2.language is None
+    assert stream2.languageCode is None
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
@@ -283,7 +283,9 @@ def test_video_Episode_unmatch(episode, patched_http_call):
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
     episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
-
+    
+def test_video_Episode_updateTimeline(episode, patched_http_call):
+    episode.updateTimeline(10 * 60 * 1000, state='playing', duration=episode.duration)  # 10 minutes.
 
 def test_video_Episode_stop(episode, mocker, patched_http_call):
     mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
@@ -299,7 +301,7 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.duration, gte=1600000)
     assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
-    assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
+    assert not {'Adventure', 'Drama'} - {i.tag for i in show.genres}
     show.reload()
     assert sorted([i.tag for i in show.genres]) == ['Adventure', 'Drama', 'Fantasy']
     # So the initkey should have changed because of the reload
@@ -314,8 +316,8 @@ def test_video_Show_attrs(show):
     assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
-    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
-    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Alexander Siddig', 'Alfie Allen', 'Art Parkinson']
+    assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Aimee Richardson', 'Alexander Siddig', 'Alfie Allen']  # noqa
+    assert sorted([i.tag for i in show.actors])[:4] == ['Aidan Gillen', 'Aimee Richardson', 'Alexander Siddig', 'Alfie Allen']  # noqa
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == 'HBO'
     assert utils.is_string(show.summary, gte=100)
@@ -501,12 +503,12 @@ def test_video_Episode_attrs(episode):
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
-    assert utils.is_int(part.size, gte=30000000)
+    assert utils.is_int(part.size, gte=18184197)
 
 
 def test_video_Season(show):
     seasons = show.seasons()
-    assert len(seasons) >= 1
+    assert len(seasons) == 2
     assert ['Season 1', 'Season 2'] == [s.title for s in seasons[:2]]
     assert show.season('Season 1') == seasons[0]
 

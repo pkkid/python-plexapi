@@ -55,6 +55,15 @@ Section [plexapi] Options
     Timeout in seconds to use when making requests to the Plex Media Server or Plex Client
     resources (default: 30).
 
+**enable_fast_connect**
+    By default Plex will be trying to connect with all available connection methods simultaneously,
+    combining local and remote addresses, http and https, and be waiting for all connection to
+    establish (or fail due to timeout / any other error), this can take long time when you're trying
+    to connect to your Plex Server outside of your home network.
+
+    When the options is set to `true` the connection procedure will be aborted with first successfully
+    established connection.
+
 
 Section [auth] Options
 ----------------------

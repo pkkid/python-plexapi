@@ -145,7 +145,12 @@ class PlexObject(object):
             on how this is used.
         """
         data = self._server.query(ekey)
-        return self.findItems(data, cls, ekey, **kwargs)
+        items = self.findItems(data, cls, ekey, **kwargs)
+        librarySectionID = data.attrib.get('librarySectionID')
+        if librarySectionID:
+            for item in items:
+                item.librarySectionID = librarySectionID
+        return items
 
     def findItems(self, data, cls=None, initpath=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
@@ -466,7 +471,7 @@ class Playable(object):
                     offset, copyts, protocol, mediaIndex, platform.
 
             Raises:
-                Unsupported: When the item doesn't support fetching a stream URL.
+                :class:`plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
         if self.TYPE not in ('movie', 'episode', 'track'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
@@ -563,6 +568,24 @@ class Playable(object):
         """
         key = '/:/progress?key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s' % (self.ratingKey,
                                                                                               time, state)
+        self._server.query(key)
+        self.reload()
+        
+    def updateTimeline(self, time, state='stopped', duration=None):
+        """ Set the timeline progress for this video.
+
+            Parameters:
+                time (int): milliseconds watched
+                state (string): state of the video, default 'stopped'
+                duration (int): duration of the item
+        """
+        durationStr = '&duration='
+        if duration is not None:
+            durationStr = durationStr + str(duration)
+        else:
+            durationStr = durationStr + str(self.duration)
+        key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
+        key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
         self.reload()
 

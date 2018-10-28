@@ -232,7 +232,7 @@ class PlexServer(PlexObject):
                 name (str): Name of the client to return.
 
             Raises:
-                :class:`~plexapi.exceptions.NotFound`: Unknown client name
+                :class:`plexapi.exceptions.NotFound`: Unknown client name
         """
         for client in self.clients():
             if client and client.title == name:
@@ -290,12 +290,14 @@ class PlexServer(PlexObject):
         part = '/updater/check?download=%s' % (1 if download else 0)
         if force:
             self.query(part, method=self._session.put)
-        return self.fetchItem('/updater/status')
+        releases = self.fetchItems('/updater/status')
+        if len(releases):
+            return releases[0]
 
     def isLatest(self):
         """ Check if the installed version of PMS is the latest. """
         release = self.check_for_update(force=True)
-        return bool(release.version == self.version)
+        return release is None
 
     def installUpdate(self):
         """ Install the newest version of Plex Media Server. """
@@ -324,7 +326,7 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :class:`~plexapi.exceptions.NotFound`: Invalid playlist title
+                :class:`plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
 
@@ -391,7 +393,7 @@ class PlexServer(PlexObject):
                 callback (func): Callback function to call on recieved messages.
 
             raises:
-                :class:`~plexapi.exception.Unsupported`: Websocket-client not installed.
+                :class:`plexapi.exception.Unsupported`: Websocket-client not installed.
         """
         notifier = AlertListener(self, callback)
         notifier.start()
@@ -421,6 +423,21 @@ class PlexServer(PlexObject):
             delim = '&' if '?' in key else '?'
             return '%s%s%sX-Plex-Token=%s' % (self._baseurl, key, delim, self._token)
         return '%s%s' % (self._baseurl, key)
+
+    def refreshSynclist(self):
+        """ Force PMS to download new SyncList from Plex.tv. """
+        return self.query('/sync/refreshSynclists', self._session.put)
+
+    def refreshContent(self):
+        """ Force PMS to refresh content for known SyncLists. """
+        return self.query('/sync/refreshContent', self._session.put)
+
+    def refreshSync(self):
+        """ Calls :func:`~plexapi.server.PlexServer.refreshSynclist` and
+            :func:`~plexapi.server.PlexServer.refreshContent`, just like the Plex Web UI does when you click 'refresh'.
+        """
+        self.refreshSynclist()
+        self.refreshContent()
 
 
 class Account(PlexObject):

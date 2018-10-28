@@ -2,6 +2,7 @@
 from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
+from plexapi.compat import quote_plus
 
 
 class Video(PlexPartialObject):
@@ -77,6 +78,47 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def _defaultSyncTitle(self):
+        """ Returns str, default title for a new syncItem. """
+        return self.title
+
+    def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
+        """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
+            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
+
+            Parameters:
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
+                                    :mod:`plexapi.sync` module.
+                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                limit (int): maximum count of items to sync, unlimited if `None`.
+                unwatched (bool): if `True` watched videos wouldn't be synced.
+                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current media.
+
+            Returns:
+                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+        """
+
+        from plexapi.sync import SyncItem, Policy, MediaSettings
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self._defaultSyncTitle()
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.listType
+        sync_item.metadataType = self.METADATA_TYPE
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        section = self._server.library.sectionByID(self.librarySectionID)
+
+        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.policy = Policy.create(limit, unwatched)
+        sync_item.mediaSettings = MediaSettings.createVideo(videoQuality)
+
+        return myplex.sync(sync_item, client=client, clientId=clientId)
+
 
 @utils.registerPlexObject
 class Movie(Playable, Video):
@@ -116,6 +158,7 @@ class Movie(Playable, Video):
     """
     TAG = 'Video'
     TYPE = 'movie'
+    METADATA_TYPE = 'movie'
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
                 '&includeConcerts=1&includePreferences=1')
@@ -236,6 +279,7 @@ class Show(Video):
     """
     TAG = 'Directory'
     TYPE = 'show'
+    METADATA_TYPE = 'episode'
 
     def __iter__(self):
         for season in self.seasons():
@@ -279,7 +323,7 @@ class Show(Video):
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
         return self.fetchItems(key, **kwargs)
 
     def season(self, title=None):
@@ -307,8 +351,8 @@ class Show(Video):
                 episode (int): Episode number (default:None; required if title not specified).
 
            Raises:
-                BadRequest: If season and episode is missing.
-                NotFound: If the episode is missing.
+                :class:`plexapi.exceptions.BadRequest`: If season and episode is missing.
+                :class:`plexapi.exceptions.NotFound`: If the episode is missing.
         """
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
@@ -363,6 +407,7 @@ class Season(Video):
     """
     TAG = 'Directory'
     TYPE = 'season'
+    METADATA_TYPE = 'episode'
 
     def __iter__(self):
         for episode in self.episodes():
@@ -446,6 +491,10 @@ class Season(Video):
             filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
         return filepaths
 
+    def _defaultSyncTitle(self):
+        """ Returns str, default title for a new syncItem. """
+        return '%s - %s' % (self.parentTitle, self.title)
+
 
 @utils.registerPlexObject
 class Episode(Playable, Video):
@@ -482,6 +531,8 @@ class Episode(Playable, Video):
     """
     TAG = 'Video'
     TYPE = 'episode'
+    METADATA_TYPE = 'episode'
+
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
                 '&includeConcerts=1&includePreferences=1')
@@ -558,3 +609,7 @@ class Episode(Playable, Video):
     def show(self):
         """" Return this episodes :func:`~plexapi.video.Show`.. """
         return self.fetchItem(self.grandparentKey)
+
+    def _defaultSyncTitle(self):
+        """ Returns str, default title for a new syncItem. """
+        return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
