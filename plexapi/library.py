@@ -776,8 +776,8 @@ class MusicSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
-    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood')
-    ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort')
+    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'track.userRating')
+    ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort', 'userRating')
     TAG = 'Directory'
     TYPE = 'artist'
 
