@@ -109,3 +109,9 @@ def test_copyToUser(plex, show, fresh_plex, shared_username):
         assert playlist.title in [p.title for p in user_plex.playlists()]
     finally:
         playlist.delete()
+
+
+def test_smart_playlist(plex, movies):
+    pl = plex.createPlaylist(title='smart_playlist', limit=1, section=movies, year=2008)
+    assert len(pl.items()) == 1
+    assert pl.smart
