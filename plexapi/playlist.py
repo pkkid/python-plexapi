@@ -153,20 +153,18 @@ class Playlist(PlexPartialObject, Playable):
         """Create a playlist.
 
         Parameters:
-            server (:class:`~plexapi.server.PlexServer`): Server your connected to
+            server (:class:`~plexapi.server.PlexServer`): Server your connected to.
             title (str): Title of the playlist.
-            items (Iterable): Iterable of objects that should be in the playlist
+            items (Iterable): Iterable of objects that should be in the playlist.
             section (:class:`~plexapi.library.LibrarySection, str):
-            limit (int): default None
-            smart (bool): default False
+            limit (int): default None.
+            smart (bool): default False.
 
             **kwargs dict:
                 is passed to the filters. For a example see the search method.
 
         returns:
             class:`~plexapi.playlist.Playlist
-
-
         """
         if smart:
             return cls._createSmart(server, title, section, limit, **kwargs)
