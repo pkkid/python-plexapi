@@ -112,6 +112,6 @@ def test_copyToUser(plex, show, fresh_plex, shared_username):
 
 
 def test_smart_playlist(plex, movies):
-    pl = plex.createPlaylist(title='smart_playlist', limit=1, section=movies, year=2008)
+    pl = plex.createPlaylist(title='smart_playlist', smart=True, limit=1, section=movies, year=2008)
     assert len(pl.items()) == 1
     assert pl.smart

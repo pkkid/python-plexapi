@@ -160,10 +160,9 @@ class Playlist(PlexPartialObject, Playable):
             limit (int): default None.
             smart (bool): default False.
 
-            **kwargs dict:
-                is passed to the filters. For a example see the search method.
+            **kwargs (dict): is passed to the filters. For a example see the search method.
 
-        returns:
+        Returns:
             class:`~plexapi.playlist.Playlist
         """
         if smart:
