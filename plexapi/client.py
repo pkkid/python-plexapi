@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import time
 import requests
 
 from requests.status_codes import _codes as codes
@@ -70,6 +70,7 @@ class PlexClient(PlexObject):
         self._session = session or server_session or requests.Session()
         self._proxyThroughServer = False
         self._commandId = 0
+        self._last_call = 0
         if not any([data, initpath, baseurl, token]):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
@@ -181,14 +182,26 @@ class PlexClient(PlexObject):
         """
         command = command.strip('/')
         controller = command.split('/')[0]
+        headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
         if controller not in self.protocolCapabilities:
             log.debug('Client %s doesnt support %s controller.'
                       'What your trying might not work' % (self.title, controller))
 
+        # Workaround for ptp. See https://github.com/pkkid/python-plexapi/issues/244
+        t = time.time()
+        if t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
+            url = '/player/timeline/poll?wait=0&commandID=%s' % self._nextCommandId()
+            if proxy:
+                self._server.query(url, headers=headers)
+            else:
+                self.query(url, headers=headers)
+            self._last_call = t
+
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
-        headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
+
         proxy = self._proxyThroughServer if proxy is None else proxy
+
         if proxy:
             return self._server.query(key, headers=headers)
         return self.query(key, headers=headers)
