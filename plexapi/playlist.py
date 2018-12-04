@@ -2,6 +2,7 @@
 from plexapi import utils
 from plexapi.base import PlexPartialObject, Playable
 from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.library import LibrarySection
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
 from plexapi.compat import quote_plus
@@ -127,9 +128,9 @@ class Playlist(PlexPartialObject, Playable):
         return PlayQueue.create(self._server, self, *args, **kwargs)
 
     @classmethod
-    def create(cls, server, title, items):
+    def _create(cls, server, title, items):
         """ Create a playlist. """
-        if not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
         for item in items:
@@ -143,6 +144,61 @@ class Playlist(PlexPartialObject, Playable):
             'type': items[0].listType,
             'title': title,
             'smart': 0
+        })
+        data = server.query(key, method=server._session.post)[0]
+        return cls(server, data, initpath=key)
+
+    @classmethod
+    def create(cls, server, title, items=None, section=None, limit=None, smart=False, **kwargs):
+        """Create a playlist.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): Server your connected to.
+            title (str): Title of the playlist.
+            items (Iterable): Iterable of objects that should be in the playlist.
+            section (:class:`~plexapi.library.LibrarySection, str):
+            limit (int): default None.
+            smart (bool): default False.
+
+            **kwargs (dict): is passed to the filters. For a example see the search method.
+
+        Returns:
+            class:`~plexapi.playlist.Playlist
+        """
+        if smart:
+            return cls._createSmart(server, title, section, limit, **kwargs)
+
+        else:
+            return cls._create(server, title, items)
+
+    @classmethod
+    def _createSmart(cls, server, title, section, limit=None, **kwargs):
+        """ Create a Smart playlist. """
+
+        if not isinstance(section, LibrarySection):
+            section = server.library.section(section)
+
+        sectionType = utils.searchType(section.type)
+        sectionId = section.key
+        uuid = section.uuid
+        uri = 'library://%s/directory//library/sections/%s/all?type=%s' % (uuid,
+                                                                           sectionId,
+                                                                           sectionType)
+        if limit:
+            uri = uri + '&limit=%s' % str(limit)
+
+        for category, value in kwargs.items():
+            sectionChoices = section.listChoices(category)
+            for choice in sectionChoices:
+                if choice.title == value or choice.title.lower() == value.lower():
+                    uri = uri + '&%s=%s' % (category.lower(), str(choice.key))
+
+        uri = uri + '&sourceType=%s' % sectionType
+        key = '/playlists%s' % utils.joinArgs({
+            'uri': uri,
+            'type': section.CONTENT_TYPE,
+            'title': title,
+            'smart': 1,
         })
         data = server.query(key, method=server._session.post)[0]
         return cls(server, data, initpath=key)
