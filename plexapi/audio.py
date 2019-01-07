@@ -168,12 +168,12 @@ class Artist(Audio):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
         return self.track(title)
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
 
             Parameters:
                 savepath (str): Title of the track to return.
-                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
                 kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
@@ -184,7 +184,7 @@ class Artist(Audio):
         filepaths = []
         for album in self.albums():
             for track in album.tracks():
-                filepaths += track.download(savepath, keep_orginal_name, **kwargs)
+                filepaths += track.download(savepath, keep_original_name, **kwargs)
         return filepaths
 
 
@@ -251,12 +251,12 @@ class Album(Audio):
         """ Return :func:`~plexapi.audio.Artist` of this album. """
         return self.fetchItem(self.parentKey)
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Downloads all tracks for this artist to the specified location.
 
             Parameters:
                 savepath (str): Title of the track to return.
-                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
                 kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
@@ -266,7 +266,7 @@ class Album(Audio):
         """
         filepaths = []
         for track in self.tracks():
-            filepaths += track.download(savepath, keep_orginal_name, **kwargs)
+            filepaths += track.download(savepath, keep_original_name, **kwargs)
         return filepaths
 
     def _defaultSyncTitle(self):
