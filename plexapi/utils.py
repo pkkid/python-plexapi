@@ -178,7 +178,9 @@ def toDatetime(value, format=None):
         if format:
             value = datetime.strptime(value, format)
         else:
-            value = datetime.fromtimestamp(int(value))
+            # https://bugs.python.org/issue30684
+            # And platform support for before epoch seems to be flaky.
+            value = datetime.datetime(1970, 1, 1) + datetime.fromtimestamp(milliseconds=value)
     return value
 
 
