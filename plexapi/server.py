@@ -93,6 +93,7 @@ class PlexServer(PlexObject):
 
     def __init__(self, baseurl=None, token=None, session=None, timeout=None):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
+        self._baseurl = self._baseurl.rstrip('/')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
