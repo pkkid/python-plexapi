@@ -180,7 +180,10 @@ def toDatetime(value, format=None):
         else:
             # https://bugs.python.org/issue30684
             # And platform support for before epoch seems to be flaky.
-            value = datetime(1970, 1, 1) + timedelta(milliseconds=int(value))
+            # TODO check for others errors too.
+            if int(value) == 0:
+                value = 86400
+            value = datetime.fromtimestamp(int(value))
     return value
 
 
