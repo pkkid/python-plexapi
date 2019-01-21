@@ -5,7 +5,7 @@ import re
 import requests
 import time
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getpass
 from threading import Thread, Event
 from tqdm import tqdm
@@ -180,7 +180,7 @@ def toDatetime(value, format=None):
         else:
             # https://bugs.python.org/issue30684
             # And platform support for before epoch seems to be flaky.
-            value = datetime.datetime(1970, 1, 1) + datetime.fromtimestamp(milliseconds=value)
+            value = datetime(1970, 1, 1) + timedelta(milliseconds=int(value))
     return value
 
 
