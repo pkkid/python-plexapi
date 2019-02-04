@@ -519,13 +519,13 @@ class Playable(object):
         """
         client.playMedia(self)
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Downloads this items media to the specified location. Returns a list of
             filepaths that have been saved to disk.
 
             Parameters:
                 savepath (str): Title of the track to return.
-                keep_orginal_name (bool): Set True to keep the original filename as stored in
+                keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Artist> - <Album> <Track>".
                 kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
@@ -537,7 +537,7 @@ class Playable(object):
         locations = [i for i in self.iterParts() if i]
         for location in locations:
             filename = location.file
-            if keep_orginal_name is False:
+            if keep_original_name is False:
                 filename = '%s.%s' % (self._prettyfilename(), location.container)
             # So this seems to be a alot slower but allows transcode.
             if kwargs:

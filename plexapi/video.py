@@ -224,12 +224,12 @@ class Movie(Playable, Video):
         # This is just for compat.
         return self.title
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
-                keep_orginal_name (bool): True to keep the original file name otherwise
+                keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
@@ -237,7 +237,7 @@ class Movie(Playable, Video):
         locations = [i for i in self.iterParts() if i]
         for location in locations:
             name = location.file
-            if not keep_orginal_name:
+            if not keep_original_name:
                 title = self.title.replace(' ', '.')
                 name = '%s.%s' % (title, location.container)
             if kwargs is not None:
@@ -376,18 +376,18 @@ class Show(Video):
         """ Alias to :func:`~plexapi.video.Show.episode()`. """
         return self.episode(title, season, episode)
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
-                keep_orginal_name (bool): True to keep the original file name otherwise
+                keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
         filepaths = []
         for episode in self.episodes():
-            filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
+            filepaths += episode.download(savepath, keep_original_name, **kwargs)
         return filepaths
 
 
@@ -477,18 +477,18 @@ class Season(Video):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(watched=False)
 
-    def download(self, savepath=None, keep_orginal_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
-                keep_orginal_name (bool): True to keep the original file name otherwise
+                keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
         """
         filepaths = []
         for episode in self.episodes():
-            filepaths += episode.download(savepath, keep_orginal_name, **kwargs)
+            filepaths += episode.download(savepath, keep_original_name, **kwargs)
         return filepaths
 
     def _defaultSyncTitle(self):
