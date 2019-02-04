@@ -125,22 +125,42 @@ class MediaPart(PlexObject):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
         
-    def setDefaultAudioStream(self, id):
+    def setDefaultAudioStream(self, stream=None, streamID=None):
         """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
 
             Parameters:
-                id (int): ID of the AudioStream to set
+                stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default 
+                    (default:None; required if streamID is not specified).
+                streamID (int): ID of the AudioStream to set 
+                    (default:None; required if stream is not specified).
+            
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: If both stream and streamID are missing.
         """
-        key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, id)
+        if stream:
+            key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream.id)
+        elif streamID:
+            key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, streamID)
+        else:
+            raise BadRequest('Missing argument: stream or streamID is required')
         self._server.query(key, method=self._server._session.put)
-        
-    def setDefaultSubtitleStream(self, id):
+            
+    def setDefaultSubtitleStream(self, stream=None, streamID=None):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
+            (Note: pass no parameters to disable subtitles)
 
             Parameters:
-                id (int): ID of the SubtitleStream to set (0 for no subtitles)
+                stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default 
+                    (default:None).
+                streamID (int): ID of the AudioStream to set 
+                    (default:None).
         """
-        key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, id)
+        if stream:
+            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream.id)
+        elif streamID:
+            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, streamID)
+        else:
+            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, 0)
         self._server.query(key, method=self._server._session.put)
         
 
