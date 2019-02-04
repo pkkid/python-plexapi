@@ -256,6 +256,7 @@ class SubtitleStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 3
+            forced (bool): True if this is a forced subtitle
             format (str): Subtitle format (ex: srt).
             key (str): Key of this subtitle stream (ex: /library/streams/212284).
             title (str): Title of this subtitle stream.
@@ -266,6 +267,7 @@ class SubtitleStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
+        self.forced = cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')

@@ -91,7 +91,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(movie.art)
     assert movie.artUrl
     assert movie.audienceRating == 8.5
-    # Disabled this since it failed on the last run, wasnt in the orginal xml result.
+    # Disabled this since it failed on the last run, wasnt in the original xml result.
     #assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     movie.reload()  # RELOAD
     assert movie.chapterSource is None
