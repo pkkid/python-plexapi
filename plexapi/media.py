@@ -124,6 +124,25 @@ class MediaPart(PlexObject):
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
+        
+    def setDefaultAudioStream(self, id):
+        """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
+
+            Parameters:
+                id (int): ID of the AudioStream to set
+        """
+        key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, id)
+        self._server.query(key, method=self._server._session.put)
+        
+    def setDefaultSubtitleStream(self, id):
+        """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
+
+            Parameters:
+                id (int): ID of the SubtitleStream to set (0 for no subtitles)
+        """
+        key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, id)
+        self._server.query(key, method=self._server._session.put)
+        
 
 
 class MediaPartStream(PlexObject):
