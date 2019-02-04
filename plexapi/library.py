@@ -377,9 +377,17 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all' % self.key
         return self.fetchItem(key, title__iexact=title)
 
-    def all(self, **kwargs):
-        """ Returns a list of media from this library section. """
-        key = '/library/sections/%s/all' % self.key
+    def all(self, sort=None, **kwargs):
+        """ Returns a list of media from this library section. 
+        
+            Parameters:
+                    sort (string): The sort string
+        """
+        sortStr = ''
+        if sort != None:
+            sortStr = '?sort=' + sort
+        
+        key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
     def onDeck(self):
