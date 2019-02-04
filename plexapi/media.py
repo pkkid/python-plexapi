@@ -144,7 +144,6 @@ class MediaPart(PlexObject):
         self._server.query(key, method=self._server._session.put)
         
 
-
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
 
