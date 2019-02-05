@@ -125,44 +125,40 @@ class MediaPart(PlexObject):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
         
-    def setDefaultAudioStream(self, stream=None, streamID=None):
+    def setDefaultAudioStream(self, stream):
         """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
 
             Parameters:
                 stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default 
-                    (default:None; required if streamID is not specified).
-                streamID (int): ID of the AudioStream to set 
-                    (default:None; required if stream is not specified).
             
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: If both stream and streamID are missing.
+                :class:`plexapi.exceptions.BadRequest`: If stream is not an AudioStream.
         """
-        if stream:
+        if type(stream) == AudioStream:
             key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream.id)
-        elif streamID:
-            key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, streamID)
+            self._server.query(key, method=self._server._session.put)
         else:
-            raise BadRequest('Missing argument: stream or streamID is required')
-        self._server.query(key, method=self._server._session.put)
+            raise BadRequest("Object 'stream' is not an AudioStream.")
             
-    def setDefaultSubtitleStream(self, stream=None, streamID=None):
+    def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
-            (Note: pass no parameters to disable subtitles)
-
+            
             Parameters:
-                stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default 
-                    (default:None).
-                streamID (int): ID of the AudioStream to set 
-                    (default:None).
+                stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
+            
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: If stream is not a SubtitleStream.
         """
-        if stream:
+        if type(stream) == SubtitleStream:
             key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream.id)
-        elif streamID:
-            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, streamID)
+            self._server.query(key, method=self._server._session.put)
         else:
-            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, 0)
-        self._server.query(key, method=self._server._session.put)
+            raise BadRequest("Object 'stream' is not a SubtitleStream.")
         
+    def resetSubtitles(self):
+        """ Set default subtitle of this MediaPart to 'none'. """
+        key = "/library/parts/%d?subtitleStreamID=0&allParts=1" % (self.id)
+        self._server.query(key, method=self._server._session.put)
 
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
