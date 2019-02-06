@@ -5,7 +5,7 @@ import re
 import requests
 import time
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from getpass import getpass
 from threading import Thread, Event
 from tqdm import tqdm
