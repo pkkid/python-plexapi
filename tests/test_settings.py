@@ -17,3 +17,12 @@ def test_settings_set(plex):
     plex.settings.save()
     plex._settings = None
     assert plex.settings.get('autoEmptyTrash').value == new_value
+
+
+def test_settings_set_str(plex):
+    cd = plex.settings.get('OnDeckWindow')
+    new_value = 99
+    cd.set(new_value)
+    plex.settings.save()
+    plex._settings = None
+    assert plex.settings.get('OnDeckWindow').value == 99

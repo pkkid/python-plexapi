@@ -178,6 +178,11 @@ def toDatetime(value, format=None):
         if format:
             value = datetime.strptime(value, format)
         else:
+            # https://bugs.python.org/issue30684
+            # And platform support for before epoch seems to be flaky.
+            # TODO check for others errors too.
+            if int(value) == 0:
+                value = 86400
             value = datetime.fromtimestamp(int(value))
     return value
 

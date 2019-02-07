@@ -93,6 +93,7 @@ class PlexServer(PlexObject):
 
     def __init__(self, baseurl=None, token=None, session=None, timeout=None):
         self._baseurl = baseurl or CONFIG.get('auth.server_baseurl', 'http://localhost:32400')
+        self._baseurl = self._baseurl.rstrip('/')
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
@@ -240,14 +241,14 @@ class PlexServer(PlexObject):
 
         raise NotFound('Unknown client name: %s' % name)
 
-    def createPlaylist(self, title, items):
+    def createPlaylist(self, title, items=None, section=None, limit=None, smart=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
                 title (str): Title of the playlist to be created.
                 items (list<Media>): List of media items to include in the playlist.
         """
-        return Playlist.create(self, title, items)
+        return Playlist.create(self, title, items=items, limit=limit, section=section, smart=smart, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.

@@ -124,7 +124,35 @@ class MediaPart(PlexObject):
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
+        
+    def setDefaultAudioStream(self, stream):
+        """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
 
+            Parameters:
+                stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default 
+        """
+        if isinstance(stream, AudioStream):
+            key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream.id)
+        else:
+            key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream)
+        self._server.query(key, method=self._server._session.put)
+            
+    def setDefaultSubtitleStream(self, stream):
+        """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
+            
+            Parameters:
+                stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
+        """
+        if isinstance(stream, SubtitleStream):
+            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream.id)
+        else:
+            key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream)
+        self._server.query(key, method=self._server._session.put)
+        
+    def resetDefaultSubtitleStream(self):
+        """ Set default subtitle of this MediaPart to 'none'. """
+        key = "/library/parts/%d?subtitleStreamID=0&allParts=1" % (self.id)
+        self._server.query(key, method=self._server._session.put)
 
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
@@ -256,6 +284,7 @@ class SubtitleStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 3
+            forced (bool): True if this is a forced subtitle
             format (str): Subtitle format (ex: srt).
             key (str): Key of this subtitle stream (ex: /library/streams/212284).
             title (str): Title of this subtitle stream.
@@ -266,6 +295,7 @@ class SubtitleStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
+        self.forced = cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')

@@ -17,7 +17,7 @@ Plex Web Client. A few of the many features we currently support are:
 * Perform library actions such as scan, analyze, empty trash.
 * Remote control and play media on connected clients.
 * Listen in on all Plex Server notifications.
-
+ 
 
 Installation & Documentation
 ----------------------------
