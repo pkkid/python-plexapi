@@ -357,7 +357,7 @@ class Show(Video):
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
             return self.fetchItem(key, title__iexact=title)
-        elif season and episode:
+        elif season is not None and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
                 return results[0]
