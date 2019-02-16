@@ -93,6 +93,7 @@ class Photo(PlexPartialObject):
             title (str): Photo title.
             type (str): Unknown
             updatedAt (datatime): Datetime this item was updated.
+            userRating (float): To mark photo as favorite (0.0, 10.0) 10.0 = favorite
             year (int): Year this photo was taken.
     """
     TAG = 'Photo'
@@ -115,8 +116,24 @@ class Photo(PlexPartialObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.userRating = utils.cast(float, data.attrib.get('userRating', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
+
+
+
+    def fav(self):
+        """ Mark photo as favorite"""
+        key = '/:/rate?key=%s&rating=10.0&identifier=com.plexapp.plugins.library' % self.ratingKey
+        self._server.query(key)
+        self.reload()
+
+    def unfav(self):
+        """ Remove favorite mark from photo"""
+        key = '/:/rate?key=%s&rating=0&identifier=com.plexapp.plugins.library' % self.ratingKey
+        self._server.query(key)
+        self.reload()
+
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
@@ -158,6 +175,7 @@ class Photo(PlexPartialObject):
         sync_item.contentType = self.listType
         sync_item.metadataType = self.METADATA_TYPE
         sync_item.machineIdentifier = self._server.machineIdentifier
+        sync_item.userRating = self.userRating
 
         section = self.section()
 
