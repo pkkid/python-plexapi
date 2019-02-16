@@ -120,8 +120,6 @@ class Photo(PlexPartialObject):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
 
-
-
     def favorite(self):
         """ Mark photo as favorite"""
         key = '/:/rate?key=%s&rating=10.0&identifier=com.plexapp.plugins.library' % self.ratingKey
@@ -133,7 +131,6 @@ class Photo(PlexPartialObject):
         key = '/:/rate?key=%s&rating=0&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
         self.reload()
-
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
