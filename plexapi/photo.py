@@ -122,13 +122,13 @@ class Photo(PlexPartialObject):
 
 
 
-    def fav(self):
+    def favorite(self):
         """ Mark photo as favorite"""
         key = '/:/rate?key=%s&rating=10.0&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
         self.reload()
 
-    def unfav(self):
+    def unfavorite(self):
         """ Remove favorite mark from photo"""
         key = '/:/rate?key=%s&rating=0&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
