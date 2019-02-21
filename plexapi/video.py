@@ -332,9 +332,9 @@ class Show(Video):
             Parameters:
                 title (str or int): Title or Number of the season to return.
         """
-        if isinstance(title, int):
-            title = 'Season %s' % title if title != 0 else 'Specials'
         key = '/library/metadata/%s/children' % self.ratingKey
+        if isinstance(title, int):
+            return self.fetchItem(key, etag='Directory', index__iexact=str(title))
         return self.fetchItem(key, etag='Directory', title__iexact=title)
 
     def episodes(self, **kwargs):
