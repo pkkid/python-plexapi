@@ -52,6 +52,7 @@ class PlayQueue(PlexObject):
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
+                continuous (int, optional): include rest of item collection.
         """
         args = {}
         args['includeChapters'] = includeChapters
