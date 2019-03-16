@@ -42,7 +42,7 @@ class PlayQueue(PlexObject):
         self.items = self.findItems(data)
 
     @classmethod
-    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):
+    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
         """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Paramaters:
@@ -58,6 +58,7 @@ class PlayQueue(PlexObject):
         args['includeRelated'] = includeRelated
         args['repeat'] = repeat
         args['shuffle'] = shuffle
+        args['continuous'] = continuous
         if item.type == 'playlist':
             args['playlistID'] = item.ratingKey
             args['type'] = item.playlistType
