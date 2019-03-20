@@ -41,8 +41,9 @@ class PlayQueue(PlexObject):
         self.size = utils.cast(int, data.attrib.get('size', 0))
         self.items = self.findItems(data)
 
+
     @classmethod
-    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
+    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0, parent=None):
         """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Paramaters:
@@ -53,6 +54,7 @@ class PlayQueue(PlexObject):
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
                 continuous (int, optional): include rest of item collection.
+                parent (str, optional): use a custom uri.
         """
         args = {}
         args['includeChapters'] = includeChapters
@@ -67,7 +69,10 @@ class PlayQueue(PlexObject):
             uuid = item.section().uuid
             args['key'] = item.key
             args['type'] = item.listType
-            args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
+            if parent is not None:
+                args['uri'] = 'library://%s/item/%s' % (uuid, parent.key)
+            else:
+                args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
         path = '/playQueues%s' % utils.joinArgs(args)
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)

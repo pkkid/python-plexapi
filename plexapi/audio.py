@@ -23,6 +23,7 @@ class Audio(PlexPartialObject):
             type (str): 'artist', 'album', or 'track'.
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
+            playQueueItemID (int): Unique key identifying this item in a playQueue.
     """
 
     METADATA_TYPE = 'track'
@@ -44,6 +45,7 @@ class Audio(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.playQueueItemID = data.attrib.get('playQueueItemID')
 
     @property
     def thumbUrl(self):

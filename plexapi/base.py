@@ -571,21 +571,25 @@ class Playable(object):
         self._server.query(key)
         self.reload()
         
-    def updateTimeline(self, time, state='stopped', duration=None):
+    def updateTimeline(self, time, state='stopped', duration=None, playQueueItemID=None):
         """ Set the timeline progress for this video.
 
             Parameters:
                 time (int): milliseconds watched
                 state (string): state of the video, default 'stopped'
                 duration (int): duration of the item
+                playQueueItemID (int): id of the playQueue
         """
         durationStr = '&duration='
         if duration is not None:
             durationStr = durationStr + str(duration)
         else:
             durationStr = durationStr + str(self.duration)
-        key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
-        key %= (self.ratingKey, self.key, time, state, durationStr)
+        playQueuItemIdStr = ''
+        if playQueueItemID is not None:
+            playQueuItemIdStr = '&playQueuItemId=' + playQueueItemID
+        key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s%s'
+        key %= (self.ratingKey, self.key, time, state, durationStr, playQueuItemIdStr)
         self._server.query(key)
         self.reload()
 
