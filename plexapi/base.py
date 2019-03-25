@@ -587,7 +587,7 @@ class Playable(object):
             durationStr = durationStr + str(self.duration)
         playQueuItemIdStr = ''
         if playQueueItemID is not None:
-            playQueuItemIdStr = '&playQueuItemId=' + playQueueItemID
+            playQueuItemIdStr = '&playQueueItemID=' + playQueueItemID
         key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s%s'
         key %= (self.ratingKey, self.key, time, state, durationStr, playQueuItemIdStr)
         self._server.query(key)

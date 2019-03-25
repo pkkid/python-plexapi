@@ -86,4 +86,18 @@ class PlayQueue(PlexObject):
         # we manually add a key so we can pass this to playMedia
         # since the data, does not contain a key.
         c.key = item.key
+        c.repeat = repeat
+        c.includeChapters = includeChapters
+        c.includeRelated = includeRelated
+        c.server = server
         return c
+
+    def refresh(self):
+        """ Refresh the playqueue data. """
+        args = {}
+        args['includeChapters'] = self.includeChapters
+        args['includeRelated'] = self.includeRelated
+        args['repeat'] = self.repeat
+        path = '/playQueues/%s%s' % (self.playQueueID, utils.joinArgs(args))
+        data = self.server.query(path, method=self.server._session.get)
+        self._loadData(data)
