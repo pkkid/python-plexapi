@@ -43,7 +43,7 @@ class PlayQueue(PlexObject):
 
 
     @classmethod
-    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0, parent=None):
+    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0, parent=None, sort=None):
         """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Paramaters:
@@ -55,6 +55,7 @@ class PlayQueue(PlexObject):
                 includeRelated (int, optional): include Related.
                 continuous (int, optional): include rest of item collection.
                 parent (str, optional): use a custom uri.
+                sort (str, optional): if playing a section this param will be used.
         """
         args = {}
         args['includeChapters'] = includeChapters
@@ -65,6 +66,12 @@ class PlayQueue(PlexObject):
         if item.type == 'playlist':
             args['playlistID'] = item.ratingKey
             args['type'] = item.playlistType
+        elif hasattr(item, 'uuid'):
+            args['type'] = item.type
+            sortStr = ""
+            if sort is not None:
+                sortStr = "sort=" + sort
+            args['uri'] = 'server://%s/com.plexapp.plugins.library/library/sections/%s/all?%s' % (server.machineIdentifier, item.key, sortStr)
         else:
             uuid = item.section().uuid
             args['key'] = item.key
