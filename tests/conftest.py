@@ -40,7 +40,7 @@ CONTENTRATINGS = {'TV-14', 'TV-MA', 'G', 'NR', 'Not Rated'}
 FRAMERATES = {'24p', 'PAL', 'NTSC'}
 PROFILES = {'advanced simple', 'main', 'constrained baseline'}
 RESOLUTIONS = {'sd', '480', '576', '720', '1080'}
-ENTITLEMENTS = {'ios', 'cpms', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'windows_phone'}
+ENTITLEMENTS = {'ios', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'windows_phone'}
 
 TEST_AUTHENTICATED = 'authenticated'
 TEST_ANONYMOUSLY = 'anonymously'

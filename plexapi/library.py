@@ -378,13 +378,13 @@ class LibrarySection(PlexObject):
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, sort=None, **kwargs):
-        """ Returns a list of media from this library section. 
-        
+        """ Returns a list of media from this library section.
+
             Parameters:
                     sort (string): The sort string
         """
         sortStr = ''
-        if sort != None:
+        if sort is not None:
             sortStr = '?sort=' + sort
         
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
@@ -784,7 +784,7 @@ class MusicSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
-    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'track.userRating')
+    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort', 'userRating')
     TAG = 'Directory'
     TYPE = 'artist'

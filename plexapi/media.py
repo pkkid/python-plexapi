@@ -124,19 +124,19 @@ class MediaPart(PlexObject):
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
-        
+
     def setDefaultAudioStream(self, stream):
         """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
 
             Parameters:
-                stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default 
+                stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default
         """
         if isinstance(stream, AudioStream):
             key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream.id)
         else:
             key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream)
         self._server.query(key, method=self._server._session.put)
-            
+
     def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
             
@@ -148,11 +148,12 @@ class MediaPart(PlexObject):
         else:
             key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream)
         self._server.query(key, method=self._server._session.put)
-        
+
     def resetDefaultSubtitleStream(self):
         """ Set default subtitle of this MediaPart to 'none'. """
         key = "/library/parts/%d?subtitleStreamID=0&allParts=1" % (self.id)
         self._server.query(key, method=self._server._session.put)
+
 
 class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.

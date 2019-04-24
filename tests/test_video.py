@@ -118,7 +118,7 @@ def test_video_Movie_attrs(movies):
     assert float(movie.rating) >= 6.4
     #assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
-    assert sorted([i.tag for i in movie.roles])[:4] == ['Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Bhavana Nagulapally']  # noqa
+    assert set(sorted([i.tag for i in movie.roles])) >= {'Aladdin Ullah', 'Annette Hanshaw', 'Aseem Chhabra', 'Debargo Sanyal'}  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
     assert movie.studio == 'Nina Paley'

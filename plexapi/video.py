@@ -332,9 +332,9 @@ class Show(Video):
             Parameters:
                 title (str or int): Title or Number of the season to return.
         """
-        if isinstance(title, int):
-            title = 'Season %s' % title
         key = '/library/metadata/%s/children' % self.ratingKey
+        if isinstance(title, int):
+            return self.fetchItem(key, etag='Directory', index__iexact=str(title))
         return self.fetchItem(key, etag='Directory', title__iexact=title)
 
     def episodes(self, **kwargs):
@@ -357,7 +357,7 @@ class Show(Video):
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
             return self.fetchItem(key, title__iexact=title)
-        elif season and episode:
+        elif season is not None and episode:
             results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
             if results:
                 return results[0]
