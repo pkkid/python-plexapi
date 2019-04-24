@@ -92,6 +92,18 @@ class PlayQueue(PlexObject):
         c.server = server
         return c
 
+    @classmethod
+    def get_from_url(cls, server, path, key):
+        """ Create from url the playqueue. """
+        data = server.query(path, method=server._session.get)
+        c = cls(server, data, initpath=path)
+        c.key = key
+        c.repeat = 0
+        c.includeChapters = 1
+        c.includeRelated = 1
+        c.server = server
+        return c
+
     def refresh(self):
         """ Refresh the playqueue data. """
         args = {}
