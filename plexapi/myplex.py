@@ -265,7 +265,7 @@ class MyPlexAccount(PlexObject):
         response_servers = ''
         user = user if isinstance(user, MyPlexUser) else self.user(user)
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
-        sectionIds = self._getSectionIds(machineId, sections)
+        sectionIds = self._getSectionIds(server, sections)
         headers = {'Content-Type': 'application/json'}
         # Determine whether user has access to the shared server.
         user_servers = [s for s in user.servers if s.machineIdentifier == machineId]
@@ -335,7 +335,8 @@ class MyPlexAccount(PlexObject):
 
     def _getSectionIds(self, server, sections):
         """ Converts a list of section objects or names to sectionIds needed for library sharing. """
-        if not sections: return []
+        if not sections:
+            sections = server.library.sections()
         # Get a list of all section ids for looking up each section.
         allSectionIds = {}
         machineIdentifier = server.machineIdentifier if isinstance(server, PlexServer) else server
