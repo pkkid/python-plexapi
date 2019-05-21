@@ -213,7 +213,7 @@ class MyPlexAccount(PlexObject):
         """
         username = user.username if isinstance(user, MyPlexUser) else user
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
-        sectionIds = self._getSectionIds(machineId, sections)
+        sectionIds = self._getSectionIds(server, sections)
         params = {
             'server_id': machineId,
             'shared_server': {'library_section_ids': sectionIds, 'invited_email': username},
