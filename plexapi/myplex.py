@@ -172,7 +172,6 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
             raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
@@ -487,7 +486,6 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
             raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         return response.json()['token']
 
