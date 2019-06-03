@@ -25,5 +25,7 @@ if __name__ == '__main__':
     for section in plex.library.sections():
         if section.type in ('show',):  # ('movie', 'artist', 'show'):
             for item in section.search(collection='markwatched'):
-                print('%s Marking %s watched.' % (datestr(), item.title))
-                item.markWatched()
+                for episode in item.episodes():
+                    if not episode.isWatched:
+                        print('%s Marking %s watched.' % (datestr(), episode.title))
+                        item.markWatched()
