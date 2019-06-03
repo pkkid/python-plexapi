@@ -8,8 +8,6 @@ from shutil import copyfile, rmtree
 from subprocess import call
 from time import time, sleep
 from uuid import uuid4
-
-from requests import codes
 from tqdm import tqdm
 
 import plexapi
