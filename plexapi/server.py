@@ -522,6 +522,6 @@ class SystemAccount(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.accountId = cast(int, data.attrib.get('id'))
+        self.accountID = cast(int, data.attrib.get('id'))
         self.accountKey = data.attrib.get('key')
         self.name = data.attrib.get('name')
