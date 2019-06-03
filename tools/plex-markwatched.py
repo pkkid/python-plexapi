@@ -28,4 +28,4 @@ if __name__ == '__main__':
                 for episode in item.episodes():
                     if not episode.isWatched:
                         print('%s Marking %s watched.' % (datestr(), episode.title))
-                        item.markWatched()
+                        episode.markWatched()
