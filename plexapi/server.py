@@ -182,6 +182,13 @@ class PlexServer(PlexObject):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query(Account.key)
         return Account(self, data)
+    
+    def systemAccounts(self):
+        """ Returns the :class:`~plexapi.server.SystemAccounts` objects this server contains. """
+        accounts = []
+        for elem in self.query('/accounts'):
+            accounts.append(SystemAccount(self, data=elem))
+        return accounts
 
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
@@ -507,3 +514,14 @@ class Account(PlexObject):
         self.subscriptionFeatures = utils.toList(data.attrib.get('subscriptionFeatures'))
         self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')
+
+
+class SystemAccount(PlexObject):
+    """ Minimal api to list system accounts. """
+    key = '/accounts'
+
+    def _loadData(self, data):
+        self._data = data
+        self.accountId = cast(int, data.attrib.get('id'))
+        self.accountKey = data.attrib.get('key')
+        self.name = data.attrib.get('name')
