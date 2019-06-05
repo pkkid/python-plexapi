@@ -18,14 +18,40 @@ from datetime import datetime
 from plexapi.server import PlexServer
 
 
+def _has_markwatched_tag(item):
+    collections = item.show().collections if item.type == 'episode' else item.collections
+    tags = [c.tag.lower() for c in collections]
+    return 'markwatched' in tags
+
+
+def _get_title(item):
+    if item.type == 'episode':
+        return f'{item.grandparentTitle} {item.seasonEpisode}'
+    return item.title
+
+
+def _iter_items(search):
+    for item in search:
+        if item.type in ['show']:
+            for episode in item.episodes():
+                yield episode
+            break
+        yield item
+
+
 if __name__ == '__main__':
     datestr = lambda: datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print('%s Starting plex-markwatched script..' % datestr())
+    print(f'{datestr()} Starting plex-markwatched script..')
     plex = PlexServer()
     for section in plex.library.sections():
-        if section.type in ('show',):  # ('movie', 'artist', 'show'):
-            for item in section.search(collection='markwatched'):
-                for episode in item.episodes():
-                    if not episode.isWatched:
-                        print('%s Marking %s watched.' % (datestr(), episode.title))
-                        item.markWatched()
+        print(f'{datestr()} Checking {section.title} for unwatched items..')
+        for item in _iter_items(section.search(collection='markwatched')):
+            if not item.isWatched:
+                print(f'{datestr()}  Marking {_get_title(item)} watched.')
+                item.markWatched()
+    # Check all OnDeck items
+    print(f'{datestr()} Checking OnDeck for unwatched items..')
+    for item in plex.library.onDeck():
+        if not item.isWatched and _has_markwatched_tag(item):
+            print(f'{datestr()}  Marking {_get_title(item)} watched.')
+            item.markWatched()
