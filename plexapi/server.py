@@ -182,7 +182,12 @@ class PlexServer(PlexObject):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query(Account.key)
         return Account(self, data)
-    
+
+    def createToken(self, type='delegation', scope='all'):
+        """Create a temp access token for the server."""
+        q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
+        return q.attrib.get('token')
+
     def systemAccounts(self):
         """ Returns the :class:`~plexapi.server.SystemAccounts` objects this server contains. """
         accounts = []
@@ -325,7 +330,7 @@ class PlexServer(PlexObject):
 
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
-                mindate (datetime): Min datetime to return results from. This really helps speed 
+                mindate (datetime): Min datetime to return results from. This really helps speed
                     up the result listing. For example: datetime.now() - timedelta(days=7)
         """
         results, subresults = [], '_init'
