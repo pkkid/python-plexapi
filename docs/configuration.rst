@@ -21,7 +21,7 @@ are optional. An example config.ini file may look like the following with all po
     client_baseurl = http://127.0.0.1:32433
     client_token = BDFSLCNSNL789FH7
 
-    [headers]
+    [header]
     identifier = 0x485b314307f3L
     platorm = Linux
     platform_version = 4.4.0-62-generic
