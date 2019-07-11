@@ -474,7 +474,7 @@ class Playable(object):
             Raises:
                 :class:`plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
-        if self.TYPE not in ('movie', 'episode', 'track'):
+        if self.TYPE not in ('movie', 'episode', 'track', 'clip'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
         mvb = params.get('maxVideoBitrate')
         vr = params.get('videoResolution', '')

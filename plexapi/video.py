@@ -617,3 +617,46 @@ class Episode(Playable, Video):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+@utils.registerPlexObject
+class Clip(Playable, Video):
+    """ Represents a single Shows Episode.
+
+        Attributes:
+            TAG (str): 'Video'
+            TYPE (str): 'episode'
+            art (str): Key to episode artwork (/library/metadata/<ratingkey>/art/<artid>)
+            duration (int): Duration of episode in milliseconds.
+            guid (str): Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+            index (int): Episode number.
+            originallyAvailableAt (datetime): Datetime episode was released.
+            title (str): Name of this Episode
+            viewOffset (int): View offset in milliseconds.
+            media (List<:class:`~plexapi.media.Media`>): List of media objects.
+    """
+    TAG = 'Video'
+    TYPE = 'clip'
+    METADATA_TYPE = 'clip'
+
+    _include = ('?includeConcerts=1&includeExtras=1&includeOnDeck=1&includePopularLeaves=1&includePreferences=1&includeChapters=1&includeStations=1&asyncAugmentMetadata=1&checkFiles=1')
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Video._loadData(self, data)
+        Playable._loadData(self, data)
+        self._details_key = self.key + self._include
+        self.art = data.attrib.get('art')
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.guid = data.attrib.get('guid')
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.title = data.attrib.get('title')
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.media = self.findItems(data, media.Media)
+
+    def __repr__(self):
+        return '<%s>' % ':'.join([p for p in [
+            self.__class__.__name__,
+            self.key.replace('/library/metadata/', '').replace('/children', ''),
+            '%s' % self.title,
+        ] if p])

@@ -72,6 +72,9 @@ class PlayQueue(PlexObject):
             if sort is not None:
                 sortStr = "sort=" + sort
             args['uri'] = 'server://%s/com.plexapp.plugins.library/library/sections/%s/all?%s' % (server.machineIdentifier, item.key, sortStr)
+        elif item.TYPE == 'clip':
+            args['type'] = 'video'
+            args['uri'] = 'server://%s/com.plexapp.plugins.library%s' % (server.machineIdentifier, item.key)
         else:
             uuid = item.section().uuid
             args['key'] = item.key
