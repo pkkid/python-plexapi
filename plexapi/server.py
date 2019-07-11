@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE
 from plexapi import log, logfilter, utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
@@ -183,6 +183,18 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    def createToken(self, type='delegation', scope='all'):
+        """Create a temp access token for the server."""
+        q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
+        return q.attrib.get('token')
+
+    def systemAccounts(self):
+        """ Returns the :class:`~plexapi.server.SystemAccounts` objects this server contains. """
+        accounts = []
+        for elem in self.query('/accounts'):
+            accounts.append(SystemAccount(self, data=elem))
+        return accounts
+
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
             token to access this server. If you are not the owner of this PlexServer
@@ -310,9 +322,29 @@ class PlexServer(PlexObject):
             # figure out what method this is..
             return self.query(part, method=self._session.put)
 
-    def history(self):
-        """ Returns a list of media items from watched history. """
-        return self.fetchItems('/status/sessions/history/all')
+    def history(self, maxresults=9999999, mindate=None):
+        """ Returns a list of media items from watched history. If there are many results, they will
+            be fetched from the server in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only
+            looking for the first <num> results, it would be wise to set the maxresults option to that
+            amount so this functions doesn't iterate over all results on the server.
+
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from. This really helps speed
+                    up the result listing. For example: datetime.now() - timedelta(days=7)
+        """
+        results, subresults = [], '_init'
+        args = {'sort':'viewedAt:desc'}
+        if mindate:
+            args['viewedAt>'] = int(mindate.timestamp())
+        args['X-Plex-Container-Start'] = 0
+        args['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
+        while subresults and maxresults > len(results):
+            key = '/status/sessions/history/all%s' % utils.joinArgs(args)
+            subresults = self.fetchItems(key)
+            results += subresults[:maxresults - len(results)]
+            args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
+        return results
 
     def playlists(self):
         """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
@@ -487,3 +519,14 @@ class Account(PlexObject):
         self.subscriptionFeatures = utils.toList(data.attrib.get('subscriptionFeatures'))
         self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')
+
+
+class SystemAccount(PlexObject):
+    """ Minimal api to list system accounts. """
+    key = '/accounts'
+
+    def _loadData(self, data):
+        self._data = data
+        self.accountID = cast(int, data.attrib.get('id'))
+        self.accountKey = data.attrib.get('key')
+        self.name = data.attrib.get('name')

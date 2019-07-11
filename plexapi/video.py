@@ -264,6 +264,7 @@ class Show(Video):
             banner (str): Key to banner artwork (/library/metadata/<ratingkey>/art/<artid>)
             childCount (int): Unknown.
             contentRating (str) Content rating (PG-13; NR; TV-G).
+            collections (List<:class:`~plexapi.media.Collection`>): List of collections this media belongs.
             duration (int): Duration of show in milliseconds.
             guid (str): Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
             index (int): Plex index (?)
@@ -296,6 +297,7 @@ class Show(Video):
         self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.contentRating = data.attrib.get('contentRating')
+        self.collections = self.findItems(data, media.Collection)
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.guid = data.attrib.get('guid')
         self.index = data.attrib.get('index')

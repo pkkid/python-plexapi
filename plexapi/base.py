@@ -452,6 +452,7 @@ class Playable(object):
         self.transcodeSessions = self.findItems(data, etag='TranscodeSession')      # session
         self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
+        self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
 
     def isFullObject(self):
