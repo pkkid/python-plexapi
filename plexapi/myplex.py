@@ -516,6 +516,7 @@ class MyPlexUser(PlexObject):
             thumb (str): Link to the users avatar.
             title (str): Seems to be an aliad for username.
             username (str): User's username.
+            servers: Servers shared between user and friend
     """
     TAG = 'User'
     key = 'https://plex.tv/api/users/'
