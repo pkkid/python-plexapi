@@ -199,7 +199,8 @@ class MyPlexAccount(PlexObject):
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
                 server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                sections ([Section]): Library sections, names or ids to be shared (default None).
+                    [Section] must be defined in order to update shared sections.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
@@ -247,7 +248,8 @@ class MyPlexAccount(PlexObject):
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
                 server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections: ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                sections: ([Section]): Library sections, names or ids to be shared (default None).
+                    [Section] must be defined in order to update shared sections.
                 removeSections (Bool): Set True to remove all shares. Supersedes sections.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
