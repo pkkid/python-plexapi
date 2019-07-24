@@ -649,7 +649,8 @@ class MovieSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
                        'collection', 'director', 'actor', 'country', 'studio', 'resolution',
-                       'guid', 'label')
+                       'guid', 'label', 'writer', 'producer', 'subtitleLanguage', 'audioLanguage',
+                       'lastViewedAt', 'viewCount', 'addedAt')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                     'mediaHeight', 'duration')
     TAG = 'Directory'
@@ -709,7 +710,11 @@ class ShowSection(LibrarySection):
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label')
+                       'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
+                       'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
+                       'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
+                       'episode.unwatched', 'episode.addedAt','episode.userRating', 'episode.viewCount',
+                       'episode.lastViewedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
@@ -784,7 +789,12 @@ class MusicSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
-    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating')
+    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating', 'artist.title',
+                       'artist.userRating', 'artist.genre', 'artist.country', 'artist.collection', 'artist.addedAt',
+                       'album.title', 'album.userRating', 'album.genre', 'album.decade', 'album.collection',
+                       'album.viewCount', 'album.lastViewedAt', 'album.studio', 'album.addedAt', 'track.title',
+                       'track.userRating', 'track.viewCount', 'track.lastViewedAt', 'track.skipCount',
+                       'track.lastSkippedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort', 'userRating')
     TAG = 'Directory'
     TYPE = 'artist'
@@ -858,7 +868,8 @@ class PhotoSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution')
+    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution', 'place',
+                       'originallyAvailableAt', 'addedAt', 'title', 'userRating')
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
