@@ -995,6 +995,7 @@ class Collections(PlexObject):
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.collectionMode = data.attrib.get('collectionMode')
+        self.collectionSort = data.attrib.get('collectionSort')
 
     @property
     def children(self):
@@ -1013,6 +1014,12 @@ class Collections(PlexObject):
                      'hideItems': '1',
                      'showItems': '2'}
         part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, mode_dict[mode])
+        return self._server.query(part, method=self._server._session.put)
+
+    def sortUpdate(self, sort=['release', 'alpha']):
+        sort_dict = {'release': '0',
+                     'alpha': '1'}
+        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, sort_dict[sort])
         return self._server.query(part, method=self._server._session.put)
 
     # def edit(self, **kwargs):
