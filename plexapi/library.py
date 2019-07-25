@@ -994,6 +994,7 @@ class Collections(PlexObject):
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.collectionMode = data.attrib.get('collectionMode')
 
     @property
     def children(self):
@@ -1005,6 +1006,14 @@ class Collections(PlexObject):
     def delete(self):
         part = '/library/metadata/%s' % self.ratingKey
         return self._server.query(part, method=self._server._session.delete)
+    
+    def modeUpdate(self, mode=['default', 'hide', 'hideItems', 'showItems']):
+        mode_dict = {'default': '-2',
+                     'hide': '0',
+                     'hideItems': '1',
+                     'showItems': '2'}
+        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, mode_dict[mode])
+        return self._server.query(part, method=self._server._session.put)
 
     # def edit(self, **kwargs):
     #    TODO
