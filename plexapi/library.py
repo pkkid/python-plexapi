@@ -1008,18 +1008,47 @@ class Collections(PlexObject):
         part = '/library/metadata/%s' % self.ratingKey
         return self._server.query(part, method=self._server._session.delete)
     
-    def modeUpdate(self, mode=['default', 'hide', 'hideItems', 'showItems']):
+    def modeUpdate(self, mode=None):
+        """ Update Collection Mode
+
+            Parameters:
+            	mode: default     (Library default)
+            	      hide        (Hide Collection)
+            	      hideItems   (Hide Items in this Collection)
+            	      showItems   (Show this Collection and its Items)
+            Example:
+
+            	colleciton = 'plexapi.library.Collections'
+            	collection.updateMode(mode="hide")
+        """
         mode_dict = {'default': '-2',
                      'hide': '0',
                      'hideItems': '1',
                      'showItems': '2'}
-        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, mode_dict[mode])
+        key = mode_dict.get(mode)
+        if mode is None:
+            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, mode_dict.key()))
+        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
 
-    def sortUpdate(self, sort=['release', 'alpha']):
+    def sortUpdate(self, sort=None):
+        """ Update Collection Sorting
+
+            Parameters:
+            	mode: realease     (Order Collection by realease dates)
+            	      alpha        (Order Collection Alphabetically)
+
+            Example:
+
+            	colleciton = 'plexapi.library.Collections'
+            	collection.updateSort(mode="alpha")
+        """
         sort_dict = {'release': '0',
                      'alpha': '1'}
-        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, sort_dict[sort])
+        key = sort_dict.get(sort)
+        if key is None:
+            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, sort_dict.keys()))
+        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
 
     # def edit(self, **kwargs):
