@@ -62,6 +62,7 @@ class MyPlexAccount(PlexObject):
             _session (obj): Requests session object used to access this client.
     """
     FRIENDINVITE = 'https://plex.tv/api/servers/{machineId}/shared_servers'                     # post with data
+    HOMEUSERCREATE = 'https://plex.tv/api/home/users?title={title}'                             # post with data
     FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data
     PLEXSERVERS = 'https://plex.tv/api/servers/{machineId}'                                     # get
     FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
@@ -229,6 +230,52 @@ class MyPlexAccount(PlexObject):
         headers = {'Content-Type': 'application/json'}
         url = self.FRIENDINVITE.format(machineId=machineId)
         return self.query(url, self._session.post, json=params, headers=headers)
+
+    def createHomeUser(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
+                          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+        """ Share library content with the specified user.
+        
+            Parameters:
+                user (str): MyPlexUser, username, email of the user to be added.
+                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
+                sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                allowSync (Bool): Set True to allow user to sync content.
+                allowCameraUpload (Bool): Set True to allow user to upload photos.
+                allowChannels (Bool): Set True to allow user to utilize installed channels.
+                filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
+                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
+                    ex: {'label':['foo']}
+        """
+        machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
+        sectionIds = self._getSectionIds(server, sections)
+
+        headers = {'Content-Type': 'application/json'}
+        url = self.HOMEUSERCREATE.format(title=user)
+        # UserID needs to be created and referenced when adding sections
+        user_creation = self.query(url, self._session.post, headers=headers)
+        userIds = {}
+        for elem in user_creation.findall("."):
+            # Find userID
+            userIds['id'] = elem.attrib.get('id')
+        log.debug(userIds)
+        params = {
+            'server_id': machineId,
+            'shared_server': {'library_section_ids': sectionIds, 'invited_id': userIds['id']},
+            'sharing_settings': {
+                'allowSync': ('1' if allowSync else '0'),
+                'allowCameraUpload': ('1' if allowCameraUpload else '0'),
+                'allowChannels': ('1' if allowChannels else '0'),
+                'filterMovies': self._filterDictToStr(filterMovies or {}),
+                'filterTelevision': self._filterDictToStr(filterTelevision or {}),
+                'filterMusic': self._filterDictToStr(filterMusic or {}),
+            },
+        }
+        url = self.FRIENDINVITE.format(machineId=machineId)
+        library_assignment = self.query(url, self._session.post, json=params, headers=headers)
+        return user_creation, library_assignment
 
     def removeFriend(self, user):
         """ Remove the specified user from all sharing.
