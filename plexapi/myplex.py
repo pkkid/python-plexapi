@@ -67,6 +67,7 @@ class MyPlexAccount(PlexObject):
     FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data
     PLEXSERVERS = 'https://plex.tv/api/servers/{machineId}'                                     # get
     FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
+    REMOVEHOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                  # delete
     REMOVEINVITE = 'https://plex.tv/api/invites/requested/{userId}?friend=0&server=1&home=0'    # delete
     REQUESTED = 'https://plex.tv/api/invites/requested'                                         # get
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
@@ -337,6 +338,16 @@ class MyPlexAccount(PlexObject):
         user = self.user(user)
         url = self.FRIENDUPDATE if user.friend else self.REMOVEINVITE
         url = url.format(userId=user.id)
+        return self.query(url, self._session.delete)
+
+    def removeHomeUser(self, user):
+        """ Remove the specified managed user from home.
+
+            Parameters:
+                user (str): MyPlexUser, username, email of the user to be removed from home.
+        """
+        user = self.user(user)
+        url = self.REMOVEHOMEUSER.format(userId=user.id)
         return self.query(url, self._session.delete)
 
     def updateFriend(self, user, server, sections=None, removeSections=False, allowSync=None, allowCameraUpload=None,
