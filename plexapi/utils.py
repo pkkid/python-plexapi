@@ -9,11 +9,8 @@ from datetime import datetime
 from getpass import getpass
 from threading import Thread, Event
 from tqdm import tqdm
-from plexapi import compat
+from plexapi import compat, log
 from plexapi.exceptions import NotFound
-
-
-LOG = logging.getLogger(__name__)
 
 
 # Search Types - Plex uses these to filter specific media types when searching.
@@ -183,7 +180,7 @@ def toDatetime(value, format=None):
             try:
                 value = datetime.strptime(value, format)
             except ValueError:
-                LOG.info('Failed to parse %s to datetime, defaulting to None', value)
+                log.info('Failed to parse %s to datetime, defaulting to None', value)
                 return None
         else:
             # https://bugs.python.org/issue30684
