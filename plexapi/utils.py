@@ -12,6 +12,10 @@ from tqdm import tqdm
 from plexapi import compat
 from plexapi.exceptions import NotFound
 
+
+LOG = logging.getLogger(__name__)
+
+
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4, 'trailer': 5, 'comic': 6, 'person': 7,
@@ -179,7 +183,7 @@ def toDatetime(value, format=None):
             try:
                 value = datetime.strptime(value, format)
             except ValueError:
-                # parsing failed
+                LOG.info('Failed to parse %s to datetime, defaulting to None', value)
                 return None
         else:
             # https://bugs.python.org/issue30684
