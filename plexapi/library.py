@@ -291,7 +291,7 @@ class Library(PlexObject):
         part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
             quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
         if kwargs:
-            part += urlencode(kwargs)
+            part += '&' + urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
 
