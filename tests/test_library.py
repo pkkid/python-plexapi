@@ -2,6 +2,7 @@
 import pytest
 from plexapi.exceptions import NotFound
 from . import conftest as utils
+from time import sleep
 
 
 def test_library_Library_section(plex):
@@ -200,6 +201,41 @@ def test_library_and_section_search_for_movie(plex):
     s_search = plex.library.section('Movies').search(find)
     assert l_search == s_search
 
+
+def test_library_colletion_hide(collection):
+    collection.modeUpdate(mode='hide')
+    collection.reload()
+    assert collection.collectionMode == '0'
+
+
+def test_library_colletion_default(collection):
+    collection.modeUpdate(mode='default')
+    collection.reload()
+    assert collection.collectionMode == '-2'
+
+
+def test_library_colletion_hideItems(collection):
+    collection.modeUpdate(mode='hideItems')
+    collection.reload()
+    assert collection.collectionMode == '1'
+
+
+def test_library_colletion_showItems(collection):
+    collection.modeUpdate(mode='showItems')
+    collection.reload()
+    assert collection.collectionMode == '2'
+
+
+def test_library_colletion_sortAlpha(collection):
+    collection.sortUpdate(mode='alpha')
+    collection.reload()
+    assert collection.collectionMode == '1'
+
+
+def test_library_colletion_sortRelease(collection):
+    collection.sortUpdate(mode='release')
+    collection.reload()
+    assert collection.collectionMode == '0'
 
 # This started failing on more recent Plex Server builds
 @pytest.mark.xfail
