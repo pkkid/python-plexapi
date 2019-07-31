@@ -149,12 +149,12 @@ class Playlist(PlexPartialObject, Playable):
         return cls(server, data, initpath=key)
 
     @classmethod
-    def create(cls, server, title, items=None, section=None, limit=None, smart=False, **kwargs):
+    def create(cls, server, playlistTitle, items=None, section=None, limit=None, smart=False, **kwargs):
         """Create a playlist.
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): Server your connected to.
-            title (str): Title of the playlist.
+            playlistTitle (str): Title of the playlist.
             items (Iterable): Iterable of objects that should be in the playlist.
             section (:class:`~plexapi.library.LibrarySection`, str):
             limit (int): default None.
@@ -166,13 +166,13 @@ class Playlist(PlexPartialObject, Playable):
             :class:`plexapi.playlist.Playlist`: an instance of created Playlist.
         """
         if smart:
-            return cls._createSmart(server, title, section, limit, **kwargs)
+            return cls._createSmart(server, playlistTitle, section, limit, **kwargs)
 
         else:
-            return cls._create(server, title, items)
+            return cls._create(server, playlistTitle, items)
 
     @classmethod
-    def _createSmart(cls, server, title, section, limit=None, **kwargs):
+    def _createSmart(cls, server, playlistTitle, section, limit=None, **kwargs):
         """ Create a Smart playlist. """
 
         if not isinstance(section, LibrarySection):
@@ -192,12 +192,15 @@ class Playlist(PlexPartialObject, Playable):
             for choice in sectionChoices:
                 if str(choice.title).lower() == str(value).lower():
                     uri = uri + '&%s=%s' % (category.lower(), str(choice.key))
+            if category in section.BOOLEAN_FILTERS:
+                int_bool = section._cleanSearchFilter(category, value)
+                uri = uri + '&%s=%s' % (category.lower(), str(int_bool))
 
         uri = uri + '&sourceType=%s' % sectionType
         key = '/playlists%s' % utils.joinArgs({
             'uri': uri,
             'type': section.CONTENT_TYPE,
-            'title': title,
+            'title': playlistTitle,
             'smart': 1,
         })
         data = server.query(key, method=server._session.post)[0]
