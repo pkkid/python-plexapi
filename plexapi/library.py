@@ -1026,8 +1026,8 @@ class Collections(PlexObject):
                      'hideItems': '1',
                      'showItems': '2'}
         key = mode_dict.get(mode)
-        if mode is None:
-            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict.key())))
+        if key is None:
+            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
         part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
 
@@ -1047,7 +1047,7 @@ class Collections(PlexObject):
                      'alpha': '1'}
         key = sort_dict.get(sort)
         if key is None:
-            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict.keys())))
+            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
         part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
 
