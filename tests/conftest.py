@@ -188,6 +188,11 @@ def movie(movies):
 
 
 @pytest.fixture()
+def collection(plex):
+    return plex.library.section('Movies').collection()[0]
+
+
+@pytest.fixture()
 def artist(music):
     return music.get('Infinite State')
 
