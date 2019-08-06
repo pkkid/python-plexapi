@@ -131,6 +131,12 @@ Usage Examples
         print(playlist.title)
 
 
+.. code-block:: python
+
+    # Example 10: Rate Mr. Robot four stars.
+    plex.library.section('TV Shows').get('Mr. Robot').rate(8.0)
+
+
 Running tests over PlexAPI
 --------------------------
 

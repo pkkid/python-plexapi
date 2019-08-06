@@ -78,6 +78,13 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def rate(self, rate):
+        """ Rate video. """
+        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
+
+        self._server.query(key)
+        self.reload()
+
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
