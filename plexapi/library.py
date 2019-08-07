@@ -713,7 +713,7 @@ class ShowSection(LibrarySection):
                        'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
                        'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
                        'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
-                       'episode.unwatched', 'episode.addedAt','episode.userRating', 'episode.viewCount',
+                       'episode.unwatched', 'episode.addedAt', 'episode.userRating', 'episode.viewCount',
                        'episode.lastViewedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')

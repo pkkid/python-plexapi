@@ -334,7 +334,7 @@ class PlexServer(PlexObject):
                     up the result listing. For example: datetime.now() - timedelta(days=7)
         """
         results, subresults = [], '_init'
-        args = {'sort':'viewedAt:desc'}
+        args = {'sort': 'viewedAt:desc'}
         if mindate:
             args['viewedAt>'] = int(mindate.timestamp())
         args['X-Plex-Container-Start'] = 0
