@@ -9,9 +9,10 @@ from datetime import datetime
 from getpass import getpass
 from threading import Thread, Event
 from tqdm import tqdm
-from plexapi import compat, log
+from plexapi import compat
 from plexapi.exceptions import NotFound
 
+log = logging.getLogger('plexapi')
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
@@ -257,8 +258,6 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
             >>> download(a_episode.getStreamURL(), a_episode.location)
             /path/to/file
     """
-
-    from plexapi import log
     # fetch the data to be saved
     session = session or requests.Session()
     headers = {'X-Plex-Token': token}
