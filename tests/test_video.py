@@ -571,6 +571,11 @@ def test_video_Season_episode(show):
     assert episode.title == 'Winter Is Coming'
 
 
+def test_video_Season_episode_by_index(show):
+    episode = show.season(1).episode(episode=1)
+    assert episode.index == 1
+
+
 def test_video_Season_episodes(show):
     episodes = show.season(2).episodes()
     assert len(episodes) >= 1

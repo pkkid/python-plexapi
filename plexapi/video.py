@@ -468,7 +468,7 @@ class Season(Video):
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
             return self.fetchItem(key, title=title)
-        return self.fetchItem(key, seasonNumber=self.index, index=episode)
+        return self.fetchItem(key, parentIndex=self.index, index=episode)
 
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode()`. """
