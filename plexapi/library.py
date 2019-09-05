@@ -1035,7 +1035,7 @@ class Collections(PlexObject):
         """ Update Collection Sorting
 
             Parameters:
-            	mode: realease     (Order Collection by realease dates)
+            	sort: realease     (Order Collection by realease dates)
             	      alpha        (Order Collection Alphabetically)
 
             Example:
