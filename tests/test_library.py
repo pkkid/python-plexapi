@@ -2,7 +2,6 @@
 import pytest
 from plexapi.exceptions import NotFound
 from . import conftest as utils
-from time import sleep
 
 
 def test_library_Library_section(plex):
@@ -202,40 +201,40 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
-def test_library_Colletions_modeUpdate_hide(collection):
+def test_library_Colletion_modeUpdate_hide(collection):
     collection.modeUpdate(mode='hide')
     collection.reload()
     assert collection.collectionMode == '0'
 
 
-def test_library_Colletions_modeUpdate_default(collection):
+def test_library_Colletion_modeUpdate_default(collection):
     collection.modeUpdate(mode='default')
     collection.reload()
     assert collection.collectionMode == '-2'
 
 
-def test_library_Colletions_modeUpdate_hideItems(collection):
+def test_library_Colletion_modeUpdate_hideItems(collection):
     collection.modeUpdate(mode='hideItems')
     collection.reload()
     assert collection.collectionMode == '1'
 
 
-def test_library_Colletions_modeUpdate_showItems(collection):
+def test_library_Colletion_modeUpdate_showItems(collection):
     collection.modeUpdate(mode='showItems')
     collection.reload()
     assert collection.collectionMode == '2'
 
 
-def test_library_Colletions_sortAlpha(collection):
-    collection.sortUpdate(mode='alpha')
+def test_library_Colletion_sortAlpha(collection):
+    collection.sortUpdate(sort='alpha')
     collection.reload()
-    assert collection.collectionMode == '1'
+    assert collection.collectionSort == '1'
 
 
-def test_library_Colletions_sortRelease(collection):
-    collection.sortUpdate(mode='release')
+def test_library_Colletion_sortRelease(collection):
+    collection.sortUpdate(sort='release')
     collection.reload()
-    assert collection.collectionMode == '0'
+    assert collection.collectionSort == '0'
 
 # This started failing on more recent Plex Server builds
 @pytest.mark.xfail
