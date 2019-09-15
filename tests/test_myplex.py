@@ -157,6 +157,27 @@ def test_myplex_updateFriend(account, plex, mocker, shared_username):
                                      filterTelevision=vid_filter, filterMusic={'label': ['foo']})
 
 
+def test_myplex_createExistingUser(account, plex, shared_username):
+    user = account.user(shared_username)
+    url = 'https://plex.tv/api/invites/requested/{}?friend=0&server=0&home=1'.format(user.id)
+
+    account.createExistingUser(user, plex)
+    assert shared_username in [u.username for u in account.users() if u.home is True]
+    # Remove Home invite
+    account.query(url, account._session.delete)
+    # Confirm user was removed from home and has returned to friend
+    assert shared_username not in [u.username for u in plex.myPlexAccount().users() if u.home is True]
+    assert shared_username in [u.username for u in plex.myPlexAccount().users() if u.home is False]
+
+
+def test_myplex_createHomeUser_remove(account, plex):
+    homeuser = 'New Home User'
+    account.createHomeUser(homeuser, plex)
+    assert homeuser in [u.title for u in plex.myPlexAccount().users() if u.home is True]
+    account.removeHomeUser(homeuser)
+    assert homeuser not in [u.title for u in plex.myPlexAccount().users() if u.home is True]
+
+
 def test_myplex_plexpass_attributes(account_plexpass):
     assert account_plexpass.subscriptionActive
     assert account_plexpass.subscriptionStatus == 'Active'
