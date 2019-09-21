@@ -196,7 +196,7 @@ class MyPlexAccount(PlexObject):
         return [MyPlexResource(self, elem) for elem in data]
 
     def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
-          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+                     allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
         """ Share library content with the specified user.
 
             Parameters:
@@ -234,9 +234,9 @@ class MyPlexAccount(PlexObject):
         return self.query(url, self._session.post, json=params, headers=headers)
 
     def createHomeUser(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
-                          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+                       allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
         """ Share library content with the specified user.
-        
+
             Parameters:
                 user (str): MyPlexUser, username, email of the user to be added.
                 server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
@@ -280,7 +280,7 @@ class MyPlexAccount(PlexObject):
         return user_creation, library_assignment
 
     def createExistingUser(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
-                          allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
+                           allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
         """ Share library content with the specified user.
 
             Parameters:
@@ -385,7 +385,7 @@ class MyPlexAccount(PlexObject):
             url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
         else:
             params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds,
-                "invited_id": user.id}}
+                      'invited_id': user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
         # Remove share sections, add shares to user without shares, or update shares
         if not user_servers or sectionIds:
