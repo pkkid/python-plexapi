@@ -118,23 +118,15 @@ Usage Examples
 
 .. code-block:: python
 
-    # Example 8: Get a URL to stream a movie or show in another client
-    die_hard = plex.library.section('Movies').get('Elephants Dream')
-    print('Run running the following command to play in VLC:')
-    print('vlc "%s"' % die_hard.getStreamURL(videoResolution='800x600'))
-
-
-.. code-block:: python
-
-    # Example 9: Get audio/video/all playlists
+    # Example 8: Get audio/video/all playlists
     for playlist in plex.playlists():
         print(playlist.title)
 
 
 .. code-block:: python
 
-    # Example 10: Rate Mr. Robot four stars.
-    plex.library.section('TV Shows').get('Mr. Robot').rate(8.0)
+    # Example 9: Rate the 100 four stars.
+    plex.library.section('TV Shows').get('The 100').rate(8.0)
 
 
 Running tests over PlexAPI
