@@ -195,7 +195,9 @@ def collection(plex, movie):
     except IndexError:
         movie.addCollection(["marvel"])
 
-    return plex.library.section('Movies').collection()[0]
+    sec = plex.library.section('Movies').reload()
+
+    return sec.collection()[0]
 
 
 @pytest.fixture()

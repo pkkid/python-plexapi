@@ -283,9 +283,11 @@ def test_video_Episode_unmatch(episode, patched_http_call):
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
     episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
-    
+
+
 def test_video_Episode_updateTimeline(episode, patched_http_call):
     episode.updateTimeline(10 * 60 * 1000, state='playing', duration=episode.duration)  # 10 minutes.
+
 
 def test_video_Episode_stop(episode, mocker, patched_http_call):
     mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
