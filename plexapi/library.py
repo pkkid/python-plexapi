@@ -386,7 +386,7 @@ class LibrarySection(PlexObject):
         sortStr = ''
         if sort is not None:
             sortStr = '?sort=' + sort
-        
+
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
@@ -994,6 +994,8 @@ class Collections(PlexObject):
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.collectionMode = data.attrib.get('collectionMode')
+        self.collectionSort = data.attrib.get('collectionSort')
 
     @property
     def children(self):
@@ -1005,6 +1007,49 @@ class Collections(PlexObject):
     def delete(self):
         part = '/library/metadata/%s' % self.ratingKey
         return self._server.query(part, method=self._server._session.delete)
+
+    def modeUpdate(self, mode=None):
+        """ Update Collection Mode
+
+            Parameters:
+                mode: default     (Library default)
+                      hide        (Hide Collection)
+                      hideItems   (Hide Items in this Collection)
+                      showItems   (Show this Collection and its Items)
+            Example:
+
+                collection = 'plexapi.library.Collections'
+                collection.updateMode(mode="hide")
+        """
+        mode_dict = {'default': '-2',
+                     'hide': '0',
+                     'hideItems': '1',
+                     'showItems': '2'}
+        key = mode_dict.get(mode)
+        if key is None:
+            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
+        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
+        return self._server.query(part, method=self._server._session.put)
+
+    def sortUpdate(self, sort=None):
+        """ Update Collection Sorting
+
+            Parameters:
+                sort: realease     (Order Collection by realease dates)
+                      alpha        (Order Collection Alphabetically)
+
+            Example:
+
+                colleciton = 'plexapi.library.Collections'
+                collection.updateSort(mode="alpha")
+        """
+        sort_dict = {'release': '0',
+                     'alpha': '1'}
+        key = sort_dict.get(sort)
+        if key is None:
+            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
+        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
+        return self._server.query(part, method=self._server._session.put)
 
     # def edit(self, **kwargs):
     #    TODO

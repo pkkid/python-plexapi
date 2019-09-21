@@ -201,6 +201,41 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
+def test_library_Colletion_modeUpdate_hide(collection):
+    collection.modeUpdate(mode='hide')
+    collection.reload()
+    assert collection.collectionMode == '0'
+
+
+def test_library_Colletion_modeUpdate_default(collection):
+    collection.modeUpdate(mode='default')
+    collection.reload()
+    assert collection.collectionMode == '-2'
+
+
+def test_library_Colletion_modeUpdate_hideItems(collection):
+    collection.modeUpdate(mode='hideItems')
+    collection.reload()
+    assert collection.collectionMode == '1'
+
+
+def test_library_Colletion_modeUpdate_showItems(collection):
+    collection.modeUpdate(mode='showItems')
+    collection.reload()
+    assert collection.collectionMode == '2'
+
+
+def test_library_Colletion_sortAlpha(collection):
+    collection.sortUpdate(sort='alpha')
+    collection.reload()
+    assert collection.collectionSort == '1'
+
+
+def test_library_Colletion_sortRelease(collection):
+    collection.sortUpdate(sort='release')
+    collection.reload()
+    assert collection.collectionSort == '0'
+
 # This started failing on more recent Plex Server builds
 @pytest.mark.xfail
 def test_search_with_apostrophe(plex):
