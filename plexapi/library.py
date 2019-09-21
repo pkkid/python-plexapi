@@ -386,7 +386,7 @@ class LibrarySection(PlexObject):
         sortStr = ''
         if sort is not None:
             sortStr = '?sort=' + sort
-        
+
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
@@ -713,7 +713,7 @@ class ShowSection(LibrarySection):
                        'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
                        'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
                        'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
-                       'episode.unwatched', 'episode.addedAt','episode.userRating', 'episode.viewCount',
+                       'episode.unwatched', 'episode.addedAt', 'episode.userRating', 'episode.viewCount',
                        'episode.lastViewedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
@@ -1007,19 +1007,19 @@ class Collections(PlexObject):
     def delete(self):
         part = '/library/metadata/%s' % self.ratingKey
         return self._server.query(part, method=self._server._session.delete)
-    
+
     def modeUpdate(self, mode=None):
         """ Update Collection Mode
 
             Parameters:
-            	mode: default     (Library default)
-            	      hide        (Hide Collection)
-            	      hideItems   (Hide Items in this Collection)
-            	      showItems   (Show this Collection and its Items)
+                mode: default     (Library default)
+                      hide        (Hide Collection)
+                      hideItems   (Hide Items in this Collection)
+                      showItems   (Show this Collection and its Items)
             Example:
 
-            	colleciton = 'plexapi.library.Collections'
-            	collection.updateMode(mode="hide")
+                collection = 'plexapi.library.Collections'
+                collection.updateMode(mode="hide")
         """
         mode_dict = {'default': '-2',
                      'hide': '0',
@@ -1035,13 +1035,13 @@ class Collections(PlexObject):
         """ Update Collection Sorting
 
             Parameters:
-            	sort: realease     (Order Collection by realease dates)
-            	      alpha        (Order Collection Alphabetically)
+                sort: realease     (Order Collection by realease dates)
+                      alpha        (Order Collection Alphabetically)
 
             Example:
 
-            	colleciton = 'plexapi.library.Collections'
-            	collection.updateSort(mode="alpha")
+                colleciton = 'plexapi.library.Collections'
+                collection.updateSort(mode="alpha")
         """
         sort_dict = {'release': '0',
                      'alpha': '1'}
