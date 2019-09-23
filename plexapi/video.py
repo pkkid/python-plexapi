@@ -3,7 +3,7 @@ from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.compat import quote_plus
-
+import ntpath
 
 class Video(PlexPartialObject):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
@@ -226,6 +226,32 @@ class Movie(Playable, Video):
             for part in elem.parts:
                 streams += part.subtitleStreams()
         return streams
+
+    def uploadSubtitles(self, file):
+        """ Upload Subtitle file for video. """
+        url = '%s/subtitles' % self.key
+        filename = ntpath.basename(file)
+        with open(file, 'rb') as subfile:
+            params = {'title': filename,
+                      'format': filename.rsplit('.', 1)[1]
+                      }
+            headers = {'Accept': 'text/plain, */*'}
+            self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+        self.reload()
+
+    def selectSubtitle(self, streamID=int, streamTitle=str):
+        url = '/library/parts/%s' % self.media[0].parts[0].id
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                params = {'subtitleStreamID': stream.id}
+                self._server.query(url, self._server._session.put, params=params)
+        self.reload()
+
+    def removeSubtitles(self, streamID=int, streamTitle=str):
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                self._server.query(stream.key, self._server._session.delete)
+        self.reload()
 
     def _prettyfilename(self):
         # This is just for compat.
@@ -622,3 +648,37 @@ class Episode(Playable, Video):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        streams = []
+        for elem in self.media:
+            for part in elem.parts:
+                streams += part.subtitleStreams()
+        return streams
+
+    def uploadSubtitles(self, file):
+        """ Upload Subtitle file for video. """
+        url = '%s/subtitles' % self.key
+        filename = ntpath.basename(file)
+        with open(file, 'rb') as subfile:
+            params = {'title': filename,
+                      'format': filename.rsplit('.', 1)[1]
+                      }
+            headers = {'Accept': 'text/plain, */*'}
+            self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+        self.reload()
+
+    def selectSubtitle(self, streamID=int, streamTitle=str):
+        url = '/library/parts/%s' % self.media[0].parts[0].id
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                params = {'subtitleStreamID': stream.id}
+                self._server.query(url, self._server._session.put, params=params)
+        self.reload()
+
+    def removeSubtitles(self, streamID=int, streamTitle=str):
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                self._server.query(stream.key, self._server._session.delete)
+        self.reload()
