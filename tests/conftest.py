@@ -231,6 +231,14 @@ def photoalbum(photos):
         return photos.get('Cats')
     except:
         return photos.get('photo_album1')
+    
+@pytest.fixture()
+def subtitle():
+    mopen = mock_open()
+    with patch('__main__.open', mopen):
+        with open('subtitle.srt', 'w') as handler:
+            handler.write('test')
+        return handler
 
 
 @pytest.fixture()
