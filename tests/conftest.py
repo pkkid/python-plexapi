@@ -10,9 +10,9 @@ import requests
 from plexapi.myplex import MyPlexAccount
 
 try:
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import patch, MagicMock, mock_open
 except ImportError:
-    from mock import patch, MagicMock
+    from mock import patch, MagicMock, mock_open
 
 
 import plexapi
