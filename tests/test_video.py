@@ -83,6 +83,29 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_subtitlestreams(movie):
     assert not movie.subtitleStreams()
 
+def test_video_Episode_subtitlestreams(episode):
+    assert not episode.subtitleStreams()
+
+def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
+    import os
+    filepath = os.path.realpath(subtitle.name)
+    movie.uploadSubtitles(filepath)
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    subname = subtitle.name.rsplit('.', 1)[0]
+    assert subname in subtitles
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    movie.selectSubtitle(streamID=subtitleSelection.id)
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    assert subtitleSelection.selected
+
+    movie.removeSubtitles(streamTitle=subname)
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    assert subname not in subtitles
+
+    if subtitle:
+        os.remove(filepath)
 
 def test_video_Movie_attrs(movies):
     movie = movies.get('Sita Sings the Blues')
