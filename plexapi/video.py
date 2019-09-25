@@ -240,6 +240,7 @@ class Movie(Playable, Video):
         self.reload()
 
     def selectSubtitle(self, streamID=int, streamTitle=str):
+        """ Select Subtitle for movie. """
         url = '/library/parts/%s' % self.media[0].parts[0].id
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
@@ -248,6 +249,7 @@ class Movie(Playable, Video):
         self.reload()
 
     def removeSubtitles(self, streamID=int, streamTitle=str):
+        """ Remove Subtitle from movie's subtitles listing. """
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
@@ -670,6 +672,7 @@ class Episode(Playable, Video):
         self.reload()
 
     def selectSubtitle(self, streamID=int, streamTitle=str):
+        """ Select Subtitle for episode. """
         url = '/library/parts/%s' % self.media[0].parts[0].id
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
@@ -678,6 +681,7 @@ class Episode(Playable, Video):
         self.reload()
 
     def removeSubtitles(self, streamID=int, streamTitle=str):
+        """ Remove Subtitle from episode's subtitles listing. """
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
