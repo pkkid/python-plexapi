@@ -215,6 +215,8 @@ def test_video_Movie_attrs(movies):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=1000000)
+    assert part.exists
+    assert part.accessible
     # Stream 1
     stream1 = part.streams[0]
     assert stream1.bitDepth in (8, None)
@@ -506,6 +508,8 @@ def test_video_Episode_attrs(episode):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=18184197)
+    assert part.exists
+    assert part.accessible
 
 
 def test_video_Season(show):
