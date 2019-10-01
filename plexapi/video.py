@@ -91,19 +91,14 @@ class Video(PlexPartialObject):
     
     def exists(self):
         """" Returns exists, accessible, and file"""
+        self.reload()
         exist_path = []
-        data =  self._server.query(self.key + self._include)
-        for elem in data:
-            for media in elem:
-                for part in media:
-                    exists = utils.cast(bool, part.attrib.get('exists'))
-                    accessible = utils.cast(bool, part.attrib.get('accessible'))
-                    part_file = part.attrib.get('file')
-                    if exists is None and accessible is None and part_file is None:
-                        pass
-                    else:
-                        exist_path.append((exists, accessible, part_file))
-
+        for media in self.media:
+            for part in media.parts:
+                if part.exists is None and part.accessible is None and part.file is None:
+                    pass
+                else:
+                    exist_path.append((part.exists, part.accessible, part.file))
         return exist_path
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
