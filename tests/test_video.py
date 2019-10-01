@@ -618,3 +618,17 @@ def test_that_reload_return_the_same_object(plex):
     episode_section_get_key = episode_section_get.key
     assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key  # noqa
 
+
+def test_video_exists_accessible(movie, episode):
+    assert movie.media[0].parts[0].exists is None
+    assert movie.media[0].parts[0].accessible is None
+    movie.reload()
+    assert movie.media[0].parts[0].exists is True
+    assert movie.media[0].parts[0].accessible is True
+
+    assert episode.media[0].parts[0].exists is None
+    assert episode.media[0].parts[0].accessible is None
+    episode.reload()
+    assert episode.media[0].parts[0].exists is True
+    assert episode.media[0].parts[0].accessible is True
+    
