@@ -12,8 +12,6 @@ from plexapi.compat import patch, MagicMock
 from plexapi.client import PlexClient
 from plexapi.server import PlexServer
 
-
-
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
 MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
