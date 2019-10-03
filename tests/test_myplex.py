@@ -170,6 +170,7 @@ def test_myplex_createExistingUser(account, plex, shared_username):
     assert shared_username in [u.username for u in plex.myPlexAccount().users() if u.home is False]
 
 
+@pytest.mark.skip(reason="broken test?")
 def test_myplex_createHomeUser_remove(account, plex):
     homeuser = 'New Home User'
     account.createHomeUser(homeuser, plex)
