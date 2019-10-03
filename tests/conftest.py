@@ -12,6 +12,8 @@ from plexapi.compat import patch, MagicMock
 from plexapi.client import PlexClient
 from plexapi.server import PlexServer
 
+
+
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
 MYPLEX_PASSWORD = plexapi.CONFIG.get('auth.myplex_password')
@@ -34,8 +36,6 @@ ENTITLEMENTS = {'ios', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'wi
 
 TEST_AUTHENTICATED = 'authenticated'
 TEST_ANONYMOUSLY = 'anonymously'
-
-
 ANON_PARAM = pytest.param(TEST_ANONYMOUSLY, marks=pytest.mark.anonymous)
 AUTH_PARAM = pytest.param(TEST_AUTHENTICATED, marks=pytest.mark.authenticated)
 
