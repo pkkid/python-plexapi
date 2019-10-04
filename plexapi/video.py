@@ -88,18 +88,6 @@ class Video(PlexPartialObject):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
-    
-    def exists(self):
-        """" Returns exists, accessible, and file"""
-        self.reload()
-        exist_path = []
-        for media in self.media:
-            for part in media.parts:
-                if part.exists is None and part.accessible is None and part.file is None:
-                    pass
-                else:
-                    exist_path.append((part.exists, part.accessible, part.file))
-        return exist_path
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
