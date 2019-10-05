@@ -3,7 +3,8 @@ from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.compat import quote_plus
-import ntpath
+import os
+
 
 class Video(PlexPartialObject):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
@@ -227,25 +228,17 @@ class Movie(Playable, Video):
                 streams += part.subtitleStreams()
         return streams
 
-    def uploadSubtitles(self, file):
+    def uploadSubtitles(self, filepath):
         """ Upload Subtitle file for video. """
         url = '%s/subtitles' % self.key
-        filename = ntpath.basename(file)
-        with open(file, 'rb') as subfile:
+        filename = os.path.basename(filepath)
+        subFormat = os.path.splitext(filepath)[1][1:]
+        with open(filepath, 'rb') as subfile:
             params = {'title': filename,
-                      'format': filename.rsplit('.', 1)[1]
+                      'format': subFormat
                       }
             headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
-        self.reload()
-
-    def selectSubtitle(self, streamID=int, streamTitle=str):
-        """ Select Subtitle for movie. """
-        url = '/library/parts/%s' % self.media[0].parts[0].id
-        for stream in self.subtitleStreams():
-            if streamID == stream.id or streamTitle == stream.title:
-                params = {'subtitleStreamID': stream.id}
-                self._server.query(url, self._server._session.put, params=params)
         self.reload()
 
     def removeSubtitles(self, streamID=int, streamTitle=str):
@@ -659,29 +652,21 @@ class Episode(Playable, Video):
                 streams += part.subtitleStreams()
         return streams
 
-    def uploadSubtitles(self, file):
+    def uploadSubtitles(self, filepath):
         """ Upload Subtitle file for video. """
         url = '%s/subtitles' % self.key
-        filename = ntpath.basename(file)
-        with open(file, 'rb') as subfile:
+        filename = os.path.basename(filepath)
+        subFormat = os.path.splitext(filepath)[1][1:]
+        with open(filepath, 'rb') as subfile:
             params = {'title': filename,
-                      'format': filename.rsplit('.', 1)[1]
+                      'format': subFormat
                       }
             headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
         self.reload()
 
-    def selectSubtitle(self, streamID=int, streamTitle=str):
-        """ Select Subtitle for episode. """
-        url = '/library/parts/%s' % self.media[0].parts[0].id
-        for stream in self.subtitleStreams():
-            if streamID == stream.id or streamTitle == stream.title:
-                params = {'subtitleStreamID': stream.id}
-                self._server.query(url, self._server._session.put, params=params)
-        self.reload()
-
     def removeSubtitles(self, streamID=int, streamTitle=str):
-        """ Remove Subtitle from episode's subtitles listing. """
+        """ Remove Subtitle from movie's subtitles listing. """
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
