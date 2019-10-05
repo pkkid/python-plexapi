@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
+import plexapi
+import pytest
+import requests
 import time
 from datetime import datetime
 from functools import partial
 from os import environ
-
-import pytest
-import requests
-
 from plexapi.myplex import MyPlexAccount
 
 try:
@@ -14,13 +13,10 @@ try:
 except ImportError:
     from mock import patch, MagicMock, mock_open
 
-
-import plexapi
 from plexapi import compat
+from plexapi.compat import patch, MagicMock
 from plexapi.client import PlexClient
-
 from plexapi.server import PlexServer
-
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
@@ -44,8 +40,6 @@ ENTITLEMENTS = {'ios', 'roku', 'android', 'xbox_one', 'xbox_360', 'windows', 'wi
 
 TEST_AUTHENTICATED = 'authenticated'
 TEST_ANONYMOUSLY = 'anonymously'
-
-
 ANON_PARAM = pytest.param(TEST_ANONYMOUSLY, marks=pytest.mark.anonymous)
 AUTH_PARAM = pytest.param(TEST_AUTHENTICATED, marks=pytest.mark.authenticated)
 
@@ -229,7 +223,7 @@ def episode(show):
 def photoalbum(photos):
     try:
         return photos.get('Cats')
-    except:
+    except Exception:
         return photos.get('photo_album1')
     
 @pytest.fixture()

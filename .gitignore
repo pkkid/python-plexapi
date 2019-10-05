@@ -18,6 +18,7 @@ config.ini
 ipython_config.py
 dist
 docs/_build/
+docs/src/
 htmlcov
 include/
 lib/
