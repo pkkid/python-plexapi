@@ -165,6 +165,8 @@ class PlexClient(PlexObject):
             log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
             raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
+        if data == b'OK':   # Workaround for misbehaving clients such as Plexamp
+            data = ''
         return ElementTree.fromstring(data) if data.strip() else None
 
     def sendCommand(self, command, proxy=None, **params):
