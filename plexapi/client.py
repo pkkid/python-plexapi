@@ -165,8 +165,6 @@ class PlexClient(PlexObject):
             log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
             raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
-        if data == b'OK':   # Workaround for misbehaving clients such as Plexamp
-            data = ''
         return ElementTree.fromstring(data) if data.strip() else None
 
     def sendCommand(self, command, proxy=None, **params):
@@ -203,6 +201,16 @@ class PlexClient(PlexObject):
         key = '/player/%s%s' % (command, utils.joinArgs(params))
 
         proxy = self._proxyThroughServer if proxy is None else proxy
+
+        if self.product in ('Plexamp'):
+            # Workaround for players which don't return valid XML on successful commands
+            #   - Plexamp: `b'OK'`
+            try:
+                if proxy:
+                    return self._server.query(key, headers=headers)
+                return self.query(key, headers=headers)
+            except ElementTree.ParseError:
+                return None
 
         if proxy:
             return self._server.query(key, headers=headers)
