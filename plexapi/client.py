@@ -202,19 +202,16 @@ class PlexClient(PlexObject):
 
         proxy = self._proxyThroughServer if proxy is None else proxy
 
-        if self.product in ('Plexamp'):
+        try:
+            if proxy:
+                return self._server.query(key, headers=headers)
+            return self.query(key, headers=headers)
+        except ElementTree.ParseError:
             # Workaround for players which don't return valid XML on successful commands
             #   - Plexamp: `b'OK'`
-            try:
-                if proxy:
-                    return self._server.query(key, headers=headers)
-                return self.query(key, headers=headers)
-            except ElementTree.ParseError:
-                return None
+            if self.product not in ('Plexamp'):
+                raise
 
-        if proxy:
-            return self._server.query(key, headers=headers)
-        return self.query(key, headers=headers)
 
     def url(self, key, includeToken=False):
         """ Build a URL string with proper token argument. Token will be appended to the URL
