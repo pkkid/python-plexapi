@@ -187,31 +187,27 @@ class PlexClient(PlexObject):
             log.debug('Client %s doesnt support %s controller.'
                       'What your trying might not work' % (self.title, controller))
 
+        proxy = self._proxyThroughServer if proxy is None else proxy
+        query = self._server.query if proxy else self.query
+
         # Workaround for ptp. See https://github.com/pkkid/python-plexapi/issues/244
         t = time.time()
         if t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
             url = '/player/timeline/poll?wait=0&commandID=%s' % self._nextCommandId()
-            if proxy:
-                self._server.query(url, headers=headers)
-            else:
-                self.query(url, headers=headers)
+            query(url, headers=headers)
             self._last_call = t
 
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
 
-        proxy = self._proxyThroughServer if proxy is None else proxy
-
         try:
-            if proxy:
-                return self._server.query(key, headers=headers)
-            return self.query(key, headers=headers)
+            return query(key, headers=headers)
         except ElementTree.ParseError:
             # Workaround for players which don't return valid XML on successful commands
             #   - Plexamp: `b'OK'`
-            if self.product not in ('Plexamp'):
-                raise
-
+            if self.product in ('Plexamp'):
+                return None
+            raise
 
     def url(self, key, includeToken=False):
         """ Build a URL string with proper token argument. Token will be appended to the URL
