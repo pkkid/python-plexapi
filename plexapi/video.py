@@ -24,6 +24,7 @@ class Video(PlexPartialObject):
             type (str): 'artist', 'album', or 'track'.
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
+            posters (List<:class:`~plexapi.media.Poster`>): List of poster objects.
     """
 
     def _loadData(self, data):
@@ -42,6 +43,7 @@ class Video(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.posters = self._posters()
 
     @property
     def isWatched(self):
@@ -88,6 +90,14 @@ class Video(PlexPartialObject):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
+
+    def _posters(self):
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
+        items = []
+        for elem in self._server.query('%s/posters' % self.key):
+            items.append(media.Poster(server=self._server, data=elem))
+
+        return items
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
