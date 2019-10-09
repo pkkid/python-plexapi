@@ -13,6 +13,7 @@ from plexapi.settings import Settings
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
+from plexapi.media import Conversion
 
 # Need these imports to populate utils.PLEXOBJECTS
 from plexapi import (audio as _audio, video as _video,        # noqa: F401
@@ -362,6 +363,14 @@ class PlexServer(PlexObject):
                 :class:`plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
+
+    def conversions(self):
+        """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
+        items = []
+        for elem in self.query('/playlists/1111/items'):
+            items.append(Conversion(server=self, data=elem))
+
+        return items
 
     def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
