@@ -347,7 +347,7 @@ class TranscodeSession(PlexObject):
 
 @utils.registerPlexObject
 class Conversion(PlexObject):
-    """ Represents a current session. """
+    """ Represents a conversion item. """
     TAG = 'Conversion'
 
     def _loadData(self, data):
