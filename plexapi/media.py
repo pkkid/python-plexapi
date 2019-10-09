@@ -345,6 +345,19 @@ class TranscodeSession(PlexObject):
         self.width = cast(int, data.attrib.get('width'))
 
 
+@utils.registerPlexObject
+class Conversion(PlexObject):
+    """ Represents a current session. """
+    TAG = 'Conversion'
+
+    def _loadData(self, data):
+        self.id = data.attrib.get('id')
+        self.composite = data.attrib.get('composite')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.target = data.attrib.get('target')
+
+
 class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
         items or navigating the metadata of media items in your library. Tags are
