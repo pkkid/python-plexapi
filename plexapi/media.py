@@ -356,6 +356,7 @@ class Conversion(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.target = data.attrib.get('target')
+        self.targetTagID = data.attrib.get('targetTagID')
 
 
 class MediaTag(PlexObject):
