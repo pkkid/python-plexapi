@@ -367,8 +367,12 @@ class PlexServer(PlexObject):
     def conversions(self):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
         items = []
-        for elem in self.query('/playlists/1111/items'):
-            items.append(Conversion(server=self, data=elem))
+
+        backgroundProcessing = self.query('/playlists?type=42')
+        for elem in backgroundProcessing:
+            key = elem.attrib.get('key')
+            for elem in self.query(key):
+                items.append(Conversion(server=self, data=elem))
 
         return items
 
