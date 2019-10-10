@@ -351,6 +351,7 @@ class Optimized(PlexObject):
     TAG = 'Optimized'
 
     def _loadData(self, data):
+        self._data = data
         self.id = data.attrib.get('id')
         self.composite = data.attrib.get('composite')
         self.title = data.attrib.get('title')
@@ -365,6 +366,7 @@ class Conversion(PlexObject):
     TAG = 'Conversion'
 
     def _loadData(self, data):
+         self._data = data
          self.addedAt = data.attrib.get('addedAt')
          self.art = data.attrib.get('art')
          self.chapterSource = data.attrib.get('chapterSource')
