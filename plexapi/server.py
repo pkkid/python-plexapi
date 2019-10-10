@@ -13,7 +13,7 @@ from plexapi.settings import Settings
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast
-from plexapi.media import Conversion
+from plexapi.media import Optimized
 
 # Need these imports to populate utils.PLEXOBJECTS
 from plexapi import (audio as _audio, video as _video,        # noqa: F401
@@ -364,15 +364,15 @@ class PlexServer(PlexObject):
         """
         return self.fetchItem('/playlists', title=title)
 
-    def conversions(self):
-        """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
+    def optimizedItems(self):
+        """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
         items = []
 
         backgroundProcessing = self.query('/playlists?type=42')
         for elem in backgroundProcessing:
             key = elem.attrib.get('key')
             for elem in self.query(key):
-                items.append(Conversion(server=self, data=elem))
+                items.append(Optimized(server=self, data=elem))
 
         return items
 
