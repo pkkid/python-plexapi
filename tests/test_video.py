@@ -101,7 +101,7 @@ def test_video_Movie_attrs(movies):
     assert [i.tag for i in movie.directors] == ['Nina Paley']
     assert movie.duration >= 160000
     assert movie.fields == []
-    assert movie.posters
+    assert movie.posters()
     assert sorted([i.tag for i in movie.genres]) == ['Animation', 'Comedy', 'Fantasy', 'Musical', 'Romance']
     assert movie.guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
     assert utils.is_metadata(movie._initpath)
