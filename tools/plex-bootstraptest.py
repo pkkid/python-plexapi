@@ -205,7 +205,7 @@ if __name__ == '__main__':
         runtime = time.time() - start
     if not server:
         raise SystemExit('Server didnt appear in your account after %ss' % opts.bootstrap_timeout)
-    print('Plex container started after %ss, downloading content' % runtime)
+    print('Plex container started after %ss, downloading content' % int(runtime))
 
     # Download video_stub.mp4
     print('Downloading video_stub.mp4..')
