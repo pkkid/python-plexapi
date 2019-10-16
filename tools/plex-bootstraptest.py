@@ -72,7 +72,26 @@ def get_tvshow_path(name, season, episode):
     return os.path.join(tvshows_path, name, 'S%02dE%02d.mp4' % (season, episode))
 
 
-def create_section(server, section):
+def add_library_section(server, section, opts):
+    """ Add the specified section to our Plex instance. This tends to be a bit
+        flaky, so we retry a few times here.
+    """
+    start = time.time()
+    runtime = 0
+    while runtime < opts.bootstrap_timeout:
+        try:
+            server.library.add(**section)
+            return True
+        except BadRequest as err:
+            if 'server is still starting up. Please retry later' in str(err):
+                time.sleep(1)
+                continue
+            raise
+        runtime = time.time() - start
+    raise SystemExit('Timeout adding section to Plex instance.')
+
+
+def create_section(server, section, opts):
     processed_media = 0
     expected_media_count = section.pop('expected_media_count', 0)
     expected_media_type = (section['type'], )
@@ -81,7 +100,12 @@ def create_section(server, section):
     expected_media_type = tuple(SEARCHTYPES[t] for t in expected_media_type)
 
     def alert_callback(data):
+        """ Listen to the Plex notifier to determine when metadata scanning is complete.
+            * state=1 means record processed, when no metadata source was set
+            * state=5 means record processed, applicable only when metadata source was set
+        """
         global processed_media
+        print(data)
         if data['type'] == 'timeline':
             for entry in data['TimelineEntry']:
                 if entry.get('identifier', 'com.plexapp.plugins.library') == 'com.plexapp.plugins.library':
@@ -99,29 +123,17 @@ def create_section(server, section):
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
                             bar.update()
 
+    runtime = 0
+    start = time.time()
     bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
     notifier = server.startAlertListener(alert_callback)
-    # I don't know how to determinate of plex successfully started,
-    # so let's do it in creepy way
-    success = False
-    start_time = time.time()
-    while not success and (time.time() - start_time < opts.bootstrap_timeout):
-        try:
-            server.library.add(**section)
-            success = True
-        except BadRequest as e:
-            if 'the server is still starting up. Please retry later' in str(e):
-                time.sleep(1)
-            else:
-                raise
-    if not success:
-        print('Something went wrong :(')
-        exit(1)
+    add_library_section(server, section, opts)
     while bar.n < bar.total:
-        if time.time() - start_time >= opts.bootstrap_timeout:
-            print('Metadata scan takes too long, probably something went really wrong')
+        if runtime >= opts.bootstrap_timeout:
+            print('Metadata scan taking too long, probably something went really wrong')
             exit(1)
         time.sleep(3)
+        runtime = time.time() - start
     bar.close()
     notifier.stop()
 
