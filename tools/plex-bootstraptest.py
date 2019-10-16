@@ -100,11 +100,7 @@ def create_section(server, section, opts):
     expected_media_type = tuple(SEARCHTYPES[t] for t in expected_media_type)
 
     def alert_callback(data):
-        """ Listen to the Plex notifier to determine when metadata scanning is complete.
-            * state=1 means record processed, when no metadata source was set
-            * state=5 means record processed, applicable only when metadata source was set
-            {u'StatusNotification': [{u'notificationName': u'LIBRARY_UPDATE', u'description': u'Extra information may still be downloading from the Internet', u'title': u'Library scan complete'}], u'type': u'status', u'size': 1}
-        """
+        """ Listen to the Plex notifier to determine when metadata scanning is complete. """
         global processed_media
         if data['type'] == 'timeline':
             for entry in data['TimelineEntry']:
