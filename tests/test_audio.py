@@ -7,7 +7,7 @@ def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
     assert artist.countries == []
-    assert [i.tag for i in artist.genres] == []  # ['Electronic']
+    assert [i.tag for i in artist.genres] in [[], ['Electronic']]
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == '1'
     assert utils.is_metadata(artist._initpath)
