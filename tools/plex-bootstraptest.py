@@ -106,7 +106,6 @@ def create_section(server, section, opts):
             {u'StatusNotification': [{u'notificationName': u'LIBRARY_UPDATE', u'description': u'Extra information may still be downloading from the Internet', u'title': u'Library scan complete'}], u'type': u'status', u'size': 1}
         """
         global processed_media
-        print(data)
         if data['type'] == 'timeline':
             for entry in data['TimelineEntry']:
                 if entry.get('identifier', 'com.plexapp.plugins.library') == 'com.plexapp.plugins.library':
