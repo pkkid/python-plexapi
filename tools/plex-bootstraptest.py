@@ -114,16 +114,18 @@ def create_section(server, section, opts):
                                 show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
                                 cnt = show.leafCount
                             bar.update(cnt)
+                            processed_media += cnt
                         # state=1 means record processed, when no metadata source was set
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
                             bar.update()
+                            processed_media += 1
 
     runtime = 0
     start = time.time()
     bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
     notifier = server.startAlertListener(alert_callback)
     add_library_section(server, section)
-    while bar.n < bar.total:
+    while processed_media < expected_media_count:  # bar.n < bar.total:
         if runtime >= opts.bootstrap_timeout:
             print('Metadata scan taking too long, but will continue anyway..')
             break

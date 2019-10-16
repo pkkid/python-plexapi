@@ -7,7 +7,7 @@ def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
     assert artist.countries == []
-    assert [i.tag for i in artist.genres] == ['Electronic']
+    assert [i.tag for i in artist.genres] == []  # ['Electronic']
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == '1'
     assert utils.is_metadata(artist._initpath)
@@ -79,6 +79,7 @@ def test_audio_Album_attrs(album):
     assert album.year == 2016
     assert album.artUrl is None
 
+
 def test_audio_Album_tracks(album):
     tracks = album.tracks()
     track = tracks[0]
@@ -96,7 +97,7 @@ def test_audio_Album_tracks(album):
     assert utils.is_int(track.parentRatingKey)
     assert utils.is_metadata(track.parentThumb, contains='/thumb/')
     assert track.parentTitle == 'Unmastered Impulses'
-    #assert track.ratingCount == 9 # Flaky
+    # assert track.ratingCount == 9 # Flaky
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.summary == ""
@@ -114,7 +115,7 @@ def test_audio_Album_track(album, track=None):
     # this is not reloaded. its not that much info missing.
     track = track or album.track('Holy Moment')
     assert utils.is_datetime(track.addedAt)
-    assert track.duration == 298606
+    assert track.duration in [298605, 298606]
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == 'Infinite State'
@@ -147,7 +148,7 @@ def test_audio_Album_track(album, track=None):
     assert media.audioCodec == 'mp3'
     assert media.bitrate == 385
     assert media.container == 'mp3'
-    assert media.duration == 298606
+    assert media.duration in [298605, 298606]
     assert media.height is None
     assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
@@ -160,7 +161,7 @@ def test_audio_Album_track(album, track=None):
     assert media.videoResolution is None
     assert media.width is None
     assert part.container == 'mp3'
-    assert part.duration == 298606
+    assert part.duration in [298605, 298606]
     assert part.file.endswith('.mp3')
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
@@ -186,7 +187,7 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.addedAt)
     assert track.art is None
     assert track.chapterSource is None
-    assert track.duration == 298606
+    assert track.duration in [298605, 298606]
     assert track.grandparentArt is None
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
@@ -232,7 +233,7 @@ def test_audio_Track_attrs(album):
     assert media.audioCodec == 'mp3'
     assert media.bitrate == 385
     assert media.container == 'mp3'
-    assert media.duration == 298606
+    assert media.duration in [298605, 298606]
     assert media.height is None
     assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
@@ -245,12 +246,12 @@ def test_audio_Track_attrs(album):
     assert media.videoResolution is None
     assert media.width is None
     assert part.container == 'mp3'
-    assert part.duration == 298606
+    assert part.duration in [298605, 298606]
     assert part.file.endswith('.mp3')
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
     assert utils.is_part(part.key)
-    #assert part.media == <Media:Holy.Moment>
+    # assert part.media == <Media:Holy.Moment>
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert part.size == 14360402
     # Assign 0 part.streams
@@ -269,7 +270,7 @@ def test_audio_Track_attrs(album):
     assert utils.is_metadata(stream._initpath)
     assert stream.language is None
     assert stream.languageCode is None
-    #assert stream.part == <MediaPart:22>
+    # assert stream.part == <MediaPart:22>
     assert stream.samplingRate == 44100
     assert stream.selected is True
     assert stream._server._baseurl == utils.SERVER_BASEURL
