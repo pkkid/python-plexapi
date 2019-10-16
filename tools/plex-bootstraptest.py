@@ -126,7 +126,6 @@ def create_section(server, section, opts):
     while bar.n < bar.total:
         if runtime >= opts.bootstrap_timeout:
             print('Metadata scan taking too long, but will continue anyway..')
-            exit(1)
         time.sleep(3)
         runtime = time.time() - start
     bar.close()
