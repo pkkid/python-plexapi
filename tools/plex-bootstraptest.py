@@ -72,13 +72,13 @@ def get_tvshow_path(name, season, episode):
     return os.path.join(tvshows_path, name, 'S%02dE%02d.mp4' % (season, episode))
 
 
-def add_library_section(server, section, opts):
+def add_library_section(server, section):
     """ Add the specified section to our Plex instance. This tends to be a bit
         flaky, so we retry a few times here.
     """
     start = time.time()
     runtime = 0
-    while runtime < opts.bootstrap_timeout:
+    while runtime < 60:
         try:
             server.library.add(**section)
             return True
@@ -127,7 +127,7 @@ def create_section(server, section, opts):
     start = time.time()
     bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
     notifier = server.startAlertListener(alert_callback)
-    add_library_section(server, section, opts)
+    add_library_section(server, section)
     while bar.n < bar.total:
         if runtime >= opts.bootstrap_timeout:
             print('Metadata scan taking too long, probably something went really wrong')
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     if sections:
         print('Creating the Plex libraries in our instance')
         for section in sections:
-            create_section(server, section)
+            create_section(server, section, opts)
 
     # Share this instance with the specified username
     if account:
