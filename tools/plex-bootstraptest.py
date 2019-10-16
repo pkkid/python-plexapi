@@ -103,6 +103,7 @@ def create_section(server, section, opts):
         """ Listen to the Plex notifier to determine when metadata scanning is complete.
             * state=1 means record processed, when no metadata source was set
             * state=5 means record processed, applicable only when metadata source was set
+            {u'StatusNotification': [{u'notificationName': u'LIBRARY_UPDATE', u'description': u'Extra information may still be downloading from the Internet', u'title': u'Library scan complete'}], u'type': u'status', u'size': 1}
         """
         global processed_media
         print(data)
@@ -113,12 +114,13 @@ def create_section(server, section, opts):
                     if 'mediaState' not in entry and entry['type'] in expected_media_type:
                         # state=5 means record processed, applicable only when metadata source was set
                         if entry['state'] == 5:
-                            cnt = 1
-                            # Workaround for old Plex versions which not reports individual episodes' progress
-                            if entry['type'] == SEARCHTYPES['show']:
-                                show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
-                                cnt = show.leafCount
-                            bar.update(cnt)
+                            bar.update()
+                            # cnt = 1
+                            # # Workaround for old Plex versions which not reports individual episodes' progress
+                            # if entry['type'] == SEARCHTYPES['show']:
+                            #     show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
+                            #     cnt = show.leafCount
+                            # bar.update(cnt)
                         # state=1 means record processed, when no metadata source was set
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
                             bar.update()
@@ -130,7 +132,7 @@ def create_section(server, section, opts):
     add_library_section(server, section)
     while bar.n < bar.total:
         if runtime >= opts.bootstrap_timeout:
-            print('Metadata scan taking too long, probably something went really wrong')
+            print('Metadata scan taking too long, but will continue anyway..')
             exit(1)
         time.sleep(3)
         runtime = time.time() - start
