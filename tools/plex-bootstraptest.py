@@ -109,13 +109,11 @@ def create_section(server, section, opts):
                     if 'mediaState' not in entry and entry['type'] in expected_media_type:
                         # state=5 means record processed, applicable only when metadata source was set
                         if entry['state'] == 5:
-                            bar.update()
-                            # cnt = 1
-                            # # Workaround for old Plex versions which not reports individual episodes' progress
-                            # if entry['type'] == SEARCHTYPES['show']:
-                            #     show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
-                            #     cnt = show.leafCount
-                            # bar.update(cnt)
+                            cnt = 1
+                            if entry['type'] == SEARCHTYPES['show']:
+                                show = server.library.sectionByID(str(entry['sectionID'])).get(entry['title'])
+                                cnt = show.leafCount
+                            bar.update(cnt)
                         # state=1 means record processed, when no metadata source was set
                         elif entry['state'] == 1 and entry['type'] == SEARCHTYPES['photo']:
                             bar.update()
