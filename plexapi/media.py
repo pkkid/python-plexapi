@@ -468,6 +468,23 @@ class Mood(MediaTag):
 
 
 @utils.registerPlexObject
+class Poster(PlexObject):
+    """ Represents a Poster.
+
+        Attributes:
+            TAG (str): 'Photo'
+    """
+    TAG = 'Photo'
+
+    def _loadData(self, data):
+        self._data = data
+        self.key = data.attrib.get('key')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.selected = data.attrib.get('selected')
+        self.thumb = data.attrib.get('thumb')
+
+
+@utils.registerPlexObject
 class Producer(MediaTag):
     """ Represents a single Producer media tag.
 
