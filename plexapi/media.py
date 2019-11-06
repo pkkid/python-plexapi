@@ -472,9 +472,9 @@ class Poster(PlexObject):
     """ Represents a Poster.
 
         Attributes:
-            TAG (str): 'Poster'
+            TAG (str): 'Photo'
     """
-    TAG = 'Poster'
+    TAG = 'Photo'
 
     def _loadData(self, data):
         self._data = data
