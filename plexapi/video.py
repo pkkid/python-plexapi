@@ -123,6 +123,11 @@ class Video(PlexPartialObject):
                 self._server.query(stream.key, self._server._session.delete)
         self.reload()
 
+    def posters(self):
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
+
+        return self.fetchItems('%s/posters' % self.key, cls=media.Poster)
+
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
             See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.

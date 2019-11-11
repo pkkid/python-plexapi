@@ -85,6 +85,8 @@ class MediaPart(PlexObject):
             key (str): Key used to access this media part (ex: /library/parts/46618/1389985872/file.avi).
             size (int): Size of this file in bytes (ex: 733884416).
             streams (list<:class:`~plexapi.media.MediaPartStream`>): List of streams in this media part.
+            exists (bool): Determine if file exists
+            accessible (bool): Determine if file is accessible
     """
     TAG = 'Part'
 
@@ -104,6 +106,8 @@ class MediaPart(PlexObject):
         self.syncState = data.attrib.get('syncState')
         self.videoProfile = data.attrib.get('videoProfile')
         self.streams = self._buildStreams(data)
+        self.exists = cast(bool, data.attrib.get('exists'))
+        self.accessible = cast(bool, data.attrib.get('accessible'))
 
     def _buildStreams(self, data):
         streams = []
@@ -461,6 +465,23 @@ class Mood(MediaTag):
     """
     TAG = 'Mood'
     FILTER = 'mood'
+
+
+@utils.registerPlexObject
+class Poster(PlexObject):
+    """ Represents a Poster.
+
+        Attributes:
+            TAG (str): 'Photo'
+    """
+    TAG = 'Photo'
+
+    def _loadData(self, data):
+        self._data = data
+        self.key = data.attrib.get('key')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.selected = data.attrib.get('selected')
+        self.thumb = data.attrib.get('thumb')
 
 
 @utils.registerPlexObject

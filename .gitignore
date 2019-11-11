@@ -24,3 +24,4 @@ include/
 lib/
 pip-selfcheck.json
 pyvenv.cfg
+MANIFEST
