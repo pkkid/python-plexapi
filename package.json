@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "pypi": "addkeys.sh; npm-run-all -p vue-watch django-serve"
+    "pypi": "python setup.py sdist upload"
   }
 }
