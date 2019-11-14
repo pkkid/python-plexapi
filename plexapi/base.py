@@ -476,6 +476,10 @@ class Playable(object):
         """
         if self.TYPE not in ('movie', 'episode', 'track', 'clip'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
+        if params.get('directPlay', False):
+            locations = [i for i in self.iterParts() if i]
+            for location in locations:
+                return self._server.url('%s?download=1' % location.key, includeToken=True)
         mvb = params.get('maxVideoBitrate')
         vr = params.get('videoResolution', '')
         params = {
