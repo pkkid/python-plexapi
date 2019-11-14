@@ -421,6 +421,11 @@ class PlexPartialObject(PlexObject):
                 'havnt allowed items to be deleted' % self.key)
             raise
 
+    def history(self):
+        """ Get Play History for a media item. """
+        return self._server.history(ratingKey=self.ratingKey)
+
+
     # The photo tag cant be built atm. TODO
     # def arts(self):
     #     part = '%s/arts' % self.key

@@ -322,7 +322,7 @@ class PlexServer(PlexObject):
             # figure out what method this is..
             return self.query(part, method=self._session.put)
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=9999999, mindate=None, ratingKey=None):
         """ Returns a list of media items from watched history. If there are many results, they will
             be fetched from the server in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only
             looking for the first <num> results, it would be wise to set the maxresults option to that
@@ -335,6 +335,8 @@ class PlexServer(PlexObject):
         """
         results, subresults = [], '_init'
         args = {'sort': 'viewedAt:desc'}
+        if ratingKey:
+            args['metadataItemID'] = ratingKey
         if mindate:
             args['viewedAt>'] = int(mindate.timestamp())
         args['X-Plex-Container-Start'] = 0
