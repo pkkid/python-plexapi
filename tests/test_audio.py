@@ -33,10 +33,8 @@ def test_audio_Artist_get(artist, music):
 
 
 def test_audio_Artist_history(artist):
-    artist.markWatched()
     history = artist.history()
     assert len(history)
-    artist.markUnwatched()
 
 
 def test_audio_Artist_track(artist):
@@ -88,17 +86,13 @@ def test_audio_Album_attrs(album):
 
 
 def test_audio_Album_history(album):
-    album.markWatched()
     history = album.history()
     assert len(history)
-    album.markUnwatched()
 
 
 def test_audio_Track_history(track):
-    track.markWatched()
     history = track.history()
     assert len(history)
-    track.markUnwatched()
 
 
 def test_audio_Album_tracks(album):
