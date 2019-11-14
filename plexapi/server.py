@@ -332,6 +332,7 @@ class PlexServer(PlexObject):
                 maxresults (int): Only return the specified number of results (optional).
                 mindate (datetime): Min datetime to return results from. This really helps speed
                     up the result listing. For example: datetime.now() - timedelta(days=7)
+                ratingKey (int/str) Request history for a specific ratingKey item.
         """
         results, subresults = [], '_init'
         args = {'sort': 'viewedAt:desc'}
