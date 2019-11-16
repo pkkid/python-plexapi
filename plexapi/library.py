@@ -294,6 +294,13 @@ class Library(PlexObject):
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
+    def history(self):
+        """ Get Play History for all library Sections for the owner. """
+        hist = []
+        for section in self.sections():
+            hist.extend(section.history())
+        return hist
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -632,6 +639,10 @@ class LibrarySection(PlexObject):
         sync_item.mediaSettings = mediaSettings
 
         return myplex.sync(client=client, clientId=clientId, sync_item=sync_item)
+
+    def history(self):
+        """ Get Play History for this library Section for the owner. """
+        return self._server.history(librarySectionID=self.key, accountID=1)
 
 
 class MovieSection(LibrarySection):
