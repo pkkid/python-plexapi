@@ -110,7 +110,6 @@ class Video(PlexPartialObject):
                       }
             headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
-        self.reload()
 
     def removeSubtitles(self, streamID=None, streamTitle=None):
         """ Remove Subtitle from movie's subtitles listing.
@@ -121,7 +120,6 @@ class Video(PlexPartialObject):
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
-        self.reload()
 
     def posters(self):
         """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
