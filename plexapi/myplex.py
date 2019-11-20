@@ -600,13 +600,17 @@ class MyPlexAccount(PlexObject):
             raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
         return response.json()['token']
 
-    def history(self):
-        """ Get Play History for all library sections on all servers for the owner. """
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get Play History for all library sections on all servers for the owner.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
         servers = [x for x in self.resources() if x.provides == 'server' and x.owned]
         hist = []
         for server in servers:
             conn = server.connect()
-            hist.extend(conn.history(accountID=1))
+            hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
 
 
@@ -686,11 +690,15 @@ class MyPlexUser(PlexObject):
 
         raise NotFound('Unable to find server %s' % name)
 
-    def history(self):
-        """ Get all Play History for a user in all shared servers. """
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get all Play History for a user in all shared servers.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
         hist = []
         for server in self.servers:
-            hist.extend(server.history())
+            hist.extend(server.history(maxresults=maxresults, mindate=mindate))
         return hist
 
 
@@ -719,10 +727,15 @@ class Section(PlexObject):
         self.type = data.attrib.get('type')
         self.shared = utils.cast(bool, data.attrib.get('shared'))
 
-    def history(self):
-        """ Get all Play History for a user for this section in this shared server. """
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get all Play History for a user for this section in this shared server.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
         server = self._server._server.resource(self._server.name).connect()
-        return server.history(accountID=self._server.accountID, librarySectionID=self.sectionKey)
+        return server.history(maxresults=maxresults, mindate=mindate,
+                              accountID=self._server.accountID, librarySectionID=self.sectionKey)
 
 
 class MyPlexServerShare(PlexObject):
@@ -781,10 +794,14 @@ class MyPlexServerShare(PlexObject):
 
         return sections
 
-    def history(self):
-        """ Get all Play History for a user in this shared server. """
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get all Play History for a user in this shared server.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
         server = self._server.resource(self.name).connect()
-        return server.history(accountID=self.accountID)
+        return server.history(maxresults=maxresults, mindate=mindate, accountID=self.accountID)
 
 
 class MyPlexResource(PlexObject):
