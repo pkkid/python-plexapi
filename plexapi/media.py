@@ -195,6 +195,10 @@ class MediaPartStream(PlexObject):
         cls = STREAMCLS.get(stype, MediaPartStream)
         return cls(server, data, initpath)
 
+    def get_download_url(self):
+        """ Get a download url. """
+        return self._server.url('%s?download=1' % self.key, includeToken=True)
+
 
 @utils.registerPlexObject
 class VideoStream(MediaPartStream):
