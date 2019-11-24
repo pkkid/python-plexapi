@@ -500,14 +500,14 @@ class Playable(object):
         return self._server.url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)), includeToken=True)
 
-    def get_selected_subtitle_stream(self):
+    def getSelectedSubtitleStream(self):
         """ Return selected subtitle stream. """
         for parts in self.iterParts():
             for stream in parts.subtitleStreams():
                 if stream.selected is True:
                     return stream
 
-    def get_selected_audio_stream(self):
+    def getSelectedAudioStream(self):
         """ Return selected subtitle stream. """
         for parts in self.iterParts():
             for stream in parts.audioStreams():
