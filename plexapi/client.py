@@ -490,7 +490,7 @@ class PlexClient(PlexObject):
             'port': server_port,
             'offset': offset,
             'key': media.key,
-            'token': media._server._token,
+            'token': media._server.createToken(),
             'type': mediatype,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
