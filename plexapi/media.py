@@ -183,6 +183,7 @@ class MediaPartStream(PlexObject):
         self._data = data
         self.codec = data.attrib.get('codec')
         self.codecID = data.attrib.get('codecID')
+        self.displayTitle = data.attrib.get('displayTitle')
         self.id = cast(int, data.attrib.get('id'))
         self.index = cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')

@@ -509,12 +509,37 @@ class Playable(object):
                 if stream.selected is True:
                     return stream
 
+    def setDefaultSubtitleStream(self, new_stream):
+        """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
+
+            Parameters:
+                stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
+        """
+        for parts in self.iterParts():
+            if new_stream is None:
+                parts.resetDefaultSubtitleStream()
+            else:
+                for stream in parts.subtitleStreams():
+                    if stream.id == new_stream.id:
+                        parts.setDefaultSubtitleStream(stream)
+
     def getSelectedAudioStream(self):
         """ Return selected subtitle stream. """
         for parts in self.iterParts():
             for stream in parts.audioStreams():
                 if stream.selected is True:
                     return stream
+
+    def setDefaultAudioStream(self, new_stream):
+        """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
+
+            Parameters:
+                stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default.
+        """
+        for parts in self.iterParts():
+            for stream in parts.audioStreams():
+                if stream.id == new_stream.id:
+                    parts.setDefaultAudioStream(stream)
 
     def iterParts(self):
         """ Iterates over the parts of this media item. """
