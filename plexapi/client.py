@@ -300,6 +300,8 @@ class PlexClient(PlexObject):
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
             'key': media.key,
+            'protocol': server_url[0],
+            'token': media._server.createToken()
         }, **params))
 
     # -------------------
