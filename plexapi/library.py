@@ -294,6 +294,17 @@ class Library(PlexObject):
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get Play History for all library Sections for the owner.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
+        hist = []
+        for section in self.sections():
+            hist.extend(section.history(maxresults=maxresults, mindate=mindate))
+        return hist
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -632,6 +643,14 @@ class LibrarySection(PlexObject):
         sync_item.mediaSettings = mediaSettings
 
         return myplex.sync(client=client, clientId=clientId, sync_item=sync_item)
+
+    def history(self, maxresults=9999999, mindate=None):
+        """ Get Play History for this library Section for the owner.
+            Parameters:
+                maxresults (int): Only return the specified number of results (optional).
+                mindate (datetime): Min datetime to return results from.
+        """
+        return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
 
 class MovieSection(LibrarySection):
