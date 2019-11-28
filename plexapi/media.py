@@ -420,6 +420,25 @@ class Label(MediaTag):
 
 
 @utils.registerPlexObject
+class Tag(MediaTag):
+    """ Represents a single tag media tag.
+
+        Attributes:
+            TAG (str): 'tag'
+            FILTER (str): 'tag'
+    """
+    TAG = 'Tag'
+    FILTER = 'tag'
+
+    def _loadData(self, data):
+        self._data = data
+        self.id = cast(int, data.attrib.get('id', 0))
+        self.filter = data.attrib.get('filter')
+        self.tag = data.attrib.get('tag')
+        self.title = self.tag
+
+
+@utils.registerPlexObject
 class Country(MediaTag):
     """ Represents a single Country media tag.
 

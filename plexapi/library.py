@@ -869,7 +869,7 @@ class PhotoSection(LibrarySection):
             TYPE (str): 'photo'
     """
     ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution', 'place',
-                       'originallyAvailableAt', 'addedAt', 'title', 'userRating')
+                       'originallyAvailableAt', 'addedAt', 'title', 'userRating', 'tag', 'year')
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
