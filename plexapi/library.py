@@ -385,7 +385,7 @@ class LibrarySection(PlexObject):
             Parameters:
                 title (str): Title of the item to return.
         """
-        key = '/library/sections/%s/all' % self.key
+        key = '/library/sections/%s/all?title=%s' % (self.key, title)
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, sort=None, **kwargs):
