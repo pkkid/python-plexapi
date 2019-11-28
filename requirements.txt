@@ -4,4 +4,4 @@
 #---------------------------------------------------------
 requests
 tqdm
-websocket-client
+websocket-client==0.48.0

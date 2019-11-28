@@ -101,6 +101,7 @@ def test_video_Movie_attrs(movies):
     assert [i.tag for i in movie.directors] == ['Nina Paley']
     assert movie.duration >= 160000
     assert movie.fields == []
+    assert movie.posters()
     assert sorted([i.tag for i in movie.genres]) == ['Animation', 'Comedy', 'Fantasy', 'Musical', 'Romance']
     assert movie.guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
     assert utils.is_metadata(movie._initpath)
@@ -215,6 +216,8 @@ def test_video_Movie_attrs(movies):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=1000000)
+    assert part.exists
+    assert part.accessible
     # Stream 1
     stream1 = part.streams[0]
     assert stream1.bitDepth in (8, None)
@@ -283,9 +286,11 @@ def test_video_Episode_unmatch(episode, patched_http_call):
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
     episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
-    
+
+
 def test_video_Episode_updateTimeline(episode, patched_http_call):
     episode.updateTimeline(10 * 60 * 1000, state='playing', duration=episode.duration)  # 10 minutes.
+
 
 def test_video_Episode_stop(episode, mocker, patched_http_call):
     mocker.patch.object(episode, 'session', return_value=list(mocker.MagicMock(id='hello')))
@@ -504,6 +509,8 @@ def test_video_Episode_attrs(episode):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=18184197)
+    assert part.exists
+    assert part.accessible
 
 
 def test_video_Season(show):
@@ -571,6 +578,11 @@ def test_video_Season_episode(show):
     assert episode.title == 'Winter Is Coming'
 
 
+def test_video_Season_episode_by_index(show):
+    episode = show.season(1).episode(episode=1)
+    assert episode.index == 1
+
+
 def test_video_Season_episodes(show):
     episodes = show.season(2).episodes()
     assert len(episodes) >= 1
@@ -607,3 +619,17 @@ def test_that_reload_return_the_same_object(plex):
     episode_section_get_key = episode_section_get.key
     assert episode_library_search_key == episode_library_search.reload().key == episode_search_key == episode_search.reload().key == episode_section_get_key == episode_section_get.reload().key  # noqa
 
+
+def test_video_exists_accessible(movie, episode):
+    assert movie.media[0].parts[0].exists is None
+    assert movie.media[0].parts[0].accessible is None
+    movie.reload()
+    assert movie.media[0].parts[0].exists is True
+    assert movie.media[0].parts[0].accessible is True
+
+    assert episode.media[0].parts[0].exists is None
+    assert episode.media[0].parts[0].accessible is None
+    episode.reload()
+    assert episode.media[0].parts[0].exists is True
+    assert episode.media[0].parts[0].accessible is True
+    

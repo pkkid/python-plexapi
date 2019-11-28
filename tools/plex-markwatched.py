@@ -40,7 +40,7 @@ def _iter_items(search):
 
 
 if __name__ == '__main__':
-    datestr = lambda: datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    datestr = lambda: datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # noqa
     print(f'{datestr()} Starting plex-markwatched script..')
     plex = PlexServer()
     for section in plex.library.sections():

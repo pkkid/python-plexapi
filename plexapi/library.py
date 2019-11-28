@@ -386,7 +386,7 @@ class LibrarySection(PlexObject):
         sortStr = ''
         if sort is not None:
             sortStr = '?sort=' + sort
-        
+
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
@@ -649,7 +649,8 @@ class MovieSection(LibrarySection):
     """
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
                        'collection', 'director', 'actor', 'country', 'studio', 'resolution',
-                       'guid', 'label')
+                       'guid', 'label', 'writer', 'producer', 'subtitleLanguage', 'audioLanguage',
+                       'lastViewedAt', 'viewCount', 'addedAt')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                     'mediaHeight', 'duration')
     TAG = 'Directory'
@@ -709,7 +710,11 @@ class ShowSection(LibrarySection):
             TYPE (str): 'show'
     """
     ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label')
+                       'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
+                       'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
+                       'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
+                       'episode.unwatched', 'episode.addedAt', 'episode.userRating', 'episode.viewCount',
+                       'episode.lastViewedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
@@ -784,7 +789,12 @@ class MusicSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
-    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating')
+    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating', 'artist.title',
+                       'artist.userRating', 'artist.genre', 'artist.country', 'artist.collection', 'artist.addedAt',
+                       'album.title', 'album.userRating', 'album.genre', 'album.decade', 'album.collection',
+                       'album.viewCount', 'album.lastViewedAt', 'album.studio', 'album.addedAt', 'track.title',
+                       'track.userRating', 'track.viewCount', 'track.lastViewedAt', 'track.skipCount',
+                       'track.lastSkippedAt')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort', 'userRating')
     TAG = 'Directory'
     TYPE = 'artist'
@@ -858,7 +868,8 @@ class PhotoSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution')
+    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution', 'place',
+                       'originallyAvailableAt', 'addedAt', 'title', 'userRating')
     ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
@@ -983,6 +994,8 @@ class Collections(PlexObject):
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.collectionMode = data.attrib.get('collectionMode')
+        self.collectionSort = data.attrib.get('collectionSort')
 
     @property
     def children(self):
@@ -994,6 +1007,49 @@ class Collections(PlexObject):
     def delete(self):
         part = '/library/metadata/%s' % self.ratingKey
         return self._server.query(part, method=self._server._session.delete)
+
+    def modeUpdate(self, mode=None):
+        """ Update Collection Mode
+
+            Parameters:
+                mode: default     (Library default)
+                      hide        (Hide Collection)
+                      hideItems   (Hide Items in this Collection)
+                      showItems   (Show this Collection and its Items)
+            Example:
+
+                collection = 'plexapi.library.Collections'
+                collection.updateMode(mode="hide")
+        """
+        mode_dict = {'default': '-2',
+                     'hide': '0',
+                     'hideItems': '1',
+                     'showItems': '2'}
+        key = mode_dict.get(mode)
+        if key is None:
+            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
+        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
+        return self._server.query(part, method=self._server._session.put)
+
+    def sortUpdate(self, sort=None):
+        """ Update Collection Sorting
+
+            Parameters:
+                sort: realease     (Order Collection by realease dates)
+                      alpha        (Order Collection Alphabetically)
+
+            Example:
+
+                colleciton = 'plexapi.library.Collections'
+                collection.updateSort(mode="alpha")
+        """
+        sort_dict = {'release': '0',
+                     'alpha': '1'}
+        key = sort_dict.get(sort)
+        if key is None:
+            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
+        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
+        return self._server.query(part, method=self._server._session.put)
 
     # def edit(self, **kwargs):
     #    TODO
