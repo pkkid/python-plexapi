@@ -722,13 +722,13 @@ class ShowSection(LibrarySection):
 
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
+                'year', 'genre', 'contentRating', 'studio', 'collection', 'guid', 'label')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
                 'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
-    ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
+    ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'studio', 'collection',
                        'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
                        'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
                        'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
