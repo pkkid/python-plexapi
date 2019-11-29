@@ -83,6 +83,30 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_subtitlestreams(movie):
     assert not movie.subtitleStreams()
 
+def test_video_Episode_subtitlestreams(episode):
+    assert not episode.subtitleStreams()
+
+def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
+    import os
+    filepath = os.path.realpath(subtitle.name)
+    movie.uploadSubtitles(filepath)
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    subname = subtitle.name.rsplit('.', 1)[0]
+    assert subname in subtitles
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    parts = [part for part in movie.iterParts()]
+    parts[0].setDefaultSubtitleStream(subtitleSelection)
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    assert subtitleSelection.selected
+
+    movie.removeSubtitles(streamTitle=subname)
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    assert subname not in subtitles
+
+    if subtitle:
+        os.remove(filepath)
 
 def test_video_Movie_attrs(movies):
     movie = movies.get('Sita Sings the Blues')
@@ -272,6 +296,13 @@ def test_video_Movie_attrs(movies):
     assert stream2.type == 2
 
 
+def test_video_Movie_history(movie):
+    movie.markWatched()
+    history = movie.history()
+    assert len(history)
+    movie.markUnwatched()
+
+
 def test_video_Show(show):
     assert show.title == 'Game of Thrones'
 
@@ -336,6 +367,13 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.viewedLeafCount, gte=0)
     assert show.year == 2011
     assert show.url(None) is None
+
+
+def test_video_Show_history(show):
+    show.markWatched()
+    history = show.history()
+    assert len(history)
+    show.markUnwatched()
 
 
 def test_video_Show_watched(tvshows):
@@ -444,6 +482,13 @@ def test_video_Episode(show):
         show.episode(season=1337, episode=1337)
 
 
+def test_video_Episode_history(episode):
+    episode.markWatched()
+    history = episode.history()
+    assert len(history)
+    episode.markUnwatched()
+
+
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
@@ -518,6 +563,14 @@ def test_video_Season(show):
     assert len(seasons) == 2
     assert ['Season 1', 'Season 2'] == [s.title for s in seasons[:2]]
     assert show.season('Season 1') == seasons[0]
+
+
+def test_video_Season_history(show):
+    season = show.season('Season 1')
+    season.markWatched()
+    history = season.history()
+    assert len(history)
+    season.markUnwatched()
 
 
 def test_video_Season_attrs(show):

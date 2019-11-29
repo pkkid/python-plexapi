@@ -32,6 +32,11 @@ def test_audio_Artist_get(artist, music):
     artist.title == 'Infinite State'
 
 
+def test_audio_Artist_history(artist):
+    history = artist.history()
+    assert len(history)
+
+
 def test_audio_Artist_track(artist):
     track = artist.track('Holy Moment')
     assert track.title == 'Holy Moment'
@@ -78,6 +83,16 @@ def test_audio_Album_attrs(album):
     assert utils.is_int(album.viewCount, gte=0)
     assert album.year == 2016
     assert album.artUrl is None
+
+
+def test_audio_Album_history(album):
+    history = album.history()
+    assert len(history)
+
+
+def test_audio_Track_history(track):
+    history = track.history()
+    assert len(history)
 
 
 def test_audio_Album_tracks(album):
