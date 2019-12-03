@@ -8,7 +8,7 @@ pillow
 pytest
 pytest-cache
 pytest-cov
-pytest-mock
+pytest-mock<=1.11.1
 recommonmark
 requests
 sphinx

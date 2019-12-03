@@ -300,6 +300,8 @@ class PlexClient(PlexObject):
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
             'key': media.key,
+            'protocol': server_url[0],
+            'token': media._server.createToken()
         }, **params))
 
     # -------------------
@@ -465,6 +467,13 @@ class PlexClient(PlexObject):
         server_url = media._server._baseurl.split(':')
         server_port = server_url[-1].strip('/')
 
+        if hasattr(media, "playlistType"):
+            mediatype = media.playlistType
+        elif media.listType == "audio":
+            mediatype = "music"
+        else:
+            mediatype = "video"
+
         if self.product != 'OpenPHT':
             try:
                 self.sendCommand('timeline/subscribe', port=server_port, protocol='http')
@@ -481,7 +490,8 @@ class PlexClient(PlexObject):
             'port': server_port,
             'offset': offset,
             'key': media.key,
-            'token': media._server._token,
+            'token': media._server.createToken(),
+            'type': mediatype,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
 

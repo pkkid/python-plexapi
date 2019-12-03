@@ -3,6 +3,7 @@ from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.compat import quote_plus
+import os
 
 
 class Video(PlexPartialObject):
@@ -88,6 +89,37 @@ class Video(PlexPartialObject):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        streams = []
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.subtitleStreams()
+        return streams
+
+    def uploadSubtitles(self, filepath):
+        """ Upload Subtitle file for video. """
+        url = '%s/subtitles' % self.key
+        filename = os.path.basename(filepath)
+        subFormat = os.path.splitext(filepath)[1][1:]
+        with open(filepath, 'rb') as subfile:
+            params = {'title': filename,
+                      'format': subFormat
+                      }
+            headers = {'Accept': 'text/plain, */*'}
+            self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+
+    def removeSubtitles(self, streamID=None, streamTitle=None):
+        """ Remove Subtitle from movie's subtitles listing.
+
+            Note: If subtitle file is located inside video directory it will bbe deleted.
+            Files outside of video directory are not effected.
+        """
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                self._server.query(stream.key, self._server._session.delete)
 
     def posters(self):
         """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
@@ -223,14 +255,6 @@ class Movie(Playable, Video):
             interface to get the location of the Movie/Show/Episode
         """
         return [part.file for part in self.iterParts() if part]
-
-    def subtitleStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
-        streams = []
-        for elem in self.media:
-            for part in elem.parts:
-                streams += part.subtitleStreams()
-        return streams
 
     def _prettyfilename(self):
         # This is just for compat.

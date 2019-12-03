@@ -7,6 +7,12 @@ from datetime import datetime
 from functools import partial
 from os import environ
 from plexapi.myplex import MyPlexAccount
+
+try:
+    from unittest.mock import patch, MagicMock, mock_open
+except ImportError:
+    from mock import patch, MagicMock, mock_open
+
 from plexapi import compat
 from plexapi.compat import patch, MagicMock
 from plexapi.client import PlexClient
@@ -219,6 +225,14 @@ def photoalbum(photos):
         return photos.get('Cats')
     except Exception:
         return photos.get('photo_album1')
+    
+@pytest.fixture()
+def subtitle():
+    mopen = mock_open()
+    with patch('__main__.open', mopen):
+        with open('subtitle.srt', 'w') as handler:
+            handler.write('test')
+        return handler
 
 
 @pytest.fixture()
