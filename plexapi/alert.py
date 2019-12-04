@@ -55,7 +55,8 @@ class AlertListener(threading.Thread):
         log.info('Stopping AlertListener.')
         self._ws.close()
 
-    def _onMessage(self, ws, message):
+    def _onMessage(self, *args):
+        message = args[-1]
         """ Called when websocket message is recieved. """
         try:
             data = json.loads(message)['NotificationContainer']
@@ -65,6 +66,7 @@ class AlertListener(threading.Thread):
         except Exception as err:  # pragma: no cover
             log.error('AlertListener Msg Error: %s', err)
 
-    def _onError(self, ws, err):  # pragma: no cover
+    def _onError(self, *args):  # pragma: no cover
+        err = args[-1]
         """ Called when websocket error is recieved. """
         log.error('AlertListener Error: %s' % err)
