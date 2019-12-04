@@ -6,9 +6,9 @@ from plexapi import log
 
 
 class AlertListener(threading.Thread):
-    """ Creates a websocket connection to the PlexServer to optionally recieve alert notifications.
+    """ Creates a websocket connection to the PlexServer to optionally receive alert notifications.
         These often include messages from Plex about media scans as well as updates to currently running
-        Transcode Sessions. This class implements threading.Thread, therfore to start monitoring
+        Transcode Sessions. This class implements threading.Thread, therefore to start monitoring
         alerts you must call .start() on the object once it's created. When calling
         `PlexServer.startAlertListener()`, the thread will be started for you.
 
@@ -26,9 +26,9 @@ class AlertListener(threading.Thread):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): PlexServer this listener is connected to.
-            callback (func): Callback function to call on recieved messages. The callback function
+            callback (func): Callback function to call on received messages. The callback function
                 will be sent a single argument 'data' which will contain a dictionary of data
-                recieved from the server. :samp:`def my_callback(data): ...`
+                received from the server. :samp:`def my_callback(data): ...`
     """
     key = '/:/websockets/notifications'
 
@@ -48,7 +48,7 @@ class AlertListener(threading.Thread):
         self._ws.run_forever()
 
     def stop(self):
-        """ Stop the AlertListener thread. Once the notifier is stopped, it cannot be diractly
+        """ Stop the AlertListener thread. Once the notifier is stopped, it cannot be directly
             started again. You must call :func:`plexapi.server.PlexServer.startAlertListener()`
             from a PlexServer instance.
         """
@@ -56,7 +56,7 @@ class AlertListener(threading.Thread):
         self._ws.close()
 
     def _onMessage(self, *args):
-        """ Called when websocket message is recieved.
+        """ Called when websocket message is received.
             In earlier releases, websocket-client returned a tuple of two parameters: a websocket.app.WebSocketApp object
             and the message as a STR. Current releases appear to only return the message.
             We are assuming the last argument in the tuple is the message.
@@ -72,7 +72,7 @@ class AlertListener(threading.Thread):
             log.error('AlertListener Msg Error: %s', err)
 
     def _onError(self, *args):  # pragma: no cover
-        """ Called when websocket error is recieved.
+        """ Called when websocket error is received.
             In earlier releases, websocket-client returned a tuple of two parameters: a websocket.app.WebSocketApp object
             and the error. Current releases appear to only return the error.
             We are assuming the last argument in the tuple is the message. 
