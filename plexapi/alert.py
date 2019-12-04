@@ -56,8 +56,13 @@ class AlertListener(threading.Thread):
         self._ws.close()
 
     def _onMessage(self, *args):
+        """ Called when websocket message is recieved.
+            In earlier releases, websocket-client returned a tuple of two parameters: a websocket.app.WebSocketApp object
+            and the message as a STR. Current releases appear to only return the message.
+            We are assuming the last argument in the tuple is the message.
+            This is to support compatibility with current and previous releases of websocket-client. 
+        """
         message = args[-1]
-        """ Called when websocket message is recieved. """
         try:
             data = json.loads(message)['NotificationContainer']
             log.debug('Alert: %s %s %s', *data)
@@ -67,6 +72,11 @@ class AlertListener(threading.Thread):
             log.error('AlertListener Msg Error: %s', err)
 
     def _onError(self, *args):  # pragma: no cover
+        """ Called when websocket error is recieved.
+            In earlier releases, websocket-client returned a tuple of two parameters: a websocket.app.WebSocketApp object
+            and the error. Current releases appear to only return the error.
+            We are assuming the last argument in the tuple is the message. 
+            This is to support compatibility with current and previous releases of websocket-client. 
+        """
         err = args[-1]
-        """ Called when websocket error is recieved. """
         log.error('AlertListener Error: %s' % err)
