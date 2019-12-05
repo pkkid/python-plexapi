@@ -76,6 +76,7 @@ class MyPlexAccount(PlexObject):
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/hubs/'                                                  # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/hubs/'                                        # get
+    NEWS = 'https://news.provider.plex.tv/hubs/'                                                # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -631,6 +632,16 @@ class MyPlexAccount(PlexObject):
 		"""
         items = []
         data = self.query(url=self.WEBSHOWS)
+        for elem in data:
+            items.append(Hub(server=self._server, data=elem))
+
+        return items
+
+    def news(self):
+        """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
+		"""
+        items = []
+        data = self.query(url=self.NEWS)
         for elem in data:
             items.append(Hub(server=self._server, data=elem))
 
