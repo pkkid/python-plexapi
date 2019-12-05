@@ -73,6 +73,8 @@ class MyPlexAccount(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
+    # Hub sections
+    VOD = 'https://vod.provider.plex.tv/hubs/'                                                  # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -612,6 +614,16 @@ class MyPlexAccount(PlexObject):
             conn = server.connect()
             hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
+
+    def videoOnDemand(self):
+        """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
+        """
+        items = []
+        data = self.query(url=self.VOD)
+        for elem in data:
+            items.append(Hub(server=self._server, data=elem))
+
+        return items
 
 
 class MyPlexUser(PlexObject):
