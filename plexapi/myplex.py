@@ -78,6 +78,7 @@ class MyPlexAccount(PlexObject):
     WEBSHOWS = 'https://webshows.provider.plex.tv/hubs/'                                        # get
     NEWS = 'https://news.provider.plex.tv/hubs/'                                                # get
     PODCASTS = 'https://podcasts.provider.plex.tv/hubs/'                                        # get
+    MUSIC = 'https://music.provider.plex.tv/hubs/'                                              # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -653,6 +654,16 @@ class MyPlexAccount(PlexObject):
         """
         items = []
         data = self.query(url=self.PODCASTS)
+        for elem in data:
+            items.append(Hub(server=self._server, data=elem))
+
+        return items
+
+    def tidal(self):
+        """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
+        """
+        items = []
+        data = self.query(url=self.MUSIC)
         for elem in data:
             items.append(Hub(server=self._server, data=elem))
 
