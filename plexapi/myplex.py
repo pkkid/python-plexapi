@@ -629,15 +629,10 @@ class MyPlexAccount(PlexObject):
 		"""
         return self.batchingItems(self.WEBSHOWS, maxresults)
 
-        return items
-
-    def news(self):
+    def news(self, maxresults=50):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
 		"""
-        items = []
-        data = self.query(url=self.NEWS)
-        for elem in data:
-            items.append(Hub(server=self._server, data=elem))
+        return self.batchingItems(self.NEWS, maxresults)
 
         return items
 
