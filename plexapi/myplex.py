@@ -9,7 +9,7 @@ from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
-from plexapi.library import LibrarySection, Hub
+from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sync import SyncList, SyncItem
 from plexapi.utils import joinArgs
