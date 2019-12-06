@@ -619,13 +619,10 @@ class MyPlexAccount(PlexObject):
             hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
 
-    def videoOnDemand(self):
+    def videoOnDemand(self, maxresults=50):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
-        items = []
-        data = self.query(url=self.VOD)
-        for elem in data:
-            items.append(Hub(server=self._server, data=elem))
+        return self.batchingItems(self.VOD, maxresults)
 
         return items
 
