@@ -639,17 +639,10 @@ class MyPlexAccount(PlexObject):
         """
         return self.batchingItems(self.PODCASTS, maxresults)
 
-        return items
-
-    def tidal(self):
+    def tidal(self, maxresults=50):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
         """
-        items = []
-        data = self.query(url=self.MUSIC)
-        for elem in data:
-            items.append(Hub(server=self._server, data=elem))
-
-        return items
+        return self.batchingItems(self.MUSIC, maxresults)
 
 
 class MyPlexUser(PlexObject):
