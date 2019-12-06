@@ -624,15 +624,10 @@ class MyPlexAccount(PlexObject):
         """
         return self.batchingItems(self.VOD, maxresults)
 
-        return items
-
-    def webShows(self):
+    def webShows(self, maxresults=50):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
 		"""
-        items = []
-        data = self.query(url=self.WEBSHOWS)
-        for elem in data:
-            items.append(Hub(server=self._server, data=elem))
+        return self.batchingItems(self.WEBSHOWS, maxresults)
 
         return items
 
