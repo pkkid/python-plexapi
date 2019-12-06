@@ -634,15 +634,10 @@ class MyPlexAccount(PlexObject):
 		"""
         return self.batchingItems(self.NEWS, maxresults)
 
-        return items
-
-    def podcasts(self):
+    def podcasts(self, maxresults=50):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
         """
-        items = []
-        data = self.query(url=self.PODCASTS)
-        for elem in data:
-            items.append(Hub(server=self._server, data=elem))
+        return self.batchingItems(self.PODCASTS, maxresults)
 
         return items
 
