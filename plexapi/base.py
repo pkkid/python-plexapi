@@ -429,7 +429,6 @@ class PlexPartialObject(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
 
-
     # The photo tag cant be built atm. TODO
     # def arts(self):
     #     part = '%s/arts' % self.key
@@ -582,7 +581,7 @@ class Playable(object):
                                                                                               time, state)
         self._server.query(key)
         self.reload()
-        
+
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
 
