@@ -511,6 +511,13 @@ class Playable(object):
         return self._server.url('/%s/:/transcode/universal/start.m3u8?%s' %
             (streamtype, urlencode(sorted_params)), includeToken=True)
 
+    def getStream(self, streamId):
+        """ Return stream. """
+        for parts in self.iterParts():
+            for stream in parts.streams:
+                if stream.id == streamId:
+                    return stream
+
     def getSelectedSubtitleStream(self):
         """ Return selected subtitle stream. """
         for parts in self.iterParts():
@@ -524,12 +531,15 @@ class Playable(object):
             Parameters:
                 stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
         """
+        from plexapi.media import SubtitleStream
+        if isinstance(new_stream, SubtitleStream):
+            new_stream = new_stream.id
         for parts in self.iterParts():
             if new_stream is None:
                 parts.resetDefaultSubtitleStream()
             else:
                 for stream in parts.subtitleStreams():
-                    if stream.id == new_stream.id:
+                    if stream.id == new_stream:
                         parts.setDefaultSubtitleStream(stream)
 
     def getSelectedAudioStream(self):
@@ -545,9 +555,12 @@ class Playable(object):
             Parameters:
                 stream (:class:`~plexapi.media.AudioStream`): AudioStream to set as default.
         """
+        from plexapi.media import AudioStream
+        if isinstance(new_stream, AudioStream):
+            new_stream = new_stream.id
         for parts in self.iterParts():
             for stream in parts.audioStreams():
-                if stream.id == new_stream.id:
+                if stream.id == new_stream:
                     parts.setDefaultAudioStream(stream)
 
     def iterParts(self):
