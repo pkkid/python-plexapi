@@ -23,8 +23,10 @@ env:
 before_install:
   - pip install --upgrade pip
   - pip install --upgrade setuptools
-  - pip install --upgrade pytest pytest-cov coveralls
 install:
+  - pip install .
+  - python -c "import plexapi; print('installation ok')"
+  - pip install --upgrade pytest pytest-cov coveralls
   - pip install -r requirements_dev.txt
   - '[ -z "${PLEXAPI_AUTH_MYPLEX_USERNAME}" ] && PYTHONPATH="$PWD:$PYTHONPATH" python -u tools/plex-bootstraptest.py
      --destination plex --advertise-ip=127.0.0.1 --bootstrap-timeout 540 --docker-tag $PLEX_CONTAINER_TAG --unclaimed ||
