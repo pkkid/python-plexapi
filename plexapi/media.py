@@ -348,7 +348,7 @@ class TranscodeSession(PlexObject):
 @utils.registerPlexObject
 class Optimized(PlexObject):
     """ Represents a Optimized item. """
-    TAG = 'Optimized'
+    TAG = 'Item'
 
     def _loadData(self, data):
         self._data = data
