@@ -366,15 +366,9 @@ class PlexServer(PlexObject):
 
     def optimizedItems(self):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
-        items = []
 
-        backgroundProcessing = self.query('/playlists?type=42')
-        for elem in backgroundProcessing:
-            key = elem.attrib.get('key')
-            for elem in self.query(key):
-                items.append(Optimized(server=self, data=elem))
-
-        return items
+        backgroundProcessing = self.fetchItem('/playlists?type=42')
+        return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
 
     def conversions(self):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
