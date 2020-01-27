@@ -363,7 +363,7 @@ class Optimized(PlexObject):
 @utils.registerPlexObject
 class Conversion(PlexObject):
     """ Represents a Conversion item. """
-    TAG = 'Conversion'
+    TAG = 'Video'
 
     def _loadData(self, data):
          self._data = data
