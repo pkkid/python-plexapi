@@ -378,15 +378,8 @@ class PlexServer(PlexObject):
 
     def conversions(self):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
-        items = []
 
-        backgroundProcessing = self.query('/playQueues?type=42')
-        for elem in backgroundProcessing:
-            key = elem.attrib.get('id')
-            for elem in self.query('/playQueues/%s' % key):
-                items.append(Conversion(server=self, data=elem))
-
-        return items
+        return self.fetchItems('/playQueues/1', cls=Conversion)
 
     def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
