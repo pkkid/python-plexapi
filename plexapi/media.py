@@ -349,6 +349,61 @@ class TranscodeSession(PlexObject):
         self.width = cast(int, data.attrib.get('width'))
 
 
+@utils.registerPlexObject
+class Optimized(PlexObject):
+    """ Represents a Optimized item. """
+    TAG = 'Item'
+
+    def _loadData(self, data):
+        self._data = data
+        self.id = data.attrib.get('id')
+        self.composite = data.attrib.get('composite')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.target = data.attrib.get('target')
+        self.targetTagID = data.attrib.get('targetTagID')
+
+
+@utils.registerPlexObject
+class Conversion(PlexObject):
+    """ Represents a Conversion item. """
+    TAG = 'Video'
+
+    def _loadData(self, data):
+         self._data = data
+         self.addedAt = data.attrib.get('addedAt')
+         self.art = data.attrib.get('art')
+         self.chapterSource = data.attrib.get('chapterSource')
+         self.contentRating = data.attrib.get('contentRating')
+         self.duration = data.attrib.get('duration')
+         self.generatorID = data.attrib.get('generatorID')
+         self.generatorType = data.attrib.get('generatorType')
+         self.guid = data.attrib.get('guid')
+         self.key = data.attrib.get('key')
+         self.lastViewedAt = data.attrib.get('lastViewedAt')
+         self.librarySectionID = data.attrib.get('librarySectionID')
+         self.librarySectionKey = data.attrib.get('librarySectionKey')
+         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+         self.playQueueItemID = data.attrib.get('playQueueItemID')
+         self.playlistID = data.attrib.get('playlistID')
+         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
+         self.rating = data.attrib.get('rating')
+         self.ratingKey = data.attrib.get('ratingKey')
+         self.studio = data.attrib.get('studio')
+         self.summary = data.attrib.get('summary')
+         self.tagline = data.attrib.get('tagline')
+         self.target = data.attrib.get('target')
+         self.thumb = data.attrib.get('thumb')
+         self.title = data.attrib.get('title')
+         self.type = data.attrib.get('type')
+         self.updatedAt = data.attrib.get('updatedAt')
+         self.userID = data.attrib.get('userID')
+         self.username = data.attrib.get('username')
+         self.viewOffset = data.attrib.get('viewOffset')
+         self.year = data.attrib.get('year')
+
+
 class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
         items or navigating the metadata of media items in your library. Tags are
