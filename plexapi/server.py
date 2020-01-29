@@ -382,10 +382,14 @@ class PlexServer(PlexObject):
             backgroundProcessing = self.fetchItem('/playlists?type=42')
             return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
 
-    def conversions(self):
+    def conversions(self, pause=None):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
-
-        return self.fetchItems('/playQueues/1', cls=Conversion)
+        if pause is True:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=1', method=self._server._session.put)
+        elif pause is False:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=0', method=self._server._session.put)
+        else:
+            return self.fetchItems('/playQueues/1', cls=Conversion)
 
     def currentBackgroundProcess(self):
         """ Returns list of all :class:`~plexapi.media.TranscodeJob` objects running or paused on server. """
