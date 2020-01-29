@@ -384,6 +384,15 @@ class Optimized(PlexObject):
         self.target = data.attrib.get('target')
         self.targetTagID = data.attrib.get('targetTagID')
 
+    def remove(self):
+        """ Remove an Optimized item"""
+        key = '%s/%s' % (self._initpath, self.id)
+        self._server.query(key, method=self._server._session.delete)
+
+    def rename(self, title):
+        """ Rename an Optimized item"""
+        key = '%s/%s?Item[title]=%s' % (self._initpath, self.id, title)
+        self._server.query(key, method=self._server._session.put)
 
 @utils.registerPlexObject
 class Conversion(PlexObject):
