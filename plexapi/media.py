@@ -394,6 +394,7 @@ class Optimized(PlexObject):
         key = '%s/%s?Item[title]=%s' % (self._initpath, self.id, title)
         self._server.query(key, method=self._server._session.put)
 
+
 @utils.registerPlexObject
 class Conversion(PlexObject):
     """ Represents a Conversion item.
