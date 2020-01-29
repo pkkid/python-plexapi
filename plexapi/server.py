@@ -384,6 +384,10 @@ class PlexServer(PlexObject):
 
         return self.fetchItems('/playQueues/1', cls=Conversion)
 
+    def currentBackgroundProcess(self):
+        """ Returns list of all :class:`~plexapi.media.TranscodeJob` objects running or paused on server. """
+        return self.fetchItems('/status/sessions/background')
+
     def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
             by encoding the response to utf-8 and parsing the returned XML into and
