@@ -434,6 +434,11 @@ class Conversion(PlexObject):
          self.viewOffset = data.attrib.get('viewOffset')
          self.year = data.attrib.get('year')
 
+    def remove(self):
+        """ Remove Conversion from queue """
+        key = '/playlists/%s/items/%s/%s/disable' % (self.playlistID, self.generatorID, self.ratingKey)
+        self._server.query(key, method=self._server._session.put)
+
 
 class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
