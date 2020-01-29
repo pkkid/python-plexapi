@@ -439,6 +439,24 @@ class Conversion(PlexObject):
         key = '/playlists/%s/items/%s/%s/disable' % (self.playlistID, self.generatorID, self.ratingKey)
         self._server.query(key, method=self._server._session.put)
 
+    def move(self, after):
+        """ Move Conversion items position in queue
+            after (int): Positional integer to move item
+                    -1 Active conversion
+                OR
+                    Use another conversion items playQueueItemID to move in front of
+
+                Example:
+                    Move 5th conversion Item to active conversion
+                        conversions[4].move('-1')
+
+                    Move 4th conversion Item to 2nd in conversion queue
+                        conversions[3].move(conversions[1].playQueueItemID)
+        """
+
+        key = '%s/items/%s/move?after=%s' % (self._initpath, self.playQueueItemID, after)
+        self._server.query(key, method=self._server._session.put)
+
 
 class MediaTag(PlexObject):
     """ Base class for media tags used for filtering and searching your library
