@@ -373,11 +373,14 @@ class PlexServer(PlexObject):
         """
         return self.fetchItem('/playlists', title=title)
 
-    def optimizedItems(self):
+    def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
-
-        backgroundProcessing = self.fetchItem('/playlists?type=42')
-        return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
+        if removeAll is True:
+            key = '/playlists/generators?type=42'
+            self.query(key, method=self._server._session.delete)
+        else:
+            backgroundProcessing = self.fetchItem('/playlists?type=42')
+            return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
 
     def conversions(self):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
