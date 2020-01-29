@@ -350,8 +350,29 @@ class TranscodeSession(PlexObject):
 
 
 @utils.registerPlexObject
+class TranscodeJob(PlexObject):
+    """ Represents an Optimizing job.
+        TrancodeJobs are the process for optimizing conversions.
+        Active or paused optimization items. Usually one item as a time"""
+    TAG = 'TranscodeJob'
+
+    def _loadData(self, data):
+        self._data = data
+        self.generatorID = data.attrib.get('generatorID')
+        self.key = data.attrib.get('key')
+        self.progress = data.attrib.get('progress')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.size = data.attrib.get('size')
+        self.targetTagID = data.attrib.get('targetTagID')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+
+
+@utils.registerPlexObject
 class Optimized(PlexObject):
-    """ Represents a Optimized item. """
+    """ Represents a Optimized item.
+        Optimized items are optimized and queued conversions items."""
     TAG = 'Item'
 
     def _loadData(self, data):
