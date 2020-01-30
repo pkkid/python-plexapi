@@ -382,6 +382,14 @@ class PlexServer(PlexObject):
             backgroundProcessing = self.fetchItem('/playlists?type=42')
             return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
 
+    def optimizedItem(self, optimizedID):
+        """ Returns single queued optimized item :class:`~plexapi.media.Video` object.
+            Allows for using optimized item ID to connect back to source item.
+        """
+
+        backgroundProcessing = self.fetchItem('/playlists?type=42')
+        return self.fetchItem('%s/items/%s/items' % (backgroundProcessing.key, optimizedID))
+
     def conversions(self, pause=None):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
         if pause is True:
