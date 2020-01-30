@@ -202,7 +202,7 @@ class Video(PlexPartialObject):
             data += '&%s=%s' % (quote_plus('Item[MediaSettings][musicBitrate]'), '')
             data += '&%s=%s' % (quote_plus('Item[MediaSettings][photoQuality]'), '')
 
-        return self._server.query(data, method=self._server._session.put, headers={'X-Plex-Client-Identifier': "jzyhufx6t98rrjpce98b6irx"})
+        return self._server.query(data, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
