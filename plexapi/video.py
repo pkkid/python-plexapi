@@ -2,7 +2,7 @@
 from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus, quote
+from plexapi.compat import quote_plus, quote, urlencode
 import os
 
 
@@ -161,47 +161,44 @@ class Video(PlexPartialObject):
         if targetTagID not in tagIDs and (deviceProfile == None or videoQuality == None):
             raise BadRequest('Unexpected or missing quality profile.')
 
-        from plexapi.sync import MediaSettings
+        if isinstance(targetTagID, str):
+            tagIndex = tagKeys.index(targetTagID)
+            targetTagID = tagValues[tagIndex]
 
         if title is None:
             title = self.title
 
         key = '/playlists/1111/items?'
-        itemType = '%s=42' % quote_plus('Item[type]')
-        itemTitle = '&%s=%s' % (quote_plus('Item[title]'), quote(title))
-        itemTarget = '&%s=%s' % (quote_plus('Item[target]'), quote_plus(target))
-        if isinstance(targetTagID, str):
-            tagIndex = tagKeys.index(targetTagID)
-            targetTagID = tagValues[tagIndex]
-
-        itemTargetTagID = '&%s=%s' % (quote_plus('Item[targetTagID]'), targetTagID if targetTagID else "")
-        itemLocationID = '&%s=%s' % (quote_plus('Item[locationID]'), locationID)
-        section = self._server.library.sectionByID(self.librarySectionID)
-        location = '%s=%s%s%s' % (quote_plus('Item[Location][uri]'), quote_plus('library://'),
-                                  section.uuid, quote_plus('/item/'))
-        itemLocationUri = '&%s%s' % (location, quote_plus(quote_plus('%s' % self.key)))
-        itemPolicyScope = '&%s=%s' % (quote_plus('Item[Policy][scope]'), quote_plus(policyScope))
-        itemPolicyValue = '&%s=%s' % (quote_plus('Item[Policy][value]'), quote_plus(policyValue))
-        itemPolicyUnwatched = '&%s=%s' % (quote_plus('Item[Policy][unwatched]'), policyUnwatched)
-
-        data = key + itemType + itemTitle + itemTarget + itemTargetTagID + itemLocationID + \
-               itemLocationUri + '%253FincludeExternalMedia%253D1'
+        params = {
+            'Item[type]': 42,
+            'Item[target]': target,
+            'Item[targetTagID]': targetTagID if targetTagID else '',
+            'Item[locationID]': locationID,
+            'Item[Policy][scope]': policyScope,
+            'Item[Policy][value]': policyValue,
+            'Item[Policy][unwatched]': policyUnwatched
+        }
 
         if deviceProfile:
-            data += '&%s=%s' % (quote_plus('Item[Device][profile]'), deviceProfile)
-
-        data += itemPolicyScope + itemPolicyValue + itemPolicyUnwatched
+            params['Item[Device][profile]'] = deviceProfile
 
         if videoQuality:
+            from plexapi.sync import MediaSettings
             mediaSettings = MediaSettings.createVideo(videoQuality)
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][videoQuality]'), mediaSettings.videoQuality)
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][videoResolution]'), mediaSettings.videoResolution)
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][maxVideoBitrate]'), mediaSettings.maxVideoBitrate)
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][audioBoost]'), '')
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][subtitleSize]'), '')
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][musicBitrate]'), '')
-            data += '&%s=%s' % (quote_plus('Item[MediaSettings][photoQuality]'), '')
+            params['Item[MediaSettings][videoQuality]'] = mediaSettings.videoQuality
+            params['Item[MediaSettings][videoResolution]'] = mediaSettings.videoResolution
+            params['Item[MediaSettings][maxVideoBitrate]'] = mediaSettings.maxVideoBitrate
+            params['Item[MediaSettings][audioBoost]'] = ''
+            params['Item[MediaSettings][subtitleSize]'] = ''
+            params['Item[MediaSettings][musicBitrate]'] = ''
+            params['Item[MediaSettings][photoQuality]'] = ''
 
+        titleParam = {'Item[title]': title}
+        section = self._server.library.sectionByID(self.librarySectionID)
+        params['Item[Location][uri]'] = 'library://' + section.uuid + '/item/' + \
+                                        quote_plus(self.key + '?includeExternalMedia=1')
+
+        data = key + urlencode(params) + '&' + urlencode(titleParam, quote_via=quote)
         return self._server.query(data, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
