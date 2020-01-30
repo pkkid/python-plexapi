@@ -394,6 +394,11 @@ class Optimized(PlexObject):
         key = '%s/%s?Item[title]=%s' % (self._initpath, self.id, title)
         self._server.query(key, method=self._server._session.put)
 
+    def reprocess(self, ratingKey):
+        """ Reprocess a removed Conversion item that is still a listed Optimize item"""
+        key = '%s/%s/%s/enable' % (self._initpath, self.id, ratingKey)
+        self._server.query(key, method=self._server._session.put)
+
 
 @utils.registerPlexObject
 class Conversion(PlexObject):
