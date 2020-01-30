@@ -154,7 +154,7 @@ class Video(PlexPartialObject):
 
             * see sync.py VIDEO_QUALITIES for additional information for using videoQuality
         """
-        tagValues = [1,	2, 3]
+        tagValues = [1, 2, 3]
         tagKeys = ["Mobile", "TV", "Original Quality"]
         tagIDs = tagKeys + tagValues
 
