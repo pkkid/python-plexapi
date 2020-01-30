@@ -2,7 +2,7 @@
 from plexapi import media, utils
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus
+from plexapi.compat import quote_plus, quote
 import os
 
 
@@ -125,6 +125,84 @@ class Video(PlexPartialObject):
         """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
 
         return self.fetchItems('%s/posters' % self.key, cls=media.Poster)
+
+    def optimize(self, title=None, target="", targetTagID=None, locationID=-1, policyScope='all',
+                 policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
+        """ Optimize item
+
+            locationID (int): -1 in folder with orginal items
+                               2 library path
+
+            target (str): custom quality name.
+                          if none provided use "Custom: {deviceProfile}"
+
+            targetTagID (int):  Default quality settings
+                                1 Mobile
+                                2 TV
+                                3 Original Quality
+
+            deviceProfile (str): Android, IOS, Universal TV, Universal Mobile, Windows Phone,
+                                    Windows, Xbox One
+
+            Example:
+                Optimize for Mobile
+                   item.optimize(targetTagID="Mobile") or item.optimize(targetTagID=1")
+                Optimize for Android 10 MBPS 1080p
+                   item.optimize(deviceProfile="Android", videoQuality=10)
+                Optimize for IOS Original Quality
+                   item.optimize(deviceProfile="IOS", videoQuality=-1)
+
+            * see sync.py VIDEO_QUALITIES for additional information for using videoQuality
+        """
+        tagValues = [1,	2, 3]
+        tagKeys = ["Mobile", "TV", "Original Quality"]
+        tagIDs = tagKeys + tagValues
+
+        if targetTagID not in tagIDs and (deviceProfile == None or videoQuality == None):
+            raise BadRequest('Unexpected or missing quality profile.')
+
+        from plexapi.sync import MediaSettings
+
+        if title is None:
+            title = self.title
+
+        key = '/playlists/1111/items?'
+        itemType = '%s=42' % quote_plus('Item[type]')
+        itemTitle = '&%s=%s' % (quote_plus('Item[title]'), quote(title))
+        itemTarget = '&%s=%s' % (quote_plus('Item[target]'), quote_plus(target))
+        if isinstance(targetTagID, str):
+            tagIndex = tagKeys.index(targetTagID)
+            targetTagID = tagValues[tagIndex]
+
+        itemTargetTagID = '&%s=%s' % (quote_plus('Item[targetTagID]'), targetTagID if targetTagID else "")
+        itemLocationID = '&%s=%s' % (quote_plus('Item[locationID]'), locationID)
+        section = self._server.library.sectionByID(self.librarySectionID)
+        location = '%s=%s%s%s' % (quote_plus('Item[Location][uri]'), quote_plus('library://'),
+                                  section.uuid, quote_plus('/item/'))
+        itemLocationUri = '&%s%s' % (location, quote_plus(quote_plus('%s' % self.key)))
+        itemPolicyScope = '&%s=%s' % (quote_plus('Item[Policy][scope]'), quote_plus(policyScope))
+        itemPolicyValue = '&%s=%s' % (quote_plus('Item[Policy][value]'), quote_plus(policyValue))
+        itemPolicyUnwatched = '&%s=%s' % (quote_plus('Item[Policy][unwatched]'), policyUnwatched)
+
+        data = key + itemType + itemTitle + itemTarget + itemTargetTagID + itemLocationID + \
+               itemLocationUri + '%253FincludeExternalMedia%253D1'
+
+        if deviceProfile:
+            data += '&%s=%s' % (quote_plus('Item[Device][profile]'), deviceProfile)
+
+        data += itemPolicyScope + itemPolicyValue + itemPolicyUnwatched
+
+        if videoQuality:
+            mediaSettings = MediaSettings.createVideo(videoQuality)
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][videoQuality]'), mediaSettings.videoQuality)
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][videoResolution]'), mediaSettings.videoResolution)
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][maxVideoBitrate]'), mediaSettings.maxVideoBitrate)
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][audioBoost]'), '')
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][subtitleSize]'), '')
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][musicBitrate]'), '')
+            data += '&%s=%s' % (quote_plus('Item[MediaSettings][photoQuality]'), '')
+
+        return self._server.query(data, method=self._server._session.put, headers={'X-Plex-Client-Identifier': "jzyhufx6t98rrjpce98b6irx"})
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
