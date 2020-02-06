@@ -633,10 +633,12 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
-    def news(self, maxresults=50):
+    def news(self):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
 		"""
-        return self.batchingItems(self.NEWS, maxresults)
+        req = requests.get(self.NEWS, headers={'X-Plex-Token':self._token})
+        elem = ElementTree.fromstring(req.text)
+        return self.findItems(elem)
 
     def podcasts(self, maxresults=50):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
