@@ -619,10 +619,12 @@ class MyPlexAccount(PlexObject):
             hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
 
-    def videoOnDemand(self, maxresults=50):
+    def videoOnDemand(self):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
-        return self.batchingItems(self.VOD, maxresults)
+        req = requests.get(self.VOD, headers={'X-Plex-Token':self._token})
+        elem = ElementTree.fromstring(req.text)
+        return self.findItems(elem)
 
     def webShows(self, maxresults=50):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
