@@ -647,10 +647,12 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
-    def tidal(self, maxresults=50):
+    def tidal(self):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
         """
-        return self.batchingItems(self.MUSIC, maxresults)
+        req = requests.get(self.MUSIC, headers={'X-Plex-Token':self._token})
+        elem = ElementTree.fromstring(req.text)
+        return self.findItems(elem)
 
 
 class MyPlexUser(PlexObject):
