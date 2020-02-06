@@ -640,10 +640,12 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
-    def podcasts(self, maxresults=50):
+    def podcasts(self):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
         """
-        return self.batchingItems(self.PODCASTS, maxresults)
+        req = requests.get(self.PODCASTS, headers={'X-Plex-Token':self._token})
+        elem = ElementTree.fromstring(req.text)
+        return self.findItems(elem)
 
     def tidal(self, maxresults=50):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
