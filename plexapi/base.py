@@ -172,25 +172,6 @@ class PlexObject(object):
                     items.append(item)
         return items
 
-    def batchingItems(self, url, maxresults):
-        """If there are many results, they will be fetched from the server in batches
-           of X_PLEX_CONTAINER_SIZE amounts. If you're only looking for the first
-           <num> results, it would be wise to set the maxresults option to that
-           amount so this functions doesn't iterate over all results on the server.
-
-        """
-        results, subresults = [], '_init'
-        args = {}
-
-        args['X-Plex-Container-Start'] = 0
-        args['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
-        while subresults and maxresults > len(results):
-            key = url + utils.joinArgs(args)
-            subresults = self.fetchItems(key)
-            results += subresults[:maxresults - len(results)]
-            args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
-        return results
-
     def firstAttr(self, *attrs):
         """ Return the first attribute in attrs that is not None. """
         for attr in attrs:
