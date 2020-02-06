@@ -76,7 +76,7 @@ class MyPlexAccount(PlexObject):
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/hubs/'                                                  # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/hubs/'                                        # get
-    NEWS = 'https://news.provider.plex.tv/hubs/'                                                # get
+    NEWS = 'https://news.provider.plex.tv/hubs/sections/all'                                    # get
     PODCASTS = 'https://podcasts.provider.plex.tv/hubs/'                                        # get
     MUSIC = 'https://music.provider.plex.tv/hubs/'                                              # get
     # Key may someday switch to the following url. For now the current value works.
