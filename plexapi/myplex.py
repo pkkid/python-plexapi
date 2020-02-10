@@ -74,11 +74,11 @@ class MyPlexAccount(PlexObject):
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     # Hub sections
-    VOD = 'https://vod.provider.plex.tv/hubs/'                                                  # get
-    WEBSHOWS = 'https://webshows.provider.plex.tv/hubs/'                                        # get
-    NEWS = 'https://news.provider.plex.tv/hubs/sections/all'                                    # get
-    PODCASTS = 'https://podcasts.provider.plex.tv/hubs/'                                        # get
-    MUSIC = 'https://music.provider.plex.tv/hubs/'                                              # get
+    VOD = 'https://vod.provider.plex.tv/'                                                       # get
+    WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
+    NEWS = 'https://news.provider.plex.tv/'                                                     # get
+    PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
+    MUSIC = 'https://music.provider.plex.tv/'                                                   # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -622,35 +622,35 @@ class MyPlexAccount(PlexObject):
     def videoOnDemand(self):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.VOD, headers={'X-Plex-Token':self._token})
+        req = requests.get(self.VOD + 'hubs/', headers={'X-Plex-Token':self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def webShows(self):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
 		"""
-        req = requests.get(self.WEBSHOWS, headers={'X-Plex-Token':self._token})
+        req = requests.get(self.WEBSHOWS + 'hubs/', headers={'X-Plex-Token':self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def news(self):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
 		"""
-        req = requests.get(self.NEWS, headers={'X-Plex-Token':self._token})
+        req = requests.get(self.NEWS + 'hubs/', headers={'X-Plex-Token':self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def podcasts(self):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.PODCASTS, headers={'X-Plex-Token':self._token})
+        req = requests.get(self.PODCASTS + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def tidal(self):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.MUSIC, headers={'X-Plex-Token':self._token})
+        req = requests.get(self.MUSIC + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
