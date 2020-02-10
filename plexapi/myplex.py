@@ -636,7 +636,7 @@ class MyPlexAccount(PlexObject):
     def news(self):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
 		"""
-        req = requests.get(self.NEWS + 'hubs/', headers={'X-Plex-Token':self._token})
+        req = requests.get(self.NEWS + 'hubs/sections/all', headers={'X-Plex-Token':self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
