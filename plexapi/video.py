@@ -168,7 +168,8 @@ class Video(PlexPartialObject):
         if title is None:
             title = self.title
 
-        key = '/playlists/1111/items?'
+        backgroundProcessing = self.fetchItem('/playlists?type=42')
+        key = '%s/items?' % backgroundProcessing.key
         params = {
             'Item[type]': 42,
             'Item[target]': target,
