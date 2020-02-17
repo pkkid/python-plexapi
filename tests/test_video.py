@@ -691,6 +691,7 @@ def test_video_exists_accessible(movie, episode):
 def test_video_optimize(movie, plex):
     plex.optimizedItems(removeAll=True)
     movie.optimize(targetTagID=1)
+    plex.conversions(pause=True)
     sleep(1)
     assert len(plex.optimizedItems()) == 1
     assert len(plex.conversions()) == 1
