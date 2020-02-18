@@ -199,7 +199,7 @@ class Video(PlexPartialObject):
         params['Item[Location][uri]'] = 'library://' + section.uuid + '/item/' + \
                                         quote_plus(self.key + '?includeExternalMedia=1')
 
-        data = key + urlencode(params) + '&' + urlencode(titleParam, quote_via=quote)
+        data = key + urlencode(params) + '&' + urlencode(titleParam)
         return self._server.query(data, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
