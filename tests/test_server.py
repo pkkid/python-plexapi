@@ -269,3 +269,15 @@ def test_server_downloadLogs(tmpdir, plex):
 def test_server_downloadDatabases(tmpdir, plex):
     plex.downloadDatabases(savepath=str(tmpdir), unpack=True)
     assert len(tmpdir.listdir()) > 1
+
+def test_server_allowMediaDeletion(account):
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+    plex._allowMediaDeletion(True)
+    time.sleep(1)
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+    assert plex.allowMediaDeletion == True
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+    plex._allowMediaDeletion(False)
+    time.sleep(1)
+    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+    assert plex.allowMediaDeletion == None
