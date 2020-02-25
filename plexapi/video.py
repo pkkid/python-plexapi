@@ -158,7 +158,7 @@ class Video(PlexPartialObject):
         tagKeys = ["Mobile", "TV", "Original Quality"]
         tagIDs = tagKeys + tagValues
 
-        if targetTagID not in tagIDs and (deviceProfile == None or videoQuality == None):
+        if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
             raise BadRequest('Unexpected or missing quality profile.')
 
         if isinstance(targetTagID, str):
