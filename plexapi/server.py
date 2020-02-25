@@ -493,6 +493,15 @@ class PlexServer(PlexObject):
         self.refreshSynclist()
         self.refreshContent()
 
+    def _allowMediaDeletion(self, toggle):
+        """ Toggle allowMediaDeletion.
+            Parameters:
+                toggle (bool): True enables Media Deletion
+                               False or None disable Media Deletion
+        """
+        value = 1 if toggle is True else 0
+        return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
