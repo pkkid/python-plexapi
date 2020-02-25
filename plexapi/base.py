@@ -132,6 +132,8 @@ class PlexObject(object):
                     * __regex: Value matches the specified regular expression.
                     * __startswith: Value starts with specified arg.
         """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
         if isinstance(ekey, int):
             ekey = '/library/metadata/%s' % ekey
         for elem in self._server.query(ekey):
@@ -145,6 +147,8 @@ class PlexObject(object):
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
         """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
         data = self._server.query(ekey)
         items = self.findItems(data, cls, ekey, **kwargs)
         librarySectionID = data.attrib.get('librarySectionID')
