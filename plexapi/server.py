@@ -499,6 +499,16 @@ class PlexServer(PlexObject):
                 toggle (bool): True enables Media Deletion
                                False or None disable Media Deletion (Default)
         """
+        if self.allowMediaDeletion and toggle is False:
+            log.debug('Plex is currently allowed to delete media. Toggling off.')
+        elif self.allowMediaDeletion and toggle is True:
+            log.debug('Plex is currently allowed to delete media. Toggle set to allow, exiting.')
+            raise BadRequest('Plex is currently allowed to delete media. Toggle set to allow, exiting.')
+        elif self.allowMediaDeletion is None and toggle is True:
+            log.debug('Plex is currently not allowed to delete media. Toggle set to allow.')
+        else:
+            log.debug('Plex is currently not allowed to delete media. Toggle set to not allow, exiting.')
+            raise BadRequest('Plex is currently not allowed to delete media. Toggle set to not allow, exiting.')
         value = 1 if toggle is True else 0
         return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
 
