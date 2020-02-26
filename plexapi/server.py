@@ -493,7 +493,7 @@ class PlexServer(PlexObject):
         self.refreshSynclist()
         self.refreshContent()
 
-    def _allowMediaDeletion(self, toggle):
+    def _allowMediaDeletion(self, toggle=False):
         """ Toggle allowMediaDeletion.
             Parameters:
                 toggle (bool): True enables Media Deletion
