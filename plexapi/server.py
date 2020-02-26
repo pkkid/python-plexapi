@@ -497,7 +497,7 @@ class PlexServer(PlexObject):
         """ Toggle allowMediaDeletion.
             Parameters:
                 toggle (bool): True enables Media Deletion
-                               False or None disable Media Deletion
+                               False or None disable Media Deletion (Default)
         """
         value = 1 if toggle is True else 0
         return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
