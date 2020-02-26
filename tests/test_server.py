@@ -272,12 +272,38 @@ def test_server_downloadDatabases(tmpdir, plex):
 
 def test_server_allowMediaDeletion(account):
     plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
-    plex._allowMediaDeletion(True)
-    time.sleep(1)
-    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
-    assert plex.allowMediaDeletion == True
-    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
-    plex._allowMediaDeletion(False)
-    time.sleep(1)
-    plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
-    assert plex.allowMediaDeletion == None
+    # Check server current allowMediaDeletion setting
+    if plex.allowMediaDeletion:
+        # If allowed then test disallowed
+        plex._allowMediaDeletion(False)
+        time.sleep(1)
+        plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+        assert plex.allowMediaDeletion is None
+        # Test redundant toggle
+        with pytest.raises(BadRequest):
+            plex._allowMediaDeletion(False)
+
+        plex._allowMediaDeletion(True)
+        time.sleep(1)
+        plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+        assert plex.allowMediaDeletion is True
+        # Test redundant toggle
+        with pytest.raises(BadRequest):
+            plex._allowMediaDeletion(True)
+    else:
+        # If disallowed then test allowed
+        plex._allowMediaDeletion(True)
+        time.sleep(1)
+        plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+        assert plex.allowMediaDeletion is True
+        # Test redundant toggle
+        with pytest.raises(BadRequest):
+            plex._allowMediaDeletion(True)
+
+        plex._allowMediaDeletion(False)
+        time.sleep(1)
+        plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
+        assert plex.allowMediaDeletion is None
+        # Test redundant toggle
+        with pytest.raises(BadRequest):
+            plex._allowMediaDeletion(False)
