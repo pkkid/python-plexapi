@@ -434,6 +434,30 @@ class Show(Video):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(viewCount=0)
 
+    def unmatch(self):
+        """ Unmatches show object. """
+        key = '/library/metadata/%s/unmatch' % self.ratingKey
+        self._server.query(key, method=self._server._session.put)
+
+    def matches(self):
+        """ Return list of show metadata matches from library agent. """
+        results = []
+        key = '/library/metadata/%s/matches' % self.ratingKey
+        data = self._server.query(key, method=self._server._session.get)
+
+        for elem in data:
+            results.append(media.SearchResult(data=elem, server=self._server))
+        return results
+
+    def fixMatch(self, searchResult):
+        """ Use match result to update show metadata. """
+        key = '/library/metadata/%s/match' % self.ratingKey
+        params = {'guid': searchResult.guid,
+                  'name': searchResult.name}
+
+        data = key + '?' + urlencode(params)
+        self._server.query(data, method=self._server._session.put)
+
     def get(self, title=None, season=None, episode=None):
         """ Alias to :func:`~plexapi.video.Show.episode()`. """
         return self.episode(title, season, episode)
