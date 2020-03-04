@@ -260,6 +260,30 @@ class Movie(Playable, Video):
         # This is just for compat.
         return self.title
 
+    def unmatch(self):
+        """ Unmatches movie object"""
+        key = '/library/metadata/%s/unmatch' % self.ratingKey
+        return self._server.query(key, method=self._server._session.put)
+
+    def matches(self):
+        """ Return list of movie metadata matches from library agent"""
+        results = []
+        key = '/library/metadata/%s/matches' % self.ratingKey
+        data = self._server.query(key, method=self._server._session.get)
+
+        for elem in data:
+            results.append(media.SearchResult(data=elem, server=self._server))
+        return results
+
+    def fixMatch(self, searchResult):
+        """ Use match result to update movie metadata. """
+        key = '/library/metadata/%s/match' % self.ratingKey
+        params = {'guid': searchResult.guid,
+                  'name': searchResult.name}
+
+        data = key + '?' + urlencode(params)
+        self._server.query(data, method=self._server._session.put)
+
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
