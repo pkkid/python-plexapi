@@ -639,3 +639,21 @@ class Field(PlexObject):
         self._data = data
         self.name = data.attrib.get('name')
         self.locked = cast(bool, data.attrib.get('locked'))
+
+
+@utils.registerPlexObject
+class SearchResult(PlexObject):
+    """ Represents a single SearchResult.
+
+        Attributes:
+            TAG (str): 'SearchResult'
+    """
+    TAG = 'SearchResult'
+
+    def _loadData(self, data):
+        self._data = data
+        self.guid = data.attrib.get('guid')
+        self.lifespanEnded = data.attrib.get('lifespanEnded')
+        self.name = data.attrib.get('name')
+        self.score = data.attrib.get('score')
+        self.year = data.attrib.get('year')
