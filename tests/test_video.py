@@ -688,6 +688,7 @@ def test_video_exists_accessible(movie, episode):
     assert episode.media[0].parts[0].accessible is True
 
 
+@pytest.mark.skip(reason='broken? assert len(plex.conversions()) == 1 may fail on some builds')
 def test_video_optimize(movie, plex):
     plex.optimizedItems(removeAll=True)
     movie.optimize(targetTagID=1)
