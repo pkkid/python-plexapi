@@ -675,3 +675,4 @@ class Agent(PlexObject):
         self.hasPrefs = data.attrib.get('hasPrefs')
         self.identifier = data.attrib.get('identifier')
         self.primary = data.attrib.get('primary')
+        self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
