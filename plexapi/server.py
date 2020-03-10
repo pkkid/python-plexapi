@@ -184,6 +184,12 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    def agents(self):
+        """ Returns the :class:`~plexapi.media.Agent` objects this server has available. """
+        key = '/system/agents'
+        data = self._server.query(key, self._server._session.get)
+        return self.findItems(data)
+
     def createToken(self, type='delegation', scope='all'):
         """Create a temp access token for the server."""
         q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
