@@ -657,3 +657,21 @@ class SearchResult(PlexObject):
         self.name = data.attrib.get('name')
         self.score = data.attrib.get('score')
         self.year = data.attrib.get('year')
+
+
+@utils.registerPlexObject
+class Agent(PlexObject):
+    """ Represents a single Agent.
+
+        Attributes:
+            TAG (str): 'Agent'
+    """
+    TAG = 'Agent'
+
+    def _loadData(self, data):
+        self._data = data
+        self._initpath = '/system/agents'
+        self.hasAttribution = data.attrib.get('hasAttribution')
+        self.hasPrefs = data.attrib.get('hasPrefs')
+        self.identifier = data.attrib.get('identifier')
+        self.primary = data.attrib.get('primary')
