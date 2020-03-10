@@ -458,15 +458,34 @@ class Show(Video):
         key = '/library/metadata/%s/unmatch' % self.ratingKey
         self._server.query(key, method=self._server._session.put)
 
-    def matches(self):
-        """ Return list of show metadata matches from library agent. """
-        results = []
+    def matches(self, auto=True, agent=None, title=None, year=None, lang=None):
+        """ Return list of show metadata matches from library agent"""
         key = '/library/metadata/%s/matches' % self.ratingKey
-        data = self._server.query(key, method=self._server._session.get)
+        if not auto:
+            key += '?manual=%s' % 1
+            if title:
+                key += '&title=%s' % quote(title)
+            if agent:
+                agents = {ag.shortIdentifier: ag for ag in self._server.agents()}
+                if agents.get(agent):
+                    agent = agents.get(agent)
+                    key += '&agent=%s' % agent.identifier
+                else:
+                    raise NotFound('Couldnt find "%s" in agents list (%s)' %
+                                   (agent, ','.join(agents.keys())))
+            else:
+                sectionAgent = self.section().agent
+                key += '&agent=%s' % sectionAgent
+            if year:
+                key += '&year=%s' % year
+            if lang:
+                key += '&language=%s' % lang
+            else:
+                sectionLang = self.section().language
+                key += '&language=%s' % sectionLang
 
-        for elem in data:
-            results.append(media.SearchResult(data=elem, server=self._server))
-        return results
+        data = self._server.query(key, method=self._server._session.get)
+        return self.findItems(data)
 
     def fixMatch(self, searchResult):
         """ Use match result to update show metadata. """
