@@ -261,12 +261,12 @@ class Movie(Playable, Video):
         return self.title
 
     def unmatch(self):
-        """ Unmatches movie object"""
+        """ Unmatches movie object. """
         key = '/library/metadata/%s/unmatch' % self.ratingKey
         return self._server.query(key, method=self._server._session.put)
 
     def matches(self, auto=True, agent=None, title=None, year=None, lang=None):
-        """ Return list of movie metadata matches from library agent"""
+        """ Return list of movie metadata matches from library agent. """
         key = '/library/metadata/%s/matches' % self.ratingKey
         if not auto:
             key += '?manual=%s' % 1
@@ -459,7 +459,7 @@ class Show(Video):
         self._server.query(key, method=self._server._session.put)
 
     def matches(self, auto=True, agent=None, title=None, year=None, lang=None):
-        """ Return list of show metadata matches from library agent"""
+        """ Return list of show metadata matches from library agent. """
         key = '/library/metadata/%s/matches' % self.ratingKey
         if not auto:
             key += '?manual=%s' % 1
