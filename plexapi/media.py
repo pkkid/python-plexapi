@@ -655,7 +655,7 @@ class SearchResult(PlexObject):
         self.guid = data.attrib.get('guid')
         self.lifespanEnded = data.attrib.get('lifespanEnded')
         self.name = data.attrib.get('name')
-        self.score = data.attrib.get('score')
+        self.score = cast(int, data.attrib.get('score'))
         self.year = data.attrib.get('year')
 
 
