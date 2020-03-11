@@ -59,7 +59,7 @@ def registerPlexObject(cls):
 
 def cast(func, value):
     """ Cast the specified value to the specified type (returned by func). Currently this
-        only support int, float, bool. Should be extended if needed.
+        only support str, int, float, bool. Should be extended if needed.
 
         Parameters:
             func (func): Calback function to used cast to type (int, bool, float).
@@ -67,7 +67,10 @@ def cast(func, value):
     """
     if value is not None:
         if func == bool:
-            return bool(int(value))
+            try:
+                return bool(int(value))
+            except ValueError:
+                return bool(value)
         elif func in (int, float):
             try:
                 return func(value)
