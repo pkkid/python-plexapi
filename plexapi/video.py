@@ -122,7 +122,7 @@ class Video(PlexPartialObject):
                 self._server.query(stream.key, self._server._session.delete)
 
     def posters(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
 
         return self.fetchItems('%s/posters' % self.key, cls=media.Poster)
 
