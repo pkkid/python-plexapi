@@ -557,6 +557,11 @@ class Poster(PlexObject):
         self.selected = data.attrib.get('selected')
         self.thumb = data.attrib.get('thumb')
 
+    def select(self):
+        key = self._initpath[:-1]
+        data = '%s?url=%s' % (key, compat.quote_plus(self.ratingKey))
+        self._server.query(data, method=self._server._session.put)
+
 
 @utils.registerPlexObject
 class Producer(MediaTag):
