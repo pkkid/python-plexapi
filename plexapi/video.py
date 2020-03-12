@@ -136,6 +136,10 @@ class Video(PlexPartialObject):
             data = open(filepath,'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
+    def setPoster(self, poster):
+        key = poster._initpath[:-1]
+        data = '%s?url=%s' % (key, quote_plus(poster.ratingKey))
+        self._server.query(data, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
