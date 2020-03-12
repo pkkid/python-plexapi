@@ -126,6 +126,17 @@ class Video(PlexPartialObject):
 
         return self.fetchItems('%s/posters' % self.key, cls=media.Poster)
 
+    def uploadPoster(self, url=None, filepath=None):
+        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '%s/posters?url=%s' % (self.key, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '%s/posters?' % self.key
+            data = open(filepath,'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
             See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
