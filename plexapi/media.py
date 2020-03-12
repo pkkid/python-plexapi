@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils
+from plexapi import log, utils, compat
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
