@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 import copy
-import requests
 import time
-from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_IDENTIFIER, X_PLEX_ENABLE_FAST_CONNECT
-from plexapi import log, logfilter, utils
+
+import requests
+from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
+                     X_PLEX_IDENTIFIER, log, logfilter, utils)
 from plexapi.base import PlexObject
-from plexapi.exceptions import BadRequest, NotFound
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
-from plexapi.sync import SyncList, SyncItem
+from plexapi.sync import SyncItem, SyncList
 from plexapi.utils import joinArgs
+from requests.status_codes import _codes as codes
 
 
 class MyPlexAccount(PlexObject):
@@ -390,8 +391,7 @@ class MyPlexAccount(PlexObject):
             params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
             url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
         else:
-            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds,
-                      'invited_id': user.id}}
+            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds, 'invited_id': user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
         # Remove share sections, add shares to user without shares, or update shares
         if not user_servers or sectionIds:
@@ -435,7 +435,7 @@ class MyPlexAccount(PlexObject):
                 return user
 
             elif (user.username and user.email and user.id and username.lower() in
-                 (user.username.lower(), user.email.lower(), str(user.id))):
+                  (user.username.lower(), user.email.lower(), str(user.id))):
                 return user
 
         raise NotFound('Unable to find user %s' % username)
@@ -622,21 +622,21 @@ class MyPlexAccount(PlexObject):
     def videoOnDemand(self):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.VOD + 'hubs/', headers={'X-Plex-Token':self._token})
+        req = requests.get(self.VOD + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def webShows(self):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
-		"""
-        req = requests.get(self.WEBSHOWS + 'hubs/', headers={'X-Plex-Token':self._token})
+        """
+        req = requests.get(self.WEBSHOWS + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
     def news(self):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
-		"""
-        req = requests.get(self.NEWS + 'hubs/sections/all', headers={'X-Plex-Token':self._token})
+        """
+        req = requests.get(self.NEWS + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 

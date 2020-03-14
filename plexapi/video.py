@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
+
 from plexapi import media, utils
-from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.compat import quote_plus
-import os
+from plexapi.exceptions import BadRequest, NotFound
 
 
 class Video(PlexPartialObject):
@@ -281,7 +282,7 @@ class Movie(Playable, Video):
             else:
                 self._server.url('%s?download=1' % location.key)
             filepath = utils.download(url, self._server._token, filename=name,
-                savepath=savepath, session=self._server._session)
+                                      savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
@@ -655,9 +656,8 @@ class Episode(Playable, Video):
 
 @utils.registerPlexObject
 class Clip(Playable, Video):
-    """ Represents a single Clip.
+    """ Represents a single Clip."""
 
-    """
     TAG = 'Video'
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
