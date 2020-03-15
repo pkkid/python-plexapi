@@ -470,12 +470,11 @@ class PlexPartialObject(PlexObject):
     def fixMatch(self, searchResult=None, auto=False):
         """ Use match result to update show metadata. """
         key = '/library/metadata/%s/match' % self.ratingKey
-        if not auto:
-            if not searchResult:
-                raise NotFound('fixMatch() requires either auto=True or '
-                               'searchResult=:class:`~plexapi.media.SearchResult.')
-        else:
+        if auto:
             searchResult = self.matches()[0]
+        elif not searchResult:
+            raise NotFound('fixMatch() requires either auto=True or '
+                           'searchResult=:class:`~plexapi.media.SearchResult`.')
 
         params = {'guid': searchResult.guid,
                   'name': searchResult.name}
