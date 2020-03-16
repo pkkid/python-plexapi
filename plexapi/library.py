@@ -404,6 +404,16 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
+    def agents(self):
+        """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
+        """
+        results = []
+        for agent in self._server.agents():
+            for agentType in agent.mediaTypes:
+                if agentType.mediaType == utils.searchType(self.type):
+                    results.append(agent)
+        return results
+
     def settings(self):
         """ Returns a list of all library settings. """
         key = '/library/sections/%s/prefs' % self.key
