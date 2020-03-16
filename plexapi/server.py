@@ -185,7 +185,7 @@ class PlexServer(PlexObject):
         return Account(self, data)
 
     def agents(self):
-        """ Returns the :class:`~plexapi.media.Agent` objects this server has available. """
+        """ Returns the `:class:`~plexapi.media.Agent` objects this server has available. """
         key = '/system/agents'
         return self.fetchItems(key)
 
