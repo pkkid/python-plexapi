@@ -676,8 +676,18 @@ class Agent(PlexObject):
         self.identifier = data.attrib.get('identifier')
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
+        self.mediaTypes = [AgentMediaType(server=self._server, data=d) for d in data]
 
     def _settings(self):
         key = '/:/plugins/%s/prefs' % self.identifier
         data = self._server.query(key)
         return self.findItems(data, cls=settings.Setting)
+
+
+class AgentMediaType(Agent):
+    def _loadData(self, data):
+        self.mediaType = data.attrib.get('mediaType')
+        self.name = data.attrib.get('name')
+        self.code = []
+        for code in data:
+            self.code += [code.attrib.get('code')]
