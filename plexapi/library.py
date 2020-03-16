@@ -366,13 +366,15 @@ class LibrarySection(PlexObject):
             log.error(msg)
             raise
 
-    def edit(self, **kwargs):
+    def edit(self, agent=None, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
 
             Parameters:
                 kwargs (dict): Dict of settings to edit.
         """
-        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
+        if not agent:
+            agent = self.agent
+        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
 
         # Reload this way since the self.key dont have a full path, but is simply a id.
