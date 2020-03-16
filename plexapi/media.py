@@ -695,7 +695,7 @@ class AgentMediaType(Agent):
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
 
     def _loadData(self, data):
-        self.mediaType = data.attrib.get('mediaType')
+        self.mediaType = cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
         self.code = []
         for code in data:
