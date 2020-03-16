@@ -679,7 +679,6 @@ class Agent(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self._initpath = '/system/agents'
         self.hasAttribution = data.attrib.get('hasAttribution')
         self.hasPrefs = data.attrib.get('hasPrefs')
         self.identifier = data.attrib.get('identifier')
@@ -702,6 +701,6 @@ class AgentMediaType(Agent):
     def _loadData(self, data):
         self.mediaType = cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
-        self.code = []
+        self.languageCode = []
         for code in data:
-            self.code += [code.attrib.get('code')]
+            self.languageCode += [code.attrib.get('code')]
