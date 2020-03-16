@@ -453,13 +453,13 @@ class PlexPartialObject(PlexObject):
                       'year': year or self.year if self.section().type != 'artist' else '',
                       'language': language or self.section().language}
             if agent:
-                agents = self._server.agents()
+                agents = self.section().agents()
                 match_agent = next((ag for ag in agents if ag.shortIdentifier == agent), None)
                 if match_agent:
                     params['agent'] = match_agent.identifier
                 else:
                     raise NotFound('Couldnt find "%s" in agents list (%s)' %
-                                   (agent, ','.join(agents.keys())))
+                                   (agent, ', '.join([a.shortIdentifier for a in agents])))
             else:
                 params['agent'] = self.section().agent
 
