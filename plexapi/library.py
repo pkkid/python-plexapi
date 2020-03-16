@@ -4,6 +4,7 @@ from plexapi.base import PlexObject
 from plexapi.compat import unquote, urlencode, quote_plus
 from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.settings import Setting
 
 
 class Library(PlexObject):
@@ -400,6 +401,12 @@ class LibrarySection(PlexObject):
 
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
+
+    def settings(self):
+        """ Returns a list of all library settings. """
+        key = '/library/sections/%s/prefs' % self.key
+        data = self._server.query(key)
+        return self.findItems(data, cls=Setting)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
