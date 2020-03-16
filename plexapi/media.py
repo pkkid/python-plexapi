@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils
+from plexapi import log, utils, settings
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -676,3 +676,8 @@ class Agent(PlexObject):
         self.identifier = data.attrib.get('identifier')
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
+
+    def _settings(self):
+        key = '/:/plugins/%s/prefs' % self.identifier
+        data = self._server.query(key)
+        return self.findItems(data, cls=settings.Setting)
