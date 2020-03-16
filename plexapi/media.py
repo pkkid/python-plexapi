@@ -668,6 +668,10 @@ class Agent(PlexObject):
     """
     TAG = 'Agent'
 
+    def __repr__(self):
+        uid = self._clean(self.firstAttr('shortIdentifier'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
+
     def _loadData(self, data):
         self._data = data
         self._initpath = '/system/agents'
@@ -685,6 +689,11 @@ class Agent(PlexObject):
 
 
 class AgentMediaType(Agent):
+
+    def __repr__(self):
+        uid = self._clean(self.firstAttr('name'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
+
     def _loadData(self, data):
         self.mediaType = data.attrib.get('mediaType')
         self.name = data.attrib.get('name')
