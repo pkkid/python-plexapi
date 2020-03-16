@@ -650,6 +650,11 @@ class SearchResult(PlexObject):
     """
     TAG = 'SearchResult'
 
+    def __repr__(self):
+        name = self._clean(self.firstAttr('name'))
+        score = self._clean(self.firstAttr('score'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, name, score] if p])
+
     def _loadData(self, data):
         self._data = data
         self.guid = data.attrib.get('guid')
