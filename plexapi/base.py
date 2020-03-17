@@ -447,21 +447,25 @@ class PlexPartialObject(PlexObject):
                 language (str) : Language of item to search in
         """
         key = '/library/metadata/%s/matches' % self.ratingKey
-        if not auto:
-            params = {'manual': 1,
-                      'title': title or self.title,
-                      'year': year or self.year if self.section().type != 'artist' else '',
-                      'language': language or self.section().language}
-            if agent:
-                agents = self.section().agents()
-                match_agent = next((ag for ag in agents if ag.shortIdentifier == agent), None)
-                if match_agent:
-                    params['agent'] = match_agent.identifier
-                else:
-                    raise NotFound('Couldnt find "%s" in agents list (%s)' %
-                                   (agent, ', '.join([a.shortIdentifier for a in agents])))
+        params = {'manual': 1}
+
+        if any([agent, title, year, language]):
+            if title is None:
+                params['title'] = self.title
             else:
+                params['title'] = title
+
+            if year is None:
+                params['year'] = self.year
+            else:
+                params['year'] = year
+
+            params['language'] = language or self.section().language
+
+            if agent is None:
                 params['agent'] = self.section().agent
+            else:
+                params['agent'] = utils.getAgentIdentifier(self.section(), agent)
 
             key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
