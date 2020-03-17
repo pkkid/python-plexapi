@@ -685,6 +685,7 @@ class Agent(PlexObject):
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
         if 'mediaType' in self._initpath:
+            self.name = data.attrib.get('name')
             self.languageCode = []
             for code in data:
                 self.languageCode += [code.attrib.get('code')]
