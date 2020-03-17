@@ -445,6 +445,25 @@ class PlexPartialObject(PlexObject):
                 title (str): Title of item to search for
                 year (str): Year of item to search in
                 language (str) : Language of item to search in
+
+            Examples:
+                1. video.matches()
+                2. video.matches(title="something", year=2020)
+                3. video.matches(title="something")
+                4. video.matches(year=2020)
+                5. video.matches(title="something", year="")
+                6. video.matches(title="", year=2020)
+                7. video.matches(title="", year="")
+
+                1. The default behaviour in Plex Web = no params in plexapi
+                2. Both title and year specified by user
+                3. Year automatically filled in
+                4. Title automatically filled in
+                5. Explicitly searches for title with blank year
+                6. Explicitly searches for blank title with year
+                7. I don't know what the user is thinking... return the same result as 1
+
+                For 2 to 7, the agent and language is automatically filled in
         """
         key = '/library/metadata/%s/matches' % self.ratingKey
         params = {'manual': 1}
