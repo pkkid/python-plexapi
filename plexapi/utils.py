@@ -378,3 +378,14 @@ def choose(msg, items, attr):  # pragma: no cover
 
         except (ValueError, IndexError):
             pass
+
+def getAgentIdentifier(section, agent):
+    """ Return the full agent identifier from a short identifier, name, or confirm full identifier. """
+    agents = []
+    for ag in section.agents():
+        identifiers = [ag.identifier, ag.shortIdentifier, ag.name]
+        if agent in identifiers:
+            return ag.identifier
+        agents += identifiers
+    raise NotFound('Couldnt find "%s" in agents list (%s)' %
+                   (agent, ', '.join(agents)))
