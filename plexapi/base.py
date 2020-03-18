@@ -448,6 +448,25 @@ class PlexPartialObject(PlexObject):
         """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
         poster.select()
 
+    def arts(self):
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
+
+        return self.fetchItems('%s/arts' % self.key)
+
+    def uploadArt(self, url=None, filepath=None):
+        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '/library/metadata/%s/arts?' % self.ratingKey
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setArt(self, art):
+        """ Set :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        art.select()
+
     # The photo tag cant be built atm. TODO
     # def arts(self):
     #     part = '%s/arts' % self.key
