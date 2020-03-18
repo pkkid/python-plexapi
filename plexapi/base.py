@@ -446,9 +446,7 @@ class PlexPartialObject(PlexObject):
 
     def setPoster(self, poster):
         """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
-        key = poster._initpath[:-1]
-        data = '%s?url=%s' % (key, quote_plus(poster.ratingKey))
-        self._server.query(data, method=self._server._session.put)
+        poster.select()
 
     # The photo tag cant be built atm. TODO
     # def arts(self):
