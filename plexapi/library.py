@@ -1081,7 +1081,7 @@ class Collections(PlexObject):
             key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '%s/posters?' % self.key
+            key = '/library/metadata/%s/posters?' % self.ratingKey
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
