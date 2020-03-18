@@ -1070,5 +1070,26 @@ class Collections(PlexObject):
         part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
 
+    def posters(self):
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
+
+        return self.fetchItems('%s/posters' % self.key)
+
+    def uploadPoster(self, url=None, filepath=None):
+        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '%s/posters?' % self.key
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setPoster(self, poster):
+        """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        key = poster._initpath[:-1]
+        data = '%s?url=%s' % (key, quote_plus(poster.ratingKey))
+        self._server.query(data, method=self._server._session.put)
+
     # def edit(self, **kwargs):
     #    TODO
