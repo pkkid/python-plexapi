@@ -449,12 +449,12 @@ class PlexPartialObject(PlexObject):
         poster.select()
 
     def arts(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
+        """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
 
         return self.fetchItems('%s/arts' % self.key)
 
     def uploadArt(self, url=None, filepath=None):
-        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
         if url:
             key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
             self._server.query(key, method=self._server._session.post)
