@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils, compat
+
+import xml
+
+from plexapi import compat, log, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -143,7 +146,7 @@ class MediaPart(PlexObject):
 
     def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
-            
+
             Parameters:
                 stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
         """
@@ -370,38 +373,38 @@ class Conversion(PlexObject):
     TAG = 'Video'
 
     def _loadData(self, data):
-         self._data = data
-         self.addedAt = data.attrib.get('addedAt')
-         self.art = data.attrib.get('art')
-         self.chapterSource = data.attrib.get('chapterSource')
-         self.contentRating = data.attrib.get('contentRating')
-         self.duration = data.attrib.get('duration')
-         self.generatorID = data.attrib.get('generatorID')
-         self.generatorType = data.attrib.get('generatorType')
-         self.guid = data.attrib.get('guid')
-         self.key = data.attrib.get('key')
-         self.lastViewedAt = data.attrib.get('lastViewedAt')
-         self.librarySectionID = data.attrib.get('librarySectionID')
-         self.librarySectionKey = data.attrib.get('librarySectionKey')
-         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
-         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
-         self.playQueueItemID = data.attrib.get('playQueueItemID')
-         self.playlistID = data.attrib.get('playlistID')
-         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
-         self.rating = data.attrib.get('rating')
-         self.ratingKey = data.attrib.get('ratingKey')
-         self.studio = data.attrib.get('studio')
-         self.summary = data.attrib.get('summary')
-         self.tagline = data.attrib.get('tagline')
-         self.target = data.attrib.get('target')
-         self.thumb = data.attrib.get('thumb')
-         self.title = data.attrib.get('title')
-         self.type = data.attrib.get('type')
-         self.updatedAt = data.attrib.get('updatedAt')
-         self.userID = data.attrib.get('userID')
-         self.username = data.attrib.get('username')
-         self.viewOffset = data.attrib.get('viewOffset')
-         self.year = data.attrib.get('year')
+        self._data = data
+        self.addedAt = data.attrib.get('addedAt')
+        self.art = data.attrib.get('art')
+        self.chapterSource = data.attrib.get('chapterSource')
+        self.contentRating = data.attrib.get('contentRating')
+        self.duration = data.attrib.get('duration')
+        self.generatorID = data.attrib.get('generatorID')
+        self.generatorType = data.attrib.get('generatorType')
+        self.guid = data.attrib.get('guid')
+        self.key = data.attrib.get('key')
+        self.lastViewedAt = data.attrib.get('lastViewedAt')
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.librarySectionKey = data.attrib.get('librarySectionKey')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+        self.playQueueItemID = data.attrib.get('playQueueItemID')
+        self.playlistID = data.attrib.get('playlistID')
+        self.primaryExtraKey = data.attrib.get('primaryExtraKey')
+        self.rating = data.attrib.get('rating')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.studio = data.attrib.get('studio')
+        self.summary = data.attrib.get('summary')
+        self.tagline = data.attrib.get('tagline')
+        self.target = data.attrib.get('target')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = data.attrib.get('updatedAt')
+        self.userID = data.attrib.get('userID')
+        self.username = data.attrib.get('username')
+        self.viewOffset = data.attrib.get('viewOffset')
+        self.year = data.attrib.get('year')
 
 
 class MediaTag(PlexObject):
@@ -560,7 +563,10 @@ class Poster(PlexObject):
     def select(self):
         key = self._initpath[:-1]
         data = '%s?url=%s' % (key, compat.quote_plus(self.ratingKey))
-        self._server.query(data, method=self._server._session.put)
+        try:
+            self._server.query(data, method=self._server._session.put)
+        except xml.etree.ElementTree.ParseError:
+            pass
 
 
 @utils.registerPlexObject
