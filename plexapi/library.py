@@ -1073,7 +1073,7 @@ class Collections(PlexObject):
     def posters(self):
         """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
 
-        return self.fetchItems('%s/posters' % self.key)
+        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey)
 
     def uploadPoster(self, url=None, filepath=None):
         """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
