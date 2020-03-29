@@ -204,10 +204,13 @@ class PlexClient(PlexObject):
             return query(key, headers=headers)
         except ElementTree.ParseError:
             # Workaround for players which don't return valid XML on successful commands
-            #   - Plexamp: `b'OK'`
+            #   - Plexamp, Plex for Android: `b'OK'`
+            #   - Plex for Samsung: `b'<?xml version="1.0"?><Response code="200" status="OK">'`
             if self.product in (
                 'Plexamp',
                 'Plex for Android (TV)',
+                'Plex for Android (Mobile)',
+                'Plex for Samsung',
             ):
                 return
             raise
