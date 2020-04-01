@@ -21,9 +21,9 @@ class GDM:
         self.entries = []  # type: List[Dict[str, Any]]
         self.last_scan = None
 
-    def scan(self):
+    def scan(self, scan_for_clients=False):
         """Scan the network."""
-        self.update()
+        self.update(scan_for_clients)
 
     def all(self):
         """Return all found entries.
@@ -46,28 +46,43 @@ class GDM:
                 if all(item in entry['data'].items()
                        for item in values.items())]
 
-    def update(self):
+    def update(self, scan_for_clients):
         """Scan for new GDM services.
 
-        Example of the dict list assigned to self.entries by this function:
+        Examples of the dict list assigned to self.entries by this function:
+
+        Server:
         [{'data': {
              'Content-Type': 'plex/media-server',
              'Host': '53f4b5b6023d41182fe88a99b0e714ba.plex.direct',
              'Name': 'myfirstplexserver',
              'Port': '32400',
              'Resource-Identifier': '646ab0aa8a01c543e94ba975f6fd6efadc36b7',
-             'Updated-At': '1444852697',
-             'Version': '0.9.12.13.1464-4ccd2ca',
-          },
-          'from': ('10.10.10.100', 32414)}]
+             'Updated-At': '1585769946',
+             'Version': '1.18.8.2527-740d4c206',
+         },
+         'from': ('10.10.10.100', 32414)}]
+
+        Clients:
+        [{'data': {'Content-Type': 'plex/media-player',
+             'Device-Class': 'stb',
+             'Name': 'plexamp',
+             'Port': '36000',
+             'Product': 'Plexamp',
+             'Protocol': 'plex',
+             'Protocol-Capabilities': 'timeline,playback,playqueues,playqueues-creation',
+             'Protocol-Version': '1',
+             'Resource-Identifier': 'b6e57a3f-e0f8-494f-8884-f4b58501467e',
+             'Version': '1.1.0',
+         },
+         'from': ('10.10.10.101', 32412)}]
         """
 
-        gdm_ip = '239.0.0.250'  # multicast to PMS
-        gdm_port = 32414
         gdm_msg = 'M-SEARCH * HTTP/1.0'.encode('ascii')
         gdm_timeout = 1
 
         self.entries = []
+        known_responses = []
 
         # setup socket for discovery -> multicast message
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -78,6 +93,17 @@ class GDM:
                         socket.IP_MULTICAST_TTL,
                         struct.pack("B", gdm_timeout))
 
+        if scan_for_clients:
+            # setup socket for broadcast to Plex clients
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            gdm_ip = '255.255.255.255'
+            gdm_port = 32412
+        else:
+            # setup socket for multicast to Plex server(s)
+            gdm_ip = '239.0.0.250'
+            gdm_port = 32414
+
         try:
             # Send data to the multicast group
             sock.sendto(gdm_msg, (gdm_ip, gdm_port))
@@ -85,14 +111,18 @@ class GDM:
             # Look for responses from all recipients
             while True:
                 try:
-                    bdata, server = sock.recvfrom(1024)
+                    bdata, host = sock.recvfrom(1024)
                     data = bdata.decode('utf-8')
                     if '200 OK' in data.splitlines()[0]:
                         ddata = {k: v.strip() for (k, v) in (
                             line.split(':') for line in
                             data.splitlines() if ':' in line)}
+                        identifier = ddata.get('Resource-Identifier')
+                        if identifier and identifier in known_responses:
+                            continue
+                        known_responses.append(identifier)
                         self.entries.append({'data': ddata,
-                                             'from': server})
+                                             'from': host})
                 except socket.timeout:
                     break
         finally:
@@ -105,8 +135,12 @@ def main():
 
     gdm = GDM()
 
-    pprint("Scanning GDM...")
-    gdm.update()
+    pprint("Scanning GDM for servers...")
+    gdm.scan()
+    pprint(gdm.entries)
+
+    pprint("Scanning GDM for clients...")
+    gdm.scan(scan_for_clients=True)
     pprint(gdm.entries)
 
 
