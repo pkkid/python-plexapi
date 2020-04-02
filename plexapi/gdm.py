@@ -11,14 +11,13 @@ Inspired by
 """
 import socket
 import struct
-from typing import Any, Dict, List  # noqa: F401
 
 
 class GDM:
     """Base class to discover GDM services."""
 
     def __init__(self):
-        self.entries = []  # type: List[Dict[str, Any]]
+        self.entries = []
         self.last_scan = None
 
     def scan(self, scan_for_clients=False):
