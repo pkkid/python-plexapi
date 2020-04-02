@@ -472,10 +472,12 @@ class PlexClient(PlexObject):
 
         if hasattr(media, "playlistType"):
             mediatype = media.playlistType
-        elif media.listType == "audio":
-            mediatype = "music"
         else:
-            mediatype = "video"
+            if isinstance(media, PlayQueue):
+                listType = media.items[0].listType
+            else:
+                listType = media.listType
+            mediatype = "music" if listType == "audio" else "video"
 
         if self.product != 'OpenPHT':
             try:
