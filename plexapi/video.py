@@ -581,7 +581,7 @@ class Season(Video):
 
     def show(self):
         """ Return this seasons :func:`~plexapi.video.Show`.. """
-        return self.fetchItem(self.parentKey)
+        return self.fetchItem(int(self.parentRatingKey))
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
@@ -722,7 +722,7 @@ class Episode(Playable, Video):
 
     def show(self):
         """" Return this episodes :func:`~plexapi.video.Show`.. """
-        return self.fetchItem(self.grandparentKey)
+        return self.fetchItem(int(self.grandparentRatingKey))
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
