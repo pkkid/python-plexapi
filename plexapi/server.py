@@ -7,7 +7,7 @@ from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Library, Hub
 from plexapi.settings import Settings
 from plexapi.playlist import Playlist
@@ -399,7 +399,10 @@ class PlexServer(PlexObject):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+            if response.status_code == 401:
+                raise Unauthorized('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+            else:
+                raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
