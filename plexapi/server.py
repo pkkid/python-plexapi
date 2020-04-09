@@ -398,11 +398,11 @@ class PlexServer(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
             if response.status_code == 401:
-                raise Unauthorized('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+                raise Unauthorized(message)
             else:
-                raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+                raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
