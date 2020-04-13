@@ -373,16 +373,35 @@ class PlexServer(PlexObject):
         """
         return self.fetchItem('/playlists', title=title)
 
-    def optimizedItems(self):
+    def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
+        if removeAll is True:
+            key = '/playlists/generators?type=42'
+            self.query(key, method=self._server._session.delete)
+        else:
+            backgroundProcessing = self.fetchItem('/playlists?type=42')
+            return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
+
+    def optimizedItem(self, optimizedID):
+        """ Returns single queued optimized item :class:`~plexapi.media.Video` object.
+            Allows for using optimized item ID to connect back to source item.
+        """
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
-        return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
+        return self.fetchItem('%s/items/%s/items' % (backgroundProcessing.key, optimizedID))
 
-    def conversions(self):
+    def conversions(self, pause=None):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
+        if pause is True:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=1', method=self._server._session.put)
+        elif pause is False:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=0', method=self._server._session.put)
+        else:
+            return self.fetchItems('/playQueues/1', cls=Conversion)
 
-        return self.fetchItems('/playQueues/1', cls=Conversion)
+    def currentBackgroundProcess(self):
+        """ Returns list of all :class:`~plexapi.media.TranscodeJob` objects running or paused on server. """
+        return self.fetchItems('/status/sessions/background')
 
     def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps

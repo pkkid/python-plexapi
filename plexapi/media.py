@@ -350,8 +350,29 @@ class TranscodeSession(PlexObject):
 
 
 @utils.registerPlexObject
+class TranscodeJob(PlexObject):
+    """ Represents an Optimizing job.
+        TrancodeJobs are the process for optimizing conversions.
+        Active or paused optimization items. Usually one item as a time"""
+    TAG = 'TranscodeJob'
+
+    def _loadData(self, data):
+        self._data = data
+        self.generatorID = data.attrib.get('generatorID')
+        self.key = data.attrib.get('key')
+        self.progress = data.attrib.get('progress')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.size = data.attrib.get('size')
+        self.targetTagID = data.attrib.get('targetTagID')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+
+
+@utils.registerPlexObject
 class Optimized(PlexObject):
-    """ Represents a Optimized item. """
+    """ Represents a Optimized item.
+        Optimized items are optimized and queued conversions items."""
     TAG = 'Item'
 
     def _loadData(self, data):
@@ -363,10 +384,26 @@ class Optimized(PlexObject):
         self.target = data.attrib.get('target')
         self.targetTagID = data.attrib.get('targetTagID')
 
+    def remove(self):
+        """ Remove an Optimized item"""
+        key = '%s/%s' % (self._initpath, self.id)
+        self._server.query(key, method=self._server._session.delete)
+
+    def rename(self, title):
+        """ Rename an Optimized item"""
+        key = '%s/%s?Item[title]=%s' % (self._initpath, self.id, title)
+        self._server.query(key, method=self._server._session.put)
+
+    def reprocess(self, ratingKey):
+        """ Reprocess a removed Conversion item that is still a listed Optimize item"""
+        key = '%s/%s/%s/enable' % (self._initpath, self.id, ratingKey)
+        self._server.query(key, method=self._server._session.put)
+
 
 @utils.registerPlexObject
 class Conversion(PlexObject):
-    """ Represents a Conversion item. """
+    """ Represents a Conversion item.
+        Conversions are items queued for optimization or being actively optimized."""
     TAG = 'Video'
 
     def _loadData(self, data):
@@ -402,6 +439,29 @@ class Conversion(PlexObject):
         self.username = data.attrib.get('username')
         self.viewOffset = data.attrib.get('viewOffset')
         self.year = data.attrib.get('year')
+
+    def remove(self):
+        """ Remove Conversion from queue """
+        key = '/playlists/%s/items/%s/%s/disable' % (self.playlistID, self.generatorID, self.ratingKey)
+        self._server.query(key, method=self._server._session.put)
+
+    def move(self, after):
+        """ Move Conversion items position in queue
+            after (int): Positional integer to move item
+                    -1 Active conversion
+                OR
+                    Use another conversion items playQueueItemID to move in front of
+
+                Example:
+                    Move 5th conversion Item to active conversion
+                        conversions[4].move('-1')
+
+                    Move 4th conversion Item to 2nd in conversion queue
+                        conversions[3].move(conversions[1].playQueueItemID)
+        """
+
+        key = '%s/items/%s/move?after=%s' % (self._initpath, self.playQueueItemID, after)
+        self._server.query(key, method=self._server._session.put)
 
 
 class MediaTag(PlexObject):
