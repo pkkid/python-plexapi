@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils, settings
+
+import xml
+
+from plexapi import compat, log, utils, settings
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -143,7 +146,7 @@ class MediaPart(PlexObject):
 
     def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
-            
+
             Parameters:
                 stream (:class:`~plexapi.media.SubtitleStream`): SubtitleStream to set as default.
         """
@@ -616,6 +619,14 @@ class Poster(PlexObject):
         self.ratingKey = data.attrib.get('ratingKey')
         self.selected = data.attrib.get('selected')
         self.thumb = data.attrib.get('thumb')
+
+    def select(self):
+        key = self._initpath[:-1]
+        data = '%s?url=%s' % (key, compat.quote_plus(self.ratingKey))
+        try:
+            self._server.query(data, method=self._server._session.put)
+        except xml.etree.ElementTree.ParseError:
+            pass
 
 
 @utils.registerPlexObject

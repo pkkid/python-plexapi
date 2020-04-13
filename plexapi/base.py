@@ -433,6 +433,44 @@ class PlexPartialObject(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
 
+    def posters(self):
+        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
+
+        return self.fetchItems('%s/posters' % self.key)
+
+    def uploadPoster(self, url=None, filepath=None):
+        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '%s/posters?url=%s' % (self.key, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '%s/posters?' % self.key
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setPoster(self, poster):
+        """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        poster.select()
+
+    def arts(self):
+        """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
+
+        return self.fetchItems('%s/arts' % self.key)
+
+    def uploadArt(self, url=None, filepath=None):
+        """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '/library/metadata/%s/arts?' % self.ratingKey
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setArt(self, art):
+        """ Set :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        art.select()
+
     def unmatch(self):
         """ Unmatches metadata match from object. """
         key = '/library/metadata/%s/unmatch' % self.ratingKey

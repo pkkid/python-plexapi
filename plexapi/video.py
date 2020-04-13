@@ -121,11 +121,6 @@ class Video(PlexPartialObject):
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
 
-    def posters(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`:"""
-
-        return self.fetchItems('%s/posters' % self.key, cls=media.Poster)
-
     def optimize(self, title=None, target="", targetTagID=None, locationID=-1, policyScope='all',
                  policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
         """ Optimize item
