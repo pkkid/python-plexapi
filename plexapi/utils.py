@@ -379,6 +379,7 @@ def choose(msg, items, attr):  # pragma: no cover
         except (ValueError, IndexError):
             pass
 
+
 def getAgentIdentifier(section, agent):
     """ Return the full agent identifier from a short identifier, name, or confirm full identifier. """
     agents = []
