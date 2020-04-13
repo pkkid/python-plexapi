@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from datetime import datetime
+from time import sleep
 from plexapi.exceptions import BadRequest, NotFound
 from . import conftest as utils
 
@@ -685,4 +686,22 @@ def test_video_exists_accessible(movie, episode):
     episode.reload()
     assert episode.media[0].parts[0].exists is True
     assert episode.media[0].parts[0].accessible is True
-    
+
+
+@pytest.mark.skip(reason='broken? assert len(plex.conversions()) == 1 may fail on some builds')
+def test_video_optimize(movie, plex):
+    plex.optimizedItems(removeAll=True)
+    movie.optimize(targetTagID=1)
+    plex.conversions(pause=True)
+    sleep(1)
+    assert len(plex.optimizedItems()) == 1
+    assert len(plex.conversions()) == 1
+    conversion = plex.conversions()[0]
+    conversion.remove()
+    assert len(plex.conversions()) == 0
+    assert len(plex.optimizedItems()) == 1
+    optimized = plex.optimizedItems()[0]
+    video = plex.optimizedItem(optimizedID=optimized.id)
+    assert movie.key == video.key
+    plex.optimizedItems(removeAll=True)
+    assert len(plex.optimizedItems()) == 0

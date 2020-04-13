@@ -25,9 +25,9 @@ except ImportError:
     from urllib import quote
 
 try:
-    from urllib.parse import quote_plus
+    from urllib.parse import quote_plus, quote
 except ImportError:
-    from urllib import quote_plus
+    from urllib import quote_plus, quote
 
 try:
     from urllib.parse import unquote
