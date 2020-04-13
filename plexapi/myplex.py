@@ -395,7 +395,8 @@ class MyPlexAccount(PlexObject):
             params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds}}
             url = self.FRIENDSERVERS.format(machineId=machineId, serverId=serverId)
         else:
-            params = {'server_id': machineId, 'shared_server': {'library_section_ids': sectionIds, 'invited_id': user.id}}
+            params = {'server_id': machineId,
+                      'shared_server': {'library_section_ids': sectionIds, 'invited_id': user.id}}
             url = self.FRIENDINVITE.format(machineId=machineId)
         # Remove share sections, add shares to user without shares, or update shares
         if not user_servers or sectionIds:
