@@ -7,7 +7,7 @@ from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree, urlencode
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Library, Hub
 from plexapi.settings import Settings
 from plexapi.playlist import Playlist
@@ -373,16 +373,35 @@ class PlexServer(PlexObject):
         """
         return self.fetchItem('/playlists', title=title)
 
-    def optimizedItems(self):
+    def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
+        if removeAll is True:
+            key = '/playlists/generators?type=42'
+            self.query(key, method=self._server._session.delete)
+        else:
+            backgroundProcessing = self.fetchItem('/playlists?type=42')
+            return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
+
+    def optimizedItem(self, optimizedID):
+        """ Returns single queued optimized item :class:`~plexapi.media.Video` object.
+            Allows for using optimized item ID to connect back to source item.
+        """
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
-        return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
+        return self.fetchItem('%s/items/%s/items' % (backgroundProcessing.key, optimizedID))
 
-    def conversions(self):
+    def conversions(self, pause=None):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
+        if pause is True:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=1', method=self._server._session.put)
+        elif pause is False:
+            self.query('/:/prefs?BackgroundQueueIdlePaused=0', method=self._server._session.put)
+        else:
+            return self.fetchItems('/playQueues/1', cls=Conversion)
 
-        return self.fetchItems('/playQueues/1', cls=Conversion)
+    def currentBackgroundProcess(self):
+        """ Returns list of all :class:`~plexapi.media.TranscodeJob` objects running or paused on server. """
+        return self.fetchItems('/status/sessions/background')
 
     def query(self, key, method=None, headers=None, timeout=None, **kwargs):
         """ Main method used to handle HTTPS requests to the Plex server. This method helps
@@ -398,8 +417,11 @@ class PlexServer(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
+            if response.status_code == 401:
+                raise Unauthorized(message)
+            else:
+                raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -492,6 +514,25 @@ class PlexServer(PlexObject):
         """
         self.refreshSynclist()
         self.refreshContent()
+
+    def _allowMediaDeletion(self, toggle=False):
+        """ Toggle allowMediaDeletion.
+            Parameters:
+                toggle (bool): True enables Media Deletion
+                               False or None disable Media Deletion (Default)
+        """
+        if self.allowMediaDeletion and toggle is False:
+            log.debug('Plex is currently allowed to delete media. Toggling off.')
+        elif self.allowMediaDeletion and toggle is True:
+            log.debug('Plex is currently allowed to delete media. Toggle set to allow, exiting.')
+            raise BadRequest('Plex is currently allowed to delete media. Toggle set to allow, exiting.')
+        elif self.allowMediaDeletion is None and toggle is True:
+            log.debug('Plex is currently not allowed to delete media. Toggle set to allow.')
+        else:
+            log.debug('Plex is currently not allowed to delete media. Toggle set to not allow, exiting.')
+            raise BadRequest('Plex is currently not allowed to delete media. Toggle set to not allow, exiting.')
+        value = 1 if toggle is True else 0
+        return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
 
 
 class Account(PlexObject):

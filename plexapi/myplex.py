@@ -6,7 +6,7 @@ from requests.status_codes import _codes as codes
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_IDENTIFIER, X_PLEX_ENABLE_FAST_CONNECT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
 from plexapi.library import LibrarySection
@@ -175,7 +175,11 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
+            if response.status_code == 401:
+                raise Unauthorized(message)
+            else:
+                raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
