@@ -132,6 +132,8 @@ class PlexObject(object):
                     * __regex: Value matches the specified regular expression.
                     * __startswith: Value starts with specified arg.
         """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
         if isinstance(ekey, int):
             ekey = '/library/metadata/%s' % ekey
         for elem in self._server.query(ekey):
@@ -145,6 +147,8 @@ class PlexObject(object):
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
         """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
         data = self._server.query(ekey)
         items = self.findItems(data, cls, ekey, **kwargs)
         librarySectionID = data.attrib.get('librarySectionID')
@@ -429,7 +433,6 @@ class PlexPartialObject(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
 
-
     # The photo tag cant be built atm. TODO
     # def arts(self):
     #     part = '%s/arts' % self.key
@@ -582,7 +585,7 @@ class Playable(object):
                                                                                               time, state)
         self._server.query(key)
         self.reload()
-        
+
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
 

@@ -124,13 +124,14 @@ def create_section(server, section, opts):
     start = time.time()
     bar = tqdm(desc='Scanning section ' + section['name'], total=expected_media_count)
     notifier = server.startAlertListener(alert_callback)
+    time.sleep(3)
     add_library_section(server, section)
     while bar.n < bar.total:
         if runtime >= 120:
             print('Metadata scan taking too long, but will continue anyway..')
             break
         time.sleep(3)
-        runtime = time.time() - start
+        runtime = int(time.time() - start)
     bar.close()
     notifier.stop()
 
