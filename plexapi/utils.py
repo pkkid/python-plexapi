@@ -59,7 +59,7 @@ def registerPlexObject(cls):
 
 def cast(func, value):
     """ Cast the specified value to the specified type (returned by func). Currently this
-        only support int, float, bool. Should be extended if needed.
+        only support str, int, float, bool. Should be extended if needed.
 
         Parameters:
             func (func): Calback function to used cast to type (int, bool, float).
@@ -67,7 +67,10 @@ def cast(func, value):
     """
     if value is not None:
         if func == bool:
-            return bool(int(value))
+            try:
+                return bool(int(value))
+            except ValueError:
+                return bool(value)
         elif func in (int, float):
             try:
                 return func(value)
@@ -375,3 +378,15 @@ def choose(msg, items, attr):  # pragma: no cover
 
         except (ValueError, IndexError):
             pass
+
+
+def getAgentIdentifier(section, agent):
+    """ Return the full agent identifier from a short identifier, name, or confirm full identifier. """
+    agents = []
+    for ag in section.agents():
+        identifiers = [ag.identifier, ag.shortIdentifier, ag.name]
+        if agent in identifiers:
+            return ag.identifier
+        agents += identifiers
+    raise NotFound('Couldnt find "%s" in agents list (%s)' %
+                   (agent, ', '.join(agents)))

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import log, utils
+from plexapi import log, utils, settings
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -699,3 +699,74 @@ class Field(PlexObject):
         self._data = data
         self.name = data.attrib.get('name')
         self.locked = cast(bool, data.attrib.get('locked'))
+
+
+@utils.registerPlexObject
+class SearchResult(PlexObject):
+    """ Represents a single SearchResult.
+
+        Attributes:
+            TAG (str): 'SearchResult'
+    """
+    TAG = 'SearchResult'
+
+    def __repr__(self):
+        name = self._clean(self.firstAttr('name'))
+        score = self._clean(self.firstAttr('score'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, name, score] if p])
+
+    def _loadData(self, data):
+        self._data = data
+        self.guid = data.attrib.get('guid')
+        self.lifespanEnded = data.attrib.get('lifespanEnded')
+        self.name = data.attrib.get('name')
+        self.score = cast(int, data.attrib.get('score'))
+        self.year = data.attrib.get('year')
+
+
+@utils.registerPlexObject
+class Agent(PlexObject):
+    """ Represents a single Agent.
+
+        Attributes:
+            TAG (str): 'Agent'
+    """
+    TAG = 'Agent'
+
+    def __repr__(self):
+        uid = self._clean(self.firstAttr('shortIdentifier'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
+
+    def _loadData(self, data):
+        self._data = data
+        self.hasAttribution = data.attrib.get('hasAttribution')
+        self.hasPrefs = data.attrib.get('hasPrefs')
+        self.identifier = data.attrib.get('identifier')
+        self.primary = data.attrib.get('primary')
+        self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
+        if 'mediaType' in self._initpath:
+            self.name = data.attrib.get('name')
+            self.languageCode = []
+            for code in data:
+                self.languageCode += [code.attrib.get('code')]
+        else:
+            self.mediaTypes = [AgentMediaType(server=self._server, data=d) for d in data]
+
+    def _settings(self):
+        key = '/:/plugins/%s/prefs' % self.identifier
+        data = self._server.query(key)
+        return self.findItems(data, cls=settings.Setting)
+
+
+class AgentMediaType(Agent):
+
+    def __repr__(self):
+        uid = self._clean(self.firstAttr('name'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
+
+    def _loadData(self, data):
+        self.mediaType = cast(int, data.attrib.get('mediaType'))
+        self.name = data.attrib.get('name')
+        self.languageCode = []
+        for code in data:
+            self.languageCode += [code.attrib.get('code')]
