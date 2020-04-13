@@ -352,7 +352,7 @@ class Movie(Playable, Video):
             else:
                 self._server.url('%s?download=1' % location.key)
             filepath = utils.download(url, self._server._token, filename=name,
-                savepath=savepath, session=self._server._session)
+                                      savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
@@ -722,3 +722,28 @@ class Episode(Playable, Video):
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+
+@utils.registerPlexObject
+class Clip(Playable, Video):
+    """ Represents a single Clip."""
+
+    TAG = 'Video'
+    TYPE = 'clip'
+    METADATA_TYPE = 'clip'
+
+    def _loadData(self, data):
+        self._data = data
+        self.addedAt = data.attrib.get('addedAt')
+        self.duration = data.attrib.get('duration')
+        self.guid = data.attrib.get('guid')
+        self.key = data.attrib.get('key')
+        self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
+        self.subtype = data.attrib.get('subtype')
+        self.thumb = data.attrib.get('thumb')
+        self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.year = data.attrib.get('year')

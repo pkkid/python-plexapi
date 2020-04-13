@@ -1001,6 +1001,7 @@ class Hub(PlexObject):
         self.size = utils.cast(int, data.attrib.get('size'))
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+        self.key = data.attrib.get('key')
         self.items = self.findItems(data)
 
     def __len__(self):
