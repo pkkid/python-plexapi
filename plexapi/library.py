@@ -4,6 +4,7 @@ from plexapi.base import PlexObject
 from plexapi.compat import unquote, urlencode, quote_plus
 from plexapi.media import MediaTag
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.settings import Setting
 
 
 class Library(PlexObject):
@@ -365,13 +366,15 @@ class LibrarySection(PlexObject):
             log.error(msg)
             raise
 
-    def edit(self, **kwargs):
+    def edit(self, agent=None, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
 
             Parameters:
                 kwargs (dict): Dict of settings to edit.
         """
-        part = '/library/sections/%s?%s' % (self.key, urlencode(kwargs))
+        if not agent:
+            agent = self.agent
+        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
 
         # Reload this way since the self.key dont have a full path, but is simply a id.
@@ -400,6 +403,17 @@ class LibrarySection(PlexObject):
 
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
+
+    def agents(self):
+        """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
+        """
+        return self._server.agents(utils.searchType(self.type))
+
+    def settings(self):
+        """ Returns a list of all library settings. """
+        key = '/library/sections/%s/prefs' % self.key
+        data = self._server.query(key)
+        return self.findItems(data, cls=Setting)
 
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
