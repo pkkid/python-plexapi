@@ -7,7 +7,7 @@ from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
 from plexapi import log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.compat import ElementTree
-from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.exceptions import BadRequest, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
 
 
@@ -162,8 +162,11 @@ class PlexClient(PlexObject):
         if response.status_code not in (200, 201):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            log.warning('BadRequest (%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
-            raise BadRequest('(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext))
+            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
+            if response.status_code == 401:
+                raise Unauthorized(message)
+            else:
+                raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -204,10 +207,13 @@ class PlexClient(PlexObject):
             return query(key, headers=headers)
         except ElementTree.ParseError:
             # Workaround for players which don't return valid XML on successful commands
-            #   - Plexamp: `b'OK'`
+            #   - Plexamp, Plex for Android: `b'OK'`
+            #   - Plex for Samsung: `b'<?xml version="1.0"?><Response code="200" status="OK">'`
             if self.product in (
                 'Plexamp',
                 'Plex for Android (TV)',
+                'Plex for Android (Mobile)',
+                'Plex for Samsung',
             ):
                 return
             raise
@@ -469,10 +475,15 @@ class PlexClient(PlexObject):
 
         if hasattr(media, "playlistType"):
             mediatype = media.playlistType
-        elif media.listType == "audio":
-            mediatype = "music"
         else:
-            mediatype = "video"
+            if isinstance(media, PlayQueue):
+                mediatype = media.items[0].listType
+            else:
+                mediatype = media.listType
+
+        # mediatype must be in ["video", "music", "photo"]
+        if mediatype == "audio":
+            mediatype = "music"
 
         if self.product != 'OpenPHT':
             try:
