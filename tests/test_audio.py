@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+
 from . import conftest as utils
 
 
@@ -87,12 +88,12 @@ def test_audio_Album_attrs(album):
 
 def test_audio_Album_history(album):
     history = album.history()
-    assert len(history)
+    assert isinstance(history, list)
 
 
 def test_audio_Track_history(track):
     history = track.history()
-    assert len(history)
+    assert isinstance(history, list)
 
 
 def test_audio_Album_tracks(album):
@@ -228,7 +229,7 @@ def test_audio_Track_attrs(album):
     assert track.parentTitle == 'Unmastered Impulses'
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
-    # assert track.ratingCount == 9
+    assert utils.is_int(track.ratingCount)
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.sessionKey is None

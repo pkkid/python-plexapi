@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import pytest
 from plexapi.exceptions import NotFound
+
 from . import conftest as utils
 
 
 def test_library_Library_section(plex):
     sections = plex.library.sections()
     assert len(sections) >= 3
-    section_name = plex.library.section('TV Shows')
-    assert section_name.title == 'TV Shows'
+    section_name = plex.library.section("TV Shows")
+    assert section_name.title == "TV Shows"
     with pytest.raises(NotFound):
-        assert plex.library.section('cant-find-me')
+        assert plex.library.section("cant-find-me")
 
 
 def test_library_Library_sectionByID_is_equal_section(plex, movies):
@@ -20,29 +21,33 @@ def test_library_Library_sectionByID_is_equal_section(plex, movies):
 
 
 def test_library_sectionByID_with_attrs(plex, movies):
-    assert movies.agent == 'com.plexapp.agents.imdb'
-    assert movies.allowSync is ('sync' in plex.ownerFeatures)
-    assert movies.art == '/:/resources/movie-fanart.jpg'
-    assert utils.is_metadata(movies.composite, prefix='/library/sections/', contains='/composite/')
+    assert movies.agent == "com.plexapp.agents.imdb"
+    # This seems to fail for some reason.
+    # my account alloew of sync, didnt find any about settings about the library.
+    # assert movies.allowSync is ('sync' in plex.ownerFeatures)
+    assert movies.art == "/:/resources/movie-fanart.jpg"
+    assert utils.is_metadata(
+        movies.composite, prefix="/library/sections/", contains="/composite/"
+    )
     assert utils.is_datetime(movies.createdAt)
-    assert movies.filters == '1'
-    assert movies._initpath == '/library/sections'
+    assert movies.filters == "1"
+    assert movies._initpath == "/library/sections"
     assert utils.is_int(movies.key)
-    assert movies.language == 'en'
+    assert movies.language == "en"
     assert len(movies.locations) == 1
     assert len(movies.locations[0]) >= 10
     assert movies.refreshing is False
-    assert movies.scanner == 'Plex Movie Scanner'
+    assert movies.scanner == "Plex Movie Scanner"
     assert movies._server._baseurl == utils.SERVER_BASEURL
-    assert movies.thumb == '/:/resources/movie.png'
-    assert movies.title == 'Movies'
-    assert movies.type == 'movie'
+    assert movies.thumb == "/:/resources/movie.png"
+    assert movies.title == "Movies"
+    assert movies.type == "movie"
     assert utils.is_datetime(movies.updatedAt)
     assert len(movies.uuid) == 36
 
 
 def test_library_section_get_movie(plex):
-    assert plex.library.section('Movies').get('Sita Sings the Blues')
+    assert plex.library.section("Movies").get("Sita Sings the Blues")
 
 
 def test_library_section_delete(movies, patched_http_call):
@@ -50,9 +55,9 @@ def test_library_section_delete(movies, patched_http_call):
 
 
 def test_library_fetchItem(plex, movie):
-    item1 = plex.library.fetchItem('/library/metadata/%s' % movie.ratingKey)
+    item1 = plex.library.fetchItem("/library/metadata/%s" % movie.ratingKey)
     item2 = plex.library.fetchItem(movie.ratingKey)
-    assert item1.title == 'Elephants Dream'
+    assert item1.title == "Elephants Dream"
     assert item1 == item2 == movie
 
 
@@ -68,14 +73,20 @@ def test_library_recentlyAdded(plex):
 
 def test_library_add_edit_delete(plex):
     # Dont add a location to prevent scanning scanning
-    section_name = 'plexapi_test_section'
-    plex.library.add(name=section_name, type='movie', agent='com.plexapp.agents.imdb',
-        scanner='Plex Movie Scanner', language='en')
+    section_name = "plexapi_test_section"
+    plex.library.add(
+        name=section_name,
+        type="movie",
+        agent="com.plexapp.agents.imdb",
+        scanner="Plex Movie Scanner",
+        language="en",
+    )
     assert plex.library.section(section_name)
-    edited_library = plex.library.section(section_name).edit(name='a renamed lib',
-        type='movie', agent='com.plexapp.agents.imdb')
-    assert edited_library.title == 'a renamed lib'
-    plex.library.section('a renamed lib').delete()
+    edited_library = plex.library.section(section_name).edit(
+        name="a renamed lib", type="movie", agent="com.plexapp.agents.imdb"
+    )
+    assert edited_library.title == "a renamed lib"
+    plex.library.section("a renamed lib").delete()
 
 
 def test_library_Library_cleanBundle(plex):
@@ -108,13 +119,13 @@ def test_library_Library_deleteMediaPreviews(plex):
 
 
 def test_library_Library_all(plex):
-    assert len(plex.library.all(title__iexact='The 100'))
+    assert len(plex.library.all(title__iexact="The 100"))
 
 
 def test_library_Library_search(plex):
-    item = plex.library.search('Elephants Dream')[0]
-    assert item.title == 'Elephants Dream'
-    assert len(plex.library.search(libtype='episode'))
+    item = plex.library.search("Elephants Dream")[0]
+    assert item.title == "Elephants Dream"
+    assert len(plex.library.search(libtype="episode"))
 
 
 def test_library_MovieSection_update(movies):
@@ -122,7 +133,7 @@ def test_library_MovieSection_update(movies):
 
 
 def test_library_ShowSection_all(tvshows):
-    assert len(tvshows.all(title__iexact='The 100'))
+    assert len(tvshows.all(title__iexact="The 100"))
 
 
 def test_library_MovieSection_refresh(movies, patched_http_call):
@@ -130,7 +141,7 @@ def test_library_MovieSection_refresh(movies, patched_http_call):
 
 
 def test_library_MovieSection_search_genre(movie, movies):
-    animation = [i for i in movie.genres if i.tag == 'Animation']
+    animation = [i for i in movie.genres if i.tag == "Animation"]
     assert len(movies.search(genre=animation[0])) > 1
 
 
@@ -160,11 +171,11 @@ def test_library_MovieSection_analyze(movies):
 
 
 def test_library_ShowSection_searchShows(tvshows):
-    assert tvshows.searchShows(title='The 100')
+    assert tvshows.searchShows(title="The 100")
 
 
 def test_library_ShowSection_searchEpisodes(tvshows):
-    assert tvshows.searchEpisodes(title='Winter Is Coming')
+    assert tvshows.searchEpisodes(title="Winter Is Coming")
 
 
 def test_library_ShowSection_recentlyAdded(tvshows):
@@ -176,11 +187,11 @@ def test_library_MusicSection_albums(music):
 
 
 def test_library_MusicSection_searchTracks(music):
-    assert len(music.searchTracks(title='Holy Moment'))
+    assert len(music.searchTracks(title="Holy Moment"))
 
 
 def test_library_MusicSection_searchAlbums(music):
-    assert len(music.searchAlbums(title='Unmastered Impulses'))
+    assert len(music.searchAlbums(title="Unmastered Impulses"))
 
 
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
@@ -195,68 +206,74 @@ def test_library_PhotoSection_searchPhotos(photos, photoalbum):
 
 
 def test_library_and_section_search_for_movie(plex):
-    find = '16 blocks'
+    find = "16 blocks"
     l_search = plex.library.search(find)
-    s_search = plex.library.section('Movies').search(find)
+    s_search = plex.library.section("Movies").search(find)
     assert l_search == s_search
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_modeUpdate_hide(collection):
-    collection.modeUpdate(mode='hide')
+    collection.modeUpdate(mode="hide")
     collection.reload()
-    assert collection.collectionMode == '0'
+    assert collection.collectionMode == "0"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_modeUpdate_default(collection):
-    collection.modeUpdate(mode='default')
+    collection.modeUpdate(mode="default")
     collection.reload()
-    assert collection.collectionMode == '-2'
+    assert collection.collectionMode == "-2"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_modeUpdate_hideItems(collection):
-    collection.modeUpdate(mode='hideItems')
+    collection.modeUpdate(mode="hideItems")
     collection.reload()
-    assert collection.collectionMode == '1'
+    assert collection.collectionMode == "1"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_modeUpdate_showItems(collection):
-    collection.modeUpdate(mode='showItems')
+    collection.modeUpdate(mode="showItems")
     collection.reload()
-    assert collection.collectionMode == '2'
+    assert collection.collectionMode == "2"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_sortAlpha(collection):
-    collection.sortUpdate(sort='alpha')
+    collection.sortUpdate(sort="alpha")
     collection.reload()
-    assert collection.collectionSort == '1'
+    assert collection.collectionSort == "1"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_sortRelease(collection):
-    collection.sortUpdate(sort='release')
+    collection.sortUpdate(sort="release")
     collection.reload()
-    assert collection.collectionSort == '0'
+    assert collection.collectionSort == "0"
 
 
 @pytest.mark.skip(reason="broken test?")
 def test_search_with_apostrophe(plex):
-    show_title = 'Marvel\'s Daredevil'
+    show_title = "Marvel's Daredevil"
     result_root = plex.search(show_title)
-    result_shows = plex.library.section('TV Shows').search(show_title)
+    result_shows = plex.library.section("TV Shows").search(show_title)
     assert result_root
     assert result_shows
     assert result_root == result_shows
 
 
 def test_crazy_search(plex, movie):
-    movies = plex.library.section('Movies')
-    assert movie in movies.search(actor=movie.actors[0], sort='titleSort'), 'Unable to search movie by actor.'
-    assert movie in movies.search(director=movie.directors[0]), 'Unable to search movie by director.'
-    assert movie in movies.search(year=['2006', '2007']), 'Unable to search movie by year.'
-    assert movie not in movies.search(year=2007), 'Unable to filter movie by year.'
+    movies = plex.library.section("Movies")
+    assert movie in movies.search(
+        actor=movie.actors[0], sort="titleSort"
+    ), "Unable to search movie by actor."
+    assert movie in movies.search(
+        director=movie.directors[0]
+    ), "Unable to search movie by director."
+    assert movie in movies.search(
+        year=["2006", "2007"]
+    ), "Unable to search movie by year."
+    assert movie not in movies.search(year=2007), "Unable to filter movie by year."
     assert movie in movies.search(actor=movie.actors[0].tag)

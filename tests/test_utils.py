@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import pytest, time
+import time
+
 import plexapi.utils as utils
+import pytest
 from plexapi.exceptions import NotFound
 
 

@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-import pytest, re, time
+import re
+import time
+
+import pytest
+from PIL import Image, ImageStat
+from plexapi.compat import patch
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from plexapi.utils import download
-from PIL import Image, ImageStat
 from requests import Session
+
 from . import conftest as utils
 
 
@@ -87,6 +92,7 @@ def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=T
 
 def test_server_search(plex, movie):
     title = movie.title
+    #  this search seem to fail on my computer but not at travis, wtf.
     assert plex.search(title)
     assert plex.search(title, mediatype='movie')
 
@@ -184,9 +190,9 @@ def test_server_isLatest(plex, mocker):
 
 def test_server_installUpdate(plex, mocker):
     m = mocker.MagicMock(release='aa')
-    mocker.patch('plexapi.server.PlexServer.check_for_update', return_value=m)
-    with utils.callable_http_patch():
-        plex.installUpdate()
+    with patch('plexapi.server.PlexServer.check_for_update', return_value=m):
+        with utils.callable_http_patch():
+            plex.installUpdate()
 
 
 def test_server_check_for_update(plex, mocker):
@@ -199,7 +205,7 @@ def test_server_check_for_update(plex, mocker):
             self.downloadURL = 'http://path-to-update'
             self.state = 'downloaded'
 
-    with mocker.patch('plexapi.server.PlexServer.check_for_update', return_value=R()):
+    with patch('plexapi.server.PlexServer.check_for_update', return_value=R()):
         rel = plex.check_for_update(force=False, download=True)
         assert rel.download_key == 'plex.tv/release/1337'
         assert rel.version == '1337'
