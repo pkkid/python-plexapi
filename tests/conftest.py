@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
-import plexapi
-import pytest
-import requests
 import time
 from datetime import datetime
 from functools import partial
 from os import environ
+
+import plexapi
+import pytest
+import requests
+from plexapi import compat
+from plexapi.client import PlexClient
+from plexapi.compat import MagicMock, patch
 from plexapi.myplex import MyPlexAccount
+from plexapi.server import PlexServer
 
 try:
     from unittest.mock import patch, MagicMock, mock_open
 except ImportError:
     from mock import patch, MagicMock, mock_open
 
-from plexapi import compat
-from plexapi.compat import patch, MagicMock
-from plexapi.client import PlexClient
-from plexapi.server import PlexServer
 
 SERVER_BASEURL = plexapi.CONFIG.get('auth.server_baseurl')
 MYPLEX_USERNAME = plexapi.CONFIG.get('auth.myplex_username')
@@ -185,13 +186,13 @@ def movie(movies):
 def collection(plex, movie):
 
     try:
-        plex.library.section('Movies').collection()[0]
+        return plex.library.section('Movies').collection()[0]
     except IndexError:
         movie.addCollection(["marvel"])
 
-    sec = plex.library.section('Movies').reload()
+        n = plex.library.section('Movies').reload()
+        return n.collection()[0]
 
-    return sec.collection()[0]
 
 
 @pytest.fixture()
@@ -225,7 +226,8 @@ def photoalbum(photos):
         return photos.get('Cats')
     except Exception:
         return photos.get('photo_album1')
-    
+
+
 @pytest.fixture()
 def subtitle():
     mopen = mock_open()

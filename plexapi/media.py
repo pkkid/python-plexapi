@@ -2,7 +2,7 @@
 
 import xml
 
-from plexapi import compat, log, utils, settings
+from plexapi import compat, log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast

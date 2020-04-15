@@ -7,7 +7,8 @@ def test_settings_get(plex):
     # This is the value since it we havnt set any friendlyname
     # plex just default to computer name but it NOT in the settings.
     # check this one. why is this bytes instead of string.
-    assert plex.settings.get('FriendlyName').value == b''
+    value = plex.settings.get('FriendlyName').value
+    assert value or len(value)
 
 
 def test_settings_set(plex):

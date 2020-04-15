@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import unquote, urlencode, quote_plus
-from plexapi.media import MediaTag
+from plexapi.compat import quote_plus, unquote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import MediaTag
 from plexapi.settings import Setting
 
 
@@ -366,6 +366,9 @@ class LibrarySection(PlexObject):
             log.error(msg)
             raise
 
+    def reload(self, key=None):
+        return self._server.library.section.get(self.title)
+
     def edit(self, agent=None, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
 
@@ -526,6 +529,7 @@ class LibrarySection(PlexObject):
         # cleanup the core arguments
         args = {}
         for category, value in kwargs.items():
+            log.info("ttt %s %s",category, value)
             args[category] = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
             args['title'] = title
@@ -533,6 +537,7 @@ class LibrarySection(PlexObject):
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
+        log.info("ass %s", self.key)
         # iterate over the results
         results, subresults = [], '_init'
         args['X-Plex-Container-Start'] = 0
@@ -1035,6 +1040,13 @@ class Collections(PlexObject):
     def children(self):
         return self.fetchItems(self.key)
 
+    def reload(self, key=None):
+        return self.fetchItem(int(self.ratingKey))
+        #return self.reload(key=self._initpath)
+        res = self.fetchItems(self._initpath)
+        if len(res):
+            return  [i for i in res if i.ratingKey == self.ratingKey][0]
+
     def __len__(self):
         return self.childCount
 
@@ -1063,6 +1075,7 @@ class Collections(PlexObject):
         if key is None:
             raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
         part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
+        log.info("ffs part key %s", part)
         return self._server.query(part, method=self._server._session.put)
 
     def sortUpdate(self, sort=None):
