@@ -367,7 +367,7 @@ class LibrarySection(PlexObject):
             raise
 
     def reload(self, key=None):
-        return self._server.library.section.get(self.title)
+        return self._server.library.section(self.title)
 
     def edit(self, agent=None, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
