@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from datetime import datetime
 from time import sleep
 
@@ -12,12 +13,14 @@ def test_video_Movie(movies, movie):
     movie2 = movies.get(movie.title)
     assert movie2.title == movie.title
 
+
 def test_video_Movie_attributeerror(movie):
     with pytest.raises(AttributeError):
         movie.asshat
 
+
 def test_video_ne(movies):
-    assert len(movies.fetchItems('/library/sections/1/all', title__ne='Sintel')) == 3
+    assert len(movies.fetchItems('/library/sections/%s/all' % movies.key, title__ne='Sintel')) == 3
 
 
 def test_video_Movie_delete(movie, patched_http_call):
@@ -86,13 +89,16 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_subtitlestreams(movie):
     assert not movie.subtitleStreams()
 
+
 def test_video_Episode_subtitlestreams(episode):
     assert not episode.subtitleStreams()
 
+
 def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
-    import os
+
     filepath = os.path.realpath(subtitle.name)
     movie.uploadSubtitles(filepath)
+    movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
     subname = subtitle.name.rsplit('.', 1)[0]
     assert subname in subtitles
@@ -100,16 +106,21 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     subtitleSelection = movie.subtitleStreams()[0]
     parts = [part for part in movie.iterParts()]
     parts[0].setDefaultSubtitleStream(subtitleSelection)
+    movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
     assert subtitleSelection.selected
 
     movie.removeSubtitles(streamTitle=subname)
+    movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
     assert subname not in subtitles
 
-    if subtitle:
+    try:
         os.remove(filepath)
+    except:
+        pass
+
 
 def test_video_Movie_attrs(movies):
     movie = movies.get('Sita Sings the Blues')

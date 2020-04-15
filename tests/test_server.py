@@ -276,6 +276,7 @@ def test_server_downloadDatabases(tmpdir, plex):
     plex.downloadDatabases(savepath=str(tmpdir), unpack=True)
     assert len(tmpdir.listdir()) > 1
 
+
 def test_server_allowMediaDeletion(account):
     plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
     # Check server current allowMediaDeletion setting

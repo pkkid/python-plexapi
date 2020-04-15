@@ -2,15 +2,16 @@
 import logging
 import os
 import re
-import requests
 import time
 import zipfile
 from datetime import datetime
 from getpass import getpass
-from threading import Thread, Event
-from tqdm import tqdm
+from threading import Event, Thread
+
+import requests
 from plexapi import compat
 from plexapi.exceptions import NotFound
+from tqdm import tqdm
 
 log = logging.getLogger('plexapi')
 
@@ -67,10 +68,13 @@ def cast(func, value):
     """
     if value is not None:
         if func == bool:
-            try:
-                return bool(int(value))
-            except ValueError:
-                return bool(value)
+            if value in (1, True, "1", "true"):
+                return True
+            elif value in (0, False, "0", "false"):
+                return False
+            else:
+                raise ValueError(value)
+
         elif func in (int, float):
             try:
                 return func(value)

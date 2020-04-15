@@ -529,7 +529,6 @@ class LibrarySection(PlexObject):
         # cleanup the core arguments
         args = {}
         for category, value in kwargs.items():
-            log.info("ttt %s %s",category, value)
             args[category] = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
             args['title'] = title
@@ -537,7 +536,6 @@ class LibrarySection(PlexObject):
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-        log.info("ass %s", self.key)
         # iterate over the results
         results, subresults = [], '_init'
         args['X-Plex-Container-Start'] = 0
@@ -1018,9 +1016,11 @@ class Collections(PlexObject):
 
     TAG = 'Directory'
     TYPE = 'collection'
+    _include = "?includeExternalMedia=1&includePreferences=1"
 
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
         self.key = data.attrib.get('key')
         self.type = data.attrib.get('type')
         self.title = data.attrib.get('title')
@@ -1039,13 +1039,6 @@ class Collections(PlexObject):
     @property
     def children(self):
         return self.fetchItems(self.key)
-
-    def reload(self, key=None):
-        return self.fetchItem(int(self.ratingKey))
-        #return self.reload(key=self._initpath)
-        res = self.fetchItems(self._initpath)
-        if len(res):
-            return  [i for i in res if i.ratingKey == self.ratingKey][0]
 
     def __len__(self):
         return self.childCount
@@ -1075,7 +1068,6 @@ class Collections(PlexObject):
         if key is None:
             raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
         part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
-        log.info("ffs part key %s", part)
         return self._server.query(part, method=self._server._session.put)
 
     def sortUpdate(self, sort=None):

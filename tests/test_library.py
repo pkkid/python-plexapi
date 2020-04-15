@@ -212,53 +212,30 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
-#@pytest.mark.skip(reason="broken test?")
-def test_library_Colletion_modeUpdate_hide(collection):
-    collection.modeUpdate(mode="hide")
-    collection.reload()
-    assert collection.collectionMode == "0"
+def test_library_Collection_modeUpdate(collection):
+    mode_dict = {"default": "-2", "hide": "0", "hideItems": "1", "showItems": "2"}
+    for key, value in mode_dict.items():
+        collection.modeUpdate(key)
+        collection.reload()
+        assert collection.collectionMode == value
 
 
-#@pytest.mark.skip(reason="broken test?")
-def test_library_Colletion_modeUpdate_default(collection):
-    collection.modeUpdate(mode="default")
-    collection.reload()
-    assert collection.collectionMode == "-2"
-
-
-#@pytest.mark.skip(reason="broken test?")
-def test_library_Colletion_modeUpdate_hideItems(collection):
-    collection.modeUpdate(mode="hideItems")
-    collection.reload()
-    assert collection.collectionMode == "1"
-
-
-#@pytest.mark.skip(reason="broken test?")
-def test_library_Colletion_modeUpdate_showItems(collection):
-    collection.modeUpdate(mode="showItems")
-    collection.reload()
-    assert collection.collectionMode == "2"
-
-
-#@pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_sortAlpha(collection):
     collection.sortUpdate(sort="alpha")
     collection.reload()
     assert collection.collectionSort == "1"
 
 
-@pytest.mark.skip(reason="broken test?")
 def test_library_Colletion_sortRelease(collection):
     collection.sortUpdate(sort="release")
     collection.reload()
     assert collection.collectionSort == "0"
 
 
-@pytest.mark.skip(reason="broken test?")
-def test_search_with_apostrophe(plex):
-    show_title = "Marvel's Daredevil"
-    result_root = plex.search(show_title)
-    result_shows = plex.library.section("TV Shows").search(show_title)
+def test_search_with_weird_a(plex):
+    ep_title = "Coup de Grâce"
+    result_root = plex.search(ep_title)
+    result_shows = plex.library.section("TV Shows").searchEpisodes(title=ep_title)
     assert result_root
     assert result_shows
     assert result_root == result_shows
