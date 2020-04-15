@@ -8,7 +8,7 @@ def _check_capabilities(client, capabilities):
     supported = client.protocolCapabilities
     for capability in capabilities:
         if capability not in supported:
-            pytest.skip("Client doesnt support %s capability.", capability)
+            pytest.skip("Client %s doesnt support %s capability support %s" % (client.title, capability, supported))
 
 
 def _check_proxy(plex, client, proxy):
@@ -27,12 +27,8 @@ def test_list_clients(account, plex):
 @pytest.mark.parametrize("proxy", [False, True])
 def test_client_navigation(plex, client, episode, artist, proxy):
 
-    supported = client.protocolCapabilities
-    for capability in ["navigation"]:
-        if capability not in supported:
-            pytest.skip("Client doesnt support %s capability.", capability)
-    #_check_capabilities(client, ["navigation"])
-    _check_proxy(plex, client, proxy)
+    _check_capabilities(client, ["navigation"])
+    client.proxyThroughServer(proxy)
     try:
         print("\nclient.moveUp()")
         client.moveUp()
@@ -67,51 +63,48 @@ def test_client_navigation(plex, client, episode, artist, proxy):
 
 @pytest.mark.client
 @pytest.mark.parametrize("proxy", [False, True])
-def test_client_playback(plex, client, movie, proxy):
+def test_client_playback(plex, client, movies, proxy):
 
-    supported = client.protocolCapabilities
-    for capability in ["playback"]:
-        if capability not in supported:
-            pytest.skip("Client doesnt support %s capability.", capability)
+    movie = movies.get("Big buck bunny")
 
+    _check_capabilities(client, ["playback"])
     client.proxyThroughServer(proxy)
 
     try:
         # Need a movie with subtitles
-        print("mtype=video")
         mtype = "video"
-        movie = plex.library.section("Movies").get("Moana").reload()
         subs = [
             stream for stream in movie.subtitleStreams() if stream.language == "English"
         ]
-        print("client.playMedia(movie)")
+        print("client.playMedia(%s)" % movie.title)
         client.playMedia(movie)
         time.sleep(5)
-        print("client.pause(mtype)")
+        print("client.pause(%s)" % mtype)
         client.pause(mtype)
         time.sleep(2)
-        print("client.stepForward(mtype)")
+        print("client.stepForward(%s)" % mtype)
         client.stepForward(mtype)
         time.sleep(5)
-        print("client.play(mtype)")
+        print("client.play(%s)" % mtype)
         client.play(mtype)
         time.sleep(3)
-        print("client.stepBack(mtype)")
+        print("client.stepBack(%s)" % mtype)
         client.stepBack(mtype)
         time.sleep(5)
-        print("client.play(mtype)")
+        print("client.play(%s)" % mtype)
         client.play(mtype)
         time.sleep(3)
-        print("client.seekTo(10*60*1000)")
-        client.seekTo(10 * 60 * 1000)
+        print("client.seekTo(1*60*1000)")
+        client.seekTo(1 * 60 * 1000)
         time.sleep(5)
         print("client.setSubtitleStream(0)")
         client.setSubtitleStream(0, mtype)
         time.sleep(10)
-        print("client.setSubtitleStream(subs[0])")
-        client.setSubtitleStream(subs[0].id, mtype)
+        if subs:
+            print("client.setSubtitleStream(subs[0])")
+            client.setSubtitleStream(subs[0].id, mtype)
         time.sleep(10)
-        print("client.stop(mtype)")
+        print("client.stop(%s)" % mtype)
         client.stop(mtype)
         time.sleep(1)
     finally:
@@ -122,28 +115,24 @@ def test_client_playback(plex, client, movie, proxy):
 
 @pytest.mark.client
 @pytest.mark.parametrize("proxy", [False, True])
-def test_client_timeline(plex, client, movie, proxy):
-    caps = ["timeline"]
-    supported = client.protocolCapabilities
-    for capability in caps:
-        if capability not in supported:
-            pytest.skip("Client doesnt support %s capability.", capability)
+def test_client_timeline(plex, client, movies, proxy):
+
+    movie = movies.get("Big buck bunny")
+    _check_capabilities(client, ["timeline"])
     _check_proxy(plex, client, proxy)
     try:
         # Note: We noticed the isPlaying flag could take up to a full
         # 30 seconds to be updated, hence the long sleeping.
-        print("mtype=video")
-        mtype = "video"
-        print("time.sleep(30)")
-        time.sleep(30)  # clear isPlaying flag
+        mtype= "video"
+        client.stop(mtype)
         assert client.isPlayingMedia() is False
         print("client.playMedia(movie)")
         client.playMedia(movie)
-        time.sleep(30)
+        time.sleep(10)
         assert client.isPlayingMedia() is True
-        print("client.stop(mtype)")
+        print("client.stop(%s)" % mtype)
         client.stop(mtype)
-        time.sleep(30)
+        time.sleep(10)
         assert client.isPlayingMedia() is False
     finally:
         print("movie.markWatched()")

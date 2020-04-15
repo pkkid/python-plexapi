@@ -148,13 +148,13 @@ def fresh_plex():
 
 
 @pytest.fixture()
-def plex2():
+def plex2(plex):
     return plex()
 
 
 @pytest.fixture()
-def client(request):
-    return PlexClient(plex(), baseurl=CLIENT_BASEURL, token=CLIENT_TOKEN)
+def client(request, plex):
+    return PlexClient(plex, baseurl=CLIENT_BASEURL, token=CLIENT_TOKEN)
 
 
 @pytest.fixture()
@@ -192,7 +192,6 @@ def collection(plex, movie):
 
         n = plex.library.section('Movies').reload()
         return n.collection()[0]
-
 
 
 @pytest.fixture()

@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 import time
-import requests
 
-from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
-from plexapi import log, logfilter, utils
+import requests
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.compat import ElementTree
 from plexapi.exceptions import BadRequest, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
-
+from requests.status_codes import _codes as codes
 
 DEFAULT_MTYPE = 'video'
 
@@ -548,9 +546,9 @@ class PlexClient(PlexObject):
 
     # -------------------
     # Timeline Commands
-    def timeline(self):
+    def timeline(self, wait=1):
         """ Poll the current timeline and return the XML response. """
-        return self.sendCommand('timeline/poll', wait=1)
+        return self.sendCommand('timeline/poll', wait=wait)
 
     def isPlayingMedia(self, includePaused=False):
         """ Returns True if any media is currently playing.
@@ -559,7 +557,7 @@ class PlexClient(PlexObject):
                 includePaused (bool): Set True to treat currently paused items
                     as playing (optional; default True).
         """
-        for mediatype in self.timeline():
+        for mediatype in self.timeline(wait=0):
             if mediatype.get('state') == 'playing':
                 return True
             if includePaused and mediatype.get('state') == 'paused':
