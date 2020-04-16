@@ -97,6 +97,7 @@ def test_video_Episode_subtitlestreams(episode):
 def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
     filepath = os.path.realpath(subtitle.name)
+
     movie.uploadSubtitles(filepath)
     movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
