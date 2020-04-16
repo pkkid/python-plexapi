@@ -183,11 +183,11 @@ def movie(movies):
 
 
 @pytest.fixture()
-def collection(plex, movie):
-
+def collection(plex):
     try:
         return plex.library.section('Movies').collection()[0]
     except IndexError:
+        movie = plex.library.section('Movies').get('Elephants Dream')
         movie.addCollection(["marvel"])
 
         n = plex.library.section('Movies').reload()
