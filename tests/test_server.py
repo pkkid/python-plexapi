@@ -132,22 +132,10 @@ def test_server_history(plex, movie):
     movie.markUnwatched()
 
 
-@pytest.mark.anonymously
 def test_server_Server_query(plex):
     assert plex.query('/')
     with pytest.raises(NotFound):
         assert plex.query('/asdf/1234/asdf', headers={'random_headers': '1234'})
-
-
-@pytest.mark.authenticated
-def test_server_Server_query_authenticated(plex):
-    assert plex.query('/')
-    with pytest.raises(BadRequest):
-        assert plex.query('/asdf/1234/asdf', headers={'random_headers': '1234'})
-    with pytest.raises(BadRequest):
-        # This is really requests.exceptions.HTTPError
-        # 401 Client Error: Unauthorized for url
-        PlexServer(utils.SERVER_BASEURL, '1234')
 
 
 def test_server_Server_session(account):
