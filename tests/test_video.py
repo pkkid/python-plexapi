@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-import pytest
+import os
 from datetime import datetime
 from time import sleep
+
+import pytest
 from plexapi.exceptions import BadRequest, NotFound
+
 from . import conftest as utils
 
 
@@ -10,12 +13,14 @@ def test_video_Movie(movies, movie):
     movie2 = movies.get(movie.title)
     assert movie2.title == movie.title
 
+
 def test_video_Movie_attributeerror(movie):
     with pytest.raises(AttributeError):
         movie.asshat
 
+
 def test_video_ne(movies):
-    assert len(movies.fetchItems('/library/sections/1/all', title__ne='Sintel')) == 3
+    assert len(movies.fetchItems('/library/sections/%s/all' % movies.key, title__ne='Sintel')) == 3
 
 
 def test_video_Movie_delete(movie, patched_http_call):
@@ -84,13 +89,16 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_subtitlestreams(movie):
     assert not movie.subtitleStreams()
 
+
 def test_video_Episode_subtitlestreams(episode):
     assert not episode.subtitleStreams()
 
+
 def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
-    import os
+
     filepath = os.path.realpath(subtitle.name)
     movie.uploadSubtitles(filepath)
+    movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
     subname = subtitle.name.rsplit('.', 1)[0]
     assert subname in subtitles
@@ -98,16 +106,21 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     subtitleSelection = movie.subtitleStreams()[0]
     parts = [part for part in movie.iterParts()]
     parts[0].setDefaultSubtitleStream(subtitleSelection)
+    movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
     assert subtitleSelection.selected
 
     movie.removeSubtitles(streamTitle=subname)
+    movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
     assert subname not in subtitles
 
-    if subtitle:
+    try:
         os.remove(filepath)
+    except:
+        pass
+
 
 def test_video_Movie_attrs(movies):
     movie = movies.get('Sita Sings the Blues')
@@ -136,7 +149,7 @@ def test_video_Movie_attrs(movies):
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == 'video'
     assert movie.originalTitle is None
-    assert movie.originallyAvailableAt.strftime('%Y-%m-%d') in ('2008-01-11', '2008-02-11')
+    assert utils.is_datetime(movie.originallyAvailableAt)
     assert movie.playlistItemID is None
     if movie.primaryExtraKey:
         assert utils.is_metadata(movie.primaryExtraKey)
@@ -350,7 +363,7 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.leafCount)
     assert show.listType == 'video'
     assert len(show.locations[0]) >= 10
-    assert show.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
+    assert utils.is_datetime(show.originallyAvailableAt)
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
     assert sorted([i.tag for i in show.roles])[:4] == ['Aidan Gillen', 'Aimee Richardson', 'Alexander Siddig', 'Alfie Allen']  # noqa
@@ -366,7 +379,7 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.updatedAt)
     assert utils.is_int(show.viewCount, gte=0)
     assert utils.is_int(show.viewedLeafCount, gte=0)
-    assert show.year == 2011
+    assert show.year in (2011, 2010)
     assert show.url(None) is None
 
 
@@ -500,14 +513,15 @@ def test_video_Episode_analyze(tvshows):
 def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
     assert episode.contentRating in utils.CONTENTRATINGS
-    assert [i.tag for i in episode.directors] == ['Tim Van Patten']
+    if len(episode.directors):
+        assert [i.tag for i in episode.directors] == ['Tim Van Patten']
     assert utils.is_int(episode.duration, gte=120000)
     assert episode.grandparentTitle == 'Game of Thrones'
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == 'video'
-    assert episode.originallyAvailableAt.strftime('%Y-%m-%d') == '2011-04-17'
+    assert utils.is_datetime(episode.originallyAvailableAt)
     assert utils.is_int(episode.parentIndex)
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
@@ -524,7 +538,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.updatedAt)
     assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
-    assert [i.tag for i in episode.writers] == ['David Benioff', 'D. B. Weiss']
+    assert sorted([i.tag for i in episode.writers]) == sorted(['David Benioff', 'D. B. Weiss'])
     assert episode.year == 2011
     assert episode.isWatched in [True, False]
     # Media

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import unquote, urlencode, quote_plus
-from plexapi.media import MediaTag
+from plexapi.compat import quote_plus, unquote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import MediaTag
 from plexapi.settings import Setting
 
 
@@ -365,6 +365,9 @@ class LibrarySection(PlexObject):
             msg += 'You may need to allow this permission in your Plex settings.'
             log.error(msg)
             raise
+
+    def reload(self, key=None):
+        return self._server.library.section(self.title)
 
     def edit(self, agent=None, **kwargs):
         """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
@@ -1013,9 +1016,11 @@ class Collections(PlexObject):
 
     TAG = 'Directory'
     TYPE = 'collection'
+    _include = "?includeExternalMedia=1&includePreferences=1"
 
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
         self.key = data.attrib.get('key')
         self.type = data.attrib.get('type')
         self.title = data.attrib.get('title')

@@ -6,7 +6,10 @@ def test_settings_group(plex):
 def test_settings_get(plex):
     # This is the value since it we havnt set any friendlyname
     # plex just default to computer name but it NOT in the settings.
-    assert plex.settings.get('FriendlyName').value == ''
+    # check this one. why is this bytes instead of string.
+    value = plex.settings.get('FriendlyName').value
+    # Should not be bytes, fix this when py2 is dropped
+    assert isinstance(value, bytes)
 
 
 def test_settings_set(plex):

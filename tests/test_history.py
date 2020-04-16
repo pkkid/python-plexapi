@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import pytest
 from datetime import datetime
+
+import pytest
 from plexapi.exceptions import BadRequest, NotFound
+
 from . import conftest as utils
 
 
@@ -20,7 +22,7 @@ def test_history_Show(show):
 
 
 def test_history_Season(show):
-    season = show.season('Season 1')
+    season = show.season("Season 1")
     season.markWatched()
     history = season.history()
     assert len(history)
@@ -66,7 +68,7 @@ def test_history_MyLibrary(plex, movie, show):
 
 def test_history_MySection(plex, movie):
     movie.markWatched()
-    history = plex.library.section('Movies').history()
+    history = plex.library.section("Movies").history()
     assert len(history)
     movie.markUnwatched()
 
@@ -89,6 +91,7 @@ def test_history_UserServer(account, shared_username, plex):
 
 
 def test_history_UserSection(account, shared_username, plex):
-    userSharedServerSection = account.user(shared_username).server(plex.friendlyName).section('Movies')
+    userSharedServerSection = (
+        account.user(shared_username).server(plex.friendlyName).section("Movies")
+    )
     history = userSharedServerSection.history()
-
