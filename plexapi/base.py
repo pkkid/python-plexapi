@@ -476,13 +476,10 @@ class PlexPartialObject(PlexObject):
         key = '/library/metadata/%s/unmatch' % self.ratingKey
         self._server.query(key, method=self._server._session.put)
 
-    def matches(self, auto=False, agent=None, title=None, year=None, language=None):
-        """ Return list of (:class:`~plexapi.media.SearchResult) metadata matches.
+    def matches(self, agent=None, title=None, year=None, language=None):
+        """ Return list of (:class:`~plexapi.media.SearchResult`) metadata matches.
 
              Parameters:
-                 auto (bool): True searches for matches automatically
-                    False allows for user to provide additional parameters to search
-                    *Auto searching
                 agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
                 title (str): Title of item to search for
                 year (str): Year of item to search in
@@ -538,8 +535,7 @@ class PlexPartialObject(PlexObject):
             Parameters:
                 auto (bool): True uses first match from matches
                     False allows user to provide the match
-                    *Auto matching
-                searchResult (:class:`~plexapi.media.SearchResult): Search result from
+                searchResult (:class:`~plexapi.media.SearchResult`): Search result from
                     ~plexapi.base.matches()
         """
         key = '/library/metadata/%s/match' % self.ratingKey
