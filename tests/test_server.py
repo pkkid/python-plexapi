@@ -90,6 +90,11 @@ def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=T
         return 'blackandwhite'
 
 
+def test_server_fetchitem_notfound(plex):
+    with pytest.raises(NotFound):
+        plex.fetchItem(123456789)
+
+
 def test_server_search(plex, movie):
     title = movie.title
     #  this search seem to fail on my computer but not at travis, wtf.

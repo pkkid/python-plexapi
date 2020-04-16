@@ -427,6 +427,8 @@ class PlexServer(PlexObject):
             message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
             if response.status_code == 401:
                 raise Unauthorized(message)
+            elif response.status_code == 404:
+                raise NotFound(message)
             else:
                 raise BadRequest(message)
         data = response.text.encode('utf8')

@@ -5,7 +5,7 @@ import requests
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.compat import ElementTree
-from plexapi.exceptions import BadRequest, Unauthorized, Unsupported
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
 from requests.status_codes import _codes as codes
 
@@ -163,6 +163,8 @@ class PlexClient(PlexObject):
             message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
             if response.status_code == 401:
                 raise Unauthorized(message)
+            elif response.status_code == 404:
+                raise NotFound(message)
             else:
                 raise BadRequest(message)
         data = response.text.encode('utf8')
