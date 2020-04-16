@@ -456,7 +456,7 @@ class Conversion(PlexObject):
                     Move 5th conversion Item to active conversion
                         conversions[4].move('-1')
 
-                    Move 4th conversion Item to 2nd in conversion queue
+                    Move 4th conversion Item to 3rd in conversion queue
                         conversions[3].move(conversions[1].playQueueItemID)
         """
 
