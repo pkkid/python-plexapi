@@ -193,6 +193,9 @@ class PlexServer(PlexObject):
 
     def createToken(self, type='delegation', scope='all'):
         """Create a temp access token for the server."""
+        if not self._token:
+            # Handle unclaimed servers
+            return None
         q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
         return q.attrib.get('token')
 
