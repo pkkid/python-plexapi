@@ -450,10 +450,7 @@ class Conversion(PlexObject):
 
     def move(self, after):
         """ Move Conversion items position in queue
-            after (int): Positional integer to move item
-                    -1 Active conversion
-                OR
-                    Use another conversion items playQueueItemID to move in front of
+            after (int): Place item after specified playQueueItemID. '-1' is the active conversion.
 
                 Example:
                     Move 5th conversion Item to active conversion
