@@ -135,7 +135,7 @@ def test_server_history(plex, movie):
 @pytest.mark.anonymously
 def test_server_Server_query(plex):
     assert plex.query('/')
-    with pytest.raises(BadRequest):
+    with pytest.raises(NotFound):
         assert plex.query('/asdf/1234/asdf', headers={'random_headers': '1234'})
 
 

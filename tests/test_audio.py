@@ -162,7 +162,7 @@ def test_audio_Album_track(album, track=None):
     assert media.aspectRatio is None
     assert media.audioChannels == 2
     assert media.audioCodec == 'mp3'
-    assert media.bitrate == 385
+    assert media.bitrate in [320, 385]
     assert media.container == 'mp3'
     assert media.duration in [298605, 298606]
     assert media.height is None
@@ -247,7 +247,7 @@ def test_audio_Track_attrs(album):
     assert media.aspectRatio is None
     assert media.audioChannels == 2
     assert media.audioCodec == 'mp3'
-    assert media.bitrate == 385
+    assert media.bitrate in [320, 385]
     assert media.container == 'mp3'
     assert media.duration in [298605, 298606]
     assert media.height is None
