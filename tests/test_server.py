@@ -212,23 +212,13 @@ def test_server_check_for_update(plex, mocker):
 def test_server_clients(plex):
     assert len(plex.clients())
     client = plex.clients()[0]
-    assert client._baseurl == 'http://127.0.0.1:32400'
-    assert client.device is None
-    assert client.deviceClass == 'pc'
-    assert client.machineIdentifier == '89hgkrbqxaxmf45o1q2949ru'
-    assert client.model is None
-    assert client.platform is None
-    assert client.platformVersion is None
-    assert client.product == 'Plex Web'
+    assert client._baseurl == utils.CLIENT_BASEURL
+    assert client._server._baseurl == utils.SERVER_BASEURL
     assert client.protocol == 'plex'
-    assert client.protocolCapabilities == ['timeline', 'playback', 'navigation', 'mirror', 'playqueues']
-    assert client.protocolVersion == '1'
-    assert client._server._baseurl == 'http://138.68.157.5:32400'
-    assert client.state is None
-    assert client.title == 'Plex Web (Chrome)'
-    assert client.token is None
-    assert client.vendor is None
-    assert client.version == '2.12.5'
+    assert int(client.protocolVersion) in range(4)
+    assert isinstance(client.machineIdentifier, str)
+    assert client.deviceClass in ['phone', 'tablet', 'stb', 'tv', 'pc']
+    assert set(client.protocolCapabilities).issubset({'timeline', 'playback', 'navigation', 'mirror', 'playqueues'})
 
 
 @pytest.mark.authenticated
