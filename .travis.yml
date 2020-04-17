@@ -2,8 +2,7 @@ language: python
 
 stages:
   - test
-  - name: deploy
-    if: tag = present
+  - deploy
 
 sudo: required
 services:
