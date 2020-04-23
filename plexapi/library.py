@@ -359,17 +359,37 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
-        #self._total_size = None
-        #self.size = utils.cast(int, data.attrib.get("size"))
+        # Private attrs as we dont want a reload.
+        self._total_size = None
+        self._size = None
+        self._offset = None
 
-    #@property
-    #def totalSize(self):
-    #    if self._total_size is None:
-    #        # Can't use head method and cant reload as the totalSize attribute
-    #        # only exists in the /all endpoint.
-    #        data = self._server.query('/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key)
-    #        self._total_size = int(data.attrib.get("totalSize"))
-    #    return self._total_size
+    def _update_all_atts(self):
+        """Helper for allow for requesting some attrs without normal reload
+           as the info we need isnt included in the reload.
+
+           we also update the this attributes when all method
+        """
+        if (self._total_size is None or self._size is None or self._offset is None):
+            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
+            data = self._server.query(part)
+            self._total_size = int(data.attrib.get("totalSize"))
+            self._size = int(data.attrib.get("size"))
+            self._offset = int(data.attrib.get("offset"))
+
+    @property
+    def totalSize(self):
+        self._update_all_atts()
+        return self._total_size
+
+    @property
+    def size(self):
+        return self._size
+
+    @property
+    def offset(self):
+        self._update_all_atts()
+        return self._offset
 
     def delete(self):
         """ Delete a library section. """
