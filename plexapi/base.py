@@ -164,9 +164,9 @@ class PlexObject(object):
         # inline the import..
         from plexapi.library import LibrarySection
         if isinstance(self, LibrarySection):
-            self.offset = utils.cast(int, data.attrib.get("offset"))
-            self.totalSize = utils.cast(int, data.attrib.get("totalSize"))
-            self.size = utils.cast(int, data.attrib.get("size"))
+            self._offset = utils.cast(int, data.attrib.get("offset"))
+            self._totalSize = utils.cast(int, data.attrib.get("totalSize"))
+            self._size = utils.cast(int, data.attrib.get("size"))
 
         librarySectionID = data.attrib.get('librarySectionID')
         if librarySectionID:

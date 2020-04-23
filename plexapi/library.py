@@ -370,11 +370,10 @@ class LibrarySection(PlexObject):
 
            we also update the this attributes when all method
         """
-        if (self._total_size is None or self._size is None or self._offset is None):
+        if (self._total_size is None or self._offset is None):
             part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
             data = self._server.query(part)
             self._total_size = int(data.attrib.get("totalSize"))
-            self._size = int(data.attrib.get("size"))
             self._offset = int(data.attrib.get("offset"))
 
     @property
