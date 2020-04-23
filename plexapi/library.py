@@ -332,6 +332,10 @@ class LibrarySection(PlexObject):
             type (str): Type of content section represents (movie, artist, photo, show).
             updatedAt (datetime): Datetime this library section was last updated.
             uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
+            size (int): Number of items returned from the request.
+            offset (int, None): Offset of the item requested in the library
+            totalSize (int): Total number of item in the library
+
     """
     ALLOWED_FILTERS = ()
     ALLOWED_SORT = ()
@@ -355,16 +359,17 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
-        self._total_size = None
+        #self._total_size = None
+        #self.size = utils.cast(int, data.attrib.get("size"))
 
-    @property
-    def totalSize(self):
-        if self._total_size is None:
-            # Can't use head method and cant reload as the totalSize attribute
-            # only exists in the /all endpoint.
-            data = self._server.query('/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key)
-            self._total_size = int(data.attrib.get("totalSize"))
-        return self._total_size
+    #@property
+    #def totalSize(self):
+    #    if self._total_size is None:
+    #        # Can't use head method and cant reload as the totalSize attribute
+    #        # only exists in the /all endpoint.
+    #        data = self._server.query('/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key)
+    #        self._total_size = int(data.attrib.get("totalSize"))
+    #    return self._total_size
 
     def delete(self):
         """ Delete a library section. """
