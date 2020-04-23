@@ -146,10 +146,19 @@ class PlexObject(object):
         """ Load the specified key to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
+
+            Use container_start and container_size for pagination.
         """
+        url_kw = {}
+        for key, value in dict(kwargs).items():
+            if key == "container_start":
+                url_kw["X-Plex-Container-Start"] = kwargs.pop(key)
+            if key == "container_size":
+                url_kw["X-Plex-Container-Size"] = kwargs.pop(key)
+
         if ekey is None:
             raise BadRequest('ekey was not provided')
-        data = self._server.query(ekey)
+        data = self._server.query(ekey, params=url_kw)
         items = self.findItems(data, cls, ekey, **kwargs)
         librarySectionID = data.attrib.get('librarySectionID')
         if librarySectionID:
