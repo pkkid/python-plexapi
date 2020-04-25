@@ -55,6 +55,7 @@ def test_library_section_movies_all(movies):
     assert movies.size is None
     assert movies.totalSize == 4
     assert len(movies.all(container_start=0, container_size=1)) == 1
+    assert movies.size == 1
 
 
 def test_library_section_delete(movies, patched_http_call):
