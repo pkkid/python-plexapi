@@ -332,6 +332,8 @@ class LibrarySection(PlexObject):
             type (str): Type of content section represents (movie, artist, photo, show).
             updatedAt (datetime): Datetime this library section was last updated.
             uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
+            totalSize (int): Total number of item in the library
+
     """
     ALLOWED_FILTERS = ()
     ALLOWED_SORT = ()
@@ -355,6 +357,17 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
+        # Private attrs as we dont want a reload.
+        self._total_size = None
+
+    @property
+    def totalSize(self):
+        if self._total_size is None:
+            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
+            data = self._server.query(part)
+            self._total_size = int(data.attrib.get("totalSize"))
+
+        return self._total_size
 
     def delete(self):
         """ Delete a library section. """
