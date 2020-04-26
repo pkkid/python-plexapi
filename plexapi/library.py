@@ -361,34 +361,15 @@ class LibrarySection(PlexObject):
         self.uuid = data.attrib.get('uuid')
         # Private attrs as we dont want a reload.
         self._total_size = None
-        self._size = None
-        self._offset = None
-
-    def _update_all_atts(self):
-        """Helper for allow for requesting some attrs without normal reload
-           as the info we need isnt included in the reload.
-
-           we also update the this attributes when all method
-        """
-        if (self._total_size is None or self._offset is None):
-            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
-            data = self._server.query(part)
-            self._total_size = int(data.attrib.get("totalSize"))
-            self._offset = int(data.attrib.get("offset"))
 
     @property
     def totalSize(self):
-        self._update_all_atts()
+        if self._total_size is None:
+            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
+            data = self._server.query(part)
+            self._total_size = int(data.attrib.get("totalSize"))
+
         return self._total_size
-
-    @property
-    def size(self):
-        return self._size
-
-    @property
-    def offset(self):
-        self._update_all_atts()
-        return self._offset
 
     def delete(self):
         """ Delete a library section. """

@@ -161,13 +161,6 @@ class PlexObject(object):
         data = self._server.query(ekey, params=url_kw)
         items = self.findItems(data, cls, ekey, **kwargs)
 
-        # inline the import..
-        from plexapi.library import LibrarySection
-        if isinstance(self, LibrarySection):
-            self._offset = utils.cast(int, data.attrib.get("offset"))
-            self._totalSize = utils.cast(int, data.attrib.get("totalSize"))
-            self._size = utils.cast(int, data.attrib.get("size"))
-
         librarySectionID = data.attrib.get('librarySectionID')
         if librarySectionID:
             for item in items:
