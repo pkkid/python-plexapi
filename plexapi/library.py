@@ -534,7 +534,8 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return self.fetchItems(key, cls=FilterChoice)
 
-    def search(self, title=None, sort=None, maxresults=999999, libtype=None, container_size=None, **kwargs):
+    def search(self, title=None, sort=None, maxresults=999999,
+               libtype=None, container_size=X_PLEX_CONTAINER_SIZE, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
             in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only looking for the first <num>
             results, it would be wise to set the maxresults option to that amount so this functions
@@ -547,6 +548,7 @@ class LibrarySection(PlexObject):
                 maxresults (int): Only return the specified number of results (optional).
                 libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist,
                     album, track; optional).
+                container_size (int): default X_PLEX_CONTAINER_SIZE in your config file.
                 **kwargs (dict): Any of the available filters for the current library section. Partial string
                         matches allowed. Multiple matches OR together. Negative filtering also possible, just add an
                         exclamation mark to the end of filter name, e.g. `resolution!=1x1`.
@@ -582,18 +584,20 @@ class LibrarySection(PlexObject):
         results = []
         subresults = []
         args['X-Plex-Container-Start'] = 0
-        args['X-Plex-Container-Size'] = container_size or X_PLEX_CONTAINER_SIZE
+        args['X-Plex-Container-Size'] = container_size
         while True:
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key)
             results.extend(subresults)
 
-            # this si not set as condition in the while as
+            # self.totalSize is not used as a condition in the while loop as
             # this require a additional http request.
+            # self.totalSize is updated from .fetchItems
             if self.totalSize <= len(results):
                 break
 
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
+
         return results[:maxresults]
 
     def _cleanSearchFilter(self, category, value, libtype=None):
