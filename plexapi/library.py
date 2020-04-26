@@ -332,8 +332,6 @@ class LibrarySection(PlexObject):
             type (str): Type of content section represents (movie, artist, photo, show).
             updatedAt (datetime): Datetime this library section was last updated.
             uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
-            size (int): Number of items returned from the request.
-            offset (int, None): Offset of the item requested in the library
             totalSize (int): Total number of item in the library
 
     """
