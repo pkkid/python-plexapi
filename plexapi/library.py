@@ -505,7 +505,7 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return self.fetchItems(key, cls=FilterChoice)
 
-    def search(self, title=None, sort=None, maxresults=999999, libtype=None, **kwargs):
+    def search(self, title=None, sort=None, maxresults=999999, libtype=None, container_size=None, **kwargs):
         """ Search the library. If there are many results, they will be fetched from the server
             in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only looking for the first <num>
             results, it would be wise to set the maxresults option to that amount so this functions
@@ -550,15 +550,20 @@ class LibrarySection(PlexObject):
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
         # iterate over the results
-        results, subresults = [], '_init'
+        results = []
+        subresults = []
         args['X-Plex-Container-Start'] = 0
-        args['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
-        while subresults and maxresults > len(results):
+        args['X-Plex-Container-Size'] = container_size or X_PLEX_CONTAINER_SIZE
+        while True:
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key)
-            results += subresults[:maxresults - len(results)]
+            if not len(subresults):
+                break
+            else:
+                results.extend(subresults)
+
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
-        return results
+        return results[:maxresults]
 
     def _cleanSearchFilter(self, category, value, libtype=None):
         # check a few things before we begin
