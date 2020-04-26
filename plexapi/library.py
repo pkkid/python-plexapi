@@ -378,7 +378,7 @@ class LibrarySection(PlexObject):
             raise BadRequest('ekey was not provided')
         data = self._server.query(ekey, params=url_kw)
 
-        self._total_size = int(data.attrib.get("totalSize"))
+        self._total_size = utils.cast(int, data.attrib.get("totalSize"))
         items = self.findItems(data, cls, ekey, **kwargs)
 
         librarySectionID = data.attrib.get('librarySectionID')
