@@ -360,6 +360,33 @@ class LibrarySection(PlexObject):
         # Private attrs as we dont want a reload.
         self._total_size = None
 
+    def fetchItems(self, ekey, cls=None, **kwargs):
+        """ Load the specified key to find and build all items with the specified tag
+            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
+            on how this is used.
+
+            Use container_start and container_size for pagination.
+        """
+        url_kw = {}
+        for key, value in dict(kwargs).items():
+            if key == "container_start":
+                url_kw["X-Plex-Container-Start"] = kwargs.pop(key)
+            if key == "container_size":
+                url_kw["X-Plex-Container-Size"] = kwargs.pop(key)
+
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
+        data = self._server.query(ekey, params=url_kw)
+
+        self._total_size = int(data.attrib.get("totalSize"))
+        items = self.findItems(data, cls, ekey, **kwargs)
+
+        librarySectionID = data.attrib.get('librarySectionID')
+        if librarySectionID:
+            for item in items:
+                item.librarySectionID = librarySectionID
+        return items
+
     @property
     def totalSize(self):
         if self._total_size is None:
@@ -549,7 +576,7 @@ class LibrarySection(PlexObject):
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
-        # iterate over the results
+
         results = []
         subresults = []
         args['X-Plex-Container-Start'] = 0
@@ -557,10 +584,12 @@ class LibrarySection(PlexObject):
         while True:
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key)
-            if not len(subresults):
+            results.extend(subresults)
+
+            # this si not set as condition in the while as
+            # this require a additional http request.
+            if self.totalSize <= len(results):
                 break
-            else:
-                results.extend(subresults)
 
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results[:maxresults]
