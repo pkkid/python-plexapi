@@ -9,7 +9,6 @@ import pytest
 import requests
 from plexapi import compat
 from plexapi.client import PlexClient
-from plexapi.compat import MagicMock, patch
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 

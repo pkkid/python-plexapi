@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import threading
-import websocket
+
 from plexapi import log
 
 
@@ -40,6 +40,11 @@ class AlertListener(threading.Thread):
         self._ws = None
 
     def run(self):
+        try:
+            import websocket
+        except ImportError:
+            log.warning("Can't use the AlertListener without websocket")
+            return
         # create the websocket connection
         url = self._server.url(self.key, includeToken=True).replace('http', 'ws')
         log.info('Starting AlertListener: %s', url)
