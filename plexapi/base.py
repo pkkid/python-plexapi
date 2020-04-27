@@ -142,19 +142,21 @@ class PlexObject(object):
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
-    def fetchItems(self, ekey, cls=None, **kwargs):
+    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
 
-            Use container_start and container_size for pagination.
+            Parameters:
+                container_start (None, int): offset to get a subset of the data
+                container_size (None, int): How many items in data
+
         """
         url_kw = {}
-        for key, value in dict(kwargs).items():
-            if key == "container_start":
-                url_kw["X-Plex-Container-Start"] = kwargs.pop(key)
-            if key == "container_size":
-                url_kw["X-Plex-Container-Size"] = kwargs.pop(key)
+        if container_start is not None:
+            url_kw["X-Plex-Container-Start"] = container_start
+        if container_size is not None:
+            url_kw["X-Plex-Container-Size"] = container_size
 
         if ekey is None:
             raise BadRequest('ekey was not provided')
