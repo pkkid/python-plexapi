@@ -4,7 +4,6 @@ import time
 
 import pytest
 from PIL import Image, ImageStat
-from plexapi.compat import patch
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from plexapi.utils import download
@@ -200,7 +199,7 @@ def test_server_isLatest(plex, mocker):
 
 def test_server_installUpdate(plex, mocker):
     m = mocker.MagicMock(release="aa")
-    with patch("plexapi.server.PlexServer.check_for_update", return_value=m):
+    with utils.patch('plexapi.server.PlexServer.check_for_update', return_value=m):
         with utils.callable_http_patch():
             plex.installUpdate()
 
@@ -215,7 +214,7 @@ def test_server_check_for_update(plex, mocker):
             self.downloadURL = "http://path-to-update"
             self.state = "downloaded"
 
-    with patch("plexapi.server.PlexServer.check_for_update", return_value=R()):
+    with utils.patch('plexapi.server.PlexServer.check_for_update', return_value=R()):
         rel = plex.check_for_update(force=False, download=True)
         assert rel.download_key == "plex.tv/release/1337"
         assert rel.version == "1337"
