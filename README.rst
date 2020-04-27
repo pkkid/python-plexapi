@@ -6,6 +6,12 @@ Python-PlexAPI
     :target: https://travis-ci.org/pkkid/python-plexapi
 .. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
     :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
+.. image:: https://img.shields.io/github/tag/pkkid/python-plexapi.svg?label=github+release
+    :target: https://github.com/pkkid/python-plexapi/releases
+.. image:: https://badge.fury.io/py/PlexAPI.svg
+    :target: https://badge.fury.io/py/PlexAPI
+.. image:: https://img.shields.io/github/last-commit/pkkid/python-plexapi.svg
+    :target: https://img.shields.io/github/last-commit/pkkid/python-plexapi.svg
 
 
 Overview
