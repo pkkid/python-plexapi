@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import requests
-from plexapi import CONFIG
+from plexapi import CONFIG, X_PLEX_IDENTIFIER
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest
 from plexapi.playqueue import PlayQueue
@@ -98,7 +98,7 @@ class PlexSonosClient(PlexClient):
             "port": server_port,
             "token": media._server.createToken(),
             "commandID": self._nextCommandId(),
-            #"X-Plex-Client-Identifier": client_id,
+            "X-Plex-Client-Identifier": X_PLEX_IDENTIFIER,
             "X-Plex-Token": media._server._token,
             "X-Plex-Target-Client-Identifier": self.machineIdentifier,
         }, **params))

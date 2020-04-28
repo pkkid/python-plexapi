@@ -89,6 +89,8 @@ class MyPlexAccount(PlexObject):
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
         self._token = token
         self._session = session or requests.Session()
+        self._sonos_cache = []
+        self._sonos_cache_timestamp = 0
         data, initpath = self._signin(username, password, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
@@ -213,8 +215,20 @@ class MyPlexAccount(PlexObject):
     def sonos_speakers(self):
         if 'companions_sonos' not in self.subscriptionFeatures:
             return []
-        data = self.query('https://sonos.plex.tv/resources')
-        return [PlexSonosClient(self, elem) for elem in data]
+
+        t = time.time()
+        if t - self._sonos_cache_timestamp > 60:
+            self._sonos_cache_timestamp = t
+            data = self.query('https://sonos.plex.tv/resources')
+            self._sonos_cache = [PlexSonosClient(self, elem) for elem in data]
+
+        return self._sonos_cache
+
+    def sonos_speaker(self, name):
+        return [x for x in self.sonos_speakers() if x.title == name][0]
+
+    def sonos_speaker_by_id(self, identifier):
+        return [x for x in self.sonos_speakers() if x.machineIdentifier == identifier][0]
 
     def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
                      allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
