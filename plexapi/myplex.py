@@ -12,6 +12,7 @@ from plexapi.client import PlexClient
 from plexapi.compat import ElementTree
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
+from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
 from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
@@ -208,6 +209,12 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexResource` objects connected to the server. """
         data = self.query(MyPlexResource.key)
         return [MyPlexResource(self, elem) for elem in data]
+
+    def sonos_speakers(self):
+        if 'companions_sonos' not in self.subscriptionFeatures:
+            return []
+        data = self.query('https://sonos.plex.tv/resources')
+        return [PlexSonosClient(self, elem) for elem in data]
 
     def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
                      allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
