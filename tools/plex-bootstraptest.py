@@ -116,24 +116,6 @@ def setup_music(music_path):
     print("Setup files for music section..")
     makedirs(music_path, exist_ok=True)
 
-    '''
-        "Broke for free": {
-            "Layers": [
-                "01 - As Colorful As Ever.mp3",
-                "02 - Knock Knock.mp3",
-                "03 - Only Knows.mp3",
-                "04 - If.mp3",
-                "05 - Note Drop.mp3",
-                "06 - Murmur.mp3",
-                "07 - Spellbound.mp3",
-                "08 - The Collector.mp3",
-                "09 - Quit Bitching.mp3",
-                "10 - A Year.mp3",
-            ]
-        },
-
-    '''
-
     all_music = {
 
         "Broke for free": {
@@ -151,32 +133,10 @@ def setup_music(music_path):
             ]
         },
 
-        #"Infinite State": {
-        #    "Unmastered Impulses": [
-        #        "01 - Holy Moment.mp3",
-        #        "02 - Analogue Dream.mp3",
-        #        "03 - Winter Solstice.mp3",
-        #        "04 - Consistent Inconsistency.mp3",
-        #        "05 - Mantra.mp3",
-        #        "06 - Tightness (Ram_Dass).mp3",
-        #        "07 - Talk in Technicolor.mp3",
-        #        "08 - Push & Pull.mp3",
-        #        "09 - Resonance Police (Interlude).mp3",
-        #        "10 - Lithium Days.mp3",
-        #        "11 - Vacation Days.mp3",
-        #        "12 - Power Clap.mp3",
-        #        "13 - Hypomaniac.mp3",
-        #        "14 - New_Beginnings (Bonus_Track).mp3",
-        #    ]
-        #},
     }
 
     for artist, album in all_music.items():
         for k, v in album.items():
-            # Using the recommended naming convention dont work..
-            # https://support.plex.tv/articles/200265296-adding-music-media-from-folders/
-            #folder_name = "%s - %s" % (artist, k)
-            #folder_name =
             artist_album = os.path.join(music_path, artist, k)
             makedirs(artist_album, exist_ok=True)
             for song in v:
