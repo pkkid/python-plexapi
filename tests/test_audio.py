@@ -60,7 +60,7 @@ def test_audio_Artist_albums(artist):
 
 def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
-    assert [i.tag for i in album.genres] == ['Electronic']
+    assert isinstance(album.genres, list)
     assert album.index == '1'
     assert utils.is_metadata(album._initpath)
     assert utils.is_metadata(album.key)
@@ -107,7 +107,7 @@ def test_audio_Album_tracks(album):
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
     assert track.listType == 'audio'
-    assert track.originalTitle == 'Kenneth Reitz'
+    assert track.originalTitle in (None, 'Kenneth Reitz')
     assert utils.is_int(track.parentIndex)
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
@@ -131,7 +131,7 @@ def test_audio_Album_track(album, track=None):
     # this is not reloaded. its not that much info missing.
     track = track or album.track('Holy Moment')
     assert utils.is_datetime(track.addedAt)
-    assert track.duration in [298605, 298606]
+    assert utils.is_int(track.duration)
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == 'Infinite State'
@@ -164,7 +164,7 @@ def test_audio_Album_track(album, track=None):
     assert media.audioCodec == 'mp3'
     assert media.bitrate in [320, 385]
     assert media.container == 'mp3'
-    assert media.duration in [298605, 298606]
+    assert utils.is_int(media.duration)
     assert media.height is None
     assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
@@ -177,7 +177,7 @@ def test_audio_Album_track(album, track=None):
     assert media.videoResolution is None
     assert media.width is None
     assert part.container == 'mp3'
-    assert part.duration in [298605, 298606]
+    assert utils.is_int(part.duration)
     assert part.file.endswith('.mp3')
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
@@ -203,7 +203,7 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.addedAt)
     assert track.art is None
     assert track.chapterSource is None
-    assert track.duration in [298605, 298606]
+    assert utils.is_int(track.duration)
     assert track.grandparentArt is None
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
@@ -249,7 +249,7 @@ def test_audio_Track_attrs(album):
     assert media.audioCodec == 'mp3'
     assert media.bitrate in [320, 385]
     assert media.container == 'mp3'
-    assert media.duration in [298605, 298606]
+    assert utils.is_int(media.duration)
     assert media.height is None
     assert utils.is_int(media.id, gte=1)
     assert utils.is_metadata(media._initpath)
@@ -262,7 +262,7 @@ def test_audio_Track_attrs(album):
     assert media.videoResolution is None
     assert media.width is None
     assert part.container == 'mp3'
-    assert part.duration in [298605, 298606]
+    assert utils.is_int(part.duration)
     assert part.file.endswith('.mp3')
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
