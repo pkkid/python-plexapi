@@ -34,7 +34,7 @@ script:
   - py.test tests -rxXs --ignore=tests/test_sync.py --tb=native --verbose --cov-config .coveragerc --cov=plexapi
   - PLEXAPI_HEADER_PROVIDES='controller,sync-target' PLEXAPI_HEADER_PLATFORM=iOS PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1
     PLEXAPI_HEADER_DEVICE=iPhone py.test tests/test_sync.py -rxXs --tb=native --verbose --cov-config .coveragerc
-    --cov=plexapi tests/ --cov-append
+    --cov=plexapi --cov-append
 
 after_success:
   - COVERALLS_PARALLEL=true coveralls
