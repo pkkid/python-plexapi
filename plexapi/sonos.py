@@ -96,7 +96,7 @@ class PlexSonosClient(PlexClient):
                 {
                     "type": "music",
                     "providerIdentifier": "com.plexapp.plugins.library",
-                    "containerKey": f"/playQueues/{playqueue.playQueueID}?own=1",
+                    "containerKey": "/playQueues/{}?own=1".format(playqueue.playQueueID),
                     "key": media.key,
                     "offset": offset,
                     "machineIdentifier": media._server.machineIdentifier,
