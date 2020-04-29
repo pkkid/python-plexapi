@@ -193,11 +193,11 @@ def test_library_MusicSection_albums(music):
 
 
 def test_library_MusicSection_searchTracks(music):
-    assert len(music.searchTracks(title="Holy Moment"))
+    assert len(music.searchTracks(title="As Colourful As Ever"))
 
 
 def test_library_MusicSection_searchAlbums(music):
-    assert len(music.searchAlbums(title="Unmastered Impulses"))
+    assert len(music.searchAlbums(title="Layers"))
 
 
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):

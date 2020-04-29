@@ -12,6 +12,7 @@ python plex-bootraptest.py --no-docker --server-name name_of_server --account He
 """
 import argparse
 import os
+import shutil
 import socket
 import time
 from glob import glob
@@ -75,7 +76,7 @@ DOCKER_CMD = [
 
 BASE_DIR_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STUB_MOVIE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "video_stub.mp4")
-STUB_MP3_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "video_stub.mp4")
+STUB_MP3_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "audio_stub.mp3")
 STUB_IMAGE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "cute_cat.jpg")
 
 
@@ -91,11 +92,31 @@ def check_ext(path, ext):
     return result
 
 
+class ExistingSection(Exception):
+    """This server has sections, exiting"""
+
+    def __init__(self, *args):
+        raise SystemExit("This server has sections exiting")
+
+
+def clean_pms(server, path):
+    for section in server.library.sections():
+        print("Deleting %s" % section.title)
+        section.delete()
+
+    server.library.cleanBundles()
+    server.library.optimize()
+    print("optimized db and removed any bundles")
+
+    shutil.rmtree(path, ignore_errors=False, onerror=None)
+    print("Deleted %s" % path)
+
+
 def setup_music(music_path):
     print("Setup files for music section..")
     makedirs(music_path, exist_ok=True)
 
-    all_music = {
+    '''
         "Broke for free": {
             "Layers": [
                 "01 - As Colorful As Ever.mp3",
@@ -110,32 +131,53 @@ def setup_music(music_path):
                 "10 - A Year.mp3",
             ]
         },
-        "Infinite State": {
-            "Unmastered Impulses": [
-                "01 - Holy Moment.mp3",
-                "02 - Analogue Dream.mp3",
-                "03 - Winter Solstice.mp3",
-                "04 - Consistent Inconsistency.mp3",
-                "05 - Mantra.mp3",
-                "06 - Tightness (Ram_Dass).mp3",
-                "07 - Talk in Technicolor.mp3",
-                "08 - Push & Pull.mp3",
-                "09 - Resonance Police (Interlude).mp3",
-                "10 - Lithium Days.mp3",
-                "11 - Vacation Days.mp3",
-                "12 - Power Clap.mp3",
-                "13 - Hypomaniac.mp3",
-                "14 - New_Beginnings (Bonus_Track).mp3",
+
+    '''
+
+    all_music = {
+
+        "Broke for free": {
+            "Layers": [
+                "1 - As Colorful As Ever.mp3",
+                #"02 - Knock Knock.mp3",
+                #"03 - Only Knows.mp3",
+                #"04 - If.mp3",
+                #"05 - Note Drop.mp3",
+                #"06 - Murmur.mp3",
+                #"07 - Spellbound.mp3",
+                #"08 - The Collector.mp3",
+                #"09 - Quit Bitching.mp3",
+                #"10 - A Year.mp3",
             ]
         },
+
+        #"Infinite State": {
+        #    "Unmastered Impulses": [
+        #        "01 - Holy Moment.mp3",
+        #        "02 - Analogue Dream.mp3",
+        #        "03 - Winter Solstice.mp3",
+        #        "04 - Consistent Inconsistency.mp3",
+        #        "05 - Mantra.mp3",
+        #        "06 - Tightness (Ram_Dass).mp3",
+        #        "07 - Talk in Technicolor.mp3",
+        #        "08 - Push & Pull.mp3",
+        #        "09 - Resonance Police (Interlude).mp3",
+        #        "10 - Lithium Days.mp3",
+        #        "11 - Vacation Days.mp3",
+        #        "12 - Power Clap.mp3",
+        #        "13 - Hypomaniac.mp3",
+        #        "14 - New_Beginnings (Bonus_Track).mp3",
+        #    ]
+        #},
     }
 
     for artist, album in all_music.items():
         for k, v in album.items():
             # Using the recommended naming convention dont work..
             # https://support.plex.tv/articles/200265296-adding-music-media-from-folders/
-            folder_name = "%s - %s" % (artist, k)
-            artist_album = os.path.join(music_path, folder_name)
+            #folder_name = "%s - %s" % (artist, k)
+            #folder_name =
+            artist_album = os.path.join(music_path, artist, k)
             makedirs(artist_album, exist_ok=True)
             for song in v:
                 copyfile(STUB_MP3_PATH, os.path.join(artist_album, song))
@@ -480,12 +522,23 @@ if __name__ == "__main__":
 
     # Lets add a check here do somebody dont mess up
     # there normal server if they run manual tests.
-    if len(server.library.sections()):
-        raise SystemExit(
-            "This server already has some sections aborting. "
-            "Remove any section and rerun script",
-            1337,
+    # Like i did....
+    if len(server.library.sections()) and opts.no_docker is True:
+        ans = input(
+            "The server has %s sections, do you wish to remove it?\n> "
+            % len(server.library.sections())
         )
+        if ans in ("y", "Y", "Yes"):
+            ans = input(
+                "Are you really sure you want to delete %s libraries? There is no way back\n> "
+                % len(server.library.sections())
+            )
+            if ans in ("y", "Y", "Yes"):
+                clean_pms(server, path)
+            else:
+                raise ExistingSection()
+        else:
+            raise ExistingSection()
 
     # Prepare Movies section
     if opts.with_movies:
