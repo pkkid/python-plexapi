@@ -85,20 +85,30 @@ class PlexSonosClient(PlexClient):
         server_address = server_address.strip("/")
         server_port = server_port.strip("/")
 
-        playqueue = media if isinstance(media, PlayQueue) else media._server.createPlayQueue(media)
-        self.sendCommand("playback/playMedia", **dict({
-            "type": "music",
-            "providerIdentifier": "com.plexapp.plugins.library",
-            "containerKey": f"/playQueues/{playqueue.playQueueID}?own=1",
-            "key": media.key,
-            "offset": offset,
-            "machineIdentifier": media._server.machineIdentifier,
-            "protocol": server_protocol,
-            "address": server_address,
-            "port": server_port,
-            "token": media._server.createToken(),
-            "commandID": self._nextCommandId(),
-            "X-Plex-Client-Identifier": X_PLEX_IDENTIFIER,
-            "X-Plex-Token": media._server._token,
-            "X-Plex-Target-Client-Identifier": self.machineIdentifier,
-        }, **params))
+        playqueue = (
+            media
+            if isinstance(media, PlayQueue)
+            else media._server.createPlayQueue(media)
+        )
+        self.sendCommand(
+            "playback/playMedia",
+            **dict(
+                {
+                    "type": "music",
+                    "providerIdentifier": "com.plexapp.plugins.library",
+                    "containerKey": f"/playQueues/{playqueue.playQueueID}?own=1",
+                    "key": media.key,
+                    "offset": offset,
+                    "machineIdentifier": media._server.machineIdentifier,
+                    "protocol": server_protocol,
+                    "address": server_address,
+                    "port": server_port,
+                    "token": media._server.createToken(),
+                    "commandID": self._nextCommandId(),
+                    "X-Plex-Client-Identifier": X_PLEX_IDENTIFIER,
+                    "X-Plex-Token": media._server._token,
+                    "X-Plex-Target-Client-Identifier": self.machineIdentifier,
+                },
+                **params,
+            ),
+        )
