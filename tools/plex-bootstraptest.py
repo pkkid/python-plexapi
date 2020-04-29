@@ -495,7 +495,7 @@ if __name__ == "__main__":
             dict(
                 name="Movies",
                 type="movie",
-                location=movies_path,
+                location="/data/Movies" if opts.no_docker is False else movies_path,
                 agent="com.plexapp.agents.imdb",
                 scanner="Plex Movie Scanner",
                 expected_media_count=num_movies,
@@ -511,7 +511,7 @@ if __name__ == "__main__":
             dict(
                 name="TV Shows",
                 type="show",
-                location=tvshows_path,
+                location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
                 agent="com.plexapp.agents.thetvdb",
                 scanner="Plex Series Scanner",
                 expected_media_count=num_ep,
@@ -527,7 +527,7 @@ if __name__ == "__main__":
             dict(
                 name="Music",
                 type="artist",
-                location=music_path,
+                location="/data/Music" if opts.no_docker is False else music_path,
                 agent="com.plexapp.agents.lastfm",
                 scanner="Plex Music Scanner",
                 expected_media_count=song_c,
@@ -543,7 +543,7 @@ if __name__ == "__main__":
             dict(
                 name="Photos",
                 type="photo",
-                location=photos_path,
+                location="/data/Photos" if opts.no_docker is False else photos_path,
                 agent="com.plexapp.agents.none",
                 scanner="Plex Photo Scanner",
                 expected_media_count=has_photos,
