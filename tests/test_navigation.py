@@ -18,21 +18,17 @@ def test_navigate_around_show(account, plex):
 
 
 def test_navigate_around_artist(account, plex):
-    artist = plex.library.section("Music").get("Infinite State")
+    artist = plex.library.section("Music").get("Broke For Free")
     albums = artist.albums()
-    album = artist.album("Unmastered Impulses")
+    album = artist.album("Layers")
     tracks = artist.tracks()
-    track = artist.track("Mantra")
+    track = artist.track("As Colourful as Ever")
     print("Navigating around artist: %s" % artist)
-    print("Albums: %s..." % albums[:3])
     print("Album: %s" % album)
-    print("Tracks: %s..." % tracks[:3])
+    print("Tracks: %s..." % tracks)
     print("Track: %s" % track)
-    assert "Unmastered Impulses" in [a.title for a in albums], "Unable to list album."
-    assert "Mantra" in [e.title for e in tracks], "Unable to list track."
-    assert artist.album("Unmastered Impulses") == album, "Unable to get artist album."
-    assert artist.track("Mantra") == track, "Unable to get artist track."
-    assert album.track("Mantra") == track, "Unable to get album track."
+    assert artist.track("As Colourful as Ever") == track, "Unable to get artist track."
+    assert album.track("As Colourful as Ever") == track, "Unable to get album track."
     assert album.artist() == artist, "album.artist() doesnt match expected artist."
     assert track.artist() == artist, "track.artist() doesnt match expected artist."
     assert track.album() == album, "track.album() doesnt match expected album."
