@@ -381,7 +381,10 @@ class LibrarySection(PlexObject):
         data = self._server.query(ekey, params=url_kw)
 
         if '/all' in ekey:
-            self._total_size = utils.cast(int, data.attrib.get("totalSize"))
+            # totalSize is only included in the xml response
+            # if container size is used.
+            total_size = data.attrib.get("totalSize") or data.attrib.get("size")
+            self._total_size = utils.cast(int, total_size)
 
         items = self.findItems(data, cls, ekey, **kwargs)
 
@@ -585,6 +588,7 @@ class LibrarySection(PlexObject):
 
         results = []
         subresults = []
+        offset = container_start
 
         if maxresults is not None:
             container_size = min(container_size, maxresults)
@@ -592,18 +596,22 @@ class LibrarySection(PlexObject):
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key, container_start=container_start,
                                          container_size=container_size)
+            if not len(subresults):
+                if offset > self.totalSize:
+                    log.info("container_start is higher then the number of items in the library")
+                break
+
             results.extend(subresults)
 
             # self.totalSize is not used as a condition in the while loop as
             # this require a additional http request.
             # self.totalSize is updated from .fetchItems
+            wanted_number_of_items = self.totalSize - offset
             if maxresults is not None:
-                res = min(maxresults, self.totalSize)
+                wanted_number_of_items = min(maxresults, wanted_number_of_items)
                 container_size = min(container_size, maxresults - len(results))
-            else:
-                res = self.totalSize
 
-            if res <= len(results):
+            if wanted_number_of_items <= len(results):
                 break
 
             container_start += container_size

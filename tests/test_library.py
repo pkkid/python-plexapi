@@ -263,3 +263,5 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_start=2, maxresults=1)) == 1
     assert len(movies.search(container_size=None)) == 4
     assert len(movies.search(container_size=1)) == 4
+    assert len(movies.search(container_start=9999, container_size=1)) == 0
+    assert len(movies.search(container_start=2, container_size=1)) == 2
