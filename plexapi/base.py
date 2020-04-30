@@ -547,6 +547,7 @@ class PlexPartialObject(PlexObject):
                     False allows user to provide the match
                 searchResult (:class:`~plexapi.media.SearchResult`): Search result from
                     ~plexapi.base.matches()
+                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
         """
         key = '/library/metadata/%s/match' % self.ratingKey
         if auto:
