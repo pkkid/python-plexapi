@@ -517,7 +517,7 @@ class PlexPartialObject(PlexObject):
         key = '/library/metadata/%s/matches' % self.ratingKey
         params = {'manual': 1}
 
-        if any([agent, title, year, language]):
+        if any(x is not None for x in [agent, title, year, language]):
             if title is None:
                 params['title'] = self.title
             else:
