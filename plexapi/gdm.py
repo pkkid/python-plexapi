@@ -4,9 +4,8 @@ Support for discovery using GDM (Good Day Mate), multicast protocol by Plex.
 # Licensed Apache 2.0
 # From https://github.com/home-assistant/netdisco/netdisco/gdm.py
 
-Inspired by
-  hippojay's plexGDM:
-  https://github.com/hippojay/script.plexbmc.helper/resources/lib/plexgdm.py
+Inspired by:
+  hippojay's plexGDM: https://github.com/hippojay/script.plexbmc.helper/resources/lib/plexgdm.py
   iBaa's PlexConnect: https://github.com/iBaa/PlexConnect/PlexAPI.py
 """
 import socket
@@ -50,31 +49,33 @@ class GDM:
 
         Examples of the dict list assigned to self.entries by this function:
 
-        Server:
-        [{'data': {
-             'Content-Type': 'plex/media-server',
-             'Host': '53f4b5b6023d41182fe88a99b0e714ba.plex.direct',
-             'Name': 'myfirstplexserver',
-             'Port': '32400',
-             'Resource-Identifier': '646ab0aa8a01c543e94ba975f6fd6efadc36b7',
-             'Updated-At': '1585769946',
-             'Version': '1.18.8.2527-740d4c206',
-         },
-         'from': ('10.10.10.100', 32414)}]
+            Server:
 
-        Clients:
-        [{'data': {'Content-Type': 'plex/media-player',
-             'Device-Class': 'stb',
-             'Name': 'plexamp',
-             'Port': '36000',
-             'Product': 'Plexamp',
-             'Protocol': 'plex',
-             'Protocol-Capabilities': 'timeline,playback,playqueues,playqueues-creation',
-             'Protocol-Version': '1',
-             'Resource-Identifier': 'b6e57a3f-e0f8-494f-8884-f4b58501467e',
-             'Version': '1.1.0',
-         },
-         'from': ('10.10.10.101', 32412)}]
+                [{'data': {
+                     'Content-Type': 'plex/media-server',
+                     'Host': '53f4b5b6023d41182fe88a99b0e714ba.plex.direct',
+                     'Name': 'myfirstplexserver',
+                     'Port': '32400',
+                     'Resource-Identifier': '646ab0aa8a01c543e94ba975f6fd6efadc36b7',
+                     'Updated-At': '1585769946',
+                     'Version': '1.18.8.2527-740d4c206',
+                },
+                 'from': ('10.10.10.100', 32414)}]
+
+            Clients:
+
+                [{'data': {'Content-Type': 'plex/media-player',
+                     'Device-Class': 'stb',
+                     'Name': 'plexamp',
+                     'Port': '36000',
+                     'Product': 'Plexamp',
+                     'Protocol': 'plex',
+                     'Protocol-Capabilities': 'timeline,playback,playqueues,playqueues-creation',
+                     'Protocol-Version': '1',
+                     'Resource-Identifier': 'b6e57a3f-e0f8-494f-8884-f4b58501467e',
+                     'Version': '1.1.0',
+                },
+                 'from': ('10.10.10.101', 32412)}]
         """
 
         gdm_msg = 'M-SEARCH * HTTP/1.0'.encode('ascii')
