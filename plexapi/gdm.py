@@ -20,9 +20,9 @@ class GDM:
         self.entries = []
         self.last_scan = None
 
-    def scan(self, scan_for_clients=False):
+    def scan(self, scan_for_clients=False, timeout=1):
         """Scan the network."""
-        self.update(scan_for_clients)
+        self.update(scan_for_clients, timeout=timeout)
 
     def all(self):
         """Return all found entries.
@@ -45,7 +45,7 @@ class GDM:
                 if all(item in entry['data'].items()
                        for item in values.items())]
 
-    def update(self, scan_for_clients):
+    def update(self, scan_for_clients, timeout=1):
         """Scan for new GDM services.
 
         Examples of the dict list assigned to self.entries by this function:
@@ -78,7 +78,7 @@ class GDM:
         """
 
         gdm_msg = 'M-SEARCH * HTTP/1.0'.encode('ascii')
-        gdm_timeout = 1
+        gdm_timeout = timeout
 
         self.entries = []
         known_responses = []
@@ -134,12 +134,12 @@ def main():
 
     gdm = GDM()
 
-    pprint("Scanning GDM for servers...")
+    print("Scanning GDM for servers...")
     gdm.scan()
     pprint(gdm.entries)
 
-    pprint("Scanning GDM for clients...")
-    gdm.scan(scan_for_clients=True)
+    print("Scanning GDM for clients...")
+    gdm.scan(scan_for_clients=True, timeout=10)
     pprint(gdm.entries)
 
 
