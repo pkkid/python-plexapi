@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+def # -*- coding: utf-8 -*-
 import re
 
 from plexapi import log, utils
@@ -654,7 +654,7 @@ class Playable(object):
     def merge(self, ratingKeys):
         """Merge duplicate items."""
         if not isinstance(ratingKeys, list):
-            ratingKeys = [ratingKeys]
+            ratingKeys = ratingKeys.split(",")
 
         key = '%s/merge?ids=%s' % (self.key, ','.join(ratingKeys))
         return self._server.query(key, method=self._server._session.put)
