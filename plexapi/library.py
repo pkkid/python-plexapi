@@ -584,7 +584,7 @@ class LibrarySection(PlexObject):
             matches = [k for t, k in lookup.items() if item in t]
             if matches: map(result.add, matches); continue
             # nothing matched; use raw item value
-            log.warning('Filter value not listed, using raw item value: %s' % item)
+            log.debug('Filter value not listed, using raw item value: %s' % item)
             result.add(item)
         return ','.join(result)
 
