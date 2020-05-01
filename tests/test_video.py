@@ -34,6 +34,10 @@ def test_video_Movie_delete(movie, patched_http_call):
     movie.delete()
 
 
+def test_video_Movie_merge(movie, patched_http_call):
+    movie.merge(1337)
+
+
 def test_video_Movie_addCollection(movie):
     labelname = "Random_label"
     org_collection = [tag.tag for tag in movie.collections if tag]
