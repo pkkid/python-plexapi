@@ -17,6 +17,7 @@
    modules/client
    modules/config
    modules/exceptions
+   modules/gdm
    modules/library
    modules/media
    modules/myplex
@@ -28,3 +29,4 @@
    modules/sync
    modules/utils
    modules/video
+
