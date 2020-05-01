@@ -59,7 +59,7 @@ class GDM:
                      'Resource-Identifier': '646ab0aa8a01c543e94ba975f6fd6efadc36b7',
                      'Updated-At': '1585769946',
                      'Version': '1.18.8.2527-740d4c206',
-                 },
+                },
                  'from': ('10.10.10.100', 32414)}]
 
             Clients:
@@ -74,7 +74,7 @@ class GDM:
                      'Protocol-Version': '1',
                      'Resource-Identifier': 'b6e57a3f-e0f8-494f-8884-f4b58501467e',
                      'Version': '1.1.0',
-                 },
+                },
                  'from': ('10.10.10.101', 32412)}]
         """
 
