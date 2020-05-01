@@ -11,7 +11,11 @@ from threading import Event, Thread
 import requests
 from plexapi import compat
 from plexapi.exceptions import NotFound
-from tqdm import tqdm
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None
 
 log = logging.getLogger('plexapi')
 
@@ -294,17 +298,17 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
 
     # save the file to disk
     log.info('Downloading: %s', fullpath)
-    if showstatus:  # pragma: no cover
+    if showstatus and tqdm:  # pragma: no cover
         total = int(response.headers.get('content-length', 0))
         bar = tqdm(unit='B', unit_scale=True, total=total, desc=filename)
 
     with open(fullpath, 'wb') as handle:
         for chunk in response.iter_content(chunk_size=chunksize):
             handle.write(chunk)
-            if showstatus:
+            if showstatus and tqdm:
                 bar.update(len(chunk))
 
-    if showstatus:  # pragma: no cover
+    if showstatus and tqdm:  # pragma: no cover
         bar.close()
     # check we want to unzip the contents
     if fullpath.endswith('zip') and unpack:
