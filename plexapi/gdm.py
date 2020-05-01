@@ -50,6 +50,7 @@ class GDM:
         Examples of the dict list assigned to self.entries by this function:
 
             Server:
+
                 [{'data': {
                      'Content-Type': 'plex/media-server',
                      'Host': '53f4b5b6023d41182fe88a99b0e714ba.plex.direct',
@@ -62,6 +63,7 @@ class GDM:
                  'from': ('10.10.10.100', 32414)}]
 
             Clients:
+
                 [{'data': {'Content-Type': 'plex/media-player',
                      'Device-Class': 'stb',
                      'Name': 'plexamp',
