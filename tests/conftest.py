@@ -224,17 +224,17 @@ def collection(plex):
 
 @pytest.fixture()
 def artist(music):
-    return music.get("Infinite State")
+    return music.get("Broke For Free")
 
 
 @pytest.fixture()
 def album(artist):
-    return artist.album("Unmastered Impulses")
+    return artist.album("Layers")
 
 
 @pytest.fixture()
 def track(album):
-    return album.track("Holy Moment")
+    return album.track("As Colourful as Ever")
 
 
 @pytest.fixture()

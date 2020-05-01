@@ -132,31 +132,21 @@ Usage Examples
 Running tests over PlexAPI
 --------------------------
 
-In order to test the PlexAPI library you have to prepare a Plex Server instance with following libraries:
+Use:
 
-1. Movies section (agent `com.plexapp.agents.imdb`) containing both movies:
-    * Sintel - https://durian.blender.org/
-    * Elephants Dream - https://orange.blender.org/
-    * Sita Sings the Blues - http://www.sitasingstheblues.com/
-    * Big Buck Bunny - https://peach.blender.org/
-2. TV Show section (agent `com.plexapp.agents.thetvdb`) containing the shows:
-    * Game of Thrones (Season 1 and 2)
-    * The 100 (Seasons 1 and 2)
-    * (or symlink the above movies with proper names)
-3. Music section (agent `com.plexapp.agents.lastfm`) containing the albums:
-    * Infinite State - Unmastered Impulses - https://github.com/kennethreitz/unmastered-impulses
-    * Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
-4. A Photos section (any agent) containing the photoalbums (photoalbum is just a folder on your disk):
-    * `Cats`
-    * Within `Cats` album you need to place 3 photos (cute cat photos, of course)
-    * Within `Cats` album you should place 3 more photoalbums (one of them should be named `Cats in bed`,
-      names of others doesn't matter)
-    * Within `Cats in bed` you need to place 7 photos
-    * Within other 2 albums you should place 1 photo in each
+.. code-block:: bash
 
-Instead of manual creation of the library you could use a script `tools/plex-boostraptest.py` with appropriate
+     tools/plex-boostraptest.py 
+    
+with appropriate
 arguments and add this new server to a shared user which username is defined in environment veriable `SHARED_USERNAME`.
 It uses `official docker image`_ to create a proper instance.
+
+For skipping the docker and reuse a existing server use 
+
+.. code-block:: bash
+
+    tools/plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
 
 Also in order to run most of the tests you have to provide some environment variables:
 
