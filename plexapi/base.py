@@ -1,4 +1,4 @@
-def # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import re
 
 from plexapi import log, utils
