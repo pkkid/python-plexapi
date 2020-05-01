@@ -651,6 +651,14 @@ class Playable(object):
         key = '%s/split' % self.key
         return self._server.query(key, method=self._server._session.put)
 
+    def merge(self, ratingKeys):
+        """Merge duplicate items."""
+        if not isinstance(ratingKeys, list):
+            ratingKeys = [ratingKeys]
+
+        key = '%s/merge?ids=%s' % (self.key, ','.join(ratingKeys))
+        return self._server.query(key, method=self._server._session.put)
+
     def unmatch(self):
         """Unmatch a media file."""
         key = '%s/unmatch' % self.key
