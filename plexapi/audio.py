@@ -67,6 +67,13 @@ class Audio(PlexPartialObject):
         """ Returns str, default title for a new syncItem. """
         return self.title
 
+    def rate(self, rate):
+        """ Rate audio. """
+        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
+
+        self._server.query(key)
+        self.reload()
+
     def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
         """ Add current audio (artist, album or track) as sync item for specified device.
             See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
