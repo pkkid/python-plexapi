@@ -551,7 +551,11 @@ class PlexPartialObject(PlexObject):
         """
         key = '/library/metadata/%s/match' % self.ratingKey
         if auto:
-            searchResult = self.matches(agent=agent)[0]
+            autoMatch = self.matches(agent=agent)
+            if autoMatch:
+                searchResult = autoMatch[0]
+            else:
+                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
         elif not searchResult:
             raise NotFound('fixMatch() requires either auto=True or '
                            'searchResult=:class:`~plexapi.media.SearchResult`.')
