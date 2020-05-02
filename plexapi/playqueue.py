@@ -116,3 +116,21 @@ class PlayQueue(PlexObject):
         path = '/playQueues/%s%s' % (self.playQueueID, utils.joinArgs(args))
         data = self.server.query(path, method=self.server._session.get)
         self._loadData(data)
+
+    def shuffle(self):
+        args = {}
+        args['includeChapters'] = self.includeChapters
+        args['includeRelated'] = self.includeRelated
+        args['repeat'] = self.repeat
+        path = '/playQueues/%s/shuffle%s' % (self.playQueueID, utils.joinArgs(args))
+        data = self._server.query(path, method=self._server._session.put)
+        self._loadData(data)
+
+    def unshuffle(self):
+        args = {}
+        args['includeChapters'] = self.includeChapters
+        args['includeRelated'] = self.includeRelated
+        args['repeat'] = self.repeat
+        path = '/playQueues/%s/unshuffle%s' % (self.playQueueID, utils.joinArgs(args))
+        data = self._server.query(path, method=self._server._session.put)
+        self._loadData(data)
