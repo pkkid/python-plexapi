@@ -518,14 +518,10 @@ class PlexPartialObject(PlexObject):
         params = {'manual': 1}
 
         if any(x is not None for x in [agent, title, year, language]):
-            if title is None:
-                params['title'] = self.title
-            else:
+            if title:
                 params['title'] = title
 
-            if year is None:
-                params['year'] = self.year
-            else:
+            if year:
                 params['year'] = year
 
             params['language'] = language or self.section().language
