@@ -535,7 +535,7 @@ class PlexPartialObject(PlexObject):
             else:
                 params['agent'] = utils.getAgentIdentifier(self.section(), agent)
 
-            key = key + '?' + urlencode(params)
+        key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
         return self.findItems(data)
 
