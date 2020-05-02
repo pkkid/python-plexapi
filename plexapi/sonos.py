@@ -21,7 +21,7 @@ class PlexSonosClient(PlexClient):
         https://github.com/plexinc/plex-media-player/wiki/Remote-control-API
 
         Parameters:
-            server (:class:`~plexapi.myplex.PlexAccount`): PlexAccount instance this
+            account (:class:`~plexapi.myplex.PlexAccount`): PlexAccount instance this
                 Sonos speaker is associated with.
             data (ElementTree): Response from Plex Sonos API used to build this client.
 
@@ -96,7 +96,9 @@ class PlexSonosClient(PlexClient):
                 {
                     "type": "music",
                     "providerIdentifier": "com.plexapp.plugins.library",
-                    "containerKey": "/playQueues/{}?own=1".format(playqueue.playQueueID),
+                    "containerKey": "/playQueues/{}?own=1".format(
+                        playqueue.playQueueID
+                    ),
                     "key": media.key,
                     "offset": offset,
                     "machineIdentifier": media._server.machineIdentifier,
