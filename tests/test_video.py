@@ -310,6 +310,15 @@ def test_video_Movie_attrs(movies):
     assert stream2.title is None
     assert stream2.type == 2
 
+def test_video_Movie_match(movies):
+    movie = movies.get('Sita Sings the Blues')
+    assert movie.matches(title="Sita Sings the Blues", year="2008", agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches(title="Sita Sings the Blues", year="", agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches(title="Sita Sings the Blues", agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches(title=None, year=None, agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches(title="", year="", agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches(agent="imdb")[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
+    assert movie.matches()[0].guid == 'com.plexapp.agents.imdb://tt1172203?lang=en'
 
 def test_video_Movie_history(movie):
     movie.markWatched()
