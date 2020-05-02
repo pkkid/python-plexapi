@@ -517,23 +517,27 @@ class PlexPartialObject(PlexObject):
         key = '/library/metadata/%s/matches' % self.ratingKey
         params = {'manual': 1}
 
-        if any(x is not None for x in [agent, title, year, language]):
-            if title is None:
-                params['title'] = self.title
-            else:
-                params['title'] = title
+        if agent and not any([title, year, language]):
+            params['language'] = self.section().language
+            params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+        else:
+            if any(x is not None for x in [agent, title, year, language]):
+                if title is None:
+                    params['title'] = self.title
+                else:
+                    params['title'] = title
 
-            if year is None:
-                params['year'] = self.year
-            else:
-                params['year'] = year
+                if year is None:
+                    params['year'] = self.year
+                else:
+                    params['year'] = year
 
-            params['language'] = language or self.section().language
+                params['language'] = language or self.section().language
 
-            if agent is None:
-                params['agent'] = self.section().agent
-            else:
-                params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+                if agent is None:
+                    params['agent'] = self.section().agent
+                else:
+                    params['agent'] = utils.getAgentIdentifier(self.section(), agent)
 
         key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
