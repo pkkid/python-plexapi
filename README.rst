@@ -15,7 +15,7 @@ Plex Web Client. A few of the many features we currently support are:
 
 * Navigate local or remote shared libraries.
 * Perform library actions such as scan, analyze, empty trash.
-* Remote control and play media on connected clients.
+* Remote control and play media on connected clients, including `Controlling Sonos speakers`_
 * Listen in on all Plex Server notifications.
  
 
@@ -127,6 +127,46 @@ Usage Examples
 
     # Example 9: Rate the 100 four stars.
     plex.library.section('TV Shows').get('The 100').rate(8.0)
+
+
+Controlling Sonos speakers
+--------------------------
+
+To control Sonos speakers directly using Plex APIs, the following requirements must be met:
+
+1. Active Plex Pass subscription
+2. Sonos account linked to Plex account
+3. Plex remote access enabled
+
+Due to the design of Sonos music services, the API calls to control Sonos speakers route through https://sonos.plex.tv
+and back via the Plex server's remote access. Actual media playback is local unless networking restrictions prevent the
+Sonos speakers from connecting to the Plex server directly.
+
+.. code-block:: python
+
+    from plexapi.myplex import MyPlexAccount
+    from plexapi.server import PlexServer
+
+    baseurl = 'http://plexserver:32400'
+    token = '2ffLuB84dqLswk9skLos'
+
+    account = MyPlexAccount(token)
+    server = PlexServer(baseurl, token)
+
+    # List available speakers/groups
+    for speaker in account.sonos_speakers():
+        print(speaker.title)
+
+    # Obtain PlexSonosPlayer instance
+    speaker = account.sonos_speaker("Kitchen")
+
+    album = server.library.section('Music').get('Stevie Wonder').album('Innervisions')
+
+    # Speaker control examples
+    speaker.playMedia(album)
+    speaker.pause()
+    speaker.setVolume(10)
+    speaker.skipNext()
 
 
 Running tests over PlexAPI
