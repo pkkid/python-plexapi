@@ -541,7 +541,7 @@ class PlexPartialObject(PlexObject):
 
         key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
-        return self.findItems(data)
+        return self.findItems(data, initpath=key)
 
     def fixMatch(self, searchResult=None, auto=False, agent=None):
         """ Use match result to update show metadata.
