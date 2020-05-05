@@ -5,6 +5,7 @@ from time import sleep
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.compat import quote_plus
 
 from . import conftest as utils
 
@@ -316,6 +317,105 @@ def test_video_Movie_history(movie):
     history = movie.history()
     assert len(history)
     movie.markUnwatched()
+
+
+def test_video_Movie_match(movies):
+    sectionAgent = movies.agent
+    sectionAgents = [agent.identifier for agent in movies.agents() if agent.shortIdentifier != 'none']
+    sectionAgents.remove(sectionAgent)
+    altAgent = sectionAgents[0]
+
+    movie = movies.all()[0]
+    title = movie.title
+    year = str(movie.year)
+    titleUrlEncode = quote_plus(title)
+
+    def parse_params(key):
+        params = key.split('?', 1)[1]
+        params = params.split("&")
+        return {x.split("=")[0]: x.split("=")[1] for x in params}
+
+    results = movie.matches(title="", year="")
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('title') == ""
+        assert parsedParams.get('year') == ""
+        assert parsedParams.get('agent') == sectionAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches(title=title, year="", agent=sectionAgent)
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('title') == titleUrlEncode
+        assert parsedParams.get('year') == ""
+        assert parsedParams.get('agent') == sectionAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches(title=title, agent=sectionAgent)
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('title') == titleUrlEncode
+        assert parsedParams.get('year') == year
+        assert parsedParams.get('agent') == sectionAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches(title="", year="")
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('agent') == sectionAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches(title="", year="", agent=altAgent)
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('agent') == altAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches(agent=altAgent)
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+        assert parsedParams.get('agent') == altAgent
+    else:
+        assert len(results) == 0
+
+    results = movie.matches()
+    if results:
+        initpath = results[0]._initpath
+        assert initpath.startswith(movie.key)
+        params = initpath.split(movie.key)[1]
+        parsedParams = parse_params(params)
+        assert parsedParams.get('manual') == '1'
+    else:
+        assert len(results) == 0
 
 
 def test_video_Show(show):
