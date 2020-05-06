@@ -13,6 +13,8 @@ from plexapi.compat import MagicMock, patch
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
 
+from .payloads import ACCOUNT_XML
+
 try:
     from unittest.mock import patch, MagicMock, mock_open
 except ImportError:
@@ -136,6 +138,12 @@ def account_synctarget(account_plexpass):
         "iPhone" == plexapi.X_PLEX_DEVICE
     ), "You have to set env var PLEXAPI_HEADER_DEVICE=iPhone"
     return account_plexpass
+
+
+@pytest.fixture()
+def mocked_account(requests_mock):
+    requests_mock.get("https://plex.tv/users/account", text=ACCOUNT_XML)
+    return MyPlexAccount(token="faketoken")
 
 
 @pytest.fixture(scope="session")
