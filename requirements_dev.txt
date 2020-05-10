@@ -11,6 +11,7 @@ pytest-cov
 pytest-mock<=1.11.1
 recommonmark
 requests
+requests-mock
 sphinx
 sphinxcontrib-napoleon
 tqdm
