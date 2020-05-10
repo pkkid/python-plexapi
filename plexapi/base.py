@@ -519,29 +519,33 @@ class PlexPartialObject(PlexObject):
         key = '/library/metadata/%s/matches' % self.ratingKey
         params = {'manual': 1}
 
-        if any([agent, title, year, language]):
-            if title is None:
-                params['title'] = self.title
-            else:
-                params['title'] = title
+        if agent and not any([title, year, language]):
+            params['language'] = self.section().language
+            params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+        else:
+            if any(x is not None for x in [agent, title, year, language]):
+                if title is None:
+                    params['title'] = self.title
+                else:
+                    params['title'] = title
 
-            if year is None:
-                params['year'] = self.year
-            else:
-                params['year'] = year
+                if year is None:
+                    params['year'] = self.year
+                else:
+                    params['year'] = year
 
-            params['language'] = language or self.section().language
+                params['language'] = language or self.section().language
 
-            if agent is None:
-                params['agent'] = self.section().agent
-            else:
-                params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+                if agent is None:
+                    params['agent'] = self.section().agent
+                else:
+                    params['agent'] = utils.getAgentIdentifier(self.section(), agent)
 
-            key = key + '?' + urlencode(params)
+        key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
-        return self.findItems(data)
+        return self.findItems(data, initpath=key)
 
-    def fixMatch(self, searchResult=None, auto=False):
+    def fixMatch(self, searchResult=None, auto=False, agent=None):
         """ Use match result to update show metadata.
 
             Parameters:
@@ -549,10 +553,15 @@ class PlexPartialObject(PlexObject):
                     False allows user to provide the match
                 searchResult (:class:`~plexapi.media.SearchResult`): Search result from
                     ~plexapi.base.matches()
+                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
         """
         key = '/library/metadata/%s/match' % self.ratingKey
         if auto:
-            searchResult = self.matches()[0]
+            autoMatch = self.matches(agent=agent)
+            if autoMatch:
+                searchResult = autoMatch[0]
+            else:
+                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
         elif not searchResult:
             raise NotFound('fixMatch() requires either auto=True or '
                            'searchResult=:class:`~plexapi.media.SearchResult`.')
