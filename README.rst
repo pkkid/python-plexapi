@@ -192,7 +192,7 @@ For skipping the docker and reuse a existing server use
 
 .. code-block:: bash
 
-    tools/plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
+    python plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
 
 Also in order to run most of the tests you have to provide some environment variables:
 
