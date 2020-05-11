@@ -1,0 +1,18 @@
+# .readthedocs.yml
+
+version: 2
+
+build:
+  image: latest
+
+formats: all
+
+python:
+   version: 3.7
+   install:
+      - requirements: requirements_dev.txt
+      - method: pip
+        path: .
+
+   system_packages: true
+
