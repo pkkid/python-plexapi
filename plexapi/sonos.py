@@ -111,6 +111,6 @@ class PlexSonosClient(PlexClient):
                     "X-Plex-Token": media._server._token,
                     "X-Plex-Target-Client-Identifier": self.machineIdentifier,
                 },
-                **params,
-            ),
+                **params
+            )
         )
