@@ -237,8 +237,8 @@ def test_server_clients(plex):
     assert set(client.protocolCapabilities).issubset({'timeline', 'playback', 'navigation', 'mirror', 'playqueues'})
 
 
-
 @pytest.mark.authenticated
+@pytest.mark.xfail(strict=False)
 def test_server_account(plex):
     account = plex.account()
     assert account.authToken
