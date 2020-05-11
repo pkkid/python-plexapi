@@ -26,6 +26,7 @@
    modules/playqueue
    modules/server
    modules/settings
+   modules/sonos
    modules/sync
    modules/utils
    modules/video
