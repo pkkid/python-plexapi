@@ -247,7 +247,8 @@ def test_server_account(plex):
     assert account.mappingErrorMessage is None
     assert account.mappingState == "mapped"
     if account.mappingError != "unreachable":
-        assert re.match(utils.REGEX_IPADDR, account.privateAddress)
+        if account.privateAddress is not None:
+            assert re.match(utils.REGEX_IPADDR, account.privateAddress)
         assert int(account.privatePort) >= 1000
         assert re.match(utils.REGEX_IPADDR, account.publicAddress)
         assert int(account.publicPort) >= 1000

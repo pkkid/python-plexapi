@@ -94,7 +94,7 @@ class Library(PlexObject):
         """
         args = {}
         if title:
-            args['title'] = title
+            args['title'] = quote_plus(title)
         if libtype:
             args['type'] = utils.searchType(libtype)
         for attr, value in kwargs.items():
@@ -580,7 +580,7 @@ class LibrarySection(PlexObject):
         for category, value in kwargs.items():
             args[category] = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
-            args['title'] = title
+            args['title'] = quote_plus(title)
         if sort is not None:
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
