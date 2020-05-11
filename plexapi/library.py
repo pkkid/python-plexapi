@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import quote_plus, unquote, urlencode
+from plexapi.compat import quote, quote_plus, unquote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
@@ -438,7 +438,7 @@ class LibrarySection(PlexObject):
             Parameters:
                 title (str): Title of the item to return.
         """
-        key = '/library/sections/%s/all?title=%s' % (self.key, title)
+        key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, sort=None, **kwargs):

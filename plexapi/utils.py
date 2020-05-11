@@ -100,7 +100,7 @@ def joinArgs(args):
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
         value = compat.ustr(args[key])
-        arglist.append('%s=%s' % (key, compat.quote(value)))
+        arglist.append('%s=%s' % (key, compat.quote(value, safe='')))
     return '?%s' % '&'.join(arglist)
 
 
