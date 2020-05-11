@@ -249,8 +249,11 @@ def test_server_account(plex):
     if account.mappingError != "unreachable":
         if account.privateAddress is not None:
             # This seems to fail way to often..
-            #assert re.match(utils.REGEX_IPADDR, account.privateAddress)
-            assert len(account.privateAddress)
+            if len(account.privateAddress):
+                assert re.match(utils.REGEX_IPADDR, account.privateAddress)
+            else:
+                assert account.privateAddress == ""
+
         assert int(account.privatePort) >= 1000
         assert re.match(utils.REGEX_IPADDR, account.publicAddress)
         assert int(account.publicPort) >= 1000
