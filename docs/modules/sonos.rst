@@ -1,6 +1,6 @@
 .. include:: ../global.rst
 
-Config :modname:`plexapi.sonos`
+Sonos :modname:`plexapi.sonos`
 --------------------------------
 .. automodule:: plexapi.sonos
     :members:
