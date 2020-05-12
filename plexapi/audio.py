@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus
 
 
 class Audio(PlexPartialObject):

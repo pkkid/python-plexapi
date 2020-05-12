@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import xml
+from urllib.parse import quote_plus
 
-from plexapi import compat, log, settings, utils
+from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import cast
@@ -619,7 +620,7 @@ class Poster(PlexObject):
 
     def select(self):
         key = self._initpath[:-1]
-        data = '%s?url=%s' % (key, compat.quote_plus(self.ratingKey))
+        data = '%s?url=%s' % (key, quote_plus(self.ratingKey))
         try:
             self._server.query(data, method=self._server._session.put)
         except xml.etree.ElementTree.ParseError:

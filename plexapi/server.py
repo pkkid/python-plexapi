@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import urlencode
+from xml.etree import ElementTree
+
 import requests
-from requests.status_codes import _codes as codes
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE
-from plexapi import log, logfilter, utils
+# Need these imports to populate utils.PLEXOBJECTS
+from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
+                     logfilter)
+from plexapi import media as _media
+from plexapi import photo as _photo
+from plexapi import playlist as _playlist
+from plexapi import utils
+from plexapi import video as _video
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
-from plexapi.compat import ElementTree, urlencode
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Library, Hub
-from plexapi.settings import Settings
+from plexapi.library import Hub, Library
+from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
+from plexapi.settings import Settings
 from plexapi.utils import cast
-from plexapi.media import Optimized, Conversion
+from requests.status_codes import _codes as codes
 
-# Need these imports to populate utils.PLEXOBJECTS
-from plexapi import (audio as _audio, video as _video,        # noqa: F401
-    photo as _photo, media as _media, playlist as _playlist)  # noqa: F401
+from plexapi import audio as _audio  # noqa: F401; noqa: F401
 
 
 class PlexServer(PlexObject):

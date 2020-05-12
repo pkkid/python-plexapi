@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import utils
-from plexapi.base import PlexPartialObject, Playable
+from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
-from plexapi.compat import quote_plus
 
 
 @utils.registerPlexObject

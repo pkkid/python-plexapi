@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
-from plexapi.exceptions import NotFound, BadRequest
-from plexapi.compat import quote_plus
+from plexapi.exceptions import BadRequest, NotFound
 
 
 @utils.registerPlexObject

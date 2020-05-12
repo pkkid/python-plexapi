@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote, quote_plus, unquote, urlencode
+
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import quote, quote_plus, unquote, urlencode
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting

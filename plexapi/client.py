@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import time
+from xml.etree import ElementTree
 
 import requests
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
-from plexapi.compat import ElementTree
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
 from requests.status_codes import _codes as codes
