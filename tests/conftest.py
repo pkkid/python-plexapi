@@ -7,7 +7,6 @@ from os import environ
 import plexapi
 import pytest
 import requests
-from plexapi import compat
 from plexapi.client import PlexClient
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
@@ -354,7 +353,7 @@ def is_section(key):
 
 
 def is_string(value, gte=1):
-    return isinstance(value, compat.string_type) and len(value) >= gte
+    return isinstance(value, str) and len(value) >= gte
 
 
 def is_thumb(key):

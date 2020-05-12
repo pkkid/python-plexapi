@@ -2,10 +2,10 @@
 import os
 from datetime import datetime
 from time import sleep
+from urllib.parse import quote_plus
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.compat import quote_plus
 
 from . import conftest as utils
 
