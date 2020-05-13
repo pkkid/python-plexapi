@@ -1,6 +1,6 @@
 .. include:: ../global.rst
 
-Config :modname:`plexapi.gdm`
+Gdm :modname:`plexapi.gdm`
 --------------------------------
 .. automodule:: plexapi.gdm
     :members:
