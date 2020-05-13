@@ -1,6 +1,6 @@
 [run]
 source = ./plexapi
-omit = site-packages/plexapi/*
+omit = /site-packages/plexapi/*
 
 
 
