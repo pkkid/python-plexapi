@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
+from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
-from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import tag_helper
 

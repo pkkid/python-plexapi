@@ -16,12 +16,12 @@ import shutil
 import socket
 import time
 from glob import glob
-from shutil import copyfile
+from os import makedirs
+from shutil import copyfile, which
 from subprocess import call
 from uuid import uuid4
 
 import plexapi
-from plexapi.compat import makedirs, which
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer

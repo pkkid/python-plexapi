@@ -7,9 +7,9 @@ import zipfile
 from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
+from urllib.parse import quote
 
 import requests
-from plexapi import compat
 from plexapi.exceptions import NotFound
 
 try:
@@ -41,7 +41,7 @@ class SecretsFilter(logging.Filter):
     def filter(self, record):
         cleanargs = list(record.args)
         for i in range(len(cleanargs)):
-            if isinstance(cleanargs[i], compat.string_type):
+            if isinstance(cleanargs[i], str):
                 for secret in self.secrets:
                     cleanargs[i] = cleanargs[i].replace(secret, '<hidden>')
         record.args = tuple(cleanargs)
@@ -99,8 +99,8 @@ def joinArgs(args):
         return ''
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
-        value = compat.ustr(args[key])
-        arglist.append('%s=%s' % (key, compat.quote(value, safe='')))
+        value = str(args[key])
+        arglist.append('%s=%s' % (key, quote(value, safe='')))
     return '?%s' % '&'.join(arglist)
 
 
@@ -148,8 +148,8 @@ def searchType(libtype):
         Raises:
             :class:`plexapi.exceptions.NotFound`: Unknown libtype
     """
-    libtype = compat.ustr(libtype)
-    if libtype in [compat.ustr(v) for v in SEARCHTYPES.values()]:
+    libtype = str(libtype)
+    if libtype in [str(v) for v in SEARCHTYPES.values()]:
         return libtype
     if SEARCHTYPES.get(libtype) is not None:
         return SEARCHTYPES[libtype]
@@ -275,7 +275,7 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     response = session.get(url, headers=headers, stream=True)
     # make sure the savepath directory exists
     savepath = savepath or os.getcwd()
-    compat.makedirs(savepath, exist_ok=True)
+    os.makedirs(savepath, exist_ok=True)
 
     # try getting filename from header if not specified in arguments (used for logs, db)
     if not filename and response.headers.get('Content-Disposition'):
