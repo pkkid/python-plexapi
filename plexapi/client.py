@@ -199,7 +199,7 @@ class PlexClient(PlexObject):
             self._last_call = t
         elif t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
             self._last_call = t
-            self.timeline()
+            self.timeline(wait=0)
 
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
@@ -540,7 +540,7 @@ class PlexClient(PlexObject):
 
     # -------------------
     # Timeline Commands
-    def timeline(self, wait=0):
+    def timeline(self, wait=1):
         """ Poll the current timeline and return the XML response. """
         return self.sendCommand('timeline/poll', wait=wait)
 
@@ -551,7 +551,7 @@ class PlexClient(PlexObject):
                 includePaused (bool): Set True to treat currently paused items
                     as playing (optional; default True).
         """
-        for mediatype in self.timeline():
+        for mediatype in self.timeline(wait=0):
             if mediatype.get('state') == 'playing':
                 return True
             if includePaused and mediatype.get('state') == 'paused':
