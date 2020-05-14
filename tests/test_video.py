@@ -125,10 +125,13 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     subtitleSelection = movie.subtitleStreams()[0]
     parts = [part for part in movie.iterParts()]
     parts[0].setDefaultSubtitleStream(subtitleSelection)
+    parts[0].setDefaultSubtitleStream(subtitleSelection.id)
     movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
     assert subtitleSelection.selected
+
+    parts[0].resetDefaultSubtitleStream()
 
     movie.removeSubtitles(streamTitle=subname)
     movie.reload()
@@ -341,6 +344,14 @@ def test_video_Movie_attrs(movies):
     assert stream2.streamType == 2
     assert stream2.title is None
     assert stream2.type == 2
+
+
+def test_video_Movie_Media(movie):
+    for part in movie.iterParts():
+        ad = part.audioStreams()
+        part.setDefaultAudioStream(ad[0])
+        part.setDefaultAudioStream(ad[0].id)
+
 
 
 def test_video_Movie_history(movie):
