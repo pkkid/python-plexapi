@@ -3,6 +3,8 @@ import time
 
 import pytest
 
+from .conftest import DATA_FOLDER
+
 
 def test_create_playlist(plex, show):
     # create the playlist
@@ -116,3 +118,26 @@ def test_smart_playlist(plex, movies):
     pl = plex.createPlaylist(title='smart_playlist', smart=True, limit=1, section=movies, year=2008)
     assert len(pl.items()) == 1
     assert pl.smart
+
+def test_playlist_attrs(plex, show):
+    playlist = plex.createPlaylist("silly playlist title", show.episodes()[0])
+
+    assert playlist.metadataType == "movie"
+    assert playlist.isVideo
+    assert not playlist.isAudio
+    assert not playlist.isPhoto
+    assert len(playlist.posters()) == 1
+    f = DATA_FOLDER / 'cute_cat.jpg'
+
+    playlist.uploadPoster(filepath=f)
+    playlist.uploadArt(filepath=f)
+    playlist.edit(summary="KEK")
+
+    playlist.reload()
+
+    assert len(playlist.posters()) > 1
+    # Can they even have arts??
+    # the command does not error out and just returns a empty list..
+    assert len(playlist.arts()) == 0
+    #assert len(playlist.arts()) > 1
+    assert "KEK" in playlist.summary

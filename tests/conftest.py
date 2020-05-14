@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 from functools import partial
 from os import environ
+from pathlib import Path
 
 import plexapi
 import pytest
@@ -28,6 +29,7 @@ CLIENT_TOKEN = plexapi.CONFIG.get("auth.client_token")
 MIN_DATETIME = datetime(1999, 1, 1)
 REGEX_EMAIL = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 REGEX_IPADDR = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+DATA_FOLDER = Path(__file__).parent / 'data'
 
 AUDIOCHANNELS = {2, 6}
 AUDIOLAYOUTS = {"5.1", "5.1(side)", "stereo"}
