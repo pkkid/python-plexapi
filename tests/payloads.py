@@ -18,7 +18,7 @@ ACCOUNT_XML = """<?xml version="1.0" encoding="UTF-8"?>
 
 SONOS_RESOURCES = """<MediaContainer size="3">
   <Player title="Speaker 1" machineIdentifier="RINCON_12345678901234567:1234567891" deviceClass="speaker" product="Sonos" platform="Sonos" platformVersion="56.0-76060" protocol="plex" protocolVersion="1" protocolCapabilities="timeline,playback,playqueues,provider-playback" lanIP="192.168.1.11"/>
-  <Player title="Speaker 2" machineIdentifier="RINCON_12345678901234567:1234567892" deviceClass="speaker" product="Sonos" platform="Sonos" platformVersion="56.0-76060" protocol="plex" protocolVersion="1" protocolCapabilities="timeline,playback,playqueues,provider-playback" lanIP="192.168.1.12"/>
+  <Player title="Speaker 2 + 1" machineIdentifier="RINCON_12345678901234567:1234567892" deviceClass="speaker" product="Sonos" platform="Sonos" platformVersion="56.0-76060" protocol="plex" protocolVersion="1" protocolCapabilities="timeline,playback,playqueues,provider-playback" lanIP="192.168.1.12"/>
   <Player title="Speaker 3" machineIdentifier="RINCON_12345678901234567:1234567893" deviceClass="speaker" product="Sonos" platform="Sonos" platformVersion="56.0-76060" protocol="plex" protocolVersion="1" protocolCapabilities="timeline,playback,playqueues,provider-playback" lanIP="192.168.1.13"/>
 </MediaContainer>
 """
