@@ -228,7 +228,7 @@ class MyPlexAccount(PlexObject):
         return next((x for x in self.sonos_speakers() if x.title.split("+")[0].strip() == name), None)
 
     def sonos_speaker_by_id(self, identifier):
-        return next((x for x in self.sonos_speakers() if x.machineIdentifier == identifier), None)
+        return next((x for x in self.sonos_speakers() if x.machineIdentifier.startswith(identifier)), None)
 
     def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
                      allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
