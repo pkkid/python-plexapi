@@ -644,7 +644,7 @@ class Episode(Playable, Video):
 
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeConcerts=1&includePreferences=1')
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -680,6 +680,7 @@ class Episode(Playable, Video):
         self.labels = self.findItems(data, media.Label)
         self.collections = self.findItems(data, media.Collection)
         self.chapters = self.findItems(data, media.Chapter)
+        self.markers = self.findItems(data, media.Marker)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
