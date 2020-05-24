@@ -451,7 +451,10 @@ class Show(Video):
         for item in data.iter('Related'):
             return self.findItems(item, library.Hub)
 
-        return items
+    def onDeck(self):
+        """ Returns a list of :class:`~plexapi.video.video` objects. """
+        data = self._server.query(self._details_key)
+        return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
