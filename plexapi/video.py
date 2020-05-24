@@ -435,6 +435,16 @@ class Show(Video):
         """ Returns True if this show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
 
+    def preferences(self):
+        """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
+        items = []
+        data = self._server.query(self._details_key)
+        for item in data.iter('Preferences'):
+            for elem in item:
+                items.append(settings.Preferences(data=elem, server=self._server))
+
+        return items
+
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
         key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
