@@ -447,11 +447,9 @@ class Show(Video):
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        items = []
         data = self._server.query(self._details_key)
         for item in data.iter('Related'):
-            for elem in item:
-                items.append(library.Hub(data=elem, server=self._server))
+            return self.findItems(item, library.Hub)
 
         return items
 
