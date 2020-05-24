@@ -389,6 +389,10 @@ class Show(Video):
     TYPE = 'show'
     METADATA_TYPE = 'episode'
 
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
+
     def __iter__(self):
         for season in self.seasons():
             yield season
@@ -398,6 +402,7 @@ class Show(Video):
         Video._loadData(self, data)
         # fix key if loaded from search
         self.key = self.key.replace('/children', '')
+        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
