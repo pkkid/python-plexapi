@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi import media, utils, settings
+from plexapi import media, utils, settings, library
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.compat import quote_plus, urlencode
@@ -442,6 +442,16 @@ class Show(Video):
         for item in data.iter('Preferences'):
             for elem in item:
                 items.append(settings.Preferences(data=elem, server=self._server))
+
+        return items
+
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        items = []
+        data = self._server.query(self._details_key)
+        for item in data.iter('Related'):
+            for elem in item:
+                items.append(library.Hub(data=elem, server=self._server))
 
         return items
 
