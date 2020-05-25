@@ -322,6 +322,8 @@ class PlexPartialObject(PlexObject):
                 Playing screen to show a graphical representation of where playback
                 is. Video preview thumbnails creation is a CPU-intensive process akin
                 to transcoding the file.
+            * Generate intro video markers: Detects show intros, exposing the
+                'Skip Intro' button in clients.
         """
         key = '/%s/analyze' % self.key.lstrip('/')
         self._server.query(key, method=self._server._session.put)
