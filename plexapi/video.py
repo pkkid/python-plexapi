@@ -740,6 +740,13 @@ class Episode(Playable, Video):
         """ Returns the s00e00 string containing the season and episode. """
         return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
 
+    @property
+    def hasIntroMarker(self):
+        """ Returns True if this episode has an intro marker in the xml. """
+        if not self.isFullObject():
+            self.reload()
+        return bool(self.markers)
+
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """
         return self.fetchItem(self.parentKey)
