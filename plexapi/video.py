@@ -452,7 +452,9 @@ class Show(Video):
             return self.findItems(item, library.Hub)
 
     def onDeck(self):
-        """ Returns a list of :class:`~plexapi.video.video` objects. """
+        """ Returns shows On Deck :class:`~plexapi.video.Video` object.
+            If show is unwatched, return will likely be the first episode.
+        """
         data = self._server.query(self._details_key)
         return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
