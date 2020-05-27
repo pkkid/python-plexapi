@@ -217,7 +217,7 @@ class MyPlexAccount(PlexObject):
             return []
 
         t = time.time()
-        if t - self._sonos_cache_timestamp > 60:
+        if t - self._sonos_cache_timestamp > 5:
             self._sonos_cache_timestamp = t
             data = self.query('https://sonos.plex.tv/resources')
             self._sonos_cache = [PlexSonosClient(self, elem) for elem in data]
