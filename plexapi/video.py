@@ -745,7 +745,7 @@ class Episode(Playable, Video):
         """ Returns True if this episode has an intro marker in the xml. """
         if not self.isFullObject():
             self.reload()
-        return bool(any(marker.type == 'intro' for marker in self.markers))
+        return any(marker.type == 'intro' for marker in self.markers)
 
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """
