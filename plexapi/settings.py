@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
+from urllib.parse import quote
 
 from plexapi import log, utils
 from plexapi.base import PlexObject
-from plexapi.compat import quote, string_type
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -106,7 +106,7 @@ class Setting(PlexObject):
         'bool': {'type': bool, 'cast': _bool_cast, 'tostr': _bool_str},
         'double': {'type': float, 'cast': float, 'tostr': _str},
         'int': {'type': int, 'cast': int, 'tostr': _str},
-        'text': {'type': string_type, 'cast': _str, 'tostr': _str},
+        'text': {'type': str, 'cast': _str, 'tostr': _str},
     }
 
     def _loadData(self, data):

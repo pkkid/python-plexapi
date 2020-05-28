@@ -11,10 +11,13 @@ pytest-cov
 pytest-mock<=1.11.1
 recommonmark
 requests
+requests-mock
 sphinx
 sphinxcontrib-napoleon
 tqdm
 websocket-client
+mock; python_version < '3.3'
+
 
 # Installing sphinx-rtd-theme directly from github above is used until a point release
 # above 0.4.3 is released. https://github.com/readthedocs/sphinx_rtd_theme/issues/739

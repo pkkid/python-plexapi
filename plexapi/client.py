@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import time
+from xml.etree import ElementTree
 
 import requests
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
-from plexapi.compat import ElementTree
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
 from requests.status_codes import _codes as codes
@@ -157,7 +157,7 @@ class PlexClient(PlexObject):
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=timeout, **kwargs)
-        if response.status_code not in (200, 201):
+        if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)

@@ -1,3 +1,8 @@
+[run]
+omit = */site-packages/plexapi/*
+
+
+
 [report]
 exclude_lines =
     pragma: no cover

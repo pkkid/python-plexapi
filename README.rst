@@ -6,6 +6,12 @@ Python-PlexAPI
     :target: https://travis-ci.org/pkkid/python-plexapi
 .. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
     :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
+.. image:: https://img.shields.io/github/tag/pkkid/python-plexapi.svg?label=github+release
+    :target: https://github.com/pkkid/python-plexapi/releases
+.. image:: https://badge.fury.io/py/PlexAPI.svg
+    :target: https://badge.fury.io/py/PlexAPI
+.. image:: https://img.shields.io/github/last-commit/pkkid/python-plexapi.svg
+    :target: https://img.shields.io/github/last-commit/pkkid/python-plexapi.svg
 
 
 Overview
@@ -15,7 +21,7 @@ Plex Web Client. A few of the many features we currently support are:
 
 * Navigate local or remote shared libraries.
 * Perform library actions such as scan, analyze, empty trash.
-* Remote control and play media on connected clients.
+* Remote control and play media on connected clients, including `Controlling Sonos speakers`_
 * Listen in on all Plex Server notifications.
  
 
@@ -129,34 +135,64 @@ Usage Examples
     plex.library.section('TV Shows').get('The 100').rate(8.0)
 
 
+Controlling Sonos speakers
+--------------------------
+
+To control Sonos speakers directly using Plex APIs, the following requirements must be met:
+
+1. Active Plex Pass subscription
+2. Sonos account linked to Plex account
+3. Plex remote access enabled
+
+Due to the design of Sonos music services, the API calls to control Sonos speakers route through https://sonos.plex.tv
+and back via the Plex server's remote access. Actual media playback is local unless networking restrictions prevent the
+Sonos speakers from connecting to the Plex server directly.
+
+.. code-block:: python
+
+    from plexapi.myplex import MyPlexAccount
+    from plexapi.server import PlexServer
+
+    baseurl = 'http://plexserver:32400'
+    token = '2ffLuB84dqLswk9skLos'
+
+    account = MyPlexAccount(token)
+    server = PlexServer(baseurl, token)
+
+    # List available speakers/groups
+    for speaker in account.sonos_speakers():
+        print(speaker.title)
+
+    # Obtain PlexSonosPlayer instance
+    speaker = account.sonos_speaker("Kitchen")
+
+    album = server.library.section('Music').get('Stevie Wonder').album('Innervisions')
+
+    # Speaker control examples
+    speaker.playMedia(album)
+    speaker.pause()
+    speaker.setVolume(10)
+    speaker.skipNext()
+
+
 Running tests over PlexAPI
 --------------------------
 
-In order to test the PlexAPI library you have to prepare a Plex Server instance with following libraries:
+Use:
 
-1. Movies section (agent `com.plexapp.agents.imdb`) containing both movies:
-    * Sintel - https://durian.blender.org/
-    * Elephants Dream - https://orange.blender.org/
-    * Sita Sings the Blues - http://www.sitasingstheblues.com/
-    * Big Buck Bunny - https://peach.blender.org/
-2. TV Show section (agent `com.plexapp.agents.thetvdb`) containing the shows:
-    * Game of Thrones (Season 1 and 2)
-    * The 100 (Seasons 1 and 2)
-    * (or symlink the above movies with proper names)
-3. Music section (agent `com.plexapp.agents.lastfm`) containing the albums:
-    * Infinite State - Unmastered Impulses - https://github.com/kennethreitz/unmastered-impulses
-    * Broke For Free - Layers - http://freemusicarchive.org/music/broke_for_free/Layers/
-4. A Photos section (any agent) containing the photoalbums (photoalbum is just a folder on your disk):
-    * `Cats`
-    * Within `Cats` album you need to place 3 photos (cute cat photos, of course)
-    * Within `Cats` album you should place 3 more photoalbums (one of them should be named `Cats in bed`,
-      names of others doesn't matter)
-    * Within `Cats in bed` you need to place 7 photos
-    * Within other 2 albums you should place 1 photo in each
+.. code-block:: bash
 
-Instead of manual creation of the library you could use a script `tools/plex-boostraptest.py` with appropriate
+     tools/plex-boostraptest.py 
+    
+with appropriate
 arguments and add this new server to a shared user which username is defined in environment veriable `SHARED_USERNAME`.
 It uses `official docker image`_ to create a proper instance.
+
+For skipping the docker and reuse a existing server use 
+
+.. code-block:: bash
+
+    python plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
 
 Also in order to run most of the tests you have to provide some environment variables:
 

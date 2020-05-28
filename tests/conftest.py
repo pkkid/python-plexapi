@@ -7,11 +7,11 @@ from os import environ
 import plexapi
 import pytest
 import requests
-from plexapi import compat
 from plexapi.client import PlexClient
-from plexapi.compat import MagicMock, patch
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
+
+from .payloads import ACCOUNT_XML
 
 try:
     from unittest.mock import patch, MagicMock, mock_open
@@ -138,6 +138,12 @@ def account_synctarget(account_plexpass):
     return account_plexpass
 
 
+@pytest.fixture()
+def mocked_account(requests_mock):
+    requests_mock.get("https://plex.tv/users/account", text=ACCOUNT_XML)
+    return MyPlexAccount(token="faketoken")
+
+
 @pytest.fixture(scope="session")
 def plex(request):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
@@ -224,17 +230,17 @@ def collection(plex):
 
 @pytest.fixture()
 def artist(music):
-    return music.get("Infinite State")
+    return music.get("Broke For Free")
 
 
 @pytest.fixture()
 def album(artist):
-    return artist.album("Unmastered Impulses")
+    return artist.album("Layers")
 
 
 @pytest.fixture()
 def track(album):
-    return album.track("Holy Moment")
+    return album.track("As Colourful as Ever")
 
 
 @pytest.fixture()
@@ -347,7 +353,7 @@ def is_section(key):
 
 
 def is_string(value, gte=1):
-    return isinstance(value, compat.string_type) and len(value) >= gte
+    return isinstance(value, str) and len(value) >= gte
 
 
 def is_thumb(key):

@@ -193,11 +193,11 @@ def test_library_MusicSection_albums(music):
 
 
 def test_library_MusicSection_searchTracks(music):
-    assert len(music.searchTracks(title="Holy Moment"))
+    assert len(music.searchTracks(title="As Colourful As Ever"))
 
 
 def test_library_MusicSection_searchAlbums(music):
-    assert len(music.searchAlbums(title="Unmastered Impulses"))
+    assert len(music.searchAlbums(title="Layers"))
 
 
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
@@ -260,3 +260,8 @@ def test_crazy_search(plex, movie):
     ), "Unable to search movie by year."
     assert movie not in movies.search(year=2007), "Unable to filter movie by year."
     assert movie in movies.search(actor=movie.actors[0].tag)
+    assert len(movies.search(container_start=2, maxresults=1)) == 1
+    assert len(movies.search(container_size=None)) == 4
+    assert len(movies.search(container_size=1)) == 4
+    assert len(movies.search(container_start=9999, container_size=1)) == 0
+    assert len(movies.search(container_start=2, container_size=1)) == 2

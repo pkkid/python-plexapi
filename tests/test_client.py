@@ -8,7 +8,10 @@ def _check_capabilities(client, capabilities):
     supported = client.protocolCapabilities
     for capability in capabilities:
         if capability not in supported:
-            pytest.skip("Client %s doesnt support %s capability support %s" % (client.title, capability, supported))
+            pytest.skip(
+                "Client %s doesnt support %s capability support %s"
+                % (client.title, capability, supported)
+            )
 
 
 def _check_proxy(plex, client, proxy):
@@ -123,7 +126,7 @@ def test_client_timeline(plex, client, movies, proxy):
     try:
         # Note: We noticed the isPlaying flag could take up to a full
         # 30 seconds to be updated, hence the long sleeping.
-        mtype= "video"
+        mtype = "video"
         client.stop(mtype)
         assert client.isPlayingMedia() is False
         print("client.playMedia(movie)")

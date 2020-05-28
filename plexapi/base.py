@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
+from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
-from plexapi.compat import quote_plus, urlencode
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import tag_helper
 
@@ -142,19 +142,21 @@ class PlexObject(object):
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
-    def fetchItems(self, ekey, cls=None, **kwargs):
+    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
 
-            Use container_start and container_size for pagination.
+            Parameters:
+                container_start (None, int): offset to get a subset of the data
+                container_size (None, int): How many items in data
+
         """
         url_kw = {}
-        for key, value in dict(kwargs).items():
-            if key == "container_start":
-                url_kw["X-Plex-Container-Start"] = kwargs.pop(key)
-            if key == "container_size":
-                url_kw["X-Plex-Container-Size"] = kwargs.pop(key)
+        if container_start is not None:
+            url_kw["X-Plex-Container-Start"] = container_start
+        if container_size is not None:
+            url_kw["X-Plex-Container-Size"] = container_size
 
         if ekey is None:
             raise BadRequest('ekey was not provided')
@@ -519,29 +521,33 @@ class PlexPartialObject(PlexObject):
         key = '/library/metadata/%s/matches' % self.ratingKey
         params = {'manual': 1}
 
-        if any([agent, title, year, language]):
-            if title is None:
-                params['title'] = self.title
-            else:
-                params['title'] = title
+        if agent and not any([title, year, language]):
+            params['language'] = self.section().language
+            params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+        else:
+            if any(x is not None for x in [agent, title, year, language]):
+                if title is None:
+                    params['title'] = self.title
+                else:
+                    params['title'] = title
 
-            if year is None:
-                params['year'] = self.year
-            else:
-                params['year'] = year
+                if year is None:
+                    params['year'] = self.year
+                else:
+                    params['year'] = year
 
-            params['language'] = language or self.section().language
+                params['language'] = language or self.section().language
 
-            if agent is None:
-                params['agent'] = self.section().agent
-            else:
-                params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+                if agent is None:
+                    params['agent'] = self.section().agent
+                else:
+                    params['agent'] = utils.getAgentIdentifier(self.section(), agent)
 
-            key = key + '?' + urlencode(params)
+        key = key + '?' + urlencode(params)
         data = self._server.query(key, method=self._server._session.get)
-        return self.findItems(data)
+        return self.findItems(data, initpath=key)
 
-    def fixMatch(self, searchResult=None, auto=False):
+    def fixMatch(self, searchResult=None, auto=False, agent=None):
         """ Use match result to update show metadata.
 
             Parameters:
@@ -549,10 +555,15 @@ class PlexPartialObject(PlexObject):
                     False allows user to provide the match
                 searchResult (:class:`~plexapi.media.SearchResult`): Search result from
                     ~plexapi.base.matches()
+                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
         """
         key = '/library/metadata/%s/match' % self.ratingKey
         if auto:
-            searchResult = self.matches()[0]
+            autoMatch = self.matches(agent=agent)
+            if autoMatch:
+                searchResult = autoMatch[0]
+            else:
+                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
         elif not searchResult:
             raise NotFound('fixMatch() requires either auto=True or '
                            'searchResult=:class:`~plexapi.media.SearchResult`.')
@@ -649,6 +660,14 @@ class Playable(object):
     def split(self):
         """Split a duplicate."""
         key = '%s/split' % self.key
+        return self._server.query(key, method=self._server._session.put)
+
+    def merge(self, ratingKeys):
+        """Merge duplicate items."""
+        if not isinstance(ratingKeys, list):
+            ratingKeys = str(ratingKeys).split(",")
+
+        key = '%s/merge?ids=%s' % (self.key, ','.join(ratingKeys))
         return self._server.query(key, method=self._server._session.put)
 
     def unmatch(self):

@@ -3,6 +3,3 @@
 # pip install -r requirements.txt
 #---------------------------------------------------------
 requests
-tqdm
-websocket-client
-mock; python_version < '3.3'

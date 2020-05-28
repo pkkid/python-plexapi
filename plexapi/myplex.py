@@ -2,16 +2,17 @@
 import copy
 import threading
 import time
+from xml.etree import ElementTree
 
 import requests
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
                      X_PLEX_IDENTIFIER, log, logfilter, utils)
 from plexapi.base import PlexObject
-from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.client import PlexClient
-from plexapi.compat import ElementTree
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
+from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
 from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
@@ -88,6 +89,8 @@ class MyPlexAccount(PlexObject):
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
         self._token = token
         self._session = session or requests.Session()
+        self._sonos_cache = []
+        self._sonos_cache_timestamp = 0
         data, initpath = self._signin(username, password, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
@@ -208,6 +211,24 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexResource` objects connected to the server. """
         data = self.query(MyPlexResource.key)
         return [MyPlexResource(self, elem) for elem in data]
+
+    def sonos_speakers(self):
+        if 'companions_sonos' not in self.subscriptionFeatures:
+            return []
+
+        t = time.time()
+        if t - self._sonos_cache_timestamp > 5:
+            self._sonos_cache_timestamp = t
+            data = self.query('https://sonos.plex.tv/resources')
+            self._sonos_cache = [PlexSonosClient(self, elem) for elem in data]
+
+        return self._sonos_cache
+
+    def sonos_speaker(self, name):
+        return next((x for x in self.sonos_speakers() if x.title.split("+")[0].strip() == name), None)
+
+    def sonos_speaker_by_id(self, identifier):
+        return next((x for x in self.sonos_speakers() if x.machineIdentifier.startswith(identifier)), None)
 
     def inviteFriend(self, user, server, sections=None, allowSync=False, allowCameraUpload=False,
                      allowChannels=False, filterMovies=None, filterTelevision=None, filterMusic=None):
