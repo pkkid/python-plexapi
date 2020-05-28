@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-from plexapi import media, utils, settings, library
-from plexapi.exceptions import BadRequest, NotFound
-from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus, urlencode
 import os
+from urllib.parse import quote_plus, urlencode
+
+from plexapi import media, utils, settings, library
+from plexapi.base import Playable, PlexPartialObject
+from plexapi.exceptions import BadRequest, NotFound
 
 
 class Video(PlexPartialObject):
