@@ -2,7 +2,7 @@
 import os
 from urllib.parse import quote_plus, urlencode
 
-from plexapi import media, utils
+from plexapi import media, utils, settings, library
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -390,6 +390,10 @@ class Show(Video):
     TYPE = 'show'
     METADATA_TYPE = 'episode'
 
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
+
     def __iter__(self):
         for season in self.seasons():
             yield season
@@ -399,6 +403,7 @@ class Show(Video):
         Video._loadData(self, data)
         # fix key if loaded from search
         self.key = self.key.replace('/children', '')
+        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
@@ -430,6 +435,29 @@ class Show(Video):
     def isWatched(self):
         """ Returns True if this show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
+
+    def preferences(self):
+        """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
+        items = []
+        data = self._server.query(self._details_key)
+        for item in data.iter('Preferences'):
+            for elem in item:
+                items.append(settings.Preferences(data=elem, server=self._server))
+
+        return items
+
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        data = self._server.query(self._details_key)
+        for item in data.iter('Related'):
+            return self.findItems(item, library.Hub)
+
+    def onDeck(self):
+        """ Returns shows On Deck :class:`~plexapi.video.Video` object.
+            If show is unwatched, return will likely be the first episode.
+        """
+        data = self._server.query(self._details_key)
+        return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
@@ -645,7 +673,7 @@ class Episode(Playable, Video):
 
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeConcerts=1&includePreferences=1')
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -681,6 +709,7 @@ class Episode(Playable, Video):
         self.labels = self.findItems(data, media.Label)
         self.collections = self.findItems(data, media.Collection)
         self.chapters = self.findItems(data, media.Chapter)
+        self.markers = self.findItems(data, media.Marker)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -711,6 +740,13 @@ class Episode(Playable, Video):
     def seasonEpisode(self):
         """ Returns the s00e00 string containing the season and episode. """
         return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
+
+    @property
+    def hasIntroMarker(self):
+        """ Returns True if this episode has an intro marker in the xml. """
+        if not self.isFullObject():
+            self.reload()
+        return any(marker.type == 'intro' for marker in self.markers)
 
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """

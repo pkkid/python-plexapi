@@ -155,3 +155,15 @@ class Setting(PlexObject):
     def toUrl(self):
         """Helper for urls"""
         return '%s=%s' % (self.id, self._value or self.value)
+
+
+@utils.registerPlexObject
+class Preferences(Setting):
+    """ Represents a single Preferences.
+
+        Attributes:
+            TAG (str): 'Preferences'
+            FILTER (str): 'preferences'
+    """
+    TAG = 'Preferences'
+    FILTER = 'preferences'
