@@ -195,10 +195,11 @@ class PlexClient(PlexObject):
 
         # Workaround for ptp. See https://github.com/pkkid/python-plexapi/issues/244
         t = time.time()
-        if t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
-            url = '/player/timeline/poll?wait=0&commandID=%s' % self._nextCommandId()
-            query(url, headers=headers)
+        if command == 'timeline/poll':
             self._last_call = t
+        elif t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
+            self._last_call = t
+            self.timeline(wait=0)
 
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
@@ -484,15 +485,6 @@ class PlexClient(PlexObject):
         # mediatype must be in ["video", "music", "photo"]
         if mediatype == "audio":
             mediatype = "music"
-
-        if self.product != 'OpenPHT':
-            try:
-                self.sendCommand('timeline/subscribe', port=server_port, protocol='http')
-            except:  # noqa: E722
-                # some clients dont need or like this and raises http 400.
-                # We want to include the exception in the log,
-                # but it might still work so we swallow it.
-                log.exception('%s failed to subscribe ' % self.title)
 
         playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
