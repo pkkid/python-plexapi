@@ -167,3 +167,11 @@ class Preferences(Setting):
     """
     TAG = 'Preferences'
     FILTER = 'preferences'
+
+    def _default(self):
+        key = '%s/prefs?' % self._initpath
+        if self.type == 'int':
+            url = key + '%s=%s' % (self.id, self.default)
+        else:
+            url = key + '%s=%s' % (self.id, self.default.decode())
+        self._server.query(url, method=self._server._session.put)
