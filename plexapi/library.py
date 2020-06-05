@@ -1091,23 +1091,23 @@ class Collections(PlexObject):
     _include = "?includeExternalMedia=1&includePreferences=1"
 
     def _loadData(self, data):
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
-        self.fields = self.findItems(data, etag='Field')
-        self.key = data.attrib.get('key')
-        self.type = data.attrib.get('type')
-        self.title = data.attrib.get('title')
-        self.subtype = data.attrib.get('subtype')
-        self.summary = data.attrib.get('summary')
-        self.index = utils.cast(int, data.attrib.get('index'))
-        self.thumb = data.attrib.get('thumb')
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
-        self.minYear = utils.cast(int, data.attrib.get('minYear'))
-        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.collectionMode = data.attrib.get('collectionMode')
         self.collectionSort = data.attrib.get('collectionSort')
+        self.fields = self.findItems(data, etag='Field')
+        self.key = data.attrib.get('key')
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self.subtype = data.attrib.get('subtype')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     @property
     def children(self):
