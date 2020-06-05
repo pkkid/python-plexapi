@@ -449,6 +449,7 @@ class Show(Video):
         return items
 
     def editAdvanced(self, **kwargs):
+        """ Edit a show's advanced settings. """
         data = {}
         key = '%s/prefs?' % self.key
         preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
@@ -465,6 +466,7 @@ class Show(Video):
         self._server.query(url, method=self._server._session.put)
 
     def defaultAdvanced(self):
+        """ Edit all of show's advanced settings to default. """
         data = {}
         key = '%s/prefs?' % self.key
         for preference in self.preferences():
