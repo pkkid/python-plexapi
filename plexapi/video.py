@@ -462,6 +462,14 @@ class Show(Video):
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
 
+    def defaultAdvanced(self):
+        data = {}
+        key = '%s/prefs?' % self.key
+        for preference in self.preferences():
+            data[preference.id] = preference.default
+        url = key + urlencode(data)
+        self._server.query(url, method=self._server._session.put)
+
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
