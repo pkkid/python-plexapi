@@ -16,6 +16,7 @@ class Photoalbum(PlexPartialObject):
             addedAt (datetime): Datetime this item was added to the library.
             art (str): Photo art (/library/metadata/<ratingkey>/art/<artid>)
             composite (str): Unknown
+            fields (list): List of :class:`~plexapi.media.Field`.
             guid (str): Unknown (unique ID)
             index (sting): Index number of this album.
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -37,6 +38,7 @@ class Photoalbum(PlexPartialObject):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.composite = data.attrib.get('composite')
+        self.fields = self.findItems(data, etag='Field')
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')
@@ -81,6 +83,7 @@ class Photo(PlexPartialObject):
             TAG (str): 'Photo'
             TYPE (str): 'photo'
             addedAt (datetime): Datetime this item was added to the library.
+            fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index number of this photo.
             key (str): API URL (/library/metadata/<ratingkey>).
             listType (str): Hardcoded as 'photo' (useful for search filters).
@@ -104,6 +107,7 @@ class Photo(PlexPartialObject):
         """ Load attribute values from Plex XML response. """
         self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.fields = self.findItems(data, etag='Field')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')
         self.originallyAvailableAt = utils.toDatetime(
