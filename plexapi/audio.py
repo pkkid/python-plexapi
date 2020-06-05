@@ -11,6 +11,7 @@ class Audio(PlexPartialObject):
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index Number (often the track number).
             key (str): API URL (/library/metadata/<ratingkey>).
             lastViewedAt (datetime): Datetime item was last accessed.
@@ -33,6 +34,7 @@ class Audio(PlexPartialObject):
         self._data = data
         self.listType = 'audio'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.fields = self.findItems(data, etag='Field')
         self.index = data.attrib.get('index')
         self.key = data.attrib.get('key')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
