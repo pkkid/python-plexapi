@@ -442,7 +442,9 @@ class Show(Video):
         data = self._server.query(self._details_key)
         for item in data.iter('Preferences'):
             for elem in item:
-                items.append(settings.Preferences(data=elem, server=self._server))
+                setting = settings.Preferences(data=elem, server=self._server)
+                setting._initpath = self.key
+                items.append(setting)
 
         return items
 
