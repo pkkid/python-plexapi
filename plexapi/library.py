@@ -1093,6 +1093,7 @@ class Collections(PlexObject):
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
+        self.fields = self.findItems(data, etag='Field')
         self.key = data.attrib.get('key')
         self.type = data.attrib.get('type')
         self.title = data.attrib.get('title')
