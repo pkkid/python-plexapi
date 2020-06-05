@@ -446,6 +446,22 @@ class Show(Video):
 
         return items
 
+    def editAdvanced(self, **kwargs):
+        data = {}
+        key = '%s/prefs?' % self.key
+        preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
+        for settingID, value in kwargs.items():
+            try:
+                enumValues = [int(x) for x in preferences.get(settingID)]
+            except ValueError:
+                enumValues = [x.decode() for x in preferences.get(settingID)]
+            if value in enumValues:
+                data[settingID] = value
+            else:
+                raise NotFound('%s not found in %s' % (value, enumValues))
+        url = key + urlencode(data)
+        self._server.query(url, method=self._server._session.put)
+
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
