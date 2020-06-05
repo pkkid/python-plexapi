@@ -169,6 +169,7 @@ class Preferences(Setting):
     FILTER = 'preferences'
 
     def _default(self):
+        """ Set the default value for this setting."""
         key = '%s/prefs?' % self._initpath
         if self.type == 'int':
             url = key + '%s=%s' % (self.id, self.default)
