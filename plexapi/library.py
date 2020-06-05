@@ -1085,6 +1085,29 @@ class Hub(PlexObject):
 
 @utils.registerPlexObject
 class Collections(PlexObject):
+    """ Represents a single Collection.
+
+        Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'collection'
+
+            ratingKey (int): Unique key identifying this item.
+            addedAt (datetime): Datetime this item was added to the library.
+            childCount (int): Count of child object(s)
+            collectionMode (str): How the items in the collection are displayed.
+            collectionSort (str): How to sort the items in the collection.
+            fields (list): List of :class:`~plexapi.media.Field`.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            index (int): Unknown
+            maxYear (int): Year
+            minYear (int): YEar
+            subtype (str): Media type
+            summary (str): Summary of the collection
+            thumb (str): URL to thumbnail image.
+            title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
+            type (str): Hardcoded 'collection'
+
+    """
 
     TAG = 'Directory'
     TYPE = 'collection'
@@ -1093,20 +1116,21 @@ class Collections(PlexObject):
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
-        self.key = data.attrib.get('key')
-        self.type = data.attrib.get('type')
-        self.title = data.attrib.get('title')
-        self.subtype = data.attrib.get('subtype')
-        self.summary = data.attrib.get('summary')
-        self.index = utils.cast(int, data.attrib.get('index'))
-        self.thumb = data.attrib.get('thumb')
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
-        self.minYear = utils.cast(int, data.attrib.get('minYear'))
-        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.collectionMode = data.attrib.get('collectionMode')
         self.collectionSort = data.attrib.get('collectionSort')
+        self.fields = self.findItems(data, etag='Field')
+        self.key = data.attrib.get('key')
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.subtype = data.attrib.get('subtype')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     @property
     def children(self):
