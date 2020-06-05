@@ -704,13 +704,15 @@ class Marker(PlexObject):
     """
     TAG = 'Marker'
 
+    def __repr__(self):
+        name = self._clean(self.firstAttr('type'))
+        start = self._clean(self.firstAttr('start'))
+        end = self._clean(self.firstAttr('end'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, name, start, end] if p])
+
     def _loadData(self, data):
         self._data = data
-        self.filter = data.attrib.get('filter')
         self.type = data.attrib.get('type')
-        _tag, _id = self.filter.split('=')
-        self.tag = self.type + _tag.capitalize()
-        self.id = _id
         self.start = cast(int, data.attrib.get('startTimeOffset'))
         self.end = cast(int, data.attrib.get('endTimeOffset'))
 
