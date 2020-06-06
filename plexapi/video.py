@@ -358,6 +358,27 @@ class Movie(Playable, Video):
                 filepaths.append(filepath)
         return filepaths
 
+    def addActor(self, index=0, name=None, role=None, thumb=None, locked=True):
+        edits = {}
+        actor = 'actor[%s]' % index
+        if name:
+            edits['%s.tag.tag' % actor] = name
+        if role:
+            edits['%s.tagging.text' % actor] = role
+        if thumb:
+            edits['%s.tag.thumb' % actor] = thumb
+        if locked:
+            edits['%s.locked' % actor] = int(locked)
+        self.edit(**edits)
+
+    def removeActor(self, name):
+        actors = [actor.tag for actor in self.actors]
+        if name in actors:
+            edits = {'actor[].tag.tag-': name}
+            self.edit(**edits)
+        else:
+            raise NotFound('%s not found in items list of actors %s' % (name, actors))
+
 
 @utils.registerPlexObject
 class Show(Video):
