@@ -381,7 +381,7 @@ class Movie(Playable, Video):
         self.edit(**edits)
 
     def removeActor(self, name):
-        """ Add an Actor from item. """
+        """ Remove an Actor from item. """
         actors = [actor.tag for actor in self.actors]
         if name in actors:
             edits = {'actor[].tag.tag-': name}
@@ -582,7 +582,7 @@ class Show(Video):
         self.edit(**edits)
 
     def removeActor(self, name):
-        """ Add an Actor from item. """
+        """ Remove an Actor from item. """
         actors = [actor.tag for actor in self.actors]
         if name in actors:
             edits = {'actor[].tag.tag-': name}
