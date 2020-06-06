@@ -553,13 +553,13 @@ class Show(Video):
         edits = {}
         actor = 'actor[%s]' % index
         if name:
-            actor['%s.tag.tag' % actor] = name
+            edits['%s.tag.tag' % actor] = name
         if role:
-            actor['%s.tagging.text' % actor] = role
+            edits['%s.tagging.text' % actor] = role
         if thumb:
-            actor['%s.tag.thumb' % actor] = thumb
+            edits['%s.tag.thumb' % actor] = thumb
         if locked:
-            actor['%s.locked' % actor] = int(locked)
+            edits['%s.locked' % actor] = int(locked)
         self.edit(**edits)
 
     def removeActor(self, name):
