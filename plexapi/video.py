@@ -359,6 +359,15 @@ class Movie(Playable, Video):
         return filepaths
 
     def addActor(self, index=0, name=None, role=None, thumb=None, locked=True):
+        """ Add an Actor.
+
+           Parameters:
+                index (int): Positional index
+                name (str): Name of Actor.
+                role (str): Role actor plays in video.
+                thumb (str): URL to image file.
+                locked (bool): True = 1, False = 0
+        """
         edits = {}
         actor = 'actor[%s]' % index
         if name:
@@ -372,6 +381,7 @@ class Movie(Playable, Video):
         self.edit(**edits)
 
     def removeActor(self, name):
+        """ Add an Actor from item. """
         actors = [actor.tag for actor in self.actors]
         if name in actors:
             edits = {'actor[].tag.tag-': name}
@@ -550,6 +560,15 @@ class Show(Video):
         return filepaths
 
     def addActor(self, index=0, name=None, role=None, thumb=None, locked=True):
+        """ Add an Actor.
+
+           Parameters:
+                index (int): Positional index
+                name (str): Name of Actor.
+                role (str): Role actor plays in video.
+                thumb (str): URL to image file.
+                locked (bool): True = 1, False = 0
+        """
         edits = {}
         actor = 'actor[%s]' % index
         if name:
@@ -563,6 +582,7 @@ class Show(Video):
         self.edit(**edits)
 
     def removeActor(self, name):
+        """ Add an Actor from item. """
         actors = [actor.tag for actor in self.actors]
         if name in actors:
             edits = {'actor[].tag.tag-': name}
