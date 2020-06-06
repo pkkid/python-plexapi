@@ -650,6 +650,14 @@ class Role(MediaTag):
     TAG = 'Role'
     FILTER = 'role'
 
+    def _loadData(self, data):
+        self._data = data
+        self.id = data.attrib.get('id')
+        self.filter = data.attrib.get('filter')
+        self.role = data.attrib.get('role')
+        self.tag = data.attrib.get('tag')
+        self.thumb = data.attrib.get('thumb')
+
 
 @utils.registerPlexObject
 class Similar(MediaTag):
