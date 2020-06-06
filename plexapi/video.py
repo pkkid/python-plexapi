@@ -590,6 +590,7 @@ class Show(Video):
         else:
             raise NotFound('%s not found in items list of actors %s' % (name, actors))
 
+
 @utils.registerPlexObject
 class Season(Video):
     """ Represents a single Show Season (including all episodes).
