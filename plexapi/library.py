@@ -1096,16 +1096,24 @@ class Collections(PlexObject):
             childCount (int): Count of child object(s)
             collectionMode (str): How the items in the collection are displayed.
             collectionSort (str): How to sort the items in the collection.
+            contentRating (str) Content rating (PG-13; NR; TV-G).
             fields (list): List of :class:`~plexapi.media.Field`.
-            key (str): API URL (/library/metadata/<ratingkey>).
+            guid (str): Plex GUID (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
             index (int): Unknown
+            key (str): API URL (/library/metadata/<ratingkey>).
+            labels (List<:class:`~plexapi.media.Label`>): List of field objects.
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            librarySectionKey (str): API URL (/library/sections/<sectionkey>).
+            librarySectionTitle (str): Section Title
             maxYear (int): Year
-            minYear (int): YEar
+            minYear (int): Year
             subtype (str): Media type
             summary (str): Summary of the collection
             thumb (str): URL to thumbnail image.
-            title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
+            title (str): Collection Title
+            titleSort (str): Title to use when sorting (defaults to title).
             type (str): Hardcoded 'collection'
+            updatedAt (datatime): Datetime this item was updated.
 
     """
 
