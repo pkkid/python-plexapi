@@ -157,6 +157,13 @@ class Video(PlexPartialObject):
         if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
             raise BadRequest('Unexpected or missing quality profile.')
 
+        libraryLocationIDs = [location.id for location in self.section().locations]
+        libraryLocationIDs.append(-1)
+
+        if locationID not in libraryLocationIDs:
+            raise BadRequest('Unexpected library path ID. %s not in %s' %
+                             (locationID, libraryLocationIDs))
+
         if isinstance(targetTagID, str):
             tagIndex = tagKeys.index(targetTagID)
             targetTagID = tagValues[tagIndex]
