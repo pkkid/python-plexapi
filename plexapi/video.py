@@ -126,8 +126,9 @@ class Video(PlexPartialObject):
                  policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
         """ Optimize item
 
-            locationID (int): -1 in folder with orginal items
-                               2 library path
+            locationID (int): -1 in folder with original items
+                               2 library path id
+                                 library path id is found in library.locations[i].id
 
             target (str): custom quality name.
                           if none provided use "Custom: {deviceProfile}"
