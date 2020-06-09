@@ -34,6 +34,7 @@ class Video(PlexPartialObject):
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
         self.fields = self.findItems(data, etag='Field')
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
