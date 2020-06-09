@@ -1054,6 +1054,23 @@ class FilterChoice(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
+@utils.registerPlexObject
+class Location(PlexObject):
+    """ Represents a single library Location.
+
+        Attributes:
+            TAG (str): 'Location'
+            id (int): Location path ID.
+            path (str): Path used for library..
+    """
+    TAG = 'Location'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.path = data.attrib.get('path')
+
 
 @utils.registerPlexObject
 class Hub(PlexObject):
