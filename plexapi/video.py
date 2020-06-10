@@ -358,7 +358,7 @@ class Movie(Playable, Video):
                 filepaths.append(filepath)
         return filepaths
 
-    def addActor(self, index=0, name=None, role=None, thumb=None, locked=True):
+    def addActor(self, index=0, name=None, role=None, thumb=None):
         """ Add an Actor.
 
            Parameters:
@@ -366,7 +366,6 @@ class Movie(Playable, Video):
                 name (str): Name of Actor.
                 role (str): Role actor plays in video.
                 thumb (str): URL to image file.
-                locked (bool): True = 1, False = 0
         """
         edits = {}
         actor = 'actor[%s]' % index
@@ -376,8 +375,7 @@ class Movie(Playable, Video):
             edits['%s.tagging.text' % actor] = role
         if thumb:
             edits['%s.tag.thumb' % actor] = thumb
-        if locked:
-            edits['%s.locked' % actor] = int(locked)
+
         self.edit(**edits)
 
     def removeActor(self, name):
