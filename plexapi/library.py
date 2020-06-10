@@ -466,6 +466,31 @@ class LibrarySection(PlexObject):
         data = self._server.query(key)
         return self.findItems(data, cls=Setting)
 
+    def editAdvanced(self, **kwargs):
+        """ Edit a library's advanced settings. """
+        data = {}
+        idEnums = {}
+        key = 'prefs[%s]'
+
+        for setting in self.settings():
+            if setting.type != 'bool':
+                idEnums[setting.id] = setting.enumValues
+            else:
+                idEnums[setting.id] = {0: False, 1: True}
+
+        for settingID, value in kwargs.items():
+            try:
+                enums = idEnums.get(settingID)
+                enumValues = [int(x) for x in enums]
+            except TypeError:
+                raise NotFound('%s not found in %s' % (value, list(idEnums.keys())))
+            if value in enumValues:
+                data[key % settingID] = value
+            else:
+                raise NotFound('%s not found in %s' % (value, enums))
+
+        self.edit(**data)
+
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
         key = '/library/sections/%s/onDeck' % self.key
