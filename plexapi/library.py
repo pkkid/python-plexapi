@@ -491,6 +491,15 @@ class LibrarySection(PlexObject):
 
         self.edit(**data)
 
+    def defaultAdvanced(self):
+        """ Edit all of library's advanced settings to default. """
+        data = {}
+        key = 'prefs[%s]'
+        for setting in self.settings():
+            data[key % setting.id] = setting.default
+
+        self.edit(**data)
+
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
         key = '/library/sections/%s/onDeck' % self.key
