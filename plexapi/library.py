@@ -2,7 +2,7 @@
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
-from plexapi.base import PlexObject
+from plexapi.base import PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
@@ -1084,7 +1084,7 @@ class Hub(PlexObject):
 
 
 @utils.registerPlexObject
-class Collections(PlexObject):
+class Collections(PlexPartialObject):
     """ Represents a single Collection.
 
         Attributes:
