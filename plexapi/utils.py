@@ -204,6 +204,18 @@ def toDatetime(value, format=None):
     return value
 
 
+def millisecondToHuman(milliseconds):
+    """ Returns human readable time duration from milliseconds.
+        HH:MM:SS
+
+        Parameters:
+            milliseconds (str,int): time duration in milliseconds.
+    """
+    _milliseconds = cast(int, milliseconds)
+    hhmmsssm = timedelta(milliseconds=_milliseconds)
+    return str(hhmmsssm).split(".")[0]
+
+
 def toList(value, itemcast=None, delim=','):
     """ Returns a list of strings from the specified value.
 
