@@ -706,9 +706,9 @@ class Marker(PlexObject):
 
     def __repr__(self):
         name = self._clean(self.firstAttr('type'))
-        start = utils.millisecondToHuman(self._clean(self.firstAttr('start')))
-        end = utils.millisecondToHuman(self._clean(self.firstAttr('end')))
-        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, name, start, end] if p])
+        start = utils.millisecondToHumanstr(self._clean(self.firstAttr('start')))
+        end = utils.millisecondToHumanstr(self._clean(self.firstAttr('end')))
+        return '<%s:%s %s - %s>' % (self.__class__.__name__, name, start, end)
 
     def _loadData(self, data):
         self._data = data

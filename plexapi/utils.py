@@ -204,16 +204,17 @@ def toDatetime(value, format=None):
     return value
 
 
-def millisecondToHuman(milliseconds):
+def millisecondToHumanstr(milliseconds):
     """ Returns human readable time duration from milliseconds.
-        HH:MM:SS
+        HH:MM:SS:MMMM
 
         Parameters:
             milliseconds (str,int): time duration in milliseconds.
     """
-    _milliseconds = cast(int, milliseconds)
-    hhmmsssm = timedelta(milliseconds=_milliseconds)
-    return str(hhmmsssm).split(".")[0]
+    milliseconds = int(milliseconds)
+    r = datetime.datetime.utcfromtimestamp(milliseconds / 1000)
+    f = r.strftime("%H:%M:%S.%f")
+    return f[:-2]
 
 
 def toList(value, itemcast=None, delim=','):
