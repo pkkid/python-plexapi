@@ -4,7 +4,7 @@ import os
 import re
 import time
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
@@ -202,6 +202,19 @@ def toDatetime(value, format=None):
                 value = 86400
             value = datetime.fromtimestamp(int(value))
     return value
+
+
+def millisecondToHumanstr(milliseconds):
+    """ Returns human readable time duration from milliseconds.
+        HH:MM:SS:MMMM
+
+        Parameters:
+            milliseconds (str,int): time duration in milliseconds.
+    """
+    milliseconds = int(milliseconds)
+    r = datetime.datetime.utcfromtimestamp(milliseconds / 1000)
+    f = r.strftime("%H:%M:%S.%f")
+    return f[:-2]
 
 
 def toList(value, itemcast=None, delim=','):
