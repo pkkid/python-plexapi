@@ -496,7 +496,10 @@ class LibrarySection(PlexObject):
         data = {}
         key = 'prefs[%s]'
         for setting in self.settings():
-            data[key % setting.id] = setting.default
+            if setting.type == 'bool':
+                data[key % setting.id] = int(setting.default)
+            else:
+                data[key % setting.id] = setting.default
 
         self.edit(**data)
 
