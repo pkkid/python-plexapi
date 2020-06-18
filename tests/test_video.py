@@ -558,6 +558,11 @@ def test_video_Show_location(plex):
     assert len(show.locations) >= 1
 
 
+def test_video_Show_settings(show):
+    preferences = show.preferences()
+    assert len(preferences) >= 1
+
+
 def test_video_Show_reload(plex):
     show = plex.library.section("TV Shows").get("Game of Thrones")
     assert utils.is_metadata(show._initpath, prefix="/library/sections/")
