@@ -563,6 +563,28 @@ def test_video_Show_settings(show):
     assert len(preferences) >= 1
 
 
+def test_video_Show_editAdvanced_default(show):
+    show.editAdvanced(episodeSort=0)
+    show.reload()
+    for pref in show.preferences():
+        if pref.id == 'episodeSort':
+            assert int(pref.value) == 0
+
+    show.editAdvanced(flattenSeasons=1)
+    show.reload()
+    for pref in show.preferences():
+        if pref.id == 'flattenSeasons':
+            assert int(pref.value) == 1
+
+    show.defaultAdvanced()
+    show.reload()
+    for pref in show.preferences():
+        if pref.id == 'flattenSeasons':
+            assert int(pref.value) == int(pref.default)
+        if pref.id == 'episodeSort':
+            assert int(pref.value) == int(pref.default)
+
+
 def test_video_Show_reload(plex):
     show = plex.library.section("TV Shows").get("Game of Thrones")
     assert utils.is_metadata(show._initpath, prefix="/library/sections/")
