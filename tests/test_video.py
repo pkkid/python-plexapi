@@ -579,10 +579,7 @@ def test_video_Show_editAdvanced_default(show):
     show.defaultAdvanced()
     show.reload()
     for pref in show.preferences():
-        if pref.id == 'flattenSeasons':
-            assert int(pref.value) == int(pref.default)
-        if pref.id == 'episodeSort':
-            assert int(pref.value) == int(pref.default)
+        assert int(pref.value) == int(pref.default)
 
 
 def test_video_Show_reload(plex):
