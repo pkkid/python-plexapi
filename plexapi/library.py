@@ -1096,14 +1096,17 @@ class Hub(PlexObject):
 
 @utils.registerPlexObject
 class Station(PlexObject):
-    """ Represents a single Hub (or category) in the PlexServer search.
+    """ Represents the Station area in the MusicSection.
 
         Attributes:
-            TAG (str): 'Hub'
+            TITLE (str): 'Stations'
+            TYPE (str): 'station'
             hubIdentifier (str): Unknown.
             size (int): Number of items found.
             title (str): Title of this Hub.
             type (str): Type of items in the Hub.
+            more (str): Unknown.
+            style (str): Unknown
             items (str): List of items in the Hub.
     """
     TITLE = 'Stations'
