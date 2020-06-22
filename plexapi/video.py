@@ -371,7 +371,9 @@ class Movie(Playable, Video):
         actor = 'actor[%s]' % index
         if name:
             edits['%s.tag.tag' % actor] = name
-        if role:
+        else:
+            raise BadRequest('name keyword is required.')
+        if role or type(role) == str:
             edits['%s.tagging.text' % actor] = role
         if thumb:
             edits['%s.tag.thumb' % actor] = thumb
