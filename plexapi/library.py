@@ -455,6 +455,12 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
+    def hubs(self):
+        """ Returns a list of available `:class:`~plexapi.library.Hub` for this library section.
+        """
+        key = '/hubs/sections/%s' % self.key
+        return self.fetchItems(key)
+
     def agents(self):
         """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
         """
