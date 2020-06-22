@@ -1084,6 +1084,36 @@ class Hub(PlexObject):
 
 
 @utils.registerPlexObject
+class Station(PlexObject):
+    """ Represents a single Hub (or category) in the PlexServer search.
+
+        Attributes:
+            TAG (str): 'Hub'
+            hubIdentifier (str): Unknown.
+            size (int): Number of items found.
+            title (str): Title of this Hub.
+            type (str): Type of items in the Hub.
+            items (str): List of items in the Hub.
+    """
+    TITLE = 'Stations'
+    TYPE = 'station'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.size = utils.cast(int, data.attrib.get('size'))
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.more = data.attrib.get('more')
+        self.style = data.attrib.get('style')
+        self.items = self.findItems(data)
+
+    def __len__(self):
+        return self.size
+
+
+@utils.registerPlexObject
 class Collections(PlexObject):
 
     TAG = 'Directory'
