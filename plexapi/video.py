@@ -368,6 +368,7 @@ class Movie(Playable, Video):
                 thumb (str): URL to image file.
         """
         edits = {}
+        actors = {actor.tag: actor for actor in self.actors}
         actor = 'actor[%s]' % index
         if name:
             edits['%s.tag.tag' % actor] = name
@@ -375,6 +376,10 @@ class Movie(Playable, Video):
             raise BadRequest('name keyword is required.')
         if role or type(role) == str:
             edits['%s.tagging.text' % actor] = role
+        else:
+            previousRole = actors.get(name)
+            if previousRole:
+                edits['%s.tagging.text' % actor] = previousRole.role
         if thumb:
             edits['%s.tag.thumb' % actor] = thumb
 
