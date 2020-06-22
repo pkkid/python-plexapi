@@ -461,6 +461,11 @@ class LibrarySection(PlexObject):
         key = '/hubs/sections/%s' % self.key
         return self.fetchItems(key)
 
+    def _filters(self):
+        """ Returns a list of :class:`~plexapi.library.Filter` from this library section. """
+        key = '/library/sections/%s/filters' % self.key
+        return self.fetchItems(key, cls=Filter)
+
     def agents(self):
         """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
         """
