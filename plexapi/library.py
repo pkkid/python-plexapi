@@ -915,6 +915,11 @@ class MusicSection(LibrarySection):
         key = '/library/sections/%s/albums' % self.key
         return self.fetchItems(key)
 
+    def stations(self):
+        """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
+        key = '/hubs/sections/%s?includeStations=1' % self.key
+        return self.fetchItems(key, cls=Station)
+
     def searchArtists(self, **kwargs):
         """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
         return self.search(libtype='artist', **kwargs)
