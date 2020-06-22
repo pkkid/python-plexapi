@@ -1066,6 +1066,25 @@ class FilterChoice(PlexObject):
         self.type = data.attrib.get('type')
 
 
+class Filter(PlexObject):
+    """ Represents a single Filter.
+
+        Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'filter'
+    """
+    TAG = 'Directory'
+    TYPE = 'filter'
+
+    def _loadData(self, data):
+        self._data = data
+        self.filter = data.attrib.get('filter')
+        self.filterType = data.attrib.get('filterType')
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+
+
 @utils.registerPlexObject
 class Hub(PlexObject):
     """ Represents a single Hub (or category) in the PlexServer search.
