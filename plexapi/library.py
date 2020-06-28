@@ -748,7 +748,7 @@ class MovieSection(LibrarySection):
         Attributes:
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
                 'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
-                'director', 'actor', 'country', 'studio', 'resolution', 'guid', 'label')
+                'director', 'actor', 'country', 'studio', 'resolution', 'guid', 'label', 'unmatched')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
                 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                 'mediaHeight', 'duration')
@@ -758,7 +758,7 @@ class MovieSection(LibrarySection):
     ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
                        'collection', 'director', 'actor', 'country', 'studio', 'resolution',
                        'guid', 'label', 'writer', 'producer', 'subtitleLanguage', 'audioLanguage',
-                       'lastViewedAt', 'viewCount', 'addedAt')
+                       'lastViewedAt', 'viewCount', 'addedAt', 'unmatched')
     ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
                     'mediaHeight', 'duration')
     TAG = 'Directory'
@@ -813,7 +813,7 @@ class ShowSection(LibrarySection):
             ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
                 'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
             ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
-                'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
+                'originallyAvailableAt', 'titleSort', 'rating', 'unwatched', 'unmatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
@@ -822,7 +822,7 @@ class ShowSection(LibrarySection):
                        'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
                        'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
                        'episode.unwatched', 'episode.addedAt', 'episode.userRating', 'episode.viewCount',
-                       'episode.lastViewedAt')
+                       'episode.lastViewedAt', 'unmatched')
     ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
                     'rating', 'unwatched')
     TAG = 'Directory'
