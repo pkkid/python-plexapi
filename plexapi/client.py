@@ -69,7 +69,7 @@ class PlexClient(PlexObject):
         self._proxyThroughServer = False
         self._commandId = 0
         self._last_call = 0
-        if not any([data, initpath, baseurl, token]):
+        if not any([data is not None, initpath, baseurl, token]):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
         if connect and self._baseurl:

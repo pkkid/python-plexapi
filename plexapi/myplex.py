@@ -139,7 +139,7 @@ class MyPlexAccount(PlexObject):
 
         roles = data.find('roles')
         self.roles = []
-        if roles:
+        if roles is not None:
             for role in roles.iter('role'):
                 self.roles.append(role.attrib.get('id'))
 
