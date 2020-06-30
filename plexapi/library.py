@@ -312,9 +312,6 @@ class LibrarySection(PlexObject):
     """ Base class for a single library section.
 
         Attributes:
-            ALLOWED_FILTERS (tuple): ()
-            ALLOWED_SORT (tuple): ()
-            BOOLEAN_FILTERS (tuple<str>): ('unwatched', 'duplicate')
             server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
             initpath (str): Path requested when building this object.
             agent (str): Unknown (com.plexapp.agents.imdb, etc)
@@ -336,9 +333,6 @@ class LibrarySection(PlexObject):
             totalSize (int): Total number of item in the library
 
     """
-    ALLOWED_FILTERS = ()
-    ALLOWED_SORT = ()
-    BOOLEAN_FILTERS = ('unwatched', 'duplicate')
 
     def _loadData(self, data):
         self._data = data
@@ -796,21 +790,9 @@ class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'duplicate', 'year', 'decade', 'genre', 'contentRating', 'collection',
-                'director', 'actor', 'country', 'studio', 'resolution', 'guid', 'label')
-            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
-                'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-                'mediaHeight', 'duration')
             TAG (str): 'Directory'
             TYPE (str): 'movie'
     """
-    ALLOWED_FILTERS = ('unwatched', 'duplicate', 'year', 'decade', 'genre', 'contentRating',
-                       'collection', 'director', 'actor', 'country', 'studio', 'resolution',
-                       'guid', 'label', 'writer', 'producer', 'subtitleLanguage', 'audioLanguage',
-                       'lastViewedAt', 'viewCount', 'addedAt')
-    ALLOWED_SORT = ('addedAt', 'originallyAvailableAt', 'lastViewedAt', 'titleSort', 'rating',
-                    'mediaHeight', 'duration')
     TAG = 'Directory'
     TYPE = 'movie'
     METADATA_TYPE = 'movie'
@@ -860,21 +842,10 @@ class ShowSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing tv shows.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('unwatched',
-                'year', 'genre', 'contentRating', 'network', 'collection', 'guid', 'label')
-            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt', 'lastViewedAt',
-                'originallyAvailableAt', 'titleSort', 'rating', 'unwatched')
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
-    ALLOWED_FILTERS = ('unwatched', 'year', 'genre', 'contentRating', 'network', 'collection',
-                       'guid', 'duplicate', 'label', 'show.title', 'show.year', 'show.userRating',
-                       'show.viewCount', 'show.lastViewedAt', 'show.actor', 'show.addedAt', 'episode.title',
-                       'episode.originallyAvailableAt', 'episode.resolution', 'episode.subtitleLanguage',
-                       'episode.unwatched', 'episode.addedAt', 'episode.userRating', 'episode.viewCount',
-                       'episode.lastViewedAt')
-    ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'originallyAvailableAt', 'titleSort',
-                    'rating', 'unwatched')
+
     TAG = 'Directory'
     TYPE = 'show'
     METADATA_TYPE = 'episode'
@@ -940,20 +911,9 @@ class MusicSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing music artists.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('genre',
-                'country', 'collection')
-            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt',
-                'lastViewedAt', 'viewCount', 'titleSort')
             TAG (str): 'Directory'
             TYPE (str): 'artist'
     """
-    ALLOWED_FILTERS = ('genre', 'country', 'collection', 'mood', 'year', 'track.userRating', 'artist.title',
-                       'artist.userRating', 'artist.genre', 'artist.country', 'artist.collection', 'artist.addedAt',
-                       'album.title', 'album.userRating', 'album.genre', 'album.decade', 'album.collection',
-                       'album.viewCount', 'album.lastViewedAt', 'album.studio', 'album.addedAt', 'track.title',
-                       'track.userRating', 'track.viewCount', 'track.lastViewedAt', 'track.skipCount',
-                       'track.lastSkippedAt')
-    ALLOWED_SORT = ('addedAt', 'lastViewedAt', 'viewCount', 'titleSort', 'userRating')
     TAG = 'Directory'
     TYPE = 'artist'
 
@@ -1025,15 +985,9 @@ class PhotoSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
 
         Attributes:
-            ALLOWED_FILTERS (list<str>): List of allowed search filters. ('all', 'iso',
-                'make', 'lens', 'aperture', 'exposure', 'device', 'resolution')
-            ALLOWED_SORT (list<str>): List of allowed sorting keys. ('addedAt')
             TAG (str): 'Directory'
             TYPE (str): 'photo'
     """
-    ALLOWED_FILTERS = ('all', 'iso', 'make', 'lens', 'aperture', 'exposure', 'device', 'resolution', 'place',
-                       'originallyAvailableAt', 'addedAt', 'title', 'userRating', 'tag', 'year')
-    ALLOWED_SORT = ('addedAt',)
     TAG = 'Directory'
     TYPE = 'photo'
     CONTENT_TYPE = 'photo'
