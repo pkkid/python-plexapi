@@ -490,6 +490,10 @@ class LibrarySection(PlexObject):
         """
         return self.search(sort='addedAt:desc', maxresults=maxresults)
 
+    def firstCharacter(self):
+        key = '/library/sections/%s/firstCharacter' % self.key
+        return self.fetchItems(key, cls=FirstCharacter)
+
     def analyze(self):
         """ Run an analysis on all of the items in this library section. See
             See :func:`~plexapi.base.PlexPartialObject.analyze` for more details.
