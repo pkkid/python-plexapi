@@ -699,7 +699,8 @@ class LibrarySection(PlexObject):
     def _cleanSearchSort(self, sort):
         sort = '%s:asc' % sort if ':' not in sort else sort
         scol, sdir = sort.lower().split(':')
-        lookup = {s.lower(): s for s in self.ALLOWED_SORT}
+        allowedSort = [sort.key for sort in self._sorts()]
+        lookup = {s.lower(): s for s in allowedSort}
         if scol not in lookup:
             raise BadRequest('Unknown sort column: %s' % scol)
         if sdir not in ('asc', 'desc'):
