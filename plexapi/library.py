@@ -1176,6 +1176,7 @@ class Sort(PlexObject):
         self.descKey = data.attrib.get('descKey')
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
+        self.firstCharacterKey = data.attrib.get('firstCharacterKey')
 
 
 class FirstCharacter(PlexObject):
