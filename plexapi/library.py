@@ -1179,6 +1179,53 @@ class Sort(PlexObject):
         self.firstCharacterKey = data.attrib.get('firstCharacterKey')
 
 
+class Field(PlexObject):
+    """ Represents a
+
+    """
+    TAG = 'Field'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.subType = data.attrib.get('subType')
+        self.operators = []
+
+
+@utils.registerPlexObject
+class Operator(PlexObject):
+    """ Represents a
+
+    """
+    TAG = 'Operator'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+
+
+@utils.registerPlexObject
+class FieldType(PlexObject):
+    """ Represents a
+
+    """
+    TAG = 'FieldType'
+
+    def __repr__(self):
+        _type = self._clean(self.firstAttr('type'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, _type] if p])
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.type = data.attrib.get('type')
+        self.operators = self.findItems(data, Operator)
+
+
 class FirstCharacter(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
