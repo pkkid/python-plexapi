@@ -668,12 +668,14 @@ class LibrarySection(PlexObject):
 
     def _cleanSearchFilter(self, category, value, libtype=None):
         # check a few things before we begin
+        categories = [x.key for x in self.filterFields()]
+        booleanFilters = [x.key for x in self.filterFields() if x.type == 'boolean']
         if category.endswith('!'):
-            if category[:-1] not in self.ALLOWED_FILTERS:
+            if category[:-1] not in categories:
                 raise BadRequest('Unknown filter category: %s' % category[:-1])
-        elif category not in self.ALLOWED_FILTERS:
+        elif category not in categories:
             raise BadRequest('Unknown filter category: %s' % category)
-        if category in self.BOOLEAN_FILTERS:
+        if category in booleanFilters:
             return '1' if value else '0'
         if not isinstance(value, (list, tuple)):
             value = [value]
