@@ -1155,6 +1155,21 @@ class Station(PlexObject):
         return self.size
 
 
+class Sort(PlexObject):
+    """ Represents a
+
+    """
+    TAG = 'Sort'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.defaultDirection = data.attrib.get('defaultDirection')
+        self.descKey = data.attrib.get('descKey')
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+
+
 class FirstCharacter(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
