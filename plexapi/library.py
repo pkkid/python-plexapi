@@ -466,6 +466,14 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/filters' % self.key
         return self.fetchItems(key, cls=Filter)
 
+    def _sorts(self, mediaType=None):
+        items = []
+        for data in self.listChoices('sorts', mediaType):
+            sort = Sort(server=self._server, data=data._data)
+            sort._initpath = data._initpath
+            items.append(sort)
+        return items
+
     def agents(self):
         """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
         """
