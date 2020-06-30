@@ -1151,6 +1151,15 @@ class Station(PlexObject):
         return self.size
 
 
+class FirstCharacter(PlexObject):
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.key = data.attrib.get('key')
+        self.size = data.attrib.get('size')
+        self.title = data.attrib.get('title')
+
+
 @utils.registerPlexObject
 class Collections(PlexObject):
 
