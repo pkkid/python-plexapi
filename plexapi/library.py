@@ -474,6 +474,30 @@ class LibrarySection(PlexObject):
             items.append(sort)
         return items
 
+    def filterFields(self, mediaType=None):
+        items = []
+        key = '/library/sections/%s/filters?includeMeta=1' % self.key
+        data = self._server.query(key)
+        for meta in data.iter('Meta'):
+            for metaType in meta.iter('Type'):
+                if mediaType and metaType.attrib.get('type') == mediaType:
+                    fields = self.findItems(metaType, Field)
+                    for field in fields:
+                        field._initpath = metaType.attrib.get('key')
+                        fieldType = [_ for _ in self.findItems(meta, FieldType) if _.type == field.type]
+                        field.operators = fieldType[0].operators
+                    items += fields
+                elif not mediaType:
+                    fields = self.findItems(metaType, Field)
+                    for field in fields:
+                        field._initpath = metaType.attrib.get('key')
+                        fieldType = [_ for _ in self.findItems(meta, FieldType) if _.type == field.type]
+                        field.operators = fieldType[0].operators
+                    items += fields
+        if not items and mediaType:
+            raise BadRequest('mediaType (%s) not found.' % mediaType)
+        return items
+
     def agents(self):
         """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
         """
