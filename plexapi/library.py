@@ -1204,6 +1204,29 @@ class Operator(PlexObject):
         self.title = data.attrib.get('title')
 
 
+class Folder(PlexObject):
+    """ Represents a Folder inside a library.
+
+        Attributes:
+            key (str): Url key for folder.
+            title (str): Title of folder.
+    """
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+
+    def subfolders(self):
+        """ Returns a list of available `:class:`~plexapi.library.Folder` for this folder.
+            Continue down subfolders until a mediaType is found.
+        """
+        if self.key.startswith('/library/metadata'):
+            return self.fetchItems(self.key)
+        else:
+            return self.fetchItems(self.key, Folder)
+
+
 @utils.registerPlexObject
 class FieldType(PlexObject):
     """ Represents a FieldType for filter.
