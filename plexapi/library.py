@@ -449,6 +449,12 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all%s' % (self.key, sortStr)
         return self.fetchItems(key, **kwargs)
 
+    def folders(self):
+        """ Returns a list of available `:class:`~plexapi.library.Folder` for this library section.
+        """
+        key = '/library/sections/%s/folder' % self.key
+        return self.fetchItems(key, Folder)
+
     def hubs(self):
         """ Returns a list of available `:class:`~plexapi.library.Hub` for this library section.
         """
