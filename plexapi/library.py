@@ -1189,8 +1189,12 @@ class FilterField(PlexObject):
 
 @utils.registerPlexObject
 class Operator(PlexObject):
-    """ Represents a
+    """ Represents an Operator available for filter.
 
+        Attributes:
+            TAG (str): 'Operator'
+            key (str): Url key for operator.
+            title (str): Title of operator.
     """
     TAG = 'Operator'
 
