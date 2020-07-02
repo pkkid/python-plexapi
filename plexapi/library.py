@@ -1227,6 +1227,13 @@ class FieldType(PlexObject):
 
 
 class FirstCharacter(PlexObject):
+    """ Represents a First Character element from a library.
+
+        Attributes:
+            key (str): Url key for character.
+            size (str): Total amount of library items starting with this character.
+            title (str): Character (#, !, A, B, C, ...).
+    """
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
