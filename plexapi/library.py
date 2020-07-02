@@ -461,6 +461,8 @@ class LibrarySection(PlexObject):
         return self.fetchItems(key, cls=Filter)
 
     def _sorts(self, mediaType=None):
+        """ Returns a list of available `:class:`~plexapi.library.Sort` for this library section.
+        """
         items = []
         for data in self.listChoices('sorts', mediaType):
             sort = Sort(server=self._server, data=data._data)
