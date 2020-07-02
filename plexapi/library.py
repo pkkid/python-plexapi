@@ -1142,8 +1142,15 @@ class Station(PlexObject):
 
 
 class Sort(PlexObject):
-    """ Represents a
+    """ Represents a Sort element found in library.
 
+        Attributes:
+            TAG (str): 'Sort'
+            defaultDirection (str): Default sorting direction.
+            descKey (str): Url key for sorting with desc.
+            key (str): Url key for sorting,
+            title (str): Title of sorting,
+            firstCharacterKey (str): Url path for first character endpoint.
     """
     TAG = 'Sort'
 
