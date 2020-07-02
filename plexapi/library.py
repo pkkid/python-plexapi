@@ -479,7 +479,7 @@ class LibrarySection(PlexObject):
         for meta in data.iter('Meta'):
             for metaType in meta.iter('Type'):
                 if not mediaType or metaType.attrib.get('type') == mediaType:
-                    fields = self.findItems(metaType, Field)
+                    fields = self.findItems(metaType, FilterField)
                     for field in fields:
                         field._initpath = metaType.attrib.get('key')
                         fieldType = [_ for _ in self.findItems(meta, FieldType) if _.type == field.type]
@@ -1157,8 +1157,8 @@ class Sort(PlexObject):
         self.firstCharacterKey = data.attrib.get('firstCharacterKey')
 
 
-class Field(PlexObject):
-    """ Represents a
+class FilterField(PlexObject):
+    """ Represents a Filters Field element found in library.
 
     """
     TAG = 'Field'
