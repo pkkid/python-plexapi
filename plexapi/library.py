@@ -471,6 +471,8 @@ class LibrarySection(PlexObject):
         return items
 
     def filterFields(self, mediaType=None):
+        """ Returns a list of available `:class:`~plexapi.library.FilterField` for this library section.
+        """
         items = []
         key = '/library/sections/%s/filters?includeMeta=1' % self.key
         data = self._server.query(key)
