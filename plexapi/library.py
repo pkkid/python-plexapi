@@ -1167,6 +1167,13 @@ class Sort(PlexObject):
 class FilterField(PlexObject):
     """ Represents a Filters Field element found in library.
 
+        Attributes:
+            TAG (str): 'Field'
+            key (str): Url key for filter,
+            title (str): Title of filter.
+            type (str): Type of filter (string, boolean, integer, date, etc).
+            subType (str): Subtype of filter (decade, rating, etc).
+            operators (str): Operators available for this filter.
     """
     TAG = 'Field'
 
