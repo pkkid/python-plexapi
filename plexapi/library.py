@@ -1206,8 +1206,12 @@ class Operator(PlexObject):
 
 @utils.registerPlexObject
 class FieldType(PlexObject):
-    """ Represents a
+    """ Represents a FieldType for filter.
 
+        Attributes:
+            TAG (str): 'Operator'
+            type (str): Type of filter (string, boolean, integer, date, etc),
+            operators (str): Operators available for this filter.
     """
     TAG = 'FieldType'
 
