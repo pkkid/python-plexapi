@@ -4,7 +4,10 @@
 Install PlexAPI
 """
 import re
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 # Get the current version
 with open('plexapi/__init__.py') as handle:
