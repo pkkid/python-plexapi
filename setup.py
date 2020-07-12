@@ -4,7 +4,7 @@
 Install PlexAPI
 """
 import re
-from distutils.core import setup
+from setuptools import setup
 
 # Get the current version
 with open('plexapi/__init__.py') as handle:
@@ -32,6 +32,11 @@ setup(
     url='https://github.com/pkkid/python-plexapi',
     packages=['plexapi'],
     install_requires=requirements,
+    python_requires='>=3.5',
     long_description=readme,
     keywords=['plex', 'api'],
+    classifiers=[
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3',
+    ]
 )
