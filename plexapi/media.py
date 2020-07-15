@@ -652,6 +652,26 @@ class Role(MediaTag):
 
 
 @utils.registerPlexObject
+class Review(MediaTag):
+    """ Represents a single Review for a Movie.
+
+        Attributes:
+            TAG (str): 'Review'
+    """
+    TAG = 'Review'
+
+    def _loadData(self, data):
+        self._data = data
+        self.id = cast(int, data.attrib.get('id', 0))
+        self.filter = data.attrib.get('filter')
+        self.tag = data.attrib.get('tag')
+        self.text = data.attrib.get('text')
+        self.image = data.attrib.get('image')
+        self.link = data.attrib.get('link')
+        self.source = data.attrib.get('source')
+
+
+@utils.registerPlexObject
 class Similar(MediaTag):
     """ Represents a single Similar media tag.
 
