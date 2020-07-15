@@ -766,3 +766,26 @@ class Release(PlexObject):
         self.fixed = data.attrib.get('fixed')
         self.downloadURL = data.attrib.get('downloadURL')
         self.state = data.attrib.get('state')
+
+
+class MediaContainer(PlexObject):
+    """ Represents a single MediaContainer.
+
+        Attributes:
+            TAG (str): 'MediaContainer'
+
+    """
+    TAG = 'MediaContainer'
+
+    def _loadData(self, data):
+        self._data = data
+        self.allowSync = utils.cast(int, data.attrib.get('allowSync'))
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionUUID = data.attrib.get('librarySectionUUID')
+        self.augmentationKey = data.attrib.get('augmentationKey')
+        self.identifier = data.attrib.get('identifier')
+        self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
+        self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.size = utils.cast(int, data.attrib.get('size'))
