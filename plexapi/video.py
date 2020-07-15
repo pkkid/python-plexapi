@@ -793,3 +793,32 @@ class Clip(Playable, Video):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.year = data.attrib.get('year')
+
+
+@utils.registerPlexObject
+class Extra(Clip):
+    """ Represents a single Extra (trailer, behindTheScenes, etc).
+
+        Attributes:
+            TAG (str): 'Extras'
+    """
+    TAG = 'Extras'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.extraType = data.attrib.get('extraType')
+        self.index = data.attrib.get('index')
+        self.key = data.attrib.get('key', '')
+        self.media = self.findItems(data, media.Media)
+        self.originallyAvailableAt = utils.toDatetime(
+            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self.subtype = data.attrib.get('subtype')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.year = data.attrib.get('year')
