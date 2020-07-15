@@ -341,6 +341,16 @@ class Movie(Playable, Video):
 
         return items
 
+    def extras(self):
+        """ Returns a list of :class:`~plexapi.video.Extra` objects. """
+        items = []
+        data = self._server.query(self._details_key)
+        for extra in data.iter('Extras'):
+            for video in extra.iter('Video'):
+                items.append(Extra(data=video, server=self._server))
+
+        return items
+
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
