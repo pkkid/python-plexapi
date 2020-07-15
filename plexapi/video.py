@@ -80,6 +80,12 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        data = self._server.query(self._details_key)
+        for item in data.iter('Related'):
+            return self.findItems(item, library.Hub)
+
     def rate(self, rate):
         """ Rate video. """
         key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
@@ -464,12 +470,6 @@ class Show(Video):
                 items.append(settings.Preferences(data=elem, server=self._server))
 
         return items
-
-    def hubs(self):
-        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        data = self._server.query(self._details_key)
-        for item in data.iter('Related'):
-            return self.findItems(item, library.Hub)
 
     def onDeck(self):
         """ Returns shows On Deck :class:`~plexapi.video.Video` object.
