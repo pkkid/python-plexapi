@@ -332,6 +332,15 @@ class Movie(Playable, Video):
         # This is just for compat.
         return self.title
 
+    def reviews(self):
+        """ Returns a list of :class:`~plexapi.media.Review` objects. """
+        items = []
+        data = self._server.query(self.key + '?includeReviews=1')
+        for item in data.iter('Review'):
+            items.append(media.Review(data=item, server=self._server))
+
+        return items
+
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
