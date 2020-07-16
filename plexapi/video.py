@@ -88,6 +88,19 @@ class Video(PlexPartialObject):
             items.append(library.Hub(data=item, server=self._server))
         return items
 
+    def augmentation(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects.
+
+            augmentation returns hub items relating to online media sources
+            such as Tidal Music "Track From {item}" or "Soundtrack of {item}"
+
+        """
+
+        data = self._server.query(self.key + '?asyncAugmentMetadata=1')
+        mediaContainer = MediaContainer(data=data, server=self._server)
+        augmentationKey = mediaContainer.augmentationKey
+        return self.fetchItems(augmentationKey)
+
     def rate(self, rate):
         """ Rate video. """
         key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
