@@ -82,9 +82,11 @@ class Video(PlexPartialObject):
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        items = []
         data = self._server.query(self._details_key)
-        for item in data.iter('Related'):
-            return self.findItems(item, library.Hub)
+        for item in data.iter('Hub'):
+            items.append(library.Hub(data=item, server=self._server))
+        return items
 
     def rate(self, rate):
         """ Rate video. """
