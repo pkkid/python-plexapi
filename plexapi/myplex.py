@@ -697,6 +697,16 @@ class MyPlexAccount(PlexObject):
 
         return services
 
+    def settings(self):
+        """ Returns an user account settings :class:`~plexapi.myplex.AccountSettings`
+        """
+        req = requests.get(self.SETTINGS.format(userUUID=self.uuid),
+                           headers={'X-Plex-Token': self._token,
+                                    'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
+        elem = ElementTree.fromstring(req.text)
+        for item in elem.iter('setting'):
+            return AccountSettings(data=item, server=self._server)
+
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
         accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
@@ -1307,6 +1317,19 @@ def _chooseConnection(ctype, name, results):
         log.info('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
     raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
+
+
+class AccountSettings(PlexObject):
+
+    def _loadData(self, data):
+        self.id = data.attrib.get('id')
+        self.type = data.attrib.get('type')
+        self.value = eval(self.values(data.attrib.get('value')))
+        self.hidden = data.attrib.get('hidden')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+
+    def values(self, value):
+        return value.replace(':false', ':False').replace(':true', ':True').replace(':null', ':None')
 
 
 class AccountOptOut(PlexObject):
