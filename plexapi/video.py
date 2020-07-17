@@ -93,9 +93,14 @@ class Video(PlexPartialObject):
 
             augmentation returns hub items relating to online media sources
             such as Tidal Music "Track From {item}" or "Soundtrack of {item}"
+            Plex Pass and linked Tidal account are required
 
         """
-
+        account = self._server.myPlexAccount()
+        tidalOptOut = [service.value for service in account.onlineMediaSources()
+                       if service.key.endswith('music')][0]
+        if account.subscriptionStatus != 'Active' or tidalOptOut == 'opt_out':
+            raise BadRequest('Requires Plex Pass and Tidal Music enabled.')
         data = self._server.query(self.key + '?asyncAugmentMetadata=1')
         mediaContainer = MediaContainer(data=data, server=self._server)
         augmentationKey = mediaContainer.augmentationKey
