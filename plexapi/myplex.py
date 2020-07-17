@@ -1320,6 +1320,17 @@ def _chooseConnection(ctype, name, results):
 
 
 class AccountSettings(PlexObject):
+    """ Represents a single Account Setting
+        'https://plex.tv/api/v2/user/{userUUID}/settings'
+
+        Attributes:
+            id (str): Unknown. "experience"?
+            type (str): "json"
+            value (dict): Lots of user server, library,
+                          and other endpoints and settings
+            hidden (str): Unknown. Are these settings hidden?
+            updatedAt (datetime): Datetime last updated
+    """
 
     def _loadData(self, data):
         self.id = data.attrib.get('id')
@@ -1333,8 +1344,14 @@ class AccountSettings(PlexObject):
 
 
 class AccountOptOut(PlexObject):
+    """ Represents a single AccountOptOut
+        'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'
 
-    TYPE = 'array'
+        Attributes:
+            key (str): Online Media Source key
+            value (str): Online Media Source opt_in or opt_out
+    """
+
     def _loadData(self, data):
         self.key = data.attrib.get('key')
         self.value = data.attrib.get('value')
