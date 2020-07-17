@@ -1307,3 +1307,11 @@ def _chooseConnection(ctype, name, results):
         log.info('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
     raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
+
+
+class AccountOptOut(PlexObject):
+
+    TYPE = 'array'
+    def _loadData(self, data):
+        self.key = data.attrib.get('key')
+        self.value = data.attrib.get('value')
