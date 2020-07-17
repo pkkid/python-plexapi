@@ -684,6 +684,18 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    def onlineMediaSources(self):
+        """ Returns an user account Online Media Sourcessettings :class:`~plexapi.myplex.AccountOptOut`
+        """
+        services = []
+        req = requests.get(self.SETTINGS.format(userUUID=self.uuid) + '/opt_outs',
+                           headers={'X-Plex-Token': self._token,
+                                    'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
+        elem = ElementTree.fromstring(req.text)
+        for item in elem.iter('optOut'):
+            services.append(AccountOptOut(data=item, server=self._server))
+
+        return services
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
