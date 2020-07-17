@@ -76,6 +76,7 @@ class MyPlexAccount(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
+    SETTINGS = 'https://plex.tv/api/v2/user/{userUUID}/settings'
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/'                                                       # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
