@@ -110,7 +110,7 @@ def lowerFirst(s):
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
     """ Returns the value at the specified attrstr location within a nexted tree of
-        dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
+        dicts, lists, tuples, functions, classes, etc. The lookup is done recursively
         for each key in attrstr (split by by the delimiter) This function is heavily
         influenced by the lookups used in Django templates.
 
