@@ -657,6 +657,11 @@ class LibrarySection(PlexObject):
             raise BadRequest('Unknown sort dir: %s' % sdir)
         return '%s:%s' % (lookup[scol], sdir)
 
+    def _locations(self):
+        """ Returns a list of :class:`~plexapi.library.Location` objects
+        """
+        return self.findItems(self._data, etag='Location')
+
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
         """ Add current library section as sync item for specified device.
