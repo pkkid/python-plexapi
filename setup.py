@@ -34,4 +34,7 @@ setup(
     install_requires=requirements,
     long_description=readme,
     keywords=['plex', 'api'],
+    classifiers=[
+       'License :: OSI Approved :: BSD License',
+    ]
 )
