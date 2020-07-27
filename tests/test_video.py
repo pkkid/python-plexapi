@@ -579,7 +579,7 @@ def test_video_Show_editAdvanced_default(show):
     show.defaultAdvanced()
     show.reload()
     for pref in show.preferences():
-        assert int(pref.value) == int(pref.default)
+        assert pref.value == pref.default
 
 
 def test_video_Show_reload(plex):
