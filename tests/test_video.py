@@ -564,17 +564,17 @@ def test_video_Show_settings(show):
 
 
 def test_video_Show_editAdvanced_default(show):
-    show.editAdvanced(episodeSort=0)
+    show.editAdvanced(showOrdering='absolute')
     show.reload()
     for pref in show.preferences():
-        if pref.id == 'episodeSort':
-            assert int(pref.value) == 0
+        if pref.id == 'showOrdering':
+            assert pref.value == 'absolute'
 
     show.editAdvanced(flattenSeasons=1)
     show.reload()
     for pref in show.preferences():
         if pref.id == 'flattenSeasons':
-            assert int(pref.value) == 1
+            assert pref.value == 1
 
     show.defaultAdvanced()
     show.reload()
