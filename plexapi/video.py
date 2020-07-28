@@ -454,10 +454,7 @@ class Show(Video):
         key = '%s/prefs?' % self.key
         preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
         for settingID, value in kwargs.items():
-            try:
-                enumValues = [int(x) for x in preferences.get(settingID)]
-            except ValueError:
-                enumValues = [x.decode() for x in preferences.get(settingID)]
+            enumValues = preferences.get(settingID)
             if value in enumValues:
                 data[settingID] = value
             else:
