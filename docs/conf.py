@@ -60,8 +60,8 @@ templates_path = ['../']
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
 # source_suffix = '.rst'
-source_parsers = {'.md': CommonMarkParser}
-source_suffix = ['.rst', '.md']
+# source_parsers = {'.md': CommonMarkParser}  # deprecated
+# source_suffix = ['.rst', '.md']  # deprecated
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'

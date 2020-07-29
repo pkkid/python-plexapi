@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus
 
 
 class Audio(PlexPartialObject):
@@ -284,15 +285,15 @@ class Track(Audio, Playable):
             art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (TYPE): Unknown
             duration (int): Length of this album in seconds.
-            grandparentArt (str): Artist artowrk.
-            grandparentKey (str): Artist API URL.
-            grandparentRatingKey (str): Unique key identifying artist.
-            grandparentThumb (str): URL to artist thumbnail image.
-            grandparentTitle (str): Name of the artist for this track.
+            grandparentArt (str): Album artist artwork.
+            grandparentKey (str): Album artist API URL.
+            grandparentRatingKey (str): Unique key identifying album artist.
+            grandparentThumb (str): URL to album artist thumbnail image.
+            grandparentTitle (str): Name of the album artist for this track.
             guid (str): Unknown (unique ID).
             media (list): List of :class:`~plexapi.media.Media` objects for this track.
             moods (list): List of :class:`~plexapi.media.Mood` objects for this track.
-            originalTitle (str): Original track title (if translated).
+            originalTitle (str): Track artist.
             parentIndex (int): Album index.
             parentKey (str): Album API URL.
             parentRatingKey (int): Unique key identifying album.

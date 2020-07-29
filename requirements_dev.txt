@@ -8,11 +8,19 @@ pillow
 pytest
 pytest-cache
 pytest-cov
-pytest-mock
+pytest-mock<=1.11.1
 recommonmark
 requests
+requests-mock
 sphinx
-sphinx-rtd-theme
 sphinxcontrib-napoleon
 tqdm
-websocket-client==0.48.0
+websocket-client
+mock; python_version < '3.3'
+
+
+# Installing sphinx-rtd-theme directly from github above is used until a point release
+# above 0.4.3 is released. https://github.com/readthedocs/sphinx_rtd_theme/issues/739
+#sphinx-rtd-theme
+-e git+https://github.com/readthedocs/sphinx_rtd_theme.git@feb0beb44a444f875f3369a945e6055965ee993f#egg=sphinx_rtd_theme
+

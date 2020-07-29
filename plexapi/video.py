@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from plexapi import media, utils
-from plexapi.exceptions import BadRequest, NotFound
+import os
+from urllib.parse import quote_plus, urlencode
+
+from plexapi import media, utils, settings, library
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.compat import quote_plus
+from plexapi.exceptions import BadRequest, NotFound
 
 
 class Video(PlexPartialObject):
@@ -78,9 +80,123 @@ class Video(PlexPartialObject):
         self._server.query(key)
         self.reload()
 
+    def rate(self, rate):
+        """ Rate video. """
+        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
+
+        self._server.query(key)
+        self.reload()
+
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        streams = []
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.subtitleStreams()
+        return streams
+
+    def uploadSubtitles(self, filepath):
+        """ Upload Subtitle file for video. """
+        url = '%s/subtitles' % self.key
+        filename = os.path.basename(filepath)
+        subFormat = os.path.splitext(filepath)[1][1:]
+        with open(filepath, 'rb') as subfile:
+            params = {'title': filename,
+                      'format': subFormat
+                      }
+            headers = {'Accept': 'text/plain, */*'}
+            self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+
+    def removeSubtitles(self, streamID=None, streamTitle=None):
+        """ Remove Subtitle from movie's subtitles listing.
+
+            Note: If subtitle file is located inside video directory it will bbe deleted.
+            Files outside of video directory are not effected.
+        """
+        for stream in self.subtitleStreams():
+            if streamID == stream.id or streamTitle == stream.title:
+                self._server.query(stream.key, self._server._session.delete)
+
+    def optimize(self, title=None, target="", targetTagID=None, locationID=-1, policyScope='all',
+                 policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
+        """ Optimize item
+
+            locationID (int): -1 in folder with orginal items
+                               2 library path
+
+            target (str): custom quality name.
+                          if none provided use "Custom: {deviceProfile}"
+
+            targetTagID (int):  Default quality settings
+                                1 Mobile
+                                2 TV
+                                3 Original Quality
+
+            deviceProfile (str): Android, IOS, Universal TV, Universal Mobile, Windows Phone,
+                                    Windows, Xbox One
+
+            Example:
+                Optimize for Mobile
+                   item.optimize(targetTagID="Mobile") or item.optimize(targetTagID=1")
+                Optimize for Android 10 MBPS 1080p
+                   item.optimize(deviceProfile="Android", videoQuality=10)
+                Optimize for IOS Original Quality
+                   item.optimize(deviceProfile="IOS", videoQuality=-1)
+
+            * see sync.py VIDEO_QUALITIES for additional information for using videoQuality
+        """
+        tagValues = [1, 2, 3]
+        tagKeys = ["Mobile", "TV", "Original Quality"]
+        tagIDs = tagKeys + tagValues
+
+        if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
+            raise BadRequest('Unexpected or missing quality profile.')
+
+        if isinstance(targetTagID, str):
+            tagIndex = tagKeys.index(targetTagID)
+            targetTagID = tagValues[tagIndex]
+
+        if title is None:
+            title = self.title
+
+        backgroundProcessing = self.fetchItem('/playlists?type=42')
+        key = '%s/items?' % backgroundProcessing.key
+        params = {
+            'Item[type]': 42,
+            'Item[target]': target,
+            'Item[targetTagID]': targetTagID if targetTagID else '',
+            'Item[locationID]': locationID,
+            'Item[Policy][scope]': policyScope,
+            'Item[Policy][value]': policyValue,
+            'Item[Policy][unwatched]': policyUnwatched
+        }
+
+        if deviceProfile:
+            params['Item[Device][profile]'] = deviceProfile
+
+        if videoQuality:
+            from plexapi.sync import MediaSettings
+            mediaSettings = MediaSettings.createVideo(videoQuality)
+            params['Item[MediaSettings][videoQuality]'] = mediaSettings.videoQuality
+            params['Item[MediaSettings][videoResolution]'] = mediaSettings.videoResolution
+            params['Item[MediaSettings][maxVideoBitrate]'] = mediaSettings.maxVideoBitrate
+            params['Item[MediaSettings][audioBoost]'] = ''
+            params['Item[MediaSettings][subtitleSize]'] = ''
+            params['Item[MediaSettings][musicBitrate]'] = ''
+            params['Item[MediaSettings][photoQuality]'] = ''
+
+        titleParam = {'Item[title]': title}
+        section = self._server.library.sectionByID(self.librarySectionID)
+        params['Item[Location][uri]'] = 'library://' + section.uuid + '/item/' + \
+                                        quote_plus(self.key + '?includeExternalMedia=1')
+
+        data = key + urlencode(params) + '&' + urlencode(titleParam)
+        return self._server.query(data, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
@@ -212,14 +328,6 @@ class Movie(Playable, Video):
         """
         return [part.file for part in self.iterParts() if part]
 
-    def subtitleStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
-        streams = []
-        for elem in self.media:
-            for part in elem.parts:
-                streams += part.subtitleStreams()
-        return streams
-
     def _prettyfilename(self):
         # This is just for compat.
         return self.title
@@ -245,7 +353,7 @@ class Movie(Playable, Video):
             else:
                 self._server.url('%s?download=1' % location.key)
             filepath = utils.download(url, self._server._token, filename=name,
-                savepath=savepath, session=self._server._session)
+                                      savepath=savepath, session=self._server._session)
             if filepath:
                 filepaths.append(filepath)
         return filepaths
@@ -282,6 +390,10 @@ class Show(Video):
     TYPE = 'show'
     METADATA_TYPE = 'episode'
 
+    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
+                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
+
     def __iter__(self):
         for season in self.seasons():
             yield season
@@ -291,6 +403,7 @@ class Show(Video):
         Video._loadData(self, data)
         # fix key if loaded from search
         self.key = self.key.replace('/children', '')
+        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
@@ -322,6 +435,29 @@ class Show(Video):
     def isWatched(self):
         """ Returns True if this show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
+
+    def preferences(self):
+        """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
+        items = []
+        data = self._server.query(self._details_key)
+        for item in data.iter('Preferences'):
+            for elem in item:
+                items.append(settings.Preferences(data=elem, server=self._server))
+
+        return items
+
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        data = self._server.query(self._details_key)
+        for item in data.iter('Related'):
+            return self.findItems(item, library.Hub)
+
+    def onDeck(self):
+        """ Returns shows On Deck :class:`~plexapi.video.Video` object.
+            If show is unwatched, return will likely be the first episode.
+        """
+        data = self._server.query(self._details_key)
+        return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects. """
@@ -461,7 +597,7 @@ class Season(Video):
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
             return self.fetchItem(key, title=title)
-        return self.fetchItem(key, seasonNumber=self.index, index=episode)
+        return self.fetchItem(key, parentIndex=self.index, index=episode)
 
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode()`. """
@@ -469,7 +605,7 @@ class Season(Video):
 
     def show(self):
         """ Return this seasons :func:`~plexapi.video.Show`.. """
-        return self.fetchItem(self.parentKey)
+        return self.fetchItem(int(self.parentRatingKey))
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
@@ -537,7 +673,7 @@ class Episode(Playable, Video):
 
     _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
                 '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeConcerts=1&includePreferences=1')
+                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -573,6 +709,7 @@ class Episode(Playable, Video):
         self.labels = self.findItems(data, media.Label)
         self.collections = self.findItems(data, media.Collection)
         self.chapters = self.findItems(data, media.Chapter)
+        self.markers = self.findItems(data, media.Marker)
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -604,14 +741,46 @@ class Episode(Playable, Video):
         """ Returns the s00e00 string containing the season and episode. """
         return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
 
+    @property
+    def hasIntroMarker(self):
+        """ Returns True if this episode has an intro marker in the xml. """
+        if not self.isFullObject():
+            self.reload()
+        return any(marker.type == 'intro' for marker in self.markers)
+
     def season(self):
         """" Return this episodes :func:`~plexapi.video.Season`.. """
         return self.fetchItem(self.parentKey)
 
     def show(self):
         """" Return this episodes :func:`~plexapi.video.Show`.. """
-        return self.fetchItem(self.grandparentKey)
+        return self.fetchItem(int(self.grandparentRatingKey))
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+
+@utils.registerPlexObject
+class Clip(Playable, Video):
+    """ Represents a single Clip."""
+
+    TAG = 'Video'
+    TYPE = 'clip'
+    METADATA_TYPE = 'clip'
+
+    def _loadData(self, data):
+        self._data = data
+        self.addedAt = data.attrib.get('addedAt')
+        self.duration = data.attrib.get('duration')
+        self.guid = data.attrib.get('guid')
+        self.key = data.attrib.get('key')
+        self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
+        self.subtype = data.attrib.get('subtype')
+        self.thumb = data.attrib.get('thumb')
+        self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.year = data.attrib.get('year')

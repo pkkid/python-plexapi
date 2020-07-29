@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
-from plexapi.exceptions import NotFound, BadRequest
-from plexapi.compat import quote_plus
+from plexapi.exceptions import BadRequest, NotFound
 
 
 @utils.registerPlexObject
@@ -117,6 +118,7 @@ class Photo(PlexPartialObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
+        self.tag = self.findItems(data, media.Tag)
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """

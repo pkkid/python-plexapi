@@ -10,10 +10,9 @@ Original contribution by lad1337.
 import argparse
 import os
 import re
-import shutil
+from urllib.parse import unquote
 
 from plexapi import utils
-from plexapi.compat import unquote
 from plexapi.video import Episode, Movie, Show
 
 VALID_TYPES = (Movie, Episode, Show)
@@ -63,7 +62,7 @@ def get_item_from_url(url):
         raise SystemExit('Unknown or ambiguous client id: %s' % clientid)
     server = servers[0].connect()
     return server.fetchItem(key)
-	
+
 if __name__ == '__main__':
     # Command line parser
     from plexapi import CONFIG
@@ -73,7 +72,7 @@ if __name__ == '__main__':
                         default=CONFIG.get('auth.myplex_username'))
     parser.add_argument('-p', '--password', help='Your Plex password',
                         default=CONFIG.get('auth.myplex_password'))
-    parser.add_argument('--url', default=None, help='Download from URL (only paste after !)')	
+    parser.add_argument('--url', default=None, help='Download from URL (only paste after !)')
     opts = parser.parse_args()
     # Search item to download
     account = utils.getMyPlexAccount(opts)
@@ -86,4 +85,3 @@ if __name__ == '__main__':
             filepath = utils.download(url, token=account.authenticationToken, filename=filename, savepath=os.getcwd(),
                                       session=item._server._session, showstatus=True)
             #print('  %s' % filepath)
-

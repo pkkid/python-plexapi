@@ -19,3 +19,12 @@ def test_refresh_section(tvshows):
 
 def test_refresh_video(movie):
     movie.refresh()
+
+
+def test_rate_movie(movie):
+    oldrate = movie.userRating
+    if oldrate is None:
+        oldrate = 1
+    movie.rate(10.0)
+    assert movie.userRating == 10.0, 'User rating 10.0 after rating five stars.'
+    movie.rate(oldrate)
