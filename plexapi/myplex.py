@@ -82,6 +82,7 @@ class MyPlexAccount(PlexObject):
     NEWS = 'https://news.provider.plex.tv/'                                                     # get
     PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
     MUSIC = 'https://music.provider.plex.tv/'                                                   # get
+    IPTV = 'https://epg.provider.plex.tv/'                                                      # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -680,6 +681,14 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
         """
         req = requests.get(self.MUSIC + 'hubs/', headers={'X-Plex-Token': self._token})
+        elem = ElementTree.fromstring(req.text)
+        return self.findItems(elem)
+      
+      
+   def iptv(self):
+        """ Returns a list of IPTV Hub items :class:`~plexapi.library.Hub`
+        """
+        req = requests.get(self.IPTV + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
