@@ -784,3 +784,23 @@ class Clip(Playable, Video):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.year = data.attrib.get('year')
+
+
+@utils.registerPlexObject
+class Directory(Video):
+    """ Represents a single Directory."""
+
+    TAG = 'Directory'
+    TYPE = 'channel'
+    METADATA_TYPE = 'channel'
+
+    def _loadData(self, data):
+        self._data = data
+        self.guid = data.attrib.get('id')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.items = self.findItems(data)
+
+    def __len__(self):
+        return self.size
