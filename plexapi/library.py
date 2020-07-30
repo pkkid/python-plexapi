@@ -1232,6 +1232,22 @@ class Folder(PlexObject):
         else:
             return self.fetchItems(self.key, Folder)
 
+    def allSubfolders(self):
+        """ Returns a list of all available `:class:`~plexapi.library.Folder` for this folder.
+            Only returns `:class:`~plexapi.library.Folder`.
+        """
+        folders =[]
+        for folder in self.subfolders():
+            if not folder.key.startswith('/library/metadata'):
+                folders.append(folder)
+                while True:
+                    for subfolder in folder.subfolders():
+                        if not subfolder.key.startswith('/library/metadata'):
+                            folders.append(subfolder)
+                            continue
+                    break
+        return folders
+
 
 @utils.registerPlexObject
 class FieldType(PlexObject):
