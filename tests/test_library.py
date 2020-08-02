@@ -238,6 +238,18 @@ def test_library_Colletion_sortRelease(collection):
     assert collection.collectionSort == "0"
 
 
+def test_library_Colletion_edit(collection):
+    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
+    collectionTitleSort = collection.titleSort
+    collection.edit(**edits)
+    collection.reload()
+    for field in collection.fields:
+        if field.name == 'titleSort':
+            assert collection.titleSort == 'New Title Sort'
+            assert field.locked == True
+    collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
