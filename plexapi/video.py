@@ -14,6 +14,7 @@ class Video(PlexPartialObject):
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            fields (list): List of :class:`~plexapi.media.Field`.
             key (str): API URL (/library/metadata/<ratingkey>).
             lastViewedAt (datetime): Datetime item was last accessed.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
@@ -33,6 +34,8 @@ class Video(PlexPartialObject):
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
+        self.fields = self.findItems(data, etag='Field')
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
@@ -126,8 +129,9 @@ class Video(PlexPartialObject):
                  policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
         """ Optimize item
 
-            locationID (int): -1 in folder with orginal items
-                               2 library path
+            locationID (int): -1 in folder with original items
+                               2 library path id
+                                 library path id is found in library.locations[i].id
 
             target (str): custom quality name.
                           if none provided use "Custom: {deviceProfile}"
@@ -156,6 +160,13 @@ class Video(PlexPartialObject):
 
         if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
             raise BadRequest('Unexpected or missing quality profile.')
+
+        libraryLocationIDs = [location.id for location in self.section()._locations()]
+        libraryLocationIDs.append(-1)
+
+        if locationID not in libraryLocationIDs:
+            raise BadRequest('Unexpected library path ID. %s not in %s' %
+                             (locationID, libraryLocationIDs))
 
         if isinstance(targetTagID, str):
             tagIndex = tagKeys.index(targetTagID)
