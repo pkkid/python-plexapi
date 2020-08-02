@@ -657,6 +657,11 @@ class LibrarySection(PlexObject):
             raise BadRequest('Unknown sort dir: %s' % sdir)
         return '%s:%s' % (lookup[scol], sdir)
 
+    def _locations(self):
+        """ Returns a list of :class:`~plexapi.library.Location` objects
+        """
+        return self.findItems(self._data, etag='Location')
+
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
         """ Add current library section as sync item for specified device.
@@ -1053,6 +1058,23 @@ class FilterChoice(PlexObject):
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+
+@utils.registerPlexObject
+class Location(PlexObject):
+    """ Represents a single library Location.
+
+        Attributes:
+            TAG (str): 'Location'
+            id (int): Location path ID.
+            path (str): Path used for library..
+    """
+    TAG = 'Location'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.path = data.attrib.get('path')
 
 
 @utils.registerPlexObject
