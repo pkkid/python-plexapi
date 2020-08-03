@@ -785,13 +785,13 @@ class Clip(Playable, Video):
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.guid = data.attrib.get('guid')
         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
         self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
         self.subtype = data.attrib.get('subtype')
         self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
-        self.year = utils.cast(int, data.attrib.get('year'))
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
