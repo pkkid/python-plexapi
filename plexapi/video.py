@@ -10,7 +10,7 @@ from plexapi.exceptions import BadRequest, NotFound
 class Video(PlexPartialObject):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
-        :class:`~plexapi.video.Episode`.
+        :class:`~plexapi.video.Episode`, :class:`~plexapi.video.Clip`.
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
@@ -774,14 +774,26 @@ class Episode(Playable, Video):
 
 @utils.registerPlexObject
 class Clip(Playable, Video):
-    """ Represents a single Clip."""
+    """Represents a single Clip.
+
+    Attributes:
+        TAG (str): 'Video'
+        TYPE (str): 'clip'
+        duration (int): Duration of movie in milliseconds.
+        extraType (int): Unknown
+        guid: Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+        index (int): Plex index (?)
+        originallyAvailableAt (datetime): Datetime movie was released.
+        subtype (str): Type of clip
+        viewOffset (int): View offset in milliseconds.
+    """
 
     TAG = 'Video'
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
 
     def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
+        """Load attribute values from Plex XML response."""
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self.duration = utils.cast(int, data.attrib.get('duration'))
@@ -793,7 +805,7 @@ class Clip(Playable, Video):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
 
     def section(self):
-        """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
+        """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
         # Clip payloads currently do not contain 'librarySectionID'.
         # Return None to avoid unnecessary attribute lookup attempts.
         return None
