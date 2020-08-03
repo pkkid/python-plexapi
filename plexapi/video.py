@@ -787,10 +787,9 @@ class Clip(Playable, Video):
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.guid = data.attrib.get('guid')
+        self.index = utils.cast(int, data.attrib.get('index'))
         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
-        self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
         self.subtype = data.attrib.get('subtype')
-        self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
 
     def section(self):
