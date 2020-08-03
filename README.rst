@@ -53,7 +53,7 @@ the top left above your available libraries.
     plex = account.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
 
 If you want to avoid logging into MyPlex and you already know your auth token
-string, you can use the PlexServer object directly as above, but passing in
+string, you can use the PlexServer object directly as above, by passing in
 the baseurl and auth token directly.
 
 .. code-block:: python
