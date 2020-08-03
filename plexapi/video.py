@@ -795,6 +795,6 @@ class Clip(Playable, Video):
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
-        if self.librarySectionID is not None:
-            return self._server.library.sectionByID(self.librarySectionID)
+        # Clip payloads currently do not contain 'librarySectionID'.
+        # Return None to avoid unnecessary attribute lookup attempts.
         return None
