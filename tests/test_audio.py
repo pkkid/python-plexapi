@@ -113,7 +113,8 @@ def test_audio_Album_tracks(album):
     # assert utils.is_int(track.parentIndex)
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     # assert track.ratingCount == 9 # Flaky
     assert utils.is_int(track.ratingKey)
@@ -148,7 +149,8 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_int(track.parentIndex)
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     # assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
@@ -228,7 +230,8 @@ def test_audio_Track_attrs(album):
     assert int(track.parentIndex) == 1
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
