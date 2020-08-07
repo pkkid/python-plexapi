@@ -4,7 +4,7 @@ import os
 import re
 import time
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
