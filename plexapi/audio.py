@@ -213,7 +213,7 @@ class Album(Audio):
     TYPE = 'album'
 
     def __iter__(self):
-        for track in self.tracks:
+        for track in self.tracks():
             yield track
 
     def _loadData(self, data):
