@@ -1,211 +1,78 @@
 # -*- coding: utf-8 -*-
-from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
-from plexapi.base import PlexObject
-from plexapi.compat import unquote, urlencode, quote_plus
-from plexapi.media import MediaTag
+import os
+from urllib.parse import quote_plus, urlencode
+import requests
+
+from plexapi import media, utils, settings, library
+from plexapi.base import PlexObject, Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.video import Video
+from requests.status_codes import _codes as codes
 
 
-class LiveTV(PlexObject):
+@utils.registerPlexObject
+class IPTVChannel(Video):
+    """ Represents a single IPTVChannel."""
+
+    TAG = 'Directory'
+    TYPE = 'channel'
+    METADATA_TYPE = 'channel'
+
     def _loadData(self, data):
         self._data = data
-        self.cloudKey = None
-        self.identifier = data.attrib.get('identifier')
-        self.size = data.attrib.get('size')
-
-    def cloudKey(self):
-        if not self.cloudKey:
-            res = self._server.query(key='/tv.plex.providers.epg.cloud')
-            if res:
-                self.cloudKey = res.attrib.get('title')
-        return self.cloudKey
-
-    def hubs(self):
-        res = self._server.query(key='/{}/hubs/discover'.format(self.cloudKey()))
-        if res:
-            return [Hub(item) for item in res.attrib.get('Hub')]
-        return []
-
-    def hub(self, identifier=None):
-        hubs = self.hubs()
-        for hub in hubs:
-            if hub.identifier == identifier:
-                return hub
-        return None
-
-    def dvrSchedule(self):
-        res = self._server.query(key='/media/subscriptions/scheduled')
-        if res:
-            return DVRSchedule(res.attrib.get('MediaContainer'))
-        return None
-
-    def dvrItems(self):
-        res = self._server.query(key='/media/subscriptions')
-        if res:
-            return [DVRItem(item) for item in res.attrib.get('MediaSubscription')]
-        return []
-
-    def dvrItem(self, title=None):
-        items = self.dvrItems()
-        for item in items:
-            if item.title == title:
-                return item
-        return None
-
-    def homepageItems(self):
-        res = self._server.query(key='/hubs')
-        if res:
-            return [Hub(item) for item in res.attrib.get('Hub')]
-        return []
-
-    def homepageItem(self, title=None):
-        items = self.homepageItems()
-        for item in items:
-            if item.title == title:
-                return item
-        return None
-
-    def liveTVSessions(self):
-        res = self._server.query(key='/livetv/sessions')
-        if res:
-            return [TVSession(item) for item in res.attrib.get('Metadata')]
-        return []
-
-    def liveTVSession(self, key=None):
-        items = self.liveTVSessions()
-        for item in items:
-            if item.key == key:
-                return item
-        return None
-
-    def dvrs(self):
-        res = self._server.query(key='/livetv/dvrs')
-        if res:
-            return [DVR(item) for item in res.attrib.get('Dvr')]
-        return []
-
-    def dvr(self, title=None):
-        items = self.dvrs()
-        for item in items:
-            if item.title == title:
-                return item
-        return None
-
-
-class Hub:
-    def __init__(self, data):
-        self.data = data
-        self.key = data.attrib.get('hubKey')
+        self.guid = data.attrib.get('id')
+        self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self.identifier = data.attrib.get('hubIdentifier')
-        self.context = data.attrib.get('context')
-        self.size = data.attrib.get('size')
-        self.more = data.attrib.get('more')
-        self.promoted = data.attrib.get('promoted')
-        if data.attrib.get('Metadata'):
-            self.items = [MediaItem(item) for item in self.data.attrib.get('Metadata')]
+        self.items = self.findItems(data)
 
 
-class DVR:
-    def __init__(self, data):
-        self.data = data
-        self.key = data.attrib.get('key')
-        self.uuid = data.attrib.get('uuid')
-        self.language = data.attrib.get('language')
-        self.lineupURL = data.attrib.get('lineup')
-        self.title = data.attrib.get('lineupTitle')
-        self.country = data.attrib.get('country')
-        self.refreshTime = data.attrib.get('refreshedAt')
-        self.epgIdentifier = data.attrib.get('epgIdentifier')
-        self.device = [Device(device) for device in data.attrib.get('Device')]
+@utils.registerPlexObject
+class Recording(Video):
+    """ Represents a single Recording."""
 
+    TAG = 'MediaSubscription'
 
-class DVRSchedule:
-    def __init__(self, data):
-        self.data = data
-        self.count = data.attrib.get('size')
-        if data.attrib.get('MediaGrabOperation'):
-            self.items = [DVRItem(item) for item in data.attrib.get('MediaGrabOperation')]
-
-
-class DVRItem:
-    def __init__(self, data):
-        self.data = data
-        self.type = data.attrib.get('type')
-        self.targetLibrarySectionID = data.attrib.get('targetLibrarySectionID')
-        self.created = data.attrib.get('createdAt')
+    def _loadData(self, data):
+        self._data = data
+        self.key = data.attrib.key('key')
+        self.type = data.attrib.key('type')
+        self.targetLibrarySectionId = data.attrib.get('targetLibrarySectionId')
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
         self.title = data.attrib.get('title')
+        self.items = self.findItems(data)
+
+    def delete(self):
+        self._server.query(key='/media/subscription/' + self.key, method=self._server._session.delete)
+
+
+@utils.registerPlexObject
+class ScheduledRecording(Video):
+    """ Represents a single ScheduledRecording."""
+
+    TAG = 'MediaGrabOperation'
+
+    def _loadData(self, data):
+        self._data = data
         self.mediaSubscriptionID = data.attrib.get('mediaSubscriptionID')
         self.mediaIndex = data.attrib.get('mediaIndex')
-        self.key = data.attrib.get('key')
+        self.key = data.attrib.key('key')
         self.grabberIdentifier = data.attrib.get('grabberIdentifier')
         self.grabberProtocol = data.attrib.get('grabberProtocol')
         self.deviceID = data.attrib.get('deviceID')
         self.status = data.attrib.get('status')
         self.provider = data.attrib.get('provider')
-        if data.attrib.get('Video'):
-            self.video = Video(data.attrib.get('Video'))
-
-    def delete(self):
-        self._server.query(key='/media/subscription/{}'.format(self.mediaSubscriptionID), method=self._server._session.delete)
+        self.items = self.findItems(data)
 
 
-class TVSession:
-    def __init__(self, data):
-        self.data = data
-        self.ratingKey = data.attrib.get('ratingKey')
-        self.guid = data.attrib.get('guid')
-        self.type = data.attrib.get('type')
-        self.title = data.attrib.get('title')
-        self.summary = data.attrib.get('title')
-        self.ratingCount = data.attrib.get('ratingCount')
-        self.year = data.attrib.get('year')
-        self.added = data.attrib.get('addedAt')
-        self.genuineMediaAnalysis = data.attrib.get('genuineMediaAnalysis')
-        self.grandparentThumb = data.attrib.get('grandparentThumb')
-        self.grandparentTitle = data.attrib.get('grandparentTitle')
-        self.key = data.attrib.get('key')
-        self.live = data.attrib.get('live')
-        self.parentIndex = data.attrib.get('parentIndex')
-        self.media = [MediaItem(item) for item in data.attrib.get('Media')]
+@utils.registerPlexObject
+class Setting(PlexObject):
+    """ Represents a single DVRDevice Setting."""
 
+    TAG = 'Setting'
 
-class Device:
-    def __init__(self, data):
-        self.data = data
-        self.parentID = data.attrib.get('parentID')
-        self.key = data.attrib.get('key')
-        self.uuid = data.attrib.get('uuid')
-        self.uri = data.attrib.get('uri')
-        self.protocol = data.attrib.get('protocol')
-        self.status = data.attrib.get('status')
-        self.state = data.attrib.get('state')
-        self.lastSeen = data.attrib.get('lastSeenAt')
-        self.make = data.attrib.get('make')
-        self.model = data.attrib.get('model')
-        self.modelNumber = data.attrib.get('modelNumber')
-        self.source = data.attrib.get('source')
-        self.sources = data.attrib.get('sources')
-        self.thumb = data.attrib.get('thumb')
-        self.tuners = data.attrib.get('tuners')
-        if data.attrib.get('Channels'):
-            self.channels = [Channel(channel) for channel in data.attrib.get('Channels')]
-        if data.attrib.get('Setting'):
-            self.settings = [Setting(setting) for setting in data.attrib.get('Setting')]
-
-
-class Channel:
-    def __init__(self, data):
-        self.data = data
-        self.deviceId = data.attrib.get('deviceIdentifier')
-        self.enabled = data.attrib.get('enabled')
-        self.lineupId = data.attrib.get('lineupIdentifier')
-
-
-class Setting:
-    def __init__(self, data):
-        self.data = data
+    def _loadData(self, data):
+        self._data = data
         self.id = data.attrib.get('id')
         self.label = data.attrib.get('label')
         self.summary = data.attrib.get('summary')
@@ -216,63 +83,150 @@ class Setting:
         self.advanced = data.attrib.get('advanced')
         self.group = data.attrib.get('group')
         self.enumValues = data.attrib.get('enumValues')
+        self.items = self.findItems(data)
 
 
-class MediaFile:
-    def __init__(self, data):
-        self.data = data
-        self.id = data.attrib.get('id')
-        self.duration = data.attrib.get('duration')
-        self.audioChannels = data.attrib.get('audioChannels')
-        self.videoResolution = data.attrib.get('videoResolution')
-        self.channelCallSign = data.attrib.get('channelCallSign')
-        self.channelIdentifier = data.attrib.get('channelIdentifier')
-        self.channelThumb = data.attrib.get('channelThumb')
-        self.channelTitle = data.attrib.get('channelTitle')
-        self.protocol = data.attrib.get('protocol')
-        self.begins = data.attrib.get('beginsAt')
-        self.ends = data.attrib.get('endsAt')
-        self.onAir = data.attrib.get('onAir')
-        self.channelID = data.attrib.get('channelID')
-        self.origin = data.attrib.get('origin')
+@utils.registerPlexObject
+class DVRChannel(PlexObject):
+    """ Represents a single DVRDevice DVRChannel."""
+
+    TAG = 'ChannelMapping'
+
+    def _loadData(self, data):
+        self._data = data
+        self.channelKey = data.attrib.get('channelKey')
+        self.deviceIdentifier = data.attrib.get('deviceIdentifier')
+        self.enabled = utils.cast(int, data.attrib.get('enabled'))
+        self.lineupIdentifier = data.attrib.get('lineupIdentifier')
+        self.items = self.findItems(data)
+
+
+@utils.registerPlexObject
+class DVRDevice(PlexObject):
+    """ Represents a single DVRDevice."""
+
+    TAG = 'Device'
+
+    def _loadData(self, data):
+        self._data = data
+        self.parentID = data.attrib.get('parentID')
+        self.key = data.attrib.get('key', '')
         self.uuid = data.attrib.get('uuid')
-        self.container = data.attrib.get('container')
-        self.startOffsetSeconds = data.attrib.get('startOffsetSeconds')
-        self.endOffsetSeconds = data.attrib.get('endOffsetSeconds')
-        self.premiere = data.attrib.get('premiere')
+        self.uri = data.attrib.get('uri')
+        self.protocol = data.attrib.get('protocol')
+        self.status = data.attrib.get('status')
+        self.state = data.attrib.get('state')
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
+        self.make = data.attrib.get('make')
+        self.model = data.attrib.get('model')
+        self.modelNumber = data.attrib.get('modelNumber')
+        self.source = data.attrib.get('source')
+        self.sources = data.attrib.get('sources')
+        self.thumb = data.attrib.get('thumb')
+        self.tuners = utils.cast(int, data.attrib.get('tuners'))
+        self.items = self.findItems(data)
 
 
-class MediaItem:
-    def __init__(self, data):
-        self.data = data
-        self.ratingKey = data.attrib.get('ratingKey')
-        self.key = data.attrib.get('key')
-        self.skipParent = data.attrib.get('skipParent')
-        self.guid = data.attrib.get('guid')
-        self.parentGuid = data.attrib.get('parentGuid')
-        self.grandparentGuid = data.attrib.get('grandparentGuid')
-        self.type = data.attrib.get('type')
-        self.title = data.attrib.get('title')
-        self.grandparentKey = data.attrib.get('grandparentKey')
-        self.grandparentTitle = data.attrib.get('grandparentTitle')
-        self.parentTitle = data.attrib.get('parentTitle')
-        self.summary = data.attrib.get('summary')
-        self.parentIndex = data.attrib.get('parentIndex')
-        self.year = data.attrib.get('year')
-        self.grandparentThumb = data.attrib.get('grandparentThumb')
-        self.duration = data.attrib.get('duration')
-        self.originallyAvailable = data.attrib.get('originallyAvailableAt')
-        self.added = data.attrib.get('addedAt')
-        self.onAir = data.attrib.get('onAir')
-        if data.attrib.get('Media'):
-            self.media = [MediaFile(item) for item in data.attrib.get('Media')]
-        if data.attrib.get('Genre'):
-            self.genres = [Genre(item) for item in data.attrib.get('Genre')]
+@utils.registerPlexObject
+class DVR(DVRDevice):
+    """ Represents a single DVR."""
+
+    TAG = 'Dvr'
+
+    def _loadData(self, data):
+        self._data = data
+        self.key = utils.cast(int, data.attrib.get('key'))
+        self.uuid = data.attrib.get('uuid')
+        self.language = data.attrib.get('language')
+        self.lineupURL = data.attrib.get('lineup')
+        self.title = data.attrib.get('lineupTitle')
+        self.country = data.attrib.get('country')
+        self.refreshTime = utils.toDatetime(data.attrib.get('refreshedAt'))
+        self.epgIdentifier = data.attrib.get('epgIdentifier')
+        self.items = self.findItems(data)
 
 
-class Genre:
-    def __init__(self, data):
-        self.data = data
-        self.filter = data.attrib.get('filter')
-        self.id = data.attrib.get('id')
-        self.tag = data.attrib.get('tag')
+class LiveTV(PlexObject):
+    def __init__(self, server, data, session=None, token=None):
+        self._token = token
+        self._session = session or requests.Session()
+        self._server = server
+        self.dvrs = []  # cached DVR objects
+        super().__init__(server, data)
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.cloud_key = data.attrib.get('machineIdentifier')
+
+    def _get_cloud_key(self):
+        url = self._server.url(key='/tv.plex.providers.epg.cloud', includeToken=True)
+        data = requests.get(url=url).json()
+        if data:
+            self.cloud_key = data.get('MediaContainer').get('Directory')[1].get('title')
+            return self.cloud_key
+        return None
+
+    def dvrs(self):
+        """ Returns a list of :class:`~plexapi.livetv.DVR` objects available to your server.
+        """
+        if not self.dvrs:
+            self.dvrs = self.fetchItems('/livetv/dvrs')
+        return self.dvrs
+
+    def sessions(self):
+        """ Returns a list of all active live tv session (currently playing) media objects.
+        """
+        return self.fetchItems('/livetv/sessions')
+
+    def directories(self):
+        """ Returns a list of all :class:`~plexapi.livetv.Directory` objects available to your server.
+        """
+        return self._server.fetchItems(self.cloud_key + '/hubs/discover')
+
+    def _guide_items(self, grid_type: int, beginsAt: int = None, endsAt: int = None):
+        key = self.cloud_key + '/grid?type=' + str(grid_type)
+        if beginsAt:
+            key += '&beginsAt%3C=' + str(beginsAt)  # %3C is <, so <=
+        if endsAt:
+            key += '&endsAt%3E=' + str(endsAt)  # %3E is >, so >=
+        return self._server.fetchItems(key)
+
+    def movies(self, beginsAt: int = None, endsAt: int = None):
+        """ Returns a list of all :class:`~plexapi.video.Movie` items on the guide.
+
+            Parameters:
+                grid_type (int): 1 for movies, 4 for shows
+                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+        """
+        return self._guide_items(grid_type=1, beginsAt=beginsAt, endsAt=endsAt)
+
+    def shows(self, beginsAt: int = None, endsAt: int = None):
+        """ Returns a list of all :class:`~plexapi.video.Show` items on the guide.
+
+            Parameters:
+                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+        """
+        return self._guide_items(grid_type=4, beginsAt=beginsAt, endsAt=endsAt)
+
+    def guide(self, beginsAt: int = None, endsAt: int = None):
+        """ Returns a list of all media items on the guide. Items may be any of
+            :class:`~plexapi.video.Movie`, :class:`~plexapi.video.Show`.
+
+            Parameters:
+                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+        """
+        all_movies = self.movies(beginsAt, endsAt)
+        return all_movies
+        # Potential show endpoint currently hanging, do not use
+        # all_shows = self.shows(beginsAt, endsAt)
+        # return all_movies + all_shows
+
+    def recordings(self):
+        return self.fetchItems('/media/subscriptions/scheduled')
+
+    def scheduled(self):
+        return self.fetchItems('/media/subscriptions')

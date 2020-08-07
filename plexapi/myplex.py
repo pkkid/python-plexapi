@@ -684,11 +684,10 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
       
-      
    def iptv(self):
         """ Returns a list of IPTV Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.IPTV + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
+        req = requests.get(self.IPTV + 'hubs/sections/all/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 

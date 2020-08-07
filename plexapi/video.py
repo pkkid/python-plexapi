@@ -5,6 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import media, utils, settings, library
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import Media
 
 
 class Video(PlexPartialObject):
@@ -32,6 +33,8 @@ class Video(PlexPartialObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.listType = 'video'
+        self.guid = data.attrib.get('guid')
+        self.year = data.attrib.get('year')
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
@@ -55,7 +58,7 @@ class Video(PlexPartialObject):
         """ Return the first first thumbnail url starting on
             the most specific thumbnail for that item.
         """
-        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        thumb = self.firstAttr('thumb', 'parentThumb', 'grandparentThumb')
         return self._server.url(thumb, includeToken=True) if thumb else None
 
     @property
@@ -294,7 +297,7 @@ class Movie(Playable, Video):
         self.guid = data.attrib.get('guid')
         self.originalTitle = data.attrib.get('originalTitle')
         self.originallyAvailableAt = utils.toDatetime(
-            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+            data.attrib.get('originallyAvailableAt'), format='%Y-%m-%d %H:%M%S')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.ratingImage = data.attrib.get('ratingImage')
@@ -703,6 +706,7 @@ class Episode(Playable, Video):
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
+        self.live = utils.cast(int, data.attrib.get('live', '0'))
         self.directors = self.findItems(data, media.Director)
         self.media = self.findItems(data, media.Media)
         self.writers = self.findItems(data, media.Writer)
@@ -760,6 +764,12 @@ class Episode(Playable, Video):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
 
+    def record(self):
+        # TODO
+        if self.live:
+            return False
+        return False
+
 
 @utils.registerPlexObject
 class Clip(Playable, Video):
@@ -784,23 +794,3 @@ class Clip(Playable, Video):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.year = data.attrib.get('year')
-
-
-@utils.registerPlexObject
-class Directory(Video):
-    """ Represents a single Directory."""
-
-    TAG = 'Directory'
-    TYPE = 'channel'
-    METADATA_TYPE = 'channel'
-
-    def _loadData(self, data):
-        self._data = data
-        self.guid = data.attrib.get('id')
-        self.thumb = data.attrib.get('thumb')
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-        self.items = self.findItems(data)
-
-    def __len__(self):
-        return self.size

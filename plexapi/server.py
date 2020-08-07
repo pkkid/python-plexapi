@@ -107,6 +107,7 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
+        self._liveTV = None # cached liveTV
         data = self.query(self.key, timeout=timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
@@ -238,6 +239,15 @@ class PlexServer(PlexObject):
         except Exception as err:
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
+
+    def livetv(self):
+        """ Returns a :class:`~plexapi.livetv.LiveTV` object using the same
+            token to access this server.
+        """
+        if self._liveTV is None:
+            from plexapi.livetv import LiveTV
+            self._liveTV = LiveTV(token=self._token)
+        return self._liveTV
 
     def clients(self):
         """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
