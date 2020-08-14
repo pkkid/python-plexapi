@@ -441,7 +441,7 @@ class LibrarySection(PlexObject):
         """
         key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
         for keyword, value in kwargs.items():
-            key = key + '&%s=%s' % (keyword, value)
+            key = key + '&%s=%s' % (keyword, quote(value, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, sort=None, **kwargs):
