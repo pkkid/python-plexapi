@@ -433,13 +433,15 @@ class LibrarySection(PlexObject):
             if s.key == self.key:
                 return s
 
-    def get(self, title):
+    def get(self, title, **kwargs):
         """ Returns the media item with the specified title.
 
             Parameters:
                 title (str): Title of the item to return.
         """
         key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
+        for keyword, value in kwargs.items():
+            key = key + '&%s=%s' % (keyword, value)
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, sort=None, **kwargs):
