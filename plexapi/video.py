@@ -10,10 +10,11 @@ from plexapi.exceptions import BadRequest, NotFound
 class Video(PlexPartialObject):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
-        :class:`~plexapi.video.Episode`.
+        :class:`~plexapi.video.Episode`, :class:`~plexapi.video.Clip`.
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            fields (list): List of :class:`~plexapi.media.Field`.
             key (str): API URL (/library/metadata/<ratingkey>).
             lastViewedAt (datetime): Datetime item was last accessed.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
@@ -33,6 +34,8 @@ class Video(PlexPartialObject):
         self._data = data
         self.listType = 'video'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
+        self.fields = self.findItems(data, etag='Field')
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
@@ -152,8 +155,9 @@ class Video(PlexPartialObject):
                  policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
         """ Optimize item
 
-            locationID (int): -1 in folder with orginal items
-                               2 library path
+            locationID (int): -1 in folder with original items
+                               2 library path id
+                                 library path id is found in library.locations[i].id
 
             target (str): custom quality name.
                           if none provided use "Custom: {deviceProfile}"
@@ -182,6 +186,13 @@ class Video(PlexPartialObject):
 
         if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
             raise BadRequest('Unexpected or missing quality profile.')
+
+        libraryLocationIDs = [location.id for location in self.section()._locations()]
+        libraryLocationIDs.append(-1)
+
+        if locationID not in libraryLocationIDs:
+            raise BadRequest('Unexpected library path ID. %s not in %s' %
+                             (locationID, libraryLocationIDs))
 
         if isinstance(targetTagID, str):
             tagIndex = tagKeys.index(targetTagID)
@@ -802,21 +813,33 @@ class Episode(Playable, Video):
 
 @utils.registerPlexObject
 class Clip(Playable, Video):
-    """ Represents a single Clip."""
+    """Represents a single Clip.
+
+    Attributes:
+        TAG (str): 'Video'
+        TYPE (str): 'clip'
+        duration (int): Duration of movie in milliseconds.
+        extraType (int): Unknown
+        guid: Plex GUID (com.plexapp.agents.imdb://tt4302938?lang=en).
+        index (int): Plex index (?)
+        originallyAvailableAt (datetime): Datetime movie was released.
+        subtype (str): Type of clip
+        viewOffset (int): View offset in milliseconds.
+    """
 
     TAG = 'Video'
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
 
     def _loadData(self, data):
-        self._data = data
-        self.addedAt = data.attrib.get('addedAt')
-        self.duration = data.attrib.get('duration')
+        """Load attribute values from Plex XML response."""
+        Video._loadData(self, data)
+        Playable._loadData(self, data)
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.guid = data.attrib.get('guid')
-        self.key = data.attrib.get('key')
+        self.index = utils.cast(int, data.attrib.get('index'))
         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
-        self.ratingKey = data.attrib.get('ratingKey')
-        self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
         self.subtype = data.attrib.get('subtype')
         self.thumb = data.attrib.get('thumb')
         self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
