@@ -126,6 +126,20 @@ def test_myplex_optout(account_once):
     utils.wait_until(lambda: enabled() == (False, False))
 
 
+def test_myplex_onlineMediaSources_optOut(account):
+    mediaOptOut = account.onlineMediaSources()[0]
+    optOutValue = mediaOptOut.value
+    with pytest.raises(NotFound):
+        assert mediaOptOut.updateOptOut('what')
+    with pytest.raises(BadRequest):
+        assert mediaOptOut.updateOptOut(optOutValue)
+    choices = mediaOptOut.CHOICES
+    choices.remove(optOutValue)
+    mediaOptOut.updateOptOut(choices[0])
+    assert account.onlineMediaSources()[0].value == choices[0]
+    mediaOptOut.updateOptOut(optOutValue)
+
+
 def test_myplex_inviteFriend_remove(account, plex, mocker):
     inv_user = "hellowlol"
     vid_filter = {"contentRating": ["G"], "label": ["foo"]}
