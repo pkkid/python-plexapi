@@ -159,6 +159,8 @@ def test_video_Movie_attrs(movies):
     assert movie.duration >= 160000
     assert movie.fields == []
     assert movie.posters()
+    assert movie.reviews()
+    assert movie.extras()
     assert sorted([i.tag for i in movie.genres]) == [
         "Animation",
         "Comedy",
