@@ -823,6 +823,13 @@ class Clip(Playable, Video):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.year = data.attrib.get('year')
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+
+    def section(self):
+        """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
+        # Clip payloads currently do not contain 'librarySectionID'.
+        # Return None to avoid unnecessary attribute lookup attempts.
+        return None
 
 
 @utils.registerPlexObject
