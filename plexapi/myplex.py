@@ -688,12 +688,15 @@ class MyPlexAccount(PlexObject):
         """ Returns an user account Online Media Sourcessettings :class:`~plexapi.myplex.AccountOptOut`
         """
         services = []
-        req = requests.get(self.SETTINGS.format(userUUID=self.uuid) + '/opt_outs',
+        optOuts = self.SETTINGS.format(userUUID=self.uuid) + '/opt_outs'
+        req = requests.get(optOuts,
                            headers={'X-Plex-Token': self._token,
                                     'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
         elem = ElementTree.fromstring(req.text)
         for item in elem.iter('optOut'):
-            services.append(AccountOptOut(data=item, server=self._server))
+            service = AccountOptOut(data=item, server=self._server)
+            service._initpath = optOuts
+            services.append(service)
 
         return services
 
@@ -1353,6 +1356,15 @@ class AccountOptOut(PlexObject):
             value (str): Online Media Source opt_in or opt_out
     """
 
+    CHOICES = ['opt_in', 'opt_out', 'opt_out_managed']
     def _loadData(self, data):
         self.key = data.attrib.get('key')
         self.value = data.attrib.get('value')
+
+    def updateOptOut(self, option):
+        if option not in self.CHOICES:
+            raise NotFound('%s not found in available choices: %s' % (option, self.CHOICES))
+        if option == self.value:
+            raise BadRequest('OptOut option is already set to %s' % option)
+        url = self._initpath + '?key=%s&value=%s&' % (self.key, option)
+        self._server.query(url, method=self._server._session.post)
