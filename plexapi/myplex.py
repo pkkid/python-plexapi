@@ -707,6 +707,7 @@ class MyPlexAccount(PlexObject):
         for item in elem.iter('setting'):
             return AccountSettings(data=item, server=self._server)
 
+
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
         accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
