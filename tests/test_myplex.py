@@ -137,7 +137,8 @@ def test_myplex_onlineMediaSources_optOut(account):
     choices.remove(optOutValue)
     mediaOptOut.updateOptOut(choices[0])
     assert account.onlineMediaSources()[0].value == choices[0]
-    mediaOptOut.updateOptOut(optOutValue)
+    choices.append(optOutValue)
+    account.onlineMediaSources()[0].updateOptOut(optOutValue)
 
 
 def test_myplex_inviteFriend_remove(account, plex, mocker):
