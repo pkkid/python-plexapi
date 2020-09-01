@@ -1357,6 +1357,7 @@ class AccountOptOut(PlexObject):
     """
 
     CHOICES = ['opt_in', 'opt_out', 'opt_out_managed']
+
     def _loadData(self, data):
         self.key = data.attrib.get('key')
         self.value = data.attrib.get('value')
