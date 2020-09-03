@@ -435,7 +435,8 @@ class PlexPartialObject(PlexObject):
         try:
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:  # pragma: no cover
-            log.error("Failed to delete %s. This could be because you haven't allowed items to be deleted" % self.key)
+            log.error("Failed to delete %s. This could be because you haven't "
+                      "allowed items to be deleted" % self.key)
             raise
 
     def history(self, maxresults=9999999, mindate=None):
