@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 from urllib.parse import quote_plus, urlencode
+from datetime import datetime
 import requests
 
 from plexapi import media, utils, settings, library
@@ -161,8 +162,9 @@ class LiveTV(PlexObject):
 
     def _get_cloud_key(self):
         url = self._server.url(key='/tv.plex.providers.epg.cloud', includeToken=True)
-        data = requests.get(url=url).json()
-        if data:
+        data = self._session.get(url=url).json()
+        if data and data.get('MediaContainer') and data['MediaContainer'].get('Directory')\
+                and len(data['MediaContainer']['Directory']) > 1:
             self.cloud_key = data.get('MediaContainer').get('Directory')[1].get('title')
             return self.cloud_key
         return None
@@ -184,40 +186,40 @@ class LiveTV(PlexObject):
         """
         return self._server.fetchItems(self.cloud_key + '/hubs/discover')
 
-    def _guide_items(self, grid_type: int, beginsAt: int = None, endsAt: int = None):
-        key = self.cloud_key + '/grid?type=' + str(grid_type)
+    def _guide_items(self, grid_type: int, beginsAt: datetime = None, endsAt: datetime = None):
+        key = '%s/grid?type=%s' % (self.cloud_key, grid_type)
         if beginsAt:
-            key += '&beginsAt%3C=' + str(beginsAt)  # %3C is <, so <=
+            key += '&beginsAt%3C=%s' % utils.datetimeToEpoch(beginsAt)  # %3C is <, so <=
         if endsAt:
-            key += '&endsAt%3E=' + str(endsAt)  # %3E is >, so >=
+            key += '&endsAt%3E=%s' % utils.datetimeToEpoch(endsAt)  # %3E is >, so >=
         return self._server.fetchItems(key)
 
-    def movies(self, beginsAt: int = None, endsAt: int = None):
+    def movies(self, beginsAt: datetime = None, endsAt: datetime = None):
         """ Returns a list of all :class:`~plexapi.video.Movie` items on the guide.
 
             Parameters:
                 grid_type (int): 1 for movies, 4 for shows
-                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
-                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+                beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
         return self._guide_items(grid_type=1, beginsAt=beginsAt, endsAt=endsAt)
 
-    def shows(self, beginsAt: int = None, endsAt: int = None):
+    def shows(self, beginsAt: datetime = None, endsAt: datetime = None):
         """ Returns a list of all :class:`~plexapi.video.Show` items on the guide.
 
             Parameters:
-                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
-                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+                beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
         return self._guide_items(grid_type=4, beginsAt=beginsAt, endsAt=endsAt)
 
-    def guide(self, beginsAt: int = None, endsAt: int = None):
+    def guide(self, beginsAt: datetime = None, endsAt: datetime = None):
         """ Returns a list of all media items on the guide. Items may be any of
             :class:`~plexapi.video.Movie`, :class:`~plexapi.video.Show`.
 
             Parameters:
-                beginsAt (int): Limit results to beginning after UNIX timestamp (epoch).
-                endsAt (int): Limit results to ending before UNIX timestamp (epoch).
+                beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
         all_movies = self.movies(beginsAt, endsAt)
         return all_movies
