@@ -57,7 +57,7 @@ def registerPlexObject(cls):
     ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
     if ehash in PLEXOBJECTS:
         raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
-            (cls.__name__, cls.TAG, etype, PLEXOBJECTS[ehash].__name__))
+                        (cls.__name__, cls.TAG, etype, PLEXOBJECTS[ehash].__name__))
     PLEXOBJECTS[ehash] = cls
     return cls
 
@@ -204,6 +204,15 @@ def toDatetime(value, format=None):
     return value
 
 
+def datetimeToEpoch(value: datetime):
+    """ Returns the epoch timestamp for the specified timestamp.
+
+        Parameters:
+            value (datetime): datetime to return as a timestamp
+    """
+    return int(value.timestamp())
+
+
 def millisecondToHumanstr(milliseconds):
     """ Returns human readable time duration from milliseconds.
         HH:MM:SS:MMMM
@@ -212,7 +221,7 @@ def millisecondToHumanstr(milliseconds):
             milliseconds (str,int): time duration in milliseconds.
     """
     milliseconds = int(milliseconds)
-    r = datetime.datetime.utcfromtimestamp(milliseconds / 1000)
+    r = datetime.utcfromtimestamp(milliseconds / 1000)
     f = r.strftime("%H:%M:%S.%f")
     return f[:-2]
 
