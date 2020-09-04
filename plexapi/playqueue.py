@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import utils
 from plexapi.base import PlexObject
+from plexapi.exceptions import Unsupported
 
 
 class PlayQueue(PlexObject):
@@ -47,12 +50,14 @@ class PlayQueue(PlexObject):
 
             Paramaters:
                 server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
-                item (:class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`): A media or Playlist.
+                item (:class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`):
+                    A media item, list of media items, or Playlist.
                 shuffle (int, optional): Start the playqueue shuffled.
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
-                continuous (int, optional): include additional items after the initial item. For a show this would be the next episodes, for a movie it does nothing.
+                continuous (int, optional): include additional items after the initial item.
+                    For a show this would be the next episodes, for a movie it does nothing.
         """
         args = {}
         args['includeChapters'] = includeChapters
@@ -60,18 +65,51 @@ class PlayQueue(PlexObject):
         args['repeat'] = repeat
         args['shuffle'] = shuffle
         args['continuous'] = continuous
-        if item.type == 'playlist':
+
+        if isinstance(item, list):
+            item_keys = ",".join([str(x.ratingKey) for x in item])
+            uri_args = quote_plus('/library/metadata/%s' % item_keys)
+            args["uri"] = 'library:///directory/%s' % uri_args
+            args["type"] = item[0].listType
+        elif item.type == 'playlist':
             args['playlistID'] = item.ratingKey
             args['type'] = item.playlistType
-        else:
-            uuid = item.section().uuid
-            args['key'] = item.key
-            args['type'] = item.listType
-            args['uri'] = 'library://%s/item/%s' % (uuid, item.key)
+
         path = '/playQueues%s' % utils.joinArgs(args)
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
-        # we manually add a key so we can pass this to playMedia
-        # since the data, does not contain a key.
-        c.key = item.key
+        c.playQueueType = args["type"]
+        c._server = server
         return c
+
+    def append(self, item, playNext=False):
+        """
+        Append the provided item to the "Up Next" section of the PlayQueue.
+        Items can only be added to the section immediately following the current playing item.
+
+            Parameters:
+                item (:class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`):
+                    A single media item or Playlist.
+                playNext (int, optional):
+                    If True, add this item to the front of the "Up Next" section.
+                    If False, it will be appended to the end of the "Up Next" section.
+                    See https://support.plex.tv/articles/202188298-play-queues/ for more details.
+        """
+        args = {}
+        if item.type == "playlist":
+            args["playlistID"] = item.ratingKey
+            itemType = item.playlistType
+        else:
+            uuid = item.section().uuid
+            itemType = item.listType
+            args["uri"] = "library://%s/item%s" % (uuid, item.key)
+
+        if itemType != self.playQueueType:
+            raise Unsupported("Item type does not match PlayQueue type")
+
+        if playNext:
+            args["next"] = playNext
+
+        path = '/playQueues/%s%s' % (self.playQueueID, utils.joinArgs(args))
+        data = self._server.query(path, method=self._server._session.put)
+        self._loadData(data)
