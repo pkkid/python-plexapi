@@ -17,14 +17,15 @@ class PlayQueue(PlexObject):
         mediaTagPrefix (str): Fx /system/bundle/media/flags/
         mediaTagVersion (str): Fx 1485957738
         playQueueID (str): a id for the playqueue
-        playQueueSelectedItemID (str): playQueueSelectedItemID
-        playQueueSelectedItemOffset (str): playQueueSelectedItemOffset
+        playQueueLastAddedItemID (str): Defines where the "Up Next" region starts
+        playQueueSelectedItemID (str): The queue item ID of the currently selected item
+        playQueueSelectedItemOffset (str): The offset of the selected item in the queue, from the beginning of the queue
         playQueueSelectedMetadataItemID (<type 'str'>): 7
         playQueueShuffled (bool): True if shuffled
         playQueueSourceURI (str): Fx library://150425c9-0d99-4242-821e-e5ab81cd2221/item//library/metadata/7
         playQueueTotalCount (str): How many items in the play queue.
         playQueueVersion (str): What version the playqueue is.
-        server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
+        _server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
         size (str): Seems to be a alias for playQueueTotalCount.
     """
 
@@ -101,9 +102,9 @@ class PlayQueue(PlexObject):
             Parameters:
                 item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
                     A single media item or Playlist.
-                playNext (int, optional):
+                playNext (bool, optional):
                     If True, add this item to the front of the "Up Next" section.
-                    If False, it will be appended to the end of the "Up Next" section.
+                    If False, the item will be appended to the end of the "Up Next" section.
                     Only has an effect if an item has already been added to the "Up Next" section.
                     See https://support.plex.tv/articles/202188298-play-queues/ for more details.
         """
