@@ -13,40 +13,47 @@ class PlayQueue(PlexObject):
         identifier (str): com.plexapp.plugins.library
         items (list): List of :class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`
         mediaTagPrefix (str): Fx /system/bundle/media/flags/
-        mediaTagVersion (str): Fx 1485957738
-        playQueueID (str): ID of the PlayQueue.
-        playQueueLastAddedItemID (str): Defines where the "Up Next" region starts. Empty unless PlayQueue is modified after creation.
-        playQueueSelectedItemID (str): The queue item ID of the currently selected item.
-        playQueueSelectedItemOffset (str): The offset of the selected item in the PlayQueue, from the beginning of the queue.
-        playQueueSelectedMetadataItemID (str): ID of the currently selected item, matches ratingKey.
+        mediaTagVersion (int): Fx 1485957738
+        playQueueID (int): ID of the PlayQueue.
+        playQueueLastAddedItemID (int):
+            Defines where the "Up Next" region starts. Empty unless PlayQueue is modified after creation.
+        playQueueSelectedItemID (int): The queue item ID of the currently selected item.
+        playQueueSelectedItemOffset (int): The offset of the selected item in the PlayQueue, from the beginning of the queue.
+        playQueueSelectedMetadataItemID (int): ID of the currently selected item, matches ratingKey.
         playQueueShuffled (bool): True if shuffled.
         playQueueSourceURI (str): Original URI used to create the PlayQueue.
-        playQueueTotalCount (str): How many items in the PlayQueue.
-        playQueueVersion (str): Version of the PlayQueue. Increments every time a change is made to the PlayQueue.
+        playQueueTotalCount (int): How many items in the PlayQueue.
+        playQueueVersion (int): Version of the PlayQueue. Increments every time a change is made to the PlayQueue.
         _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
-        size (str): Alias for playQueueTotalCount.
+        size (int): Alias for playQueueTotalCount.
     """
 
     def _loadData(self, data):
         self._data = data
         self.identifier = data.attrib.get("identifier")
         self.mediaTagPrefix = data.attrib.get("mediaTagPrefix")
-        self.mediaTagVersion = data.attrib.get("mediaTagVersion")
-        self.playQueueID = data.attrib.get("playQueueID")
-        self.playQueueLastAddedItemID = data.attrib.get("playQueueLastAddedItemID")
-        self.playQueueSelectedItemID = data.attrib.get("playQueueSelectedItemID")
-        self.playQueueSelectedItemOffset = data.attrib.get(
-            "playQueueSelectedItemOffset"
+        self.mediaTagVersion = utils.cast(int, data.attrib.get("mediaTagVersion"))
+        self.playQueueID = utils.cast(int, data.attrib.get("playQueueID"))
+        self.playQueueLastAddedItemID = utils.cast(
+            int, data.attrib.get("playQueueLastAddedItemID")
         )
-        self.playQueueSelectedMetadataItemID = data.attrib.get(
-            "playQueueSelectedMetadataItemID"
+        self.playQueueSelectedItemID = utils.cast(
+            int, data.attrib.get("playQueueSelectedItemID")
+        )
+        self.playQueueSelectedItemOffset = utils.cast(
+            int, data.attrib.get("playQueueSelectedItemOffset")
+        )
+        self.playQueueSelectedMetadataItemID = utils.cast(
+            int, data.attrib.get("playQueueSelectedMetadataItemID")
         )
         self.playQueueShuffled = utils.cast(
             bool, data.attrib.get("playQueueShuffled", 0)
         )
         self.playQueueSourceURI = data.attrib.get("playQueueSourceURI")
-        self.playQueueTotalCount = data.attrib.get("playQueueTotalCount")
-        self.playQueueVersion = data.attrib.get("playQueueVersion")
+        self.playQueueTotalCount = utils.cast(
+            int, data.attrib.get("playQueueTotalCount")
+        )
+        self.playQueueVersion = utils.cast(int, data.attrib.get("playQueueVersion"))
         self.size = utils.cast(int, data.attrib.get("size", 0))
         self.items = self.findItems(data)
 
