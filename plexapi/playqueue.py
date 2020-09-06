@@ -62,7 +62,16 @@ class PlayQueue(PlexObject):
         return any(x.playQueueItemID == playQueueItemID for x in self.items)
 
     @classmethod
-    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
+    def create(
+        cls,
+        server,
+        item,
+        shuffle=0,
+        repeat=0,
+        includeChapters=1,
+        includeRelated=1,
+        continuous=0,
+    ):
         """Create and return a new :class:`~plexapi.playqueue.PlayQueue`.
 
         Parameters:
