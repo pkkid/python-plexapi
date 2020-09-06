@@ -18,7 +18,8 @@ class PlayQueue(PlexObject):
         playQueueLastAddedItemID (int):
             Defines where the "Up Next" region starts. Empty unless PlayQueue is modified after creation.
         playQueueSelectedItemID (int): The queue item ID of the currently selected item.
-        playQueueSelectedItemOffset (int): The offset of the selected item in the PlayQueue, from the beginning of the queue.
+        playQueueSelectedItemOffset (int):
+            The offset of the selected item in the PlayQueue, from the beginning of the queue.
         playQueueSelectedMetadataItemID (int): ID of the currently selected item, matches ratingKey.
         playQueueShuffled (bool): True if shuffled.
         playQueueSourceURI (str): Original URI used to create the PlayQueue.
@@ -107,14 +108,12 @@ class PlayQueue(PlexObject):
         Append the provided item to the "Up Next" section of the PlayQueue.
         Items can only be added to the section immediately following the current playing item.
 
-            Parameters:
-                item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
-                    A single media item or Playlist.
-                playNext (bool, optional):
-                    If True, add this item to the front of the "Up Next" section.
-                    If False, the item will be appended to the end of the "Up Next" section.
-                    Only has an effect if an item has already been added to the "Up Next" section.
-                    See https://support.plex.tv/articles/202188298-play-queues/ for more details.
+        Parameters:
+            item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`): Single media item or Playlist.
+            playNext (bool, optional): If True, add this item to the front of the "Up Next" section.
+                If False, the item will be appended to the end of the "Up Next" section.
+                Only has an effect if an item has already been added to the "Up Next" section.
+                See https://support.plex.tv/articles/202188298-play-queues/ for more details.
         """
         args = {}
         if item.type == "playlist":
@@ -140,11 +139,10 @@ class PlayQueue(PlexObject):
         Moves an item to the beginning of the PlayQueue.  If `afterItemID` is provided,
         the item will be placed immediately after the specified item.
 
-            Parameters:
-                playQueueItemID (int): Item in the PlayQueue to move.
-                afterItemID (int, optional):
-                    The playQueueItemID of a different item in the PlayQueue.
-                    If provided, `playQueueItemID` will be placed in the PlayQueue after this item.
+        Parameters:
+            playQueueItemID (int): Item in the PlayQueue to move.
+            afterItemID (int, optional): The playQueueItemID of a different item in the PlayQueue.
+                If provided, `playQueueItemID` will be placed in the PlayQueue after this item.
         """
         for itemID in [playQueueItemID, afterItemID]:
             if itemID not in self:
