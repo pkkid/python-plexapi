@@ -42,7 +42,7 @@ class PlayQueue(PlexObject):
         self.items = self.findItems(data)
 
     @classmethod
-    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1):
+    def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
         """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
             Paramaters:
@@ -52,12 +52,14 @@ class PlayQueue(PlexObject):
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
+                continuous (int, optional): include additional items after the initial item. For a show this would be the next episodes, for a movie it does nothing.
         """
         args = {}
         args['includeChapters'] = includeChapters
         args['includeRelated'] = includeRelated
         args['repeat'] = repeat
         args['shuffle'] = shuffle
+        args['continuous'] = continuous
         if item.type == 'playlist':
             args['playlistID'] = item.ratingKey
             args['type'] = item.playlistType
