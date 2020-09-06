@@ -58,7 +58,12 @@ class PlayQueue(PlexObject):
         self.size = utils.cast(int, data.attrib.get("size", 0))
         self.items = self.findItems(data)
 
-    def __contains__(self, playQueueItemID):
+    def __contains__(self, media):
+        """Returns True if the PlayQueue contains the provided media item."""
+        return any(x == media for x in self.items)
+
+    def has_queueItemID(self, playQueueItemID):
+        """Returns True if the PlayQueue contains an item with the provided playQueueItemID."""
         return any(x.playQueueItemID == playQueueItemID for x in self.items)
 
     @classmethod
@@ -154,7 +159,7 @@ class PlayQueue(PlexObject):
                 If provided, `playQueueItemID` will be placed in the PlayQueue after this item.
         """
         for itemID in [playQueueItemID, afterItemID]:
-            if itemID not in self:
+            if itemID and not self.has_queueItemID(itemID):
                 raise BadRequest(
                     f"playQueueItemID {itemID} not valid for this PlayQueue"
                 )
@@ -169,7 +174,7 @@ class PlayQueue(PlexObject):
 
     def remove(self, playQueueItemID):
         """Remove an item from the PlayQueue. If playQueueItemID is not specified, remove all items."""
-        if playQueueItemID not in self:
+        if not self.has_queueItemID(playQueueItemID):
             raise BadRequest(
                 f"playQueueItemID {playQueueItemID} not valid for this PlayQueue"
             )
