@@ -50,6 +50,9 @@ class PlayQueue(PlexObject):
         self.size = utils.cast(int, data.attrib.get("size", 0))
         self.items = self.findItems(data)
 
+    def __contains__(self, playQueueItemID):
+        return any(x.playQueueItemID == playQueueItemID for x in self.items)
+
     @classmethod
     def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
         """Create and return a new :class:`~plexapi.playqueue.PlayQueue`.
@@ -125,10 +128,33 @@ class PlayQueue(PlexObject):
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
+    def move(self, playQueueItemID, afterItemID=None):
+        """
+        Moves an item to the beginning of the PlayQueue.  If `afterItemID` is provided,
+        the item will be placed immediately after the specified item.
+
+            Parameters:
+                playQueueItemID (int): Item in the PlayQueue to move.
+                afterItemID (int, optional):
+                    The playQueueItemID of a different item in the PlayQueue.
+                    If provided, `playQueueItemID` will be placed in the PlayQueue after this item.
+        """
+        for itemID in [playQueueItemID, afterItemID]:
+            if itemID not in self:
+                raise BadRequest(f"playQueueItemID {itemID} not valid for this PlayQueue")
+
+        args = {}
+        if afterItemID:
+            args["after"] = afterItemID
+
+        path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}/move{utils.joinArgs(args)}"
+        data = self._server.query(path, method=self._server._session.put)
+        self._loadData(data)
+
     def remove(self, playQueueItemID):
         """Remove an item from the PlayQueue. If playQueueItemID is not specified, remove all items."""
-        if not any(x.playQueueItemID == playQueueItemID for x in self.items):
-            raise BadRequest("Provided playQueueItemID not valid for this PlayQueue")
+        if playQueueItemID not in self:
+            raise BadRequest(f"playQueueItemID {playQueueItemID} not valid for this PlayQueue")
 
         path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}"
         data = self._server.query(path, method=self._server._session.delete)
