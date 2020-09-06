@@ -148,7 +148,9 @@ class PlayQueue(PlexObject):
         """
         for itemID in [playQueueItemID, afterItemID]:
             if itemID not in self:
-                raise BadRequest(f"playQueueItemID {itemID} not valid for this PlayQueue")
+                raise BadRequest(
+                    f"playQueueItemID {itemID} not valid for this PlayQueue"
+                )
 
         args = {}
         if afterItemID:
@@ -161,7 +163,9 @@ class PlayQueue(PlexObject):
     def remove(self, playQueueItemID):
         """Remove an item from the PlayQueue. If playQueueItemID is not specified, remove all items."""
         if playQueueItemID not in self:
-            raise BadRequest(f"playQueueItemID {playQueueItemID} not valid for this PlayQueue")
+            raise BadRequest(
+                f"playQueueItemID {playQueueItemID} not valid for this PlayQueue"
+            )
 
         path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}"
         data = self._server.query(path, method=self._server._session.delete)
