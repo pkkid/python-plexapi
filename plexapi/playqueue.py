@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 
 from plexapi import utils
 from plexapi.base import PlexObject
-from plexapi.exceptions import Unsupported
+from plexapi.exceptions import BadRequest, Unsupported
 
 
 class PlayQueue(PlexObject):
@@ -123,4 +123,19 @@ class PlayQueue(PlexObject):
 
         path = "/playQueues/%s%s" % (self.playQueueID, utils.joinArgs(args))
         data = self._server.query(path, method=self._server._session.put)
+        self._loadData(data)
+
+    def remove(self, playQueueItemID):
+        """Remove an item from the PlayQueue. If playQueueItemID is not specified, remove all items."""
+        if not any(x.playQueueItemID == playQueueItemID for x in self.items):
+            raise BadRequest("Provided playQueueItemID not valid for this PlayQueue")
+
+        path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}"
+        data = self._server.query(path, method=self._server._session.delete)
+        self._loadData(data)
+
+    def clear(self):
+        """Remove all items from the PlayQueue except for the currently playing item."""
+        path = f"/playQueues/{self.playQueueID}/items"
+        data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
