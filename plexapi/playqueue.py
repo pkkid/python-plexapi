@@ -10,23 +10,21 @@ class PlayQueue(PlexObject):
     """Control a PlayQueue.
 
     Attributes:
-        key (str): This is only added to support playMedia
         identifier (str): com.plexapp.plugins.library
-        initpath (str): Relative url where data was grabbed from.
-        items (list): List of :class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`
+        items (list): List of :class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`
         mediaTagPrefix (str): Fx /system/bundle/media/flags/
         mediaTagVersion (str): Fx 1485957738
-        playQueueID (str): a id for the playqueue
-        playQueueLastAddedItemID (str): Defines where the "Up Next" region starts
-        playQueueSelectedItemID (str): The queue item ID of the currently selected item
-        playQueueSelectedItemOffset (str): The offset of the selected item in the queue, from the beginning of the queue
-        playQueueSelectedMetadataItemID (<type 'str'>): 7
-        playQueueShuffled (bool): True if shuffled
-        playQueueSourceURI (str): Fx library://150425c9-0d99-4242-821e-e5ab81cd2221/item//library/metadata/7
-        playQueueTotalCount (str): How many items in the play queue.
-        playQueueVersion (str): What version the playqueue is.
-        _server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
-        size (str): Seems to be a alias for playQueueTotalCount.
+        playQueueID (str): ID of the PlayQueue.
+        playQueueLastAddedItemID (str): Defines where the "Up Next" region starts. Empty unless PlayQueue is modified after creation.
+        playQueueSelectedItemID (str): The queue item ID of the currently selected item.
+        playQueueSelectedItemOffset (str): The offset of the selected item in the PlayQueue, from the beginning of the queue.
+        playQueueSelectedMetadataItemID (str): ID of the currently selected item, matches ratingKey.
+        playQueueShuffled (bool): True if shuffled.
+        playQueueSourceURI (str): Original URI used to create the PlayQueue.
+        playQueueTotalCount (str): How many items in the PlayQueue.
+        playQueueVersion (str): Version of the PlayQueue. Increments every time a change is made to the PlayQueue.
+        _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
+        size (str): Alias for playQueueTotalCount.
     """
 
     def _loadData(self, data):
