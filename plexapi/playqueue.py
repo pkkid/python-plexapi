@@ -74,8 +74,8 @@ class PlayQueue(PlexObject):
 
         if isinstance(item, list):
             item_keys = ",".join([str(x.ratingKey) for x in item])
-            uri_args = quote_plus("/library/metadata/%s" % item_keys)
-            args["uri"] = "library:///directory/%s" % uri_args
+            uri_args = quote_plus(f"/library/metadata/{item_keys}")
+            args["uri"] = f"library:///directory/{uri_args}"
             args["type"] = item[0].listType
         elif item.type == "playlist":
             args["playlistID"] = item.ratingKey
@@ -83,9 +83,9 @@ class PlayQueue(PlexObject):
         else:
             uuid = item.section().uuid
             args["type"] = item.listType
-            args["uri"] = "library://%s/item/%s" % (uuid, item.key)
+            args["uri"] = f"library://{uuid}/item/{item.key}"
 
-        path = "/playQueues%s" % utils.joinArgs(args)
+        path = f"/playQueues{utils.joinArgs(args)}"
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
         c.playQueueType = args["type"]
@@ -113,7 +113,7 @@ class PlayQueue(PlexObject):
         else:
             uuid = item.section().uuid
             itemType = item.listType
-            args["uri"] = "library://%s/item%s" % (uuid, item.key)
+            args["uri"] = f"library://{uuid}/item{item.key}"
 
         if itemType != self.playQueueType:
             raise Unsupported("Item type does not match PlayQueue type")
@@ -121,7 +121,7 @@ class PlayQueue(PlexObject):
         if playNext:
             args["next"] = 1
 
-        path = "/playQueues/%s%s" % (self.playQueueID, utils.joinArgs(args))
+        path = f"/playQueues/{self.playQueueID}{utils.joinArgs(args)}"
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
