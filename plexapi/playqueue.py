@@ -67,11 +67,20 @@ class PlayQueue(PlexObject):
 
     def __contains__(self, media):
         """Returns True if the PlayQueue contains the provided media item."""
-        return any(x == media for x in self.items)
+        return any(x.playQueueItemID == media.playQueueItemID for x in self.items)
 
-    def has_queueItemID(self, playQueueItemID):
-        """Returns True if the PlayQueue contains an item with the provided playQueueItemID."""
-        return any(x.playQueueItemID == playQueueItemID for x in self.items)
+    def get_queue_item(self, item):
+        """
+        Accepts a media item and returns a similar object from this PlayQueue.
+        Useful for looking up playQueueItemIDs using items obtained from the Library.
+        """
+        matches = [x for x in self.items if x == item]
+        if len(matches) == 1:
+            return matches[0]
+        elif len(matches) > 1:
+            raise BadRequest(f"{item} occurs multiple times in this PlayQueue, provide exact item")
+        else:
+            raise BadRequest(f"{item} not valid for this PlayQueue")
 
     @classmethod
     def create(
@@ -165,15 +174,15 @@ class PlayQueue(PlexObject):
             afterItemID (:class:`~plexapi.base.Playable`, optional): A different item in the PlayQueue.
                 If provided, `item` will be placed in the PlayQueue after this item.
         """
-        for itemID in [playQueueItemID, afterItemID]:
-            if itemID and not self.has_queueItemID(itemID):
-                raise BadRequest(
-                    f"playQueueItemID {itemID} not valid for this PlayQueue"
-                )
-
         args = {}
-        if afterItemID:
-            args["after"] = afterItemID
+
+        if item not in self:
+            item = self.get_queue_item(item)
+
+        if after:
+            if after not in self:
+                after = self.get_queue_item(after)
+            args["after"] = after.playQueueItemID
 
         path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}/move{utils.joinArgs(args)}"
         data = self._server.query(path, method=self._server._session.put)
@@ -185,6 +194,9 @@ class PlayQueue(PlexObject):
         Parameters:
             item (:class:`~plexapi.base.Playable`): An existing item in the PlayQueue to move.
         """
+        if item not in self:
+            item = self.get_queue_item(item)
+
         path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}"
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
