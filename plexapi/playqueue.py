@@ -45,14 +45,15 @@ class PlayQueue(PlexObject):
     def create(cls, server, item, shuffle=0, repeat=0, includeChapters=1, includeRelated=1, continuous=0):
         """ Create and returns a new :class:`~plexapi.playqueue.PlayQueue`.
 
-            Paramaters:
+            Parameters:
                 server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
                 item (:class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`): A media or Playlist.
                 shuffle (int, optional): Start the playqueue shuffled.
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
                 includeRelated (int, optional): include Related.
-                continuous (int, optional): include additional items after the initial item. For a show this would be the next episodes, for a movie it does nothing.
+                continuous (int, optional): include additional items after the initial item. For a show this would be
+                                            the next episodes, for a movie it does nothing.
         """
         args = {}
         args['includeChapters'] = includeChapters
