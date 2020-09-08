@@ -78,7 +78,9 @@ class PlayQueue(PlexObject):
         if len(matches) == 1:
             return matches[0]
         elif len(matches) > 1:
-            raise BadRequest(f"{item} occurs multiple times in this PlayQueue, provide exact item")
+            raise BadRequest(
+                f"{item} occurs multiple times in this PlayQueue, provide exact item"
+            )
         else:
             raise BadRequest(f"{item} not valid for this PlayQueue")
 
