@@ -10,7 +10,7 @@ class PlayQueue(PlexObject):
             key (str): This is only added to support playMedia
             identifier (str): com.plexapp.plugins.library
             initpath (str): Relative url where data was grabbed from.
-            items (list): List of :class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`
+            items (list): List of :class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`
             mediaTagPrefix (str): Fx /system/bundle/media/flags/
             mediaTagVersion (str): Fx 1485957738
             playQueueID (str): a id for the playqueue
@@ -23,6 +23,7 @@ class PlayQueue(PlexObject):
             playQueueVersion (str): What version the playqueue is.
             server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
             size (str): Seems to be a alias for playQueueTotalCount.
+
     """
 
     def _loadData(self, data):
@@ -47,7 +48,7 @@ class PlayQueue(PlexObject):
 
             Parameters:
                 server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
-                item (:class:`~plexapi.media.Media` or class:`~plexapi.playlist.Playlist`): A media or Playlist.
+                item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`): A media or Playlist.
                 shuffle (int, optional): Start the playqueue shuffled.
                 repeat (int, optional): Start the playqueue shuffled.
                 includeChapters (int, optional): include Chapters.
