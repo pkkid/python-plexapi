@@ -10,6 +10,8 @@ class PlayQueue(PlexObject):
     """Control a PlayQueue.
 
     Attributes:
+        TAG (str): 'PlayQueue'
+        TYPE (str): 'playqueue'
         identifier (str): com.plexapp.plugins.library
         items (list): List of :class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`
         mediaTagPrefix (str): Fx /system/bundle/media/flags/
@@ -28,6 +30,8 @@ class PlayQueue(PlexObject):
         _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
         size (int): Alias for playQueueTotalCount.
     """
+    TAG = 'PlayQueue'
+    TYPE = 'playqueue'
 
     def _loadData(self, data):
         self._data = data
