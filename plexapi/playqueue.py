@@ -58,6 +58,13 @@ class PlayQueue(PlexObject):
         self.size = utils.cast(int, data.attrib.get("size", 0))
         self.items = self.findItems(data)
 
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        for item in self.items:
+            yield item
+
     def __contains__(self, media):
         """Returns True if the PlayQueue contains the provided media item."""
         return any(x == media for x in self.items)
@@ -117,7 +124,7 @@ class PlayQueue(PlexObject):
         c._server = server
         return c
 
-    def append(self, item, playNext=False):
+    def addItem(self, item, playNext=False):
         """
         Append the provided item to the "Up Next" section of the PlayQueue.
         Items can only be added to the section immediately following the current playing item.
@@ -148,15 +155,15 @@ class PlayQueue(PlexObject):
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
-    def move(self, playQueueItemID, afterItemID=None):
+    def moveItem(self, item, after=None):
         """
-        Moves an item to the beginning of the PlayQueue.  If `afterItemID` is provided,
+        Moves an item to the beginning of the PlayQueue.  If `after` is provided,
         the item will be placed immediately after the specified item.
 
         Parameters:
-            playQueueItemID (int): Item in the PlayQueue to move.
-            afterItemID (int, optional): The playQueueItemID of a different item in the PlayQueue.
-                If provided, `playQueueItemID` will be placed in the PlayQueue after this item.
+            item (:class:`~plexapi.base.Playable`): An existing item in the PlayQueue to move.
+            afterItemID (:class:`~plexapi.base.Playable`, optional): A different item in the PlayQueue.
+                If provided, `item` will be placed in the PlayQueue after this item.
         """
         for itemID in [playQueueItemID, afterItemID]:
             if itemID and not self.has_queueItemID(itemID):
@@ -168,23 +175,22 @@ class PlayQueue(PlexObject):
         if afterItemID:
             args["after"] = afterItemID
 
-        path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}/move{utils.joinArgs(args)}"
+        path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}/move{utils.joinArgs(args)}"
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
-    def remove(self, playQueueItemID):
-        """Remove an item from the PlayQueue. If playQueueItemID is not specified, remove all items."""
-        if not self.has_queueItemID(playQueueItemID):
-            raise BadRequest(
-                f"playQueueItemID {playQueueItemID} not valid for this PlayQueue"
-            )
+    def removeItem(self, item):
+        """Remove an item from the PlayQueue.
 
-        path = f"/playQueues/{self.playQueueID}/items/{playQueueItemID}"
+        Parameters:
+            item (:class:`~plexapi.base.Playable`): An existing item in the PlayQueue to move.
+        """
+        path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}"
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
 
     def clear(self):
-        """Remove all items from the PlayQueue except for the currently playing item."""
+        """Remove all items from the PlayQueue."""
         path = f"/playQueues/{self.playQueueID}/items"
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
