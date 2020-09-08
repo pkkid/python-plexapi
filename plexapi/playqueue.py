@@ -133,7 +133,7 @@ class PlayQueue(PlexObject):
         c._server = server
         return c
 
-    def addItem(self, item, playNext=False):
+    def addItem(self, item, playNext=False, refresh=True):
         """
         Append the provided item to the "Up Next" section of the PlayQueue.
         Items can only be added to the section immediately following the current playing item.
@@ -144,7 +144,11 @@ class PlayQueue(PlexObject):
                 If False, the item will be appended to the end of the "Up Next" section.
                 Only has an effect if an item has already been added to the "Up Next" section.
                 See https://support.plex.tv/articles/202188298-play-queues/ for more details.
+            refresh (bool, optional): Refresh the PlayQueue from the server before updating.
         """
+        if refresh:
+            self.refresh()
+
         args = {}
         if item.type == "playlist":
             args["playlistID"] = item.ratingKey
@@ -164,7 +168,7 @@ class PlayQueue(PlexObject):
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
-    def moveItem(self, item, after=None):
+    def moveItem(self, item, after=None, refresh=True):
         """
         Moves an item to the beginning of the PlayQueue.  If `after` is provided,
         the item will be placed immediately after the specified item.
@@ -173,8 +177,12 @@ class PlayQueue(PlexObject):
             item (:class:`~plexapi.base.Playable`): An existing item in the PlayQueue to move.
             afterItemID (:class:`~plexapi.base.Playable`, optional): A different item in the PlayQueue.
                 If provided, `item` will be placed in the PlayQueue after this item.
+            refresh (bool, optional): Refresh the PlayQueue from the server before updating.
         """
         args = {}
+
+        if refresh:
+            self.refresh()
 
         if item not in self:
             item = self.get_queue_item(item)
@@ -188,12 +196,16 @@ class PlayQueue(PlexObject):
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
-    def removeItem(self, item):
+    def removeItem(self, item, refresh=True):
         """Remove an item from the PlayQueue.
 
         Parameters:
             item (:class:`~plexapi.base.Playable`): An existing item in the PlayQueue to move.
+            refresh (bool, optional): Refresh the PlayQueue from the server before updating.
         """
+        if refresh:
+            self.refresh()
+
         if item not in self:
             item = self.get_queue_item(item)
 
@@ -205,4 +217,10 @@ class PlayQueue(PlexObject):
         """Remove all items from the PlayQueue."""
         path = f"/playQueues/{self.playQueueID}/items"
         data = self._server.query(path, method=self._server._session.delete)
+        self._loadData(data)
+
+    def refresh(self):
+        """Refresh the PlayQueue from the Plex server."""
+        path = f"/playQueues/{self.playQueueID}"
+        data = self._server.query(path, method=self._server._session.get)
         self._loadData(data)
