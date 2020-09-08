@@ -77,7 +77,7 @@ class PlayQueue(PlexObject):
     def create(
         cls,
         server,
-        item,
+        items,
         shuffle=0,
         repeat=0,
         includeChapters=1,
@@ -88,7 +88,7 @@ class PlayQueue(PlexObject):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
-            item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
+            items (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
                 A media item, list of media items, or Playlist.
             shuffle (int, optional): Start the playqueue shuffled.
             repeat (int, optional): Start the playqueue shuffled.
@@ -104,18 +104,18 @@ class PlayQueue(PlexObject):
         args["shuffle"] = shuffle
         args["continuous"] = continuous
 
-        if isinstance(item, list):
-            item_keys = ",".join([str(x.ratingKey) for x in item])
+        if isinstance(items, list):
+            item_keys = ",".join([str(x.ratingKey) for x in items])
             uri_args = quote_plus(f"/library/metadata/{item_keys}")
             args["uri"] = f"library:///directory/{uri_args}"
-            args["type"] = item[0].listType
-        elif item.type == "playlist":
-            args["playlistID"] = item.ratingKey
-            args["type"] = item.playlistType
+            args["type"] = items[0].listType
+        elif items.type == "playlist":
+            args["playlistID"] = items.ratingKey
+            args["type"] = items.playlistType
         else:
-            uuid = item.section().uuid
-            args["type"] = item.listType
-            args["uri"] = f"library://{uuid}/item/{item.key}"
+            uuid = items.section().uuid
+            args["type"] = items.listType
+            args["uri"] = f"library://{uuid}/item/{items.key}"
 
         path = f"/playQueues{utils.joinArgs(args)}"
         data = server.query(path, method=server._session.post)
