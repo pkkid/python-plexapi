@@ -68,7 +68,7 @@ class PlayQueue(PlexObject):
         self.items = self.findItems(data)
 
     def __len__(self):
-        return len(self.items)
+        return self.playQueueTotalCount
 
     def __iter__(self):
         yield from self.items
