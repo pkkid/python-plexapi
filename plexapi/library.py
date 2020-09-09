@@ -1071,6 +1071,7 @@ class FilterChoice(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
+
 @utils.registerPlexObject
 class Location(PlexObject):
     """ Represents a single library Location.
