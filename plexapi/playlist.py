@@ -87,6 +87,7 @@ class Playlist(PlexPartialObject, Playable):
         if not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
+        assert items, "Cannot add empty list to playlist"
         for item in items:
             if item.listType != self.playlistType:  # pragma: no cover
                 raise BadRequest('Can not mix media types when building a playlist: %s and %s' %
