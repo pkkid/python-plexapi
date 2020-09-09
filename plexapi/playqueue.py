@@ -97,6 +97,7 @@ class PlayQueue(PlexObject):
         cls,
         server,
         items,
+        startItem=None,
         shuffle=0,
         repeat=0,
         includeChapters=1,
@@ -109,6 +110,8 @@ class PlayQueue(PlexObject):
             server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
             items (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
                 A media item, list of media items, or Playlist.
+            startItem (:class:`~plexapi.media.Media`, optional):
+                Media item in the PlayQueue where playback should begin.
             shuffle (int, optional): Start the playqueue shuffled.
             repeat (int, optional): Start the playqueue shuffled.
             includeChapters (int, optional): include Chapters.
@@ -136,6 +139,9 @@ class PlayQueue(PlexObject):
             uuid = items.section().uuid
             args["type"] = items.listType
             args["uri"] = f"library://{uuid}/item/{items.key}"
+
+        if startItem:
+            args["key"] = startItem.key
 
         path = f"/playQueues{utils.joinArgs(args)}"
         data = server.query(path, method=server._session.post)
