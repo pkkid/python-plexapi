@@ -77,7 +77,7 @@ class PlayQueue(PlexObject):
         """Returns True if the PlayQueue contains the provided media item."""
         return any(x.playQueueItemID == media.playQueueItemID for x in self.items)
 
-    def get_queue_item(self, item):
+    def getQueueItem(self, item):
         """
         Accepts a media item and returns a similar object from this PlayQueue.
         Useful for looking up playQueueItemIDs using items obtained from the Library.
@@ -202,11 +202,11 @@ class PlayQueue(PlexObject):
             self.refresh()
 
         if item not in self:
-            item = self.get_queue_item(item)
+            item = self.getQueueItem(item)
 
         if after:
             if after not in self:
-                after = self.get_queue_item(after)
+                after = self.getQueueItem(after)
             args["after"] = after.playQueueItemID
 
         path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}/move{utils.joinArgs(args)}"
@@ -224,7 +224,7 @@ class PlayQueue(PlexObject):
             self.refresh()
 
         if item not in self:
-            item = self.get_queue_item(item)
+            item = self.getQueueItem(item)
 
         path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}"
         data = self._server.query(path, method=self._server._session.delete)
