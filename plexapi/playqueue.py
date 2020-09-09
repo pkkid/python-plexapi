@@ -23,6 +23,7 @@ class PlayQueue(PlexObject):
         playQueueSelectedItemOffset (int):
             The offset of the selected item in the PlayQueue, from the beginning of the queue.
         playQueueSelectedMetadataItemID (int): ID of the currently selected item, matches ratingKey.
+        playQueueSelectedMetadataItemKey (str): ID of the currently selected item, matches key.
         playQueueShuffled (bool): True if shuffled.
         playQueueSourceURI (str): Original URI used to create the PlayQueue.
         playQueueTotalCount (int): How many items in the PlayQueue.
@@ -30,8 +31,9 @@ class PlayQueue(PlexObject):
         _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
         size (int): Alias for playQueueTotalCount.
     """
-    TAG = 'PlayQueue'
-    TYPE = 'playqueue'
+
+    TAG = "PlayQueue"
+    TYPE = "playqueue"
 
     def _loadData(self, data):
         self._data = data
@@ -51,6 +53,9 @@ class PlayQueue(PlexObject):
         self.playQueueSelectedMetadataItemID = utils.cast(
             int, data.attrib.get("playQueueSelectedMetadataItemID")
         )
+        self.playQueueSelectedMetadataItemKey = (
+            f"/library/metadata/{self.playQueueSelectedMetadataItemID}"
+        )
         self.playQueueShuffled = utils.cast(
             bool, data.attrib.get("playQueueShuffled", 0)
         )
@@ -66,8 +71,7 @@ class PlayQueue(PlexObject):
         return len(self.items)
 
     def __iter__(self):
-        for item in self.items:
-            yield item
+        yield from self.items
 
     def __contains__(self, media):
         """Returns True if the PlayQueue contains the provided media item."""
@@ -112,12 +116,13 @@ class PlayQueue(PlexObject):
             continuous (int, optional): include additional items after the initial item.
                 For a show this would be the next episodes, for a movie it does nothing.
         """
-        args = {}
-        args["includeChapters"] = includeChapters
-        args["includeRelated"] = includeRelated
-        args["repeat"] = repeat
-        args["shuffle"] = shuffle
-        args["continuous"] = continuous
+        args = {
+            "includeChapters": includeChapters,
+            "includeRelated": includeRelated,
+            "repeat": repeat,
+            "shuffle": shuffle,
+            "continuous": continuous,
+        }
 
         if isinstance(items, list):
             item_keys = ",".join([str(x.ratingKey) for x in items])
