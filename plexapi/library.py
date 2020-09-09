@@ -1258,7 +1258,7 @@ class Folder(PlexObject):
         """ Returns a list of all available `:class:`~plexapi.library.Folder` for this folder.
             Only returns `:class:`~plexapi.library.Folder`.
         """
-        folders =[]
+        folders = []
         for folder in self.subfolders():
             if not folder.key.startswith('/library/metadata'):
                 folders.append(folder)
