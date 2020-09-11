@@ -598,6 +598,7 @@ class Playable(object):
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
+            playQueueItemID (int): PlayQueue item ID (only populated for :class:`~plexapi.playlist.PlayQueue` items).
     """
 
     def _loadData(self, data):
@@ -609,6 +610,7 @@ class Playable(object):
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
+        self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
 
     def isFullObject(self):
         """ Retruns True if this is already a full object. A full object means all attributes
