@@ -23,11 +23,11 @@ class PlayQueue(PlexObject):
         playQueueSelectedItemOffset (int):
             The offset of the selected item in the PlayQueue, from the beginning of the queue.
         playQueueSelectedMetadataItemID (int): ID of the currently selected item, matches ratingKey.
-        playQueueSelectedMetadataItemKey (str): ID of the currently selected item, matches key.
         playQueueShuffled (bool): True if shuffled.
         playQueueSourceURI (str): Original URI used to create the PlayQueue.
         playQueueTotalCount (int): How many items in the PlayQueue.
         playQueueVersion (int): Version of the PlayQueue. Increments every time a change is made to the PlayQueue.
+        selectedItem (:class:`~plexapi.media.Media`): Media object for the currently selected item.
         _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
         size (int): Alias for playQueueTotalCount.
     """
@@ -53,9 +53,6 @@ class PlayQueue(PlexObject):
         self.playQueueSelectedMetadataItemID = utils.cast(
             int, data.attrib.get("playQueueSelectedMetadataItemID")
         )
-        self.playQueueSelectedMetadataItemKey = (
-            f"/library/metadata/{self.playQueueSelectedMetadataItemID}"
-        )
         self.playQueueShuffled = utils.cast(
             bool, data.attrib.get("playQueueShuffled", 0)
         )
@@ -66,6 +63,10 @@ class PlayQueue(PlexObject):
         self.playQueueVersion = utils.cast(int, data.attrib.get("playQueueVersion"))
         self.size = utils.cast(int, data.attrib.get("size", 0))
         self.items = self.findItems(data)
+        self.selectedItem = self[self.playQueueSelectedItemOffset]
+
+    def __getitem__(self, key):
+        return self.items[key]
 
     def __len__(self):
         return self.playQueueTotalCount
