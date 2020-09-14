@@ -190,6 +190,12 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    @property
+    def activities(self):
+        """ Returns a list of all server settings. """
+        for elem in self.query(Activities.key):
+            yield Activities(self, elem)
+
     def agents(self, mediaType=None):
         """ Returns the `:class:`~plexapi.media.Agent` objects this server has available. """
         key = '/system/agents'
@@ -599,6 +605,20 @@ class Account(PlexObject):
         self.subscriptionFeatures = utils.toList(data.attrib.get('subscriptionFeatures'))
         self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')
+
+
+class Activity(PlexObject):
+    """A currently running activity on the PlexServer."""
+    key = '/activities'
+
+    def _loadData(self, data):
+        self._data = data
+        self.cancellable = cast(bool, data.attrib.get('cancellable'))
+        self.progress = cast(int, data.attrib.get('progress'))
+        self.title = data.attrib.get('title')
+        self.subtitle = data.attrib.get('subtitle')
+        self.type = data.attrib.get('type')
+        self.uuid = data.attrib.get('uuid')
 
 
 class SystemAccount(PlexObject):
