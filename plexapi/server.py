@@ -192,9 +192,11 @@ class PlexServer(PlexObject):
 
     @property
     def activities(self):
-        """ Returns a list of all server settings. """
-        for elem in self.query(Activities.key):
-            yield Activities(self, elem)
+        """Returns all current PMS activities."""
+        activities = []
+        for elem in self.query(Activity.key):
+            activities.append(Activity(self, elem))
+        return activities
 
     def agents(self, mediaType=None):
         """ Returns the `:class:`~plexapi.media.Agent` objects this server has available. """
