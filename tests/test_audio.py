@@ -5,7 +5,7 @@ import time
 from . import conftest as utils
 
 def test_ensure_metadata_scans_completed(plex):
-    MAX_ATTEMPTS = 1
+    MAX_ATTEMPTS = 60
     attempts = 0
     while plex.activities and attempts < MAX_ATTEMPTS:
         print(f"Watiing for activities to finish: {plex.activities}")
