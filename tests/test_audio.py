@@ -1,17 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-import time
 
 from . import conftest as utils
-
-def test_ensure_metadata_scans_completed(plex):
-    MAX_ATTEMPTS = 60
-    attempts = 0
-    while plex.activities and attempts < MAX_ATTEMPTS:
-        print(f"Watiing for activities to finish: {plex.activities}")
-        time.sleep(1)
-        attempts += 1
-    assert attempts < MAX_ATTEMPTS, f"Server still busy after {MAX_ATTEMPTS}s"
 
 
 def test_audio_Artist_attr(artist):
