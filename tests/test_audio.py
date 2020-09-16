@@ -7,7 +7,8 @@ from . import conftest as utils
 def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
-    assert "United States" in [i.tag for i in artist.countries]
+    if artist.countries:
+        assert "United States" in [i.tag for i in artist.countries]
     #assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == "1"
@@ -217,7 +218,7 @@ def test_audio_Track_attrs(album):
     if track.grandparentThumb:
         assert utils.is_metadata(track.grandparentThumb, contains="/thumb/")
     assert track.grandparentTitle == "Broke For Free"
-    assert track.guid.startswith("plex://track/")
+    assert track.guid.startswith("mbid://") or track.guid.startswith("plex://track/")
     assert int(track.index) == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
