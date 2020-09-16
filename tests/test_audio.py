@@ -21,7 +21,8 @@ def test_audio_Artist_attr(artist):
     assert artist.ratingKey >= 1
     assert artist._server._baseurl == utils.SERVER_BASEURL
     assert isinstance(artist.similar, list)
-    assert "Alias" in artist.summary
+    if artist.summary:
+        assert "Alias" in artist.summary
     assert artist.title == "Broke For Free"
     assert artist.titleSort == "Broke For Free"
     assert artist.type == "artist"
