@@ -541,8 +541,8 @@ if __name__ == "__main__":
                 name="Music",
                 type="artist",
                 location="/data/Music" if opts.no_docker is False else music_path,
-                agent="com.plexapp.agents.lastfm",
-                scanner="Plex Music Scanner",
+                agent="tv.plex.agents.music",
+                scanner="Plex Music",
                 expected_media_count=song_c,
             )
         )
