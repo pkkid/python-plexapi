@@ -543,7 +543,7 @@ class PlexClient(PlexObject):
     # -------------------
     # Timeline Commands
     def timelines(self, wait=0):
-        """ Poll the current timeline and return timeline objects. """
+        """Poll the client's timelines, create, and return timeline objects."""
         t = time.time()
         if t - self._timeline_cache_timestamp > 1:
             self._timeline_cache_timestamp = t
@@ -554,11 +554,11 @@ class PlexClient(PlexObject):
 
     @property
     def timeline(self):
-        """ Returns active client attributes. """
+        """Returns the active timeline object."""
         return next((x for x in self.timelines() if x.state != 'stopped'), None)
 
     def isPlayingMedia(self, includePaused=True):
-        """ Returns True if any media is currently playing.
+        """Returns True if any media is currently playing.
 
             Parameters:
                 includePaused (bool): Set True to treat currently paused items
@@ -569,7 +569,7 @@ class PlexClient(PlexObject):
 
 
 class ClientTimeline(PlexObject):
-    """ Get the attributes of an active client. """
+    """Get the timeline attributes the client."""
 
     key = 'timeline/poll'
 
