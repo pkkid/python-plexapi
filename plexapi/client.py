@@ -201,7 +201,7 @@ class PlexClient(PlexObject):
             self._last_call = t
         elif t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
             self._last_call = t
-            self.timeline(wait=0)
+            self.timeline()
 
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
@@ -569,7 +569,7 @@ class PlexClient(PlexObject):
 
 
 class ClientTimeline(PlexObject):
-    """Get the timeline attributes the client."""
+    """Get the timeline's attributes."""
 
     key = 'timeline/poll'
 
