@@ -550,7 +550,7 @@ class PlexClient(PlexObject):
             timelines = self.sendCommand(ClientTimeline.key, wait=wait)
             self._timeline_cache = [ClientTimeline(self, data) for data in timelines]
 
-        return self._timeline_cache
+        return self._timeline_cache or []
 
     @property
     def timeline(self):
