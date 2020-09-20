@@ -201,7 +201,7 @@ class PlexClient(PlexObject):
             self._last_call = t
         elif t - self._last_call >= 80 and self.product in ('ptp', 'Plex Media Player'):
             self._last_call = t
-            self.timeline()
+            self.timelines()
 
         params['commandID'] = self._nextCommandId()
         key = '/player/%s%s' % (command, utils.joinArgs(params))
