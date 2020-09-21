@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import pytest
 from plexapi.exceptions import NotFound
 
@@ -277,3 +278,22 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_size=1)) == 4
     assert len(movies.search(container_start=9999, container_size=1)) == 0
     assert len(movies.search(container_start=2, container_size=1)) == 2
+
+
+def test_library_section_timeline(plex):
+    movies = plex.library.section("Movies")
+    tl = movies.timeline()
+    assert tl.TAG == "LibraryTimeline"
+    assert tl.size > 0
+    assert tl.allowSync is False
+    assert tl.art == "/:/resources/movie-fanart.jpg"
+    assert tl.content == "secondary"
+    assert tl.identifier == "com.plexapp.plugins.library"
+    assert datetime.fromtimestamp(tl.latestEntryTime).date() == datetime.today().date()
+    assert tl.mediaTagPrefix == "/system/bundle/media/flags/"
+    assert tl.mediaTagVersion > 1
+    assert tl.thumb == "/:/resources/movie.png"
+    assert tl.title1 == "Movies"
+    assert tl.updateQueueSize == 0
+    assert tl.viewGroup == "secondary"
+    assert tl.viewMode == 65592
