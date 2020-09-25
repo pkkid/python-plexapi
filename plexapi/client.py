@@ -542,9 +542,8 @@ class PlexClient(PlexObject):
 
     # -------------------
     # Timeline Commands
-    def timelines(self, wait=0):
+    def timelines(self, wait=1):
         """Poll the client's timelines, create, and return timeline objects."""
-        self.sendCommand(ClientTimeline.key, wait=1)
         t = time.time()
         if t - self._timeline_cache_timestamp > 1:
             self._timeline_cache_timestamp = t
