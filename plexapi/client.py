@@ -542,8 +542,11 @@ class PlexClient(PlexObject):
 
     # -------------------
     # Timeline Commands
-    def timelines(self, wait=1):
-        """Poll the client's timelines, create, and return timeline objects."""
+    def timelines(self, wait=0):
+        """Poll the client's timelines, create, and return timeline objects.
+           Some clients may not always respond to timeline requests, believe this
+           to be a Plex bug.
+        """
         t = time.time()
         if t - self._timeline_cache_timestamp > 1:
             self._timeline_cache_timestamp = t
