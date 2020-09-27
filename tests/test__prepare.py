@@ -10,10 +10,10 @@ def wait_for_idle_server(server):
     """Wait for PMS activities to complete with a timeout."""
     attempts = 0
     while server.activities and attempts < MAX_ATTEMPTS:
-        print(f"Waiting for activities to finish: {server.activities}")
+        print("Waiting for activities to finish: {activities}".format(activities=server.activities))
         time.sleep(1)
         attempts += 1
-    assert attempts < MAX_ATTEMPTS, f"Server still busy after {MAX_ATTEMPTS}s"
+    assert attempts < MAX_ATTEMPTS, "Server still busy after {MAX_ATTEMPTS}s".format(MAX_ATTEMPTS=MAX_ATTEMPTS)
 
 
 def wait_for_metadata_processing(server):
@@ -26,12 +26,12 @@ def wait_for_metadata_processing(server):
             tl = section.timeline()
             if tl.updateQueueSize > 0:
                 busy = True
-                print(f"{section.title}: {tl.updateQueueSize} items left")
+                print("{title}: {updateQueueSize} items left".format(title=section.title, updateQueueSize=tl.updateQueueSize))
         if not busy or attempts > MAX_ATTEMPTS:
             break
         time.sleep(1)
         attempts += 1
-    assert attempts < MAX_ATTEMPTS, f"Metadata still processing after {MAX_ATTEMPTS}s"
+    assert attempts < MAX_ATTEMPTS, "Metadata still processing after {MAX_ATTEMPTS}s".format(MAX_ATTEMPTS=MAX_ATTEMPTS)
 
 
 def test_ensure_activities_completed(plex):

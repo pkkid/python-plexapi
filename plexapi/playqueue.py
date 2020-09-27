@@ -88,10 +88,10 @@ class PlayQueue(PlexObject):
             return matches[0]
         elif len(matches) > 1:
             raise BadRequest(
-                f"{item} occurs multiple times in this PlayQueue, provide exact item"
+                "{item} occurs multiple times in this PlayQueue, provide exact item".format(item=item)
             )
         else:
-            raise BadRequest(f"{item} not valid for this PlayQueue")
+            raise BadRequest("{item} not valid for this PlayQueue".format(item=item))
 
     @classmethod
     def create(
@@ -130,8 +130,8 @@ class PlayQueue(PlexObject):
 
         if isinstance(items, list):
             item_keys = ",".join([str(x.ratingKey) for x in items])
-            uri_args = quote_plus(f"/library/metadata/{item_keys}")
-            args["uri"] = f"library:///directory/{uri_args}"
+            uri_args = quote_plus("/library/metadata/{item_keys}".format(item_keys=item_keys))
+            args["uri"] = "library:///directory/{uri_args}".format(uri_args=uri_args)
             args["type"] = items[0].listType
         elif items.type == "playlist":
             args["playlistID"] = items.ratingKey
@@ -139,12 +139,12 @@ class PlayQueue(PlexObject):
         else:
             uuid = items.section().uuid
             args["type"] = items.listType
-            args["uri"] = f"library://{uuid}/item/{items.key}"
+            args["uri"] = "library://{uuid}/item/{key}".format(uuid=uuid, key=items.key)
 
         if startItem:
             args["key"] = startItem.key
 
-        path = f"/playQueues{utils.joinArgs(args)}"
+        path = "/playQueues{args}".format(args=utils.joinArgs(args))
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
         c.playQueueType = args["type"]
@@ -174,7 +174,7 @@ class PlayQueue(PlexObject):
         else:
             uuid = item.section().uuid
             itemType = item.listType
-            args["uri"] = f"library://{uuid}/item{item.key}"
+            args["uri"] = "library://{uuid}/item{key}".format(uuid=uuid, key=item.key)
 
         if itemType != self.playQueueType:
             raise Unsupported("Item type does not match PlayQueue type")
@@ -182,7 +182,7 @@ class PlayQueue(PlexObject):
         if playNext:
             args["next"] = 1
 
-        path = f"/playQueues/{self.playQueueID}{utils.joinArgs(args)}"
+        path = "/playQueues/{playQueueID}{args}".format(playQueueID=self.playQueueID, args=utils.joinArgs(args))
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
@@ -210,7 +210,9 @@ class PlayQueue(PlexObject):
                 after = self.getQueueItem(after)
             args["after"] = after.playQueueItemID
 
-        path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}/move{utils.joinArgs(args)}"
+        path = "/playQueues/{playQueueID}/items/{playQueueItemID}/move{args}".format(
+            playQueueID=self.playQueueID, playQueueItemID=item.playQueueItemID, args=utils.joinArgs(args)
+        )
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
 
@@ -227,18 +229,20 @@ class PlayQueue(PlexObject):
         if item not in self:
             item = self.getQueueItem(item)
 
-        path = f"/playQueues/{self.playQueueID}/items/{item.playQueueItemID}"
+        path = "/playQueues/{playQueueID}/items/{playQueueItemID}".format(
+            playQueueID=self.playQueueID, playQueueItemID=item.playQueueItemID
+        )
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
 
     def clear(self):
         """Remove all items from the PlayQueue."""
-        path = f"/playQueues/{self.playQueueID}/items"
+        path = "/playQueues/{playQueueID}/items".format(playQueueID=self.playQueueID)
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
 
     def refresh(self):
         """Refresh the PlayQueue from the Plex server."""
-        path = f"/playQueues/{self.playQueueID}"
+        path = "/playQueues/{playQueueID}".format(playQueueID=self.playQueueID)
         data = self._server.query(path, method=self._server._session.get)
         self._loadData(data)
