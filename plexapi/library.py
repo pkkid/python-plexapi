@@ -2,7 +2,7 @@
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
-from plexapi.base import PlexObject
+from plexapi.base import PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
@@ -503,6 +503,12 @@ class LibrarySection(PlexObject):
 
         self.edit(**data)
 
+    def timeline(self):
+        """ Returns a timeline query for this library section. """
+        key = '/library/sections/%s/timeline' % self.key
+        data = self._server.query(key)
+        return LibraryTimeline(self, data)
+
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
         key = '/library/sections/%s/onDeck' % self.key
@@ -693,6 +699,11 @@ class LibrarySection(PlexObject):
         if sdir not in ('asc', 'desc'):
             raise BadRequest('Unknown sort dir: %s' % sdir)
         return '%s:%s' % (lookup[scol], sdir)
+
+    def _locations(self):
+        """ Returns a list of :class:`~plexapi.library.Location` objects
+        """
+        return self.findItems(self._data, etag='Location')
 
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
@@ -1093,6 +1104,64 @@ class FilterChoice(PlexObject):
 
 
 @utils.registerPlexObject
+class LibraryTimeline(PlexObject):
+    """Represents a LibrarySection timeline.
+
+        Attributes:
+            TAG (str): 'LibraryTimeline'
+            size (int): Unknown
+            allowSync (bool): Unknown
+            art (str): Relative path to art image.
+            content (str): "secondary"
+            identifier (str): "com.plexapp.plugins.library"
+            latestEntryTime (int): Epoch timestamp
+            mediaTagPrefix (str): "/system/bundle/media/flags/"
+            mediaTagVersion (int): Unknown
+            thumb (str): Relative path to library thumb image.
+            title1 (str): Name of library section.
+            updateQueueSize (int): Number of items queued to update.
+            viewGroup (str): "secondary"
+            viewMode (int): Unknown
+    """
+    TAG = 'LibraryTimeline'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.size = utils.cast(int, data.attrib.get('size'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.art = data.attrib.get('art')
+        self.content = data.attrib.get('content')
+        self.identifier = data.attrib.get('identifier')
+        self.latestEntryTime = utils.cast(int, data.attrib.get('latestEntryTime'))
+        self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
+        self.mediaTagVersion = utils.cast(int, data.attrib.get('mediaTagVersion'))
+        self.thumb = data.attrib.get('thumb')
+        self.title1 = data.attrib.get('title1')
+        self.updateQueueSize = utils.cast(int, data.attrib.get('updateQueueSize'))
+        self.viewGroup = data.attrib.get('viewGroup')
+        self.viewMode = utils.cast(int, data.attrib.get('viewMode'))
+
+
+@utils.registerPlexObject
+class Location(PlexObject):
+    """ Represents a single library Location.
+
+        Attributes:
+            TAG (str): 'Location'
+            id (int): Location path ID.
+            path (str): Path used for library..
+    """
+    TAG = 'Location'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.path = data.attrib.get('path')
+
+
+@utils.registerPlexObject
 class Hub(PlexObject):
     """ Represents a single Hub (or category) in the PlexServer search.
 
@@ -1121,7 +1190,38 @@ class Hub(PlexObject):
 
 
 @utils.registerPlexObject
-class Collections(PlexObject):
+class Collections(PlexPartialObject):
+    """ Represents a single Collection.
+
+        Attributes:
+            TAG (str): 'Directory'
+            TYPE (str): 'collection'
+
+            ratingKey (int): Unique key identifying this item.
+            addedAt (datetime): Datetime this item was added to the library.
+            childCount (int): Count of child object(s)
+            collectionMode (str): How the items in the collection are displayed.
+            collectionSort (str): How to sort the items in the collection.
+            contentRating (str) Content rating (PG-13; NR; TV-G).
+            fields (list): List of :class:`~plexapi.media.Field`.
+            guid (str): Plex GUID (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
+            index (int): Unknown
+            key (str): API URL (/library/metadata/<ratingkey>).
+            labels (List<:class:`~plexapi.media.Label`>): List of field objects.
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            librarySectionKey (str): API URL (/library/sections/<sectionkey>).
+            librarySectionTitle (str): Section Title
+            maxYear (int): Year
+            minYear (int): Year
+            subtype (str): Media type
+            summary (str): Summary of the collection
+            thumb (str): URL to thumbnail image.
+            title (str): Collection Title
+            titleSort (str): Title to use when sorting (defaults to title).
+            type (str): Hardcoded 'collection'
+            updatedAt (datatime): Datetime this item was updated.
+
+    """
 
     TAG = 'Directory'
     TYPE = 'collection'
@@ -1130,20 +1230,29 @@ class Collections(PlexObject):
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
-        self.key = data.attrib.get('key')
-        self.type = data.attrib.get('type')
-        self.title = data.attrib.get('title')
-        self.subtype = data.attrib.get('subtype')
-        self.summary = data.attrib.get('summary')
-        self.index = utils.cast(int, data.attrib.get('index'))
-        self.thumb = data.attrib.get('thumb')
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.art = data.attrib.get('art')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
-        self.minYear = utils.cast(int, data.attrib.get('minYear'))
-        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.collectionMode = data.attrib.get('collectionMode')
         self.collectionSort = data.attrib.get('collectionSort')
+        self.contentRating = data.attrib.get('contentRating')
+        self.fields = self.findItems(data, etag='Field')
+        self.guid = data.attrib.get('guid')
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.key = data.attrib.get('key')
+        self.labels = self.findItems(data, etag='Label')
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.librarySectionKey = data.attrib.get('librarySectionKey')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
+        self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.subtype = data.attrib.get('subtype')
+        self.summary = data.attrib.get('summary')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.titleSort = data.attrib.get('titleSort')
+        self.type = data.attrib.get('type')
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     @property
     def children(self):

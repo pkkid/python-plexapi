@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import pytest
 from plexapi.exceptions import NotFound
 
@@ -260,6 +261,18 @@ def test_library_Colletion_sortRelease(collection):
     assert collection.collectionSort == "0"
 
 
+def test_library_Colletion_edit(collection):
+    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
+    collectionTitleSort = collection.titleSort
+    collection.edit(**edits)
+    collection.reload()
+    for field in collection.fields:
+        if field.name == 'titleSort':
+            assert collection.titleSort == 'New Title Sort'
+            assert field.locked == True
+    collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
@@ -287,3 +300,22 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_size=1)) == 4
     assert len(movies.search(container_start=9999, container_size=1)) == 0
     assert len(movies.search(container_start=2, container_size=1)) == 2
+
+
+def test_library_section_timeline(plex):
+    movies = plex.library.section("Movies")
+    tl = movies.timeline()
+    assert tl.TAG == "LibraryTimeline"
+    assert tl.size > 0
+    assert tl.allowSync is False
+    assert tl.art == "/:/resources/movie-fanart.jpg"
+    assert tl.content == "secondary"
+    assert tl.identifier == "com.plexapp.plugins.library"
+    assert datetime.fromtimestamp(tl.latestEntryTime).date() == datetime.today().date()
+    assert tl.mediaTagPrefix == "/system/bundle/media/flags/"
+    assert tl.mediaTagVersion > 1
+    assert tl.thumb == "/:/resources/movie.png"
+    assert tl.title1 == "Movies"
+    assert tl.updateQueueSize == 0
+    assert tl.viewGroup == "secondary"
+    assert tl.viewMode == 65592

@@ -904,6 +904,27 @@ def test_video_exists_accessible(movie, episode):
     assert episode.media[0].parts[0].accessible is True
 
 
+def test_video_edits_locked(movie, episode):
+    edits = {'titleSort.value':'New Title Sort', 'titleSort.locked': 1}
+    movieTitleSort = movie.titleSort
+    movie.edit(**edits)
+    movie.reload()
+    for field in movie.fields:
+        if field.name == 'titleSort':
+            assert movie.titleSort == 'New Title Sort'
+            assert field.locked == True
+    movie.edit(**{'titleSort.value': movieTitleSort, 'titleSort.locked': 0})
+
+    episodeTitleSort = episode.titleSort
+    episode.edit(**edits)
+    episode.reload()
+    for field in episode.fields:
+        if field.name == 'titleSort':
+            assert episode.titleSort == 'New Title Sort'
+            assert field.locked == True
+    episode.edit(**{'titleSort.value': episodeTitleSort, 'titleSort.locked': 0})
+
+
 @pytest.mark.skip(
     reason="broken? assert len(plex.conversions()) == 1 may fail on some builds"
 )

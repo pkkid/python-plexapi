@@ -76,3 +76,9 @@ def test_utils_download(plex, episode):
     assert utils.download(
         episode.thumbUrl, plex._token, filename=episode.title, mocked=True
     )
+
+
+
+def test_millisecondToHumanstr():
+    res = utils.millisecondToHumanstr(1000)
+    assert res == "00:00:01.0000"

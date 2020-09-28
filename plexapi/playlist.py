@@ -41,6 +41,10 @@ class Playlist(PlexPartialObject, Playable):
     def __len__(self):  # pragma: no cover
         return len(self.items())
 
+    def __iter__(self):  # pragma: no cover
+        for item in self.items():
+            yield item
+
     @property
     def metadataType(self):
         if self.isVideo:

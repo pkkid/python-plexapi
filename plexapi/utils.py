@@ -110,7 +110,7 @@ def lowerFirst(s):
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
     """ Returns the value at the specified attrstr location within a nexted tree of
-        dicts, lists, tuples, functions, classes, etc. The lookup is done recursivley
+        dicts, lists, tuples, functions, classes, etc. The lookup is done recursively
         for each key in attrstr (split by by the delimiter) This function is heavily
         influenced by the lookups used in Django templates.
 
@@ -202,6 +202,19 @@ def toDatetime(value, format=None):
                 value = 86400
             value = datetime.fromtimestamp(int(value))
     return value
+
+
+def millisecondToHumanstr(milliseconds):
+    """ Returns human readable time duration from milliseconds.
+        HH:MM:SS:MMMM
+
+        Parameters:
+            milliseconds (str,int): time duration in milliseconds.
+    """
+    milliseconds = int(milliseconds)
+    r = datetime.utcfromtimestamp(milliseconds / 1000)
+    f = r.strftime("%H:%M:%S.%f")
+    return f[:-2]
 
 
 def toList(value, itemcast=None, delim=','):
