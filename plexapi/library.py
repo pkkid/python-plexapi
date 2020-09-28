@@ -879,7 +879,7 @@ class ShowSection(LibrarySection):
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
         """
-        return self.search(sort='addedAt:desc', libtype=libtype, maxresults=maxresults)
+        return self.search(sort='episode.addedAt:desc', libtype=libtype, maxresults=maxresults)
 
     def collection(self, **kwargs):
         """ Returns a list of collections from this library section. """
