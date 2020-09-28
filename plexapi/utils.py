@@ -4,7 +4,7 @@ import os
 import re
 import time
 import zipfile
-from datetime import datetime, timedelta
+from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
@@ -212,7 +212,7 @@ def millisecondToHumanstr(milliseconds):
             milliseconds (str,int): time duration in milliseconds.
     """
     milliseconds = int(milliseconds)
-    r = datetime.datetime.utcfromtimestamp(milliseconds / 1000)
+    r = datetime.utcfromtimestamp(milliseconds / 1000)
     f = r.strftime("%H:%M:%S.%f")
     return f[:-2]
 

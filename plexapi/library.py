@@ -506,6 +506,12 @@ class LibrarySection(PlexObject):
         data = self._server.query(key)
         return self.findItems(data, cls=Setting)
 
+    def timeline(self):
+        """ Returns a timeline query for this library section. """
+        key = '/library/sections/%s/timeline' % self.key
+        data = self._server.query(key)
+        return LibraryTimeline(self, data)
+
     def onDeck(self):
         """ Returns a list of media items on deck from this library section. """
         key = '/library/sections/%s/onDeck' % self.key
@@ -1070,6 +1076,46 @@ class FilterChoice(PlexObject):
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+
+
+@utils.registerPlexObject
+class LibraryTimeline(PlexObject):
+    """Represents a LibrarySection timeline.
+
+        Attributes:
+            TAG (str): 'LibraryTimeline'
+            size (int): Unknown
+            allowSync (bool): Unknown
+            art (str): Relative path to art image.
+            content (str): "secondary"
+            identifier (str): "com.plexapp.plugins.library"
+            latestEntryTime (int): Epoch timestamp
+            mediaTagPrefix (str): "/system/bundle/media/flags/"
+            mediaTagVersion (int): Unknown
+            thumb (str): Relative path to library thumb image.
+            title1 (str): Name of library section.
+            updateQueueSize (int): Number of items queued to update.
+            viewGroup (str): "secondary"
+            viewMode (int): Unknown
+    """
+    TAG = 'LibraryTimeline'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.size = utils.cast(int, data.attrib.get('size'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.art = data.attrib.get('art')
+        self.content = data.attrib.get('content')
+        self.identifier = data.attrib.get('identifier')
+        self.latestEntryTime = utils.cast(int, data.attrib.get('latestEntryTime'))
+        self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
+        self.mediaTagVersion = utils.cast(int, data.attrib.get('mediaTagVersion'))
+        self.thumb = data.attrib.get('thumb')
+        self.title1 = data.attrib.get('title1')
+        self.updateQueueSize = utils.cast(int, data.attrib.get('updateQueueSize'))
+        self.viewGroup = data.attrib.get('viewGroup')
+        self.viewMode = utils.cast(int, data.attrib.get('viewMode'))
 
 
 @utils.registerPlexObject
