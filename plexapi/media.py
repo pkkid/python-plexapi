@@ -717,7 +717,6 @@ class Marker(PlexObject):
         self.end = cast(int, data.attrib.get('endTimeOffset'))
 
 
-@utils.registerPlexObject
 class Field(PlexObject):
     """ Represents a single Field.
 
