@@ -219,6 +219,28 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
+def test_library_settings(movies):
+    settings = movies.settings()
+    assert len(settings) >= 1
+
+
+def test_library_editAdvanced_default(movies):
+    movies.editAdvanced(hidden=2)
+    for setting in movies.settings():
+        if setting.id == 'hidden':
+            assert int(setting.value) == 2
+
+    movies.editAdvanced(collectionMode=0)
+    for setting in movies.settings():
+        if setting.id == 'collectionMode':
+            assert int(setting.value) == 0
+
+    movies.reload()
+    movies.defaultAdvanced()
+    for setting in movies.settings():
+        assert int(setting.value) == int(setting.default)
+
+
 def test_library_Collection_modeUpdate(collection):
     mode_dict = {"default": "-2", "hide": "0", "hideItems": "1", "showItems": "2"}
     for key, value in mode_dict.items():
