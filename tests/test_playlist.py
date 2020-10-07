@@ -74,30 +74,12 @@ def test_playlist_photos(plex, photoalbum):
     assert playlist_name not in [i.title for i in plex.playlists()]
 
 
-def test_playlist_playQueue(plex, album):
-    try:
-        playlist = plex.createPlaylist('test_playlist', album)
-        playqueue = playlist.playQueue(**dict(shuffle=1))
-        assert 'shuffle=1' in playqueue._initpath
-        assert playqueue.playQueueShuffled is True
-    finally:
-        playlist.delete()
-
-
 @pytest.mark.client
 def test_play_photos(plex, client, photoalbum):
     photos = photoalbum.photos()
     for photo in photos[:4]:
         client.playMedia(photo)
         time.sleep(2)
-
-
-def test_playqueues(plex):
-    episode = plex.library.section('TV Shows').get('the 100').get('Pilot')
-    playqueue = plex.createPlayQueue(episode)
-    assert len(playqueue.items) == 1, 'No items in play queue.'
-    assert playqueue.items[0].title == episode.title, 'Wrong show queued.'
-    assert playqueue.playQueueID, 'Play queue ID not set.'
 
 
 def test_copyToUser(plex, show, fresh_plex, shared_username):

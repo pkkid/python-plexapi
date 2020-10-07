@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import pytest
 from plexapi.exceptions import NotFound
 
@@ -218,6 +219,28 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
+def test_library_settings(movies):
+    settings = movies.settings()
+    assert len(settings) >= 1
+
+
+def test_library_editAdvanced_default(movies):
+    movies.editAdvanced(hidden=2)
+    for setting in movies.settings():
+        if setting.id == 'hidden':
+            assert int(setting.value) == 2
+
+    movies.editAdvanced(collectionMode=0)
+    for setting in movies.settings():
+        if setting.id == 'collectionMode':
+            assert int(setting.value) == 0
+
+    movies.reload()
+    movies.defaultAdvanced()
+    for setting in movies.settings():
+        assert int(setting.value) == int(setting.default)
+
+
 def test_library_Collection_modeUpdate(collection):
     mode_dict = {"default": "-2", "hide": "0", "hideItems": "1", "showItems": "2"}
     for key, value in mode_dict.items():
@@ -277,3 +300,22 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_size=1)) == 4
     assert len(movies.search(container_start=9999, container_size=1)) == 0
     assert len(movies.search(container_start=2, container_size=1)) == 2
+
+
+def test_library_section_timeline(plex):
+    movies = plex.library.section("Movies")
+    tl = movies.timeline()
+    assert tl.TAG == "LibraryTimeline"
+    assert tl.size > 0
+    assert tl.allowSync is False
+    assert tl.art == "/:/resources/movie-fanart.jpg"
+    assert tl.content == "secondary"
+    assert tl.identifier == "com.plexapp.plugins.library"
+    assert datetime.fromtimestamp(tl.latestEntryTime).date() == datetime.today().date()
+    assert tl.mediaTagPrefix == "/system/bundle/media/flags/"
+    assert tl.mediaTagVersion > 1
+    assert tl.thumb == "/:/resources/movie.png"
+    assert tl.title1 == "Movies"
+    assert tl.updateQueueSize == 0
+    assert tl.viewGroup == "secondary"
+    assert tl.viewMode == 65592
