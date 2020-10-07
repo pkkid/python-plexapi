@@ -126,6 +126,8 @@ def test_myplex_optout(account_once):
     utils.wait_until(lambda: enabled() == (False, False))
 
 
+@pytest.mark.skip(reason="account.onlineMediaSources() is empty "
+                         "in the CI test run against an unclaimed server.")
 def test_myplex_onlineMediaSources_optOut(account):
     mediaOptOut = account.onlineMediaSources()[0]
     optOutValue = mediaOptOut.value
