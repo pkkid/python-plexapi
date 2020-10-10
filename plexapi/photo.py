@@ -74,6 +74,36 @@ class Photoalbum(PlexPartialObject):
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
 
+    def iterParts(self):
+        """ Iterates over the parts of this media item. """
+        for album in self.albums():
+            for photo in album.photos():
+                for part in photo.iterParts():
+                    yield part
+
+    def download(self, savepath=None, keep_original_name=False, showstatus=False):
+        """ Download photo files to specified directory.
+
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_original_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                showstatus(bool): Display a progressbar.
+        """
+        filepaths = []
+        locations = [i for i in self.iterParts() if i]
+        for location in locations:
+            name = location.file
+            if not keep_original_name:
+                title = self.title.replace(' ', '.')
+                name = '%s.%s' % (title, location.container)
+            url = self._server.url('%s?download=1' % location.key)
+            filepath = utils.download(url, self._server._token, filename=name, showstatus=showstatus,
+                                      savepath=savepath, session=self._server._session)
+            if filepath:
+                filepaths.append(filepath)
+        return filepaths
+
 
 @utils.registerPlexObject
 class Photo(PlexPartialObject):
