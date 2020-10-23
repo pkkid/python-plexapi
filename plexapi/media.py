@@ -187,7 +187,6 @@ class MediaPartStream(PlexObject):
         self._data = data
         self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.codec = data.attrib.get('codec')
-        self.codecID = data.attrib.get('codecID')
         self.default = data.attrib.get('default')
         self.displayTitle = data.attrib.get('displayTitle')
         self.extendedDisplayTitle = data.attrib.get('extendedDisplayTitle')
@@ -283,7 +282,6 @@ class AudioStream(MediaPartStream):
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrateMode = data.attrib.get('bitrateMode')
         self.channels = cast(int, data.attrib.get('channels'))
-        self.dialogNorm = cast(int, data.attrib.get('dialogNorm'))
         self.duration = cast(int, data.attrib.get('duration'))
         self.samplingRate = cast(int, data.attrib.get('samplingRate'))
 
