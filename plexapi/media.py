@@ -170,15 +170,20 @@ class MediaPartStream(PlexObject):
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
             part (:class:`~plexapi.media.MediaPart`): Media part this stream belongs to.
+            bitrate (int):
             codec (str): Codec of this stream (ex: srt, ac3, mpeg4).
-            codecID (str): Codec ID (ex: XVID).
+            default (str):
+            displayTitle (str):
+            extendedDisplayTitle (str):
             id (int): Unique stream ID on this server.
             index (int): Unknown
             language (str): Stream language (ex: English, ไทย).
             languageCode (str): Ascii code for language (ex: eng, tha).
+            requiredBandwidths (str):
             selected (bool): True if this stream is selected.
             streamType (int): Stream type (1=:class:`~plexapi.media.VideoStream`,
                 2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
+            title (str):
             type (int): Alias for streamType.
     """
 
@@ -199,7 +204,6 @@ class MediaPartStream(PlexObject):
         self.streamType = cast(int, data.attrib.get('streamType'))
         self.title = data.attrib.get('title')
         self.type = cast(int, data.attrib.get('streamType'))
-        self.title = data.attrib.get('title')
 
     @staticmethod
     def parse(server, data, initpath):  # pragma: no cover seems to be dead code.
@@ -220,8 +224,13 @@ class VideoStream(MediaPartStream):
             bitDepth (int): Bit depth (ex: 8).
             bitrate (int): Bitrate (ex: 1169)
             cabac (int): Unknown
+            codedHeight (str):
+            codedWidth (str):
+            colorPrimaries (str):
+            colorRange (str):
             chromaSubsampling (str): Chroma Subsampling (ex: 4:2:0).
             colorSpace (str): Unknown
+            colorTrc (str):
             duration (int): Duration of video stream in milliseconds.
             frameRate (float): Frame rate (ex: 23.976)
             frameRateMode (str): Unknown
@@ -231,7 +240,6 @@ class VideoStream(MediaPartStream):
             profile (str): Video stream profile (ex: asp).
             refFrames (int): Unknown
             scanType (str): Video stream scan type (ex: progressive).
-            title (str): Title of this video stream.
             width (int): Width of video stream.
     """
     TAG = 'Stream'
@@ -273,10 +281,8 @@ class AudioStream(MediaPartStream):
             bitrate (int): Audio bitrate (ex: 448).
             bitrateMode (str): Bitrate mode (ex: cbr).
             channels (int): number of channels in this stream (ex: 6).
-            dialogNorm (int): Unknown (ex: -27).
             duration (int): Duration of audio stream in milliseconds.
             samplingRate (int): Sampling rate (ex: xxx)
-            title (str): Title of this audio stream.
     """
     TAG = 'Stream'
     STREAMTYPE = 2
@@ -299,10 +305,6 @@ class SubtitleStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 3
-            forced (bool): True if this is a forced subtitle
-            format (str): Subtitle format (ex: srt).
-            key (str): Key of this subtitle stream (ex: /library/streams/212284).
-            title (str): Title of this subtitle stream.
     """
     TAG = 'Stream'
     STREAMTYPE = 3
