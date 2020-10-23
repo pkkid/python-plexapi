@@ -185,15 +185,21 @@ class MediaPartStream(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.codec = data.attrib.get('codec')
         self.codecID = data.attrib.get('codecID')
+        self.default = data.attrib.get('default')
+        self.displayTitle = data.attrib.get('displayTitle')
+        self.extendedDisplayTitle = data.attrib.get('extendedDisplayTitle')
         self.id = cast(int, data.attrib.get('id'))
         self.index = cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')
         self.languageCode = data.attrib.get('languageCode')
+        self.requiredBandwidths = data.attrib.get('requiredBandwidths')
         self.selected = cast(bool, data.attrib.get('selected', '0'))
         self.streamType = cast(int, data.attrib.get('streamType'))
         self.type = cast(int, data.attrib.get('streamType'))
+        self.title = data.attrib.get('title')
 
     @staticmethod
     def parse(server, data, initpath):  # pragma: no cover seems to be dead code.
@@ -235,7 +241,6 @@ class VideoStream(MediaPartStream):
         """ Load attribute values from Plex XML response. """
         super(VideoStream, self)._loadData(data)
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
-        self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.cabac = cast(int, data.attrib.get('cabac'))
         self.chromaSubsampling = data.attrib.get('chromaSubsampling')
         self.colorSpace = data.attrib.get('colorSpace')
@@ -248,7 +253,6 @@ class VideoStream(MediaPartStream):
         self.profile = data.attrib.get('profile')
         self.refFrames = cast(int, data.attrib.get('refFrames'))
         self.scanType = data.attrib.get('scanType')
-        self.title = data.attrib.get('title')
         self.width = cast(int, data.attrib.get('width'))
 
 
@@ -277,13 +281,11 @@ class AudioStream(MediaPartStream):
         super(AudioStream, self)._loadData(data)
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
-        self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.bitrateMode = data.attrib.get('bitrateMode')
         self.channels = cast(int, data.attrib.get('channels'))
         self.dialogNorm = cast(int, data.attrib.get('dialogNorm'))
         self.duration = cast(int, data.attrib.get('duration'))
         self.samplingRate = cast(int, data.attrib.get('samplingRate'))
-        self.title = data.attrib.get('title')
 
 
 @utils.registerPlexObject
@@ -307,7 +309,6 @@ class SubtitleStream(MediaPartStream):
         self.forced = cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.key = data.attrib.get('key')
-        self.title = data.attrib.get('title')
 
 
 @utils.registerPlexObject
