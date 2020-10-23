@@ -68,8 +68,7 @@ def test_audio_Album_attrs(album):
     assert utils.is_metadata(album.key)
     assert utils.is_int(album.librarySectionID)
     assert album.listType == "audio"
-    if album.originallyAvailableAt:
-        assert utils.is_datetime(album.originallyAvailableAt)
+    assert utils.is_datetime(album.originallyAvailableAt)
     assert utils.is_metadata(album.parentKey)
     assert utils.is_int(album.parentRatingKey)
     if album.parentThumb:
@@ -223,8 +222,7 @@ def test_audio_Track_attrs(album):
     assert int(track.index) == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
-    if track.lastViewedAt:
-        assert utils.is_datetime(track.lastViewedAt)
+    assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == "audio"
     # Assign 0 track.media

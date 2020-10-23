@@ -171,8 +171,7 @@ def test_video_Movie_attrs(movies):
     assert movie.guid == "com.plexapp.agents.imdb://tt1172203?lang=en"
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
-    if movie.lastViewedAt:
-        assert utils.is_datetime(movie.lastViewedAt)
+    assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == "video"
     assert movie.originalTitle is None
@@ -496,8 +495,7 @@ def test_video_Show_attrs(show):
     assert utils.is_metadata(show._initpath)
     assert utils.is_int(show.index)
     assert utils.is_metadata(show.key)
-    if show.lastViewedAt:
-        assert utils.is_datetime(show.lastViewedAt)
+    assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == "video"
     assert len(show.locations[0]) >= 10
@@ -770,8 +768,7 @@ def test_video_Season_attrs(show):
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
-    if season.lastViewedAt:
-        assert utils.is_datetime(season.lastViewedAt)
+    assert utils.is_datetime(season.lastViewedAt)
     assert utils.is_int(season.leafCount, gte=3)
     assert season.listType == "video"
     assert utils.is_metadata(season.parentKey)

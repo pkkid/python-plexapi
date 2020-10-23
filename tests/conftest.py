@@ -323,6 +323,8 @@ def patched_http_call(mocker):
 #  Utility Functions
 # ---------------------------------
 def is_datetime(value):
+    if value is None:
+        return True
     return value > MIN_DATETIME
 
 
