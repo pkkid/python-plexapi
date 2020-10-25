@@ -2,7 +2,7 @@
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -76,7 +76,7 @@ class Photoalbum(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject):
+class Photo(PlexPartialObject, Playable):
     """ Represents a single photo.
 
         Attributes:
@@ -105,6 +105,7 @@ class Photo(PlexPartialObject):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
+        Playable._loadData(self, data)
         self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.fields = self.findItems(data, etag='Field')
