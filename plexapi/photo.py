@@ -86,6 +86,7 @@ class Photo(PlexPartialObject, Playable):
             fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index number of this photo.
             key (str): API URL (/library/metadata/<ratingkey>).
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             listType (str): Hardcoded as 'photo' (useful for search filters).
             media (TYPE): Unknown
             originallyAvailableAt (datetime): Datetime this photo was added to Plex.
@@ -111,6 +112,7 @@ class Photo(PlexPartialObject, Playable):
         self.fields = self.findItems(data, etag='Field')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')
+        self.librarySectionID = data.attrib.get('librarySectionID')
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey')
@@ -124,6 +126,12 @@ class Photo(PlexPartialObject, Playable):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
         self.tag = self.findItems(data, media.Tag)
+
+    @property
+    def thumbUrl(self):
+        """Return URL for the thumbnail image."""
+        key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        return self._server.url(key, includeToken=True) if key else None
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
