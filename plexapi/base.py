@@ -54,8 +54,8 @@ class PlexObject(object):
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):
-        # dont overwrite an attr with None unless its a private variable
-        if value is not None or attr.startswith('_') or attr not in self.__dict__:
+        # Don't overwrite an attr with None or [] unless it's a private variable
+        if value not in [None, []] or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
 
     def _clean(self, value):
@@ -283,7 +283,7 @@ class PlexPartialObject(PlexObject):
     """
 
     def __eq__(self, other):
-        return other is not None and self.key == other.key
+        return other not in [None, []] and self.key == other.key
 
     def __hash__(self):
         return hash(repr(self))
