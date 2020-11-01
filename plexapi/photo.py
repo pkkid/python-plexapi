@@ -2,7 +2,7 @@
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 
 
@@ -106,7 +106,7 @@ class Photoalbum(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject):
+class Photo(PlexPartialObject, Playable):
     """ Represents a single photo.
 
         Attributes:
@@ -116,6 +116,7 @@ class Photo(PlexPartialObject):
             fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index number of this photo.
             key (str): API URL (/library/metadata/<ratingkey>).
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             listType (str): Hardcoded as 'photo' (useful for search filters).
             media (TYPE): Unknown
             originallyAvailableAt (datetime): Datetime this photo was added to Plex.
@@ -135,11 +136,13 @@ class Photo(PlexPartialObject):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
+        Playable._loadData(self, data)
         self.listType = 'photo'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.fields = self.findItems(data, etag='Field')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')
+        self.librarySectionID = data.attrib.get('librarySectionID')
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey')
@@ -153,6 +156,12 @@ class Photo(PlexPartialObject):
         self.year = utils.cast(int, data.attrib.get('year'))
         self.media = self.findItems(data, media.Media)
         self.tag = self.findItems(data, media.Tag)
+
+    @property
+    def thumbUrl(self):
+        """Return URL for the thumbnail image."""
+        key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        return self._server.url(key, includeToken=True) if key else None
 
     def photoalbum(self):
         """ Return this photo's :class:`~plexapi.photo.Photoalbum`. """
