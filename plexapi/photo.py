@@ -74,6 +74,36 @@ class Photoalbum(PlexPartialObject):
                 return photo
         raise NotFound('Unable to find photo: %s' % title)
 
+    def iterParts(self):
+        """ Iterates over the parts of this media item. """
+        for album in self.albums():
+            for photo in album.photos():
+                for part in photo.iterParts():
+                    yield part
+
+    def download(self, savepath=None, keep_original_name=False, showstatus=False):
+        """ Download photo files to specified directory.
+
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_original_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                showstatus(bool): Display a progressbar.
+        """
+        filepaths = []
+        locations = [i for i in self.iterParts() if i]
+        for location in locations:
+            name = location.file
+            if not keep_original_name:
+                title = self.title.replace(' ', '.')
+                name = '%s.%s' % (title, location.container)
+            url = self._server.url('%s?download=1' % location.key)
+            filepath = utils.download(url, self._server._token, filename=name, showstatus=showstatus,
+                                      savepath=savepath, session=self._server._session)
+            if filepath:
+                filepaths.append(filepath)
+        return filepaths
+
 
 @utils.registerPlexObject
 class Photo(PlexPartialObject):
@@ -137,6 +167,12 @@ class Photo(PlexPartialObject):
         else:
             raise BadRequest('Unable to get section for photo, can`t find librarySectionID')
 
+    def iterParts(self):
+        """ Iterates over the parts of this media item. """
+        for item in self.media:
+            for part in item.parts:
+                yield part
+
     def sync(self, resolution, client=None, clientId=None, limit=None, title=None):
         """ Add current photo as sync item for specified device.
             See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
@@ -172,3 +208,26 @@ class Photo(PlexPartialObject):
         sync_item.mediaSettings = MediaSettings.createPhoto(resolution)
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
+
+    def download(self, savepath=None, keep_original_name=False, showstatus=False):
+        """ Download photo files to specified directory.
+
+            Parameters:
+                savepath (str): Defaults to current working dir.
+                keep_original_name (bool): True to keep the original file name otherwise
+                    a friendlier is generated.
+                showstatus(bool): Display a progressbar.
+        """
+        filepaths = []
+        locations = [i for i in self.iterParts() if i]
+        for location in locations:
+            name = location.file
+            if not keep_original_name:
+                title = self.title.replace(' ', '.')
+                name = '%s.%s' % (title, location.container)
+            url = self._server.url('%s?download=1' % location.key)
+            filepath = utils.download(url, self._server._token, filename=name, showstatus=showstatus,
+                                      savepath=savepath, session=self._server._session)
+            if filepath:
+                filepaths.append(filepath)
+        return filepaths
