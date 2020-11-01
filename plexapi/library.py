@@ -110,7 +110,7 @@ class Library(PlexObject):
             server will automatically clean up old bundles once a week as part of Scheduled Tasks.
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
-        self._server.query('/library/clean/bundles')
+        self._server.query('/library/clean/bundles?async=1', method=self._server._session.put)
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
@@ -122,7 +122,7 @@ class Library(PlexObject):
             For example, if you have deleted or added an entire library or many items in a
             library, you may like to optimize the database.
         """
-        self._server.query('/library/optimize')
+        self._server.query('/library/optimize?async=1', method=self._server._session.put)
 
     def update(self):
         """ Scan this library for new items."""
