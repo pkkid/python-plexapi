@@ -66,6 +66,8 @@ class PlayQueue(PlexObject):
         self.selectedItem = self[self.playQueueSelectedItemOffset]
 
     def __getitem__(self, key):
+        if not self.items:
+            return None
         return self.items[key]
 
     def __len__(self):
@@ -92,6 +94,43 @@ class PlayQueue(PlexObject):
             )
         else:
             raise BadRequest("{item} not valid for this PlayQueue".format(item=item))
+
+    @classmethod
+    def get(
+        cls,
+        server,
+        playQueueID,
+        own=False,
+        center=None,
+        window=50,
+        includeBefore=True,
+        includeAfter=True,
+    ):
+        """Retrieve an existing :class:`~plexapi.playqueue.PlayQueue` by identifier.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
+            playQueueID (int): Identifier of an existing PlayQueue.
+            own (bool, optional): If server should transfer ownership.
+            center (int, optional): The playQueueItemID of the center of the window. Does not change selectedItem.
+            window (int, optional): Number of items to return from each side of the center item.
+            includeBefore (bool, optional): Include items before the center, defaults True. Does not include center if False.
+            includeAfter (bool, optional): Include items after the center, defaults True. Does not include center if False.
+        """
+        args = {
+            "own": utils.cast(int, own),
+            "window": window,
+            "includeBefore": utils.cast(int, includeBefore),
+            "includeAfter": utils.cast(int, includeAfter),
+        }
+        if center:
+            args["center"] = center
+
+        path = "/playQueues/{playQueueID}{args}".format(playQueueID=playQueueID, args=utils.joinArgs(args))
+        data = server.query(path, method=server._session.get)
+        c = cls(server, data, initpath=path)
+        c._server = server
+        return c
 
     @classmethod
     def create(
