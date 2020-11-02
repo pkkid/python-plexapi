@@ -216,7 +216,6 @@ def test_video_Movie_attrs(movies):
     assert audio.bitrateMode is None
     assert audio.channels in utils.AUDIOCHANNELS
     assert audio.codec in utils.CODECS
-    assert audio.codecID is None
     assert audio.dialogNorm is None
     assert audio.duration is None
     assert audio.id >= 1
@@ -257,7 +256,6 @@ def test_video_Movie_attrs(movies):
     assert video.cabac is None
     assert video.chromaSubsampling in ("4:2:0", None)
     assert video.codec in utils.CODECS
-    assert video.codecID is None
     assert video.colorSpace is None
     assert video.duration is None
     assert utils.is_float(video.frameRate, gte=20.0)
@@ -298,7 +296,6 @@ def test_video_Movie_attrs(movies):
     assert stream1.cabac is None
     assert stream1.chromaSubsampling in ("4:2:0", None)
     assert stream1.codec in utils.CODECS
-    assert stream1.codecID is None
     assert stream1.colorSpace is None
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
@@ -329,7 +326,6 @@ def test_video_Movie_attrs(movies):
     assert stream2.bitrateMode is None
     assert stream2.channels in utils.AUDIOCHANNELS
     assert stream2.codec in utils.CODECS
-    assert stream2.codecID is None
     assert stream2.dialogNorm is None
     assert stream2.duration is None
     assert utils.is_int(stream2.id)
