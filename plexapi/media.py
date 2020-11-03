@@ -314,6 +314,7 @@ class SubtitleStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
+        self.transient = data.attrib.get('transient')
 
 
 @utils.registerPlexObject
