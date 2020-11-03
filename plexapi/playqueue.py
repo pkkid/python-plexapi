@@ -114,8 +114,10 @@ class PlayQueue(PlexObject):
             own (bool, optional): If server should transfer ownership.
             center (int, optional): The playQueueItemID of the center of the window. Does not change selectedItem.
             window (int, optional): Number of items to return from each side of the center item.
-            includeBefore (bool, optional): Include items before the center, defaults True. Does not include center if False.
-            includeAfter (bool, optional): Include items after the center, defaults True. Does not include center if False.
+            includeBefore (bool, optional):
+                Include items before the center, defaults True. Does not include center if False.
+            includeAfter (bool, optional):
+                Include items after the center, defaults True. Does not include center if False.
         """
         args = {
             "own": utils.cast(int, own),
