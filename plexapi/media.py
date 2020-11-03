@@ -175,6 +175,7 @@ class MediaPartStream(PlexObject):
             default (str):
             displayTitle (str):
             extendedDisplayTitle (str):
+            key (str):
             id (int): Unique stream ID on this server.
             index (int): Unknown
             language (str): Stream language (ex: English, ไทย).
@@ -195,6 +196,7 @@ class MediaPartStream(PlexObject):
         self.default = data.attrib.get('default')
         self.displayTitle = data.attrib.get('displayTitle')
         self.extendedDisplayTitle = data.attrib.get('extendedDisplayTitle')
+        self.key = data.attrib.get('key')
         self.id = cast(int, data.attrib.get('id'))
         self.index = cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')
