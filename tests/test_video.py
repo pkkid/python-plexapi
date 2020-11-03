@@ -216,7 +216,6 @@ def test_video_Movie_attrs(movies):
     assert audio.bitrateMode is None
     assert audio.channels in utils.AUDIOCHANNELS
     assert audio.codec in utils.CODECS
-    assert audio.dialogNorm is None
     assert audio.duration is None
     assert audio.id >= 1
     assert audio.index == 1
@@ -326,7 +325,6 @@ def test_video_Movie_attrs(movies):
     assert stream2.bitrateMode is None
     assert stream2.channels in utils.AUDIOCHANNELS
     assert stream2.codec in utils.CODECS
-    assert stream2.dialogNorm is None
     assert stream2.duration is None
     assert utils.is_int(stream2.id)
     assert utils.is_int(stream2.index)
