@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-MAX_ATTEMPTS = 60
+MAX_ATTEMPTS = 180
 
 
 def wait_for_idle_server(server):
