@@ -9,13 +9,18 @@ on:
 #  pull_request:
 #    branches: [ $default-branch ]
 
+env:
+  PLEXAPI_AUTH_SERVER_BASEURL=http://127.0.0.1:32400
+  PLEX_CONTAINER_TAG=latest
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+#        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6]
 
     steps:
     - uses: actions/checkout@v2
@@ -34,6 +39,36 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+    - name: Test with unclaimed Plex server
+      env:
+        PLEXAPI_HEADER_PROVIDES='controller,sync-target'
+        PLEXAPI_HEADER_PLATFORM=iOS
+        PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1
+        PLEXAPI_HEADER_DEVICE=iPhone
       run: |
-        pytest
+        # Set up docker PMS instance
+        python \
+          -u tools/plex-bootstraptest.py \
+          --destination plex \
+          --advertise-ip=127.0.0.1 \
+          --bootstrap-timeout 540 \
+          --docker-tag {{ $env.PLEX_CONTAINER_TAG }} \
+          --unclaimed
+        # Run main tests
+        pytest \
+          -rxXs \
+          --ignore=tests/test_sync.py \
+          --tb=native \
+          --verbose 
+          --cov-config .coveragerc \
+          --cov=plexapi \
+          tests 
+        # Run sync tests
+        pytest \
+          -rxXs \
+          --tb=native \
+          --verbose \
+          --cov-config .coveragerc \
+          --cov=plexapi \
+          --cov-append
+          tests/test_sync.py
