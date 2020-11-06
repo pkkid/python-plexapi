@@ -10,8 +10,8 @@ on:
 #    branches: [ $default-branch ]
 
 env:
-  PLEXAPI_AUTH_SERVER_BASEURL=http://127.0.0.1:32400
-  PLEX_CONTAINER_TAG=latest
+  PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
+  PLEX_CONTAINER_TAG: latest
 
 jobs:
   build:
@@ -41,10 +41,10 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unclaimed Plex server
       env:
-        PLEXAPI_HEADER_PROVIDES='controller,sync-target'
-        PLEXAPI_HEADER_PLATFORM=iOS
-        PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1
-        PLEXAPI_HEADER_DEVICE=iPhone
+        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
+        PLEXAPI_HEADER_PLATFORM: iOS
+        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
+        PLEXAPI_HEADER_DEVICE: iPhone
       run: |
         # Set up docker PMS instance
         python \
