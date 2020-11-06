@@ -27,6 +27,7 @@ def wait_for_metadata_processing(server):
             if tl.updateQueueSize > 0:
                 busy = True
                 print("{title}: {updateQueueSize} items left".format(title=section.title, updateQueueSize=tl.updateQueueSize))
+                print(tl._data.attrib)
         if not busy or attempts > MAX_ATTEMPTS:
             break
         time.sleep(1)
