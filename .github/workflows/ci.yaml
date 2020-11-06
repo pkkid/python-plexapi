@@ -53,7 +53,7 @@ jobs:
           --destination plex \
           --advertise-ip=127.0.0.1 \
           --bootstrap-timeout 540 \
-          --docker-tag {{ $env.PLEX_CONTAINER_TAG }} \
+          --docker-tag {{ env.PLEX_CONTAINER_TAG }} \
           --unclaimed
         # Run main tests
         pytest \
