@@ -713,6 +713,7 @@ class LibrarySection(PlexObject):
         if category.endswith('!'):
             if category[:-1] not in categories:
                 raise BadRequest('Unknown filter category: %s' % category[:-1])
+            category = category[:-1]
         elif category not in categories:
             raise BadRequest('Unknown filter category: %s' % category)
         if category in booleanFilters:
