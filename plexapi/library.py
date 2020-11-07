@@ -666,7 +666,7 @@ class LibrarySection(PlexObject):
         # cleanup the core arguments
         args = {}
         for category, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(category, value, libtype)
+            args[category], libtype = self._cleanSearchFilter(category, value, libtype)
         if title is not None:
             args['title'] = title
         if sort is not None:
@@ -714,6 +714,10 @@ class LibrarySection(PlexObject):
             if category[:-1] not in categories:
                 raise BadRequest('Unknown filter category: %s' % category[:-1])
             category = category[:-1]
+        if '.' in category:
+            _libtype, _category = category.split('.')
+            libtype = _libtype if libtype == None else libtype
+            category = ''.join(e for e in _category if e.isalnum())
         elif category not in categories:
             raise BadRequest('Unknown filter category: %s' % category)
         if category in booleanFilters:
@@ -735,7 +739,7 @@ class LibrarySection(PlexObject):
             # nothing matched; use raw item value
             log.debug('Filter value not listed, using raw item value: %s' % item)
             result.add(item)
-        return ','.join(result)
+        return ','.join(result), libtype
 
     def _cleanSearchSort(self, sort):
         sort = '%s:asc' % sort if ':' not in sort else sort
