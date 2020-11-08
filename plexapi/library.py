@@ -720,7 +720,7 @@ class LibrarySection(PlexObject):
             libCategory = ''.join(e for e in category if e.isalnum())
             operator = category.split(libCategory)[1]
             category = libCategory
-        catOperators = [x.key.strip('=') for x in categories.get(category)]
+        catOperators = [x.key.rsplit('=', 1)[0] for x in categories.get(category)]
         if operator not in catOperators:
             raise BadRequest('Unknown operator: %s for category: %s' % (operator, category))
         if category not in categories.keys():
