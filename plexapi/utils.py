@@ -100,7 +100,7 @@ def joinArgs(args):
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
         value = str(args[key])
-        arglist.append('%s=%s' % (key, quote(value, safe='')))
+        arglist.append('%s=%s' % (quote(key), quote(value, safe='')))
     return '?%s' % '&'.join(arglist)
 
 
