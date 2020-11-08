@@ -708,20 +708,26 @@ class LibrarySection(PlexObject):
 
     def _cleanSearchFilter(self, category, value, libtype=None):
         # check a few things before we begin
-        categories = [x.key for x in self.filterFields()]
-        booleanFilters = [x.key for x in self.filterFields() if x.type == 'boolean']
-        if category.endswith('!'):
-            if category[:-1] not in categories:
-                raise BadRequest('Unknown filter category: %s' % category[:-1])
-            category = category[:-1]
+        filterFields = self.filterFields()
+        categories = {x.key: x.operators for x in filterFields}
+        booleanFilters = [x.key for x in filterFields if x.type == 'boolean']
         if '.' in category:
-            _libtype, _category = category.split('.')
-            libtype = _libtype if libtype == None else libtype
-            category = ''.join(e for e in _category if e.isalnum())
-        elif category not in categories:
+            libtype, _category = category.split('.')
+            libCategory = ''.join(e for e in _category if e.isalnum())
+            operator = _category.split(libCategory)[1]
+            category = '%s.%s' % (libtype, libCategory)
+        else:
+            libCategory = ''.join(e for e in category if e.isalnum())
+            operator = category.split(libCategory)[1]
+            category = libCategory
+        catOperators = [x.key.strip('=') for x in categories.get(category)]
+        if operator not in catOperators:
+            raise BadRequest('Unknown operator: %s for category: %s' % (operator, category))
+        if category not in categories.keys():
             raise BadRequest('Unknown filter category: %s' % category)
         if category in booleanFilters:
-            return '1' if value else '0'
+            if value not in ['0', '1', 0, 1]:
+                raise BadRequest('Unknown booleanFilter value: %s' % value)
         if not isinstance(value, (list, tuple)):
             value = [value]
         # convert list of values to list of keys or ids
