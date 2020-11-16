@@ -1573,10 +1573,9 @@ class Path(PlexObject):
             home (bool): True if the path is the home directory
             key (str): API URL (/services/browse/<base64path>)
             network (bool): True if path is a network location
-            path (str): Full path
-            title (str): Path folder
+            path (str): Full path to folder
+            title (str): Folder name
     """
-
     TAG = 'Path'
 
     def _loadData(self, data):
@@ -1604,10 +1603,9 @@ class File(PlexObject):
             TAG (str): 'File'
 
             key (str): API URL (/services/browse/<base64path>)
-            path (str): Full path
-            title (str): Path folder
+            path (str): Full path to file
+            title (str): File name
     """
-
     TAG = 'File'
 
     def _loadData(self, data):
