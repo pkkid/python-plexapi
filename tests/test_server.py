@@ -287,6 +287,15 @@ def test_server_downloadDatabases(tmpdir, plex):
     assert len(tmpdir.listdir()) > 1
 
 
+def test_server_browse(plex, movies):
+    # browse root
+    paths = plex.browse()
+    assert len(paths)
+    # browse of the files of the movie lib.
+    for path, paths, files in plex.walk(movies.locations[0]):
+        assert len(files)
+
+
 def test_server_allowMediaDeletion(account):
     plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
     # Check server current allowMediaDeletion setting
