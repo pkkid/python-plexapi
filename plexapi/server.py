@@ -15,7 +15,7 @@ from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Hub, Library
+from plexapi.library import Hub, Library, Path, File
 from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
@@ -252,11 +252,14 @@ class PlexServer(PlexObject):
             Returns list of :class:`~plexapi.library.Path` and :class:`~plexapi.library.File` objects.
 
             Parameters:
-                path (str): Path to browse.
+                path (:class:`~plexapi.library.Path` or str, optional): Path to browse.
         """
         if path is not None:
-            base64path = utils.base64str(path)
-            key = '/services/browse/%s?includeFiles=1' % base64path
+            if isinstance(path, Path):
+                key = '%s?includeFiles=1' % path.key
+            else:
+                base64path = utils.base64str(path)
+                key = '/services/browse/%s?includeFiles=1' % base64path
         else:
             key = '/services/browse?includeFiles=1'
         return self.fetchItems(key)
@@ -269,21 +272,23 @@ class PlexServer(PlexObject):
             `files` is a list of :class:`~plexapi.library.File` objects.
 
             Parameters:
-                path (str): Path to walk.
+                path (:class:`~plexapi.library.Path` or str, optional): Path to walk.
         """
-        items = self.browse(path)
-        path = path or ''
         paths = []
         files = []
-        for item in items:
-            if item.TAG == 'Path':
+        for item in self.browse(path):
+            if isinstance(item, Path):
                 paths.append(item)
-            elif item.TAG == 'File':
+            elif isinstance(item, File):
                 files.append(item)
-        yield path, paths, files
+
+        if isinstance(path, Path):
+            path = path.path
+
+        yield path or '', paths, files
 
         for _path in paths:
-            for path, paths, files in self.walk(_path.path):
+            for path, paths, files in self.walk(_path):
                 yield path, paths, files
 
     def clients(self):
