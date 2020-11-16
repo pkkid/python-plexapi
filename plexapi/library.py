@@ -1586,14 +1586,15 @@ class Path(PlexObject):
         self.path = data.attrib.get('path')
         self.title = data.attrib.get('title')
 
-    def browse(self):
+    def browse(self, includeFiles=True):
         """ Alias for :func:`~plexapi.server.PlexServer.browse()`. """
-        return self._server.browse(self)
+        return self._server.browse(self, includeFiles)
 
     def walk(self):
         """ Alias for :func:`~plexapi.server.PlexServer.walk()`. """
         for path, paths, files in self._server.walk(self):
             yield path, paths, files
+
 
 @utils.registerPlexObject
 class File(PlexObject):

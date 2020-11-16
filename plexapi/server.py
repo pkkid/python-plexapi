@@ -247,21 +247,24 @@ class PlexServer(PlexObject):
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
 
-    def browse(self, path=None):
+    def browse(self, path=None, includeFiles=True):
         """ Browse the system file path using the Plex API.
             Returns list of :class:`~plexapi.library.Path` and :class:`~plexapi.library.File` objects.
 
             Parameters:
                 path (:class:`~plexapi.library.Path` or str, optional): Path to browse.
+                includeFiles (bool): True to include files when browsing (Default).
+                                     False to only return folders.
         """
-        if path is not None:
-            if isinstance(path, Path):
-                key = '%s?includeFiles=1' % path.key
-            else:
-                base64path = utils.base64str(path)
-                key = '/services/browse/%s?includeFiles=1' % base64path
+        if isinstance(path, Path):
+            key = path.key
+        elif path is not None:
+            base64path = utils.base64str(path)
+            key = '/services/browse/%s' % base64path
         else:
-            key = '/services/browse?includeFiles=1'
+            key = '/services/browse'
+        if includeFiles:
+            key = '%s?includeFiles=1' % key
         return self.fetchItems(key)
 
     def walk(self, path=None):
