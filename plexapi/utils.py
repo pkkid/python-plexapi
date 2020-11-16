@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import base64
 import logging
 import os
 import re
@@ -411,3 +412,7 @@ def getAgentIdentifier(section, agent):
         agents += identifiers
     raise NotFound('Couldnt find "%s" in agents list (%s)' %
                    (agent, ', '.join(agents)))
+
+
+def base64str(text):
+    return base64.b64encode(text.encode('utf-8')).decode('utf-8')

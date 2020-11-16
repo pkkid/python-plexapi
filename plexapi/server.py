@@ -247,6 +247,45 @@ class PlexServer(PlexObject):
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
 
+    def browse(self, path=None):
+        """ Browse the system file path using the Plex API.
+            Returns list of :class:`~plexapi.library.Path` and :class:`~plexapi.library.File` objects.
+
+            Parameters:
+                path (str): Path to browse.
+        """
+        if path is not None:
+            base64path = utils.base64str(path)
+            key = '/services/browse/%s?includeFiles=1' % base64path
+        else:
+            key = '/services/browse?includeFiles=1'
+        return self.fetchItems(key)
+
+    def walk(self, path=None):
+        """ Walk the system file tree using the Plex API similar to `os.walk`.
+            Yields a 3-tuple `(path, paths, files)` where
+            `path` is a string of the directory path,
+            `paths` is a list of :class:`~plexapi.library.Path` objects, and
+            `files` is a list of :class:`~plexapi.library.File` objects.
+
+            Parameters:
+                path (str): Path to walk.
+        """
+        items = self.browse(path)
+        path = path or ''
+        paths = []
+        files = []
+        for item in items:
+            if item.TAG == 'Path':
+                paths.append(item)
+            elif item.TAG == 'File':
+                files.append(item)
+        yield path, paths, files
+
+        for _path in paths:
+            for path, paths, files in self.walk(_path.path):
+                yield path, paths, files
+
     def clients(self):
         """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
         items = []

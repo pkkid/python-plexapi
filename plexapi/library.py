@@ -1561,3 +1561,51 @@ class Collections(PlexPartialObject):
 
     # def edit(self, **kwargs):
     #    TODO
+
+
+@utils.registerPlexObject
+class Path(PlexObject):
+    """ Represents a single directory Path.
+
+        Attributes:
+            TAG (str): 'Path'
+
+            home (bool): True if the path is the home directory
+            key (str): API URL (/services/browse/<base64path>)
+            network (bool): True if path is a network location
+            path (str): Full path
+            title (str): Path folder
+    """
+
+    TAG = 'Path'
+
+    def _loadData(self, data):
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.key = data.attrib.get('key')
+        self.network = utils.cast(bool, data.attrib.get('network'))
+        self.path = data.attrib.get('path')
+        self.title = data.attrib.get('title')
+
+    def browse(self):
+        key = '%s?includeFiles=1' % self.key
+        return self._server.fetchItems(key)
+
+
+@utils.registerPlexObject
+class File(PlexObject):
+    """ Represents a single File.
+
+        Attributes:
+            TAG (str): 'File'
+
+            key (str): API URL (/services/browse/<base64path>)
+            path (str): Full path
+            title (str): Path folder
+    """
+
+    TAG = 'File'
+
+    def _loadData(self, data):
+        self.key = data.attrib.get('key')
+        self.path = data.attrib.get('path')
+        self.title = data.attrib.get('title')
