@@ -10,12 +10,33 @@ on:
 #    branches: [ $default-branch ]
 
 env:
+  DEFAULT_PYTHON: 3.7
   PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
   PLEX_CONTAINER_TAG: latest
 
 jobs:
-  build:
+  lint-flake8:
+    name: Check flake8
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.DEFAULT_PYTHON }}
+    - name: Install dependencies
+      run: |
+        pip install -U pip
+        pip install -r requirements_dev.txt
+        pip install -e .
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # The GitHub editor is 127 chars wide
+        flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
 
+  pytest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,16 +51,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+        pip install -U pip
+        pip install -r requirements_dev.txt
         pip install -e .
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with unclaimed Plex server
       env:
         PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
