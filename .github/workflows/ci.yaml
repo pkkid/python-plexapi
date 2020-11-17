@@ -118,6 +118,8 @@ jobs:
         PLEXAPI_HEADER_PLATFORM: iOS
         PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
         PLEXAPI_HEADER_DEVICE: iPhone
+        PLEXAPI_AUTH_MYPLEX_USERNAME: ${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}
+        PLEXAPI_AUTH_MYPLEX_PASSWORD: ${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}
       run: |
         # Set up docker PMS instance
         python \
