@@ -36,7 +36,8 @@ jobs:
         # The GitHub editor is 127 chars wide
         flake8 plexapi --count --max-complexity=12 --max-line-length=127 --statistics
 
-  pytest:
+  pytest-unclaimed:
+    name: pytest (unclaimed)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -60,6 +61,7 @@ jobs:
         PLEXAPI_HEADER_PLATFORM: iOS
         PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
         PLEXAPI_HEADER_DEVICE: iPhone
+        TEST_ACCOUNT_ONCE: 1
       run: |
         # Set up docker PMS instance
         python \
@@ -69,6 +71,61 @@ jobs:
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
           --unclaimed
+        # Run main tests
+        pytest \
+          -rxXs \
+          --ignore=tests/test_sync.py \
+          --tb=native \
+          --verbose \
+          --cov-config .coveragerc \
+          --cov=plexapi \
+          tests 
+        # Run sync tests
+        pytest \
+          -rxXs \
+          --tb=native \
+          --verbose \
+          --cov-config .coveragerc \
+          --cov=plexapi \
+          --cov-append \
+          tests/test_sync.py
+
+
+  pytest-claimed:
+    name: pytest (claimed)
+    runs-on: ubuntu-latest
+    env:
+      PLEXAPI_AUTH_MYPLEX_USERNAME: ''
+    strategy:
+      matrix:
+#        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -U pip
+        pip install -r requirements_dev.txt
+        pip install -e .
+    - name: Test with claimed Plex server
+      env:
+        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
+        PLEXAPI_HEADER_PLATFORM: iOS
+        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
+        PLEXAPI_HEADER_DEVICE: iPhone
+      run: |
+        # Set up docker PMS instance
+        python \
+          -u tools/plex-bootstraptest.py \
+          --destination plex \
+          --advertise-ip=127.0.0.1 \
+          --bootstrap-timeout 540 \
+          --docker-tag ${{ env.PLEX_CONTAINER_TAG }}
         # Run main tests
         pytest \
           -rxXs \
