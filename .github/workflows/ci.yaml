@@ -60,7 +60,7 @@ jobs:
           -rxXs \
           --ignore=tests/test_sync.py \
           --tb=native \
-          --verbose 
+          --verbose \
           --cov-config .coveragerc \
           --cov=plexapi \
           tests 
@@ -71,5 +71,5 @@ jobs:
           --verbose \
           --cov-config .coveragerc \
           --cov=plexapi \
-          --cov-append
+          --cov-append \
           tests/test_sync.py
