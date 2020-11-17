@@ -38,6 +38,7 @@ jobs:
 
   pytest-unclaimed:
     name: pytest (unclaimed)
+    needs: lint-flake8
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -93,9 +94,8 @@ jobs:
 
   pytest-claimed:
     name: pytest (claimed)
+    needs: pytest-unclaimed
     runs-on: ubuntu-latest
-    env:
-      PLEXAPI_AUTH_MYPLEX_USERNAME: ''
     strategy:
       matrix:
 #        python-version: [3.5, 3.6, 3.7, 3.8]
