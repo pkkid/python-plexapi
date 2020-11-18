@@ -37,12 +37,11 @@ jobs:
         flake8 plexapi --count --max-complexity=12 --max-line-length=127 --statistics
 
   pytest-unclaimed:
-    name: pytest (unclaimed)
+    name: pytest ${{ matrix.pytest-version }} (unclaimed)
     needs: lint-flake8
     runs-on: ubuntu-latest
     strategy:
       matrix:
-#        python-version: [3.5, 3.6, 3.7, 3.8]
         python-version: [3.6]
 
     steps:
@@ -93,12 +92,12 @@ jobs:
 
 
   pytest-claimed:
-    name: pytest (claimed)
+    name: pytest ${{ matrix.python-version }} (claimed)
     needs: pytest-unclaimed
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-#        python-version: [3.5, 3.6, 3.7, 3.8]
         python-version: [3.6]
 
     steps:
