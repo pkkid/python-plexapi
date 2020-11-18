@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-MAX_ATTEMPTS = 180
+MAX_ATTEMPTS = 60
 
 
 def wait_for_idle_server(server):
@@ -27,7 +27,6 @@ def wait_for_metadata_processing(server):
             if tl.updateQueueSize > 0:
                 busy = True
                 print("{title}: {updateQueueSize} items left".format(title=section.title, updateQueueSize=tl.updateQueueSize))
-                print(tl._data.attrib)
         if not busy or attempts > MAX_ATTEMPTS:
             break
         time.sleep(1)
