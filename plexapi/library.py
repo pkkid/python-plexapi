@@ -578,9 +578,15 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/emptyTrash' % self.key
         self._server.query(key, method=self._server._session.put)
 
-    def update(self):
-        """ Scan this section for new media. """
+    def update(self, path=None):
+        """ Scan this section for new media.
+
+            Parameters:
+                path (str, optional): Full path to folder to scan.
+        """
         key = '/library/sections/%s/refresh' % self.key
+        if path is not None:
+            key += '?path=%s' % quote_plus(path)
         self._server.query(key)
 
     def cancelUpdate(self):

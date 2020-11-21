@@ -139,6 +139,10 @@ def test_library_MovieSection_update(movies):
     movies.update()
 
 
+def test_library_MovieSection_update_path(movies):
+    movies.update(path=movies.locations[0])
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
