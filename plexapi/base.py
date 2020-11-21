@@ -89,6 +89,20 @@ class PlexObject(object):
         except UnknownType:
             return None
 
+    def _buildDetailsKey(self, **kwargs):
+        """ Builds the details key with the XML include parameters.
+            All parameters are included by default with the option to override each parameter
+            or disable each parameter individually by setting it to False or 0.
+        """
+        if hasattr(self, '_includes'):
+            includes = {}
+            for k, v in self._includes.items():
+                value = kwargs.get(k, v)
+                if value not in [False, 0, '0']:
+                    includes[k] = 1 if value is True else value
+            self._details_key = self.key + '?' + urlencode(includes, doseq=True)
+        return self._details_key
+
     def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
             specified tag and attrs. If no tag or attrs are specified then
@@ -203,9 +217,14 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key=None):
-        """ Reload the data for this object from self.key. """
-        key = key or self._details_key or self.key
+    def reload(self, key=None, **kwargs):
+        """ Reload the data for this object from self.key.
+
+            Parameters:
+                key (string, optional): The key to reload.
+                **kwargs (dict): A dictionary of XML include parameters.
+        """
+        key = key or self._buildDetailsKey(**kwargs) or self.key
         if not key:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key

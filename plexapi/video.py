@@ -28,6 +28,26 @@ class Video(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
+    _includes = {
+        'checkFiles': 1,
+        'includeAllConcerts': 1,
+        'includeBandwidths': 1,
+        'includeChapters': 1,
+        'includeChildren': 1,
+        'includeConcerts': 1,
+        'includeExtras': 1,
+        'includeFields': [1, 'thumbBlurHash', 'artBlurHash'],
+        'includeGeolocation': 1,
+        'includeLoudnessRamps': 1,
+        'includeMarkers': 1,
+        'includeOnDeck': 1,
+        'includePopularLeaves': 1,
+        'includePreferences': 1,
+        'includeRelated': 1,
+        'includeRelatedCount': 1,
+        'includeReviews': 1,
+        'includeStations': 1
+    }
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -286,16 +306,12 @@ class Movie(Playable, Video):
     TAG = 'Video'
     TYPE = 'movie'
     METADATA_TYPE = 'movie'
-    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
-                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeConcerts=1&includePreferences=1')
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
 
-        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
@@ -401,10 +417,6 @@ class Show(Video):
     TYPE = 'show'
     METADATA_TYPE = 'episode'
 
-    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
-                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
-
     def __iter__(self):
         for season in self.seasons():
             yield season
@@ -414,7 +426,6 @@ class Show(Video):
         Video._loadData(self, data)
         # fix key if loaded from search
         self.key = self.key.replace('/children', '')
-        self._details_key = self.key + self._include
         self.art = data.attrib.get('art')
         self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
@@ -707,15 +718,10 @@ class Episode(Playable, Video):
     TYPE = 'episode'
     METADATA_TYPE = 'episode'
 
-    _include = ('?checkFiles=1&includeExtras=1&includeRelated=1'
-                '&includeOnDeck=1&includeChapters=1&includePopularLeaves=1'
-                '&includeMarkers=1&includeConcerts=1&includePreferences=1')
-
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
-        self._details_key = self.key + self._include
         self._seasonNumber = None  # cached season number
         self.art = data.attrib.get('art')
         self.chapterSource = data.attrib.get('chapterSource')
