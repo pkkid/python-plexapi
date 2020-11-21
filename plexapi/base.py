@@ -334,9 +334,9 @@ class PlexPartialObject(PlexObject):
         """ Retruns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
-            object (main url) for that movie contain.
+            object (main url) for that movie would contain.
         """
-        return not self.key or self.key == self._initpath
+        return not self.key or (self._details_key or self.key) == self._initpath
 
     def isPartialObject(self):
         """ Returns True if this is not a full object. """
@@ -611,14 +611,6 @@ class Playable(object):
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
         self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
-
-    def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
-            were populated from the api path representing only this item. For example, the
-            search result for a movie often only contain a portion of the attributes a full
-            object (main url) for that movie contain.
-        """
-        return self._details_key == self._initpath or not self.key
 
     def getStreamURL(self, **params):
         """ Returns a stream url that may be used by external applications such as VLC.
