@@ -89,7 +89,7 @@ class PlexObject(object):
         except UnknownType:
             return None
 
-    def _buildDetailsKey(self, **kwargs):
+    def _buildDetailsKey(self, buildOnly=False, **kwargs):
         """ Builds the details key with the XML include parameters.
             All parameters are included by default with the option to override each parameter
             or disable each parameter individually by setting it to False or 0.
@@ -100,7 +100,10 @@ class PlexObject(object):
                 value = kwargs.get(k, v)
                 if value not in [False, 0, '0']:
                     includes[k] = 1 if value is True else value
-            self._details_key = self.key + '?' + urlencode(includes, doseq=True)
+            details_key = self.key + '?' + urlencode(includes, doseq=True)
+            if buildOnly:
+                return details_key
+            self._details_key = details_key
         return self._details_key
 
     def fetchItem(self, ekey, cls=None, **kwargs):

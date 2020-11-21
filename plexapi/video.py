@@ -461,7 +461,7 @@ class Show(Video):
     def preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
         items = []
-        data = self._server.query(self._details_key)
+        data = self._server.query(self._buildDetailsKey(buildOnly=True))
         for item in data.iter('Preferences'):
             for elem in item:
                 setting = settings.Preferences(data=elem, server=self._server)
@@ -495,7 +495,7 @@ class Show(Video):
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        data = self._server.query(self._details_key)
+        data = self._server.query(self._buildDetailsKey(buildOnly=True))
         for item in data.iter('Related'):
             return self.findItems(item, library.Hub)
 
@@ -503,7 +503,7 @@ class Show(Video):
         """ Returns shows On Deck :class:`~plexapi.video.Video` object.
             If show is unwatched, return will likely be the first episode.
         """
-        data = self._server.query(self._details_key)
+        data = self._server.query(self._buildDetailsKey(buildOnly=True))
         return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
     def seasons(self, **kwargs):

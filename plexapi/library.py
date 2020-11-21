@@ -1429,11 +1429,13 @@ class Collections(PlexPartialObject):
 
     TAG = 'Directory'
     TYPE = 'collection'
-    _include = "?includeExternalMedia=1&includePreferences=1"
+    _includes = {
+        'includeExternalMedia': 1,
+        'includePreferences': 1
+    }
 
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
-        self._details_key = "/library/metadata/%s%s" % (self.ratingKey, self._include)
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
@@ -1468,7 +1470,7 @@ class Collections(PlexPartialObject):
     def _preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
         items = []
-        data = self._server.query(self._details_key)
+        data = self._server.query(self._buildDetailsKey(buildOnly=True))
         for item in data.iter('Setting'):
             items.append(Setting(data=item, server=self._server))
 
