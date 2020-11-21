@@ -12,6 +12,7 @@ syntax: glob
 .coverage
 .idea/
 .Python
+.vscode
 bin/
 build
 config.ini
