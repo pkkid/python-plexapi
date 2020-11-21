@@ -252,7 +252,7 @@ class PlexServer(PlexObject):
             Returns list of :class:`~plexapi.library.Path` and :class:`~plexapi.library.File` objects.
 
             Parameters:
-                path (:class:`~plexapi.library.Path` or str, optional): Path to browse.
+                path (:class:`~plexapi.library.Path` or str, optional): Full path to browse.
                 includeFiles (bool): True to include files when browsing (Default).
                                      False to only return folders.
         """
@@ -264,7 +264,7 @@ class PlexServer(PlexObject):
         else:
             key = '/services/browse'
         if includeFiles:
-            key = '%s?includeFiles=1' % key
+            key += '?includeFiles=1'
         return self.fetchItems(key)
 
     def walk(self, path=None):
@@ -275,7 +275,7 @@ class PlexServer(PlexObject):
             `files` is a list of :class:`~plexapi.library.File` objects.
 
             Parameters:
-                path (:class:`~plexapi.library.Path` or str, optional): Path to walk.
+                path (:class:`~plexapi.library.Path` or str, optional): Full path to walk.
         """
         paths = []
         files = []
