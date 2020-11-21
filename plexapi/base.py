@@ -102,7 +102,7 @@ class PlexObject(object):
                 if value not in [False, 0, '0']:
                     includes[k] = 1 if value is True else value
             if includes:
-                details_key += '?' + urlencode(includes, doseq=True)
+                details_key += '?' + urlencode(sorted(includes.items()), doseq=True)
         return details_key
 
     def fetchItem(self, ekey, cls=None, **kwargs):
