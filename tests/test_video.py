@@ -909,7 +909,7 @@ def test_video_edits_locked(movie, episode):
     for field in movie.fields:
         if field.name == 'titleSort':
             assert movie.titleSort == 'New Title Sort'
-            assert field.locked == True
+            assert field.locked is True
     movie.edit(**{'titleSort.value': movieTitleSort, 'titleSort.locked': 0})
 
     episodeTitleSort = episode.titleSort
@@ -918,7 +918,7 @@ def test_video_edits_locked(movie, episode):
     for field in episode.fields:
         if field.name == 'titleSort':
             assert episode.titleSort == 'New Title Sort'
-            assert field.locked == True
+            assert field.locked is True
     episode.edit(**{'titleSort.value': episodeTitleSort, 'titleSort.locked': 0})
 
 
