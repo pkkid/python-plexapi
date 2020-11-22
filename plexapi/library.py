@@ -1429,10 +1429,6 @@ class Collections(PlexPartialObject):
 
     TAG = 'Directory'
     TYPE = 'collection'
-    _includes = {
-        'includeExternalMedia': 1,
-        'includePreferences': 1
-    }
 
     def _loadData(self, data):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))

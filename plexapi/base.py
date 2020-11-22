@@ -95,9 +95,9 @@ class PlexObject(object):
             or disable each parameter individually by setting it to False or 0.
         """
         details_key = self.key
-        if hasattr(self, '_includes'):
+        if hasattr(self, '_INCLUDES'):
             includes = {}
-            for k, v in self._includes.items():
+            for k, v in self._INCLUDES.items():
                 value = kwargs.get(k, v)
                 if value not in [False, 0, '0']:
                     includes[k] = 1 if value is True else value
@@ -303,6 +303,27 @@ class PlexPartialObject(PlexObject):
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
     """
+    _INCLUDES = {
+        'checkFiles': 1,
+        'includeAllConcerts': 1,
+        'includeBandwidths': 1,
+        'includeChapters': 1,
+        'includeChildren': 1,
+        'includeConcerts': 1,
+        'includeExternalMedia': 1,
+        'includeExtras': 1,
+        'includeFields': [1, 'thumbBlurHash', 'artBlurHash'],
+        'includeGeolocation': 1,
+        'includeLoudnessRamps': 1,
+        'includeMarkers': 1,
+        'includeOnDeck': 1,
+        'includePopularLeaves': 1,
+        'includePreferences': 1,
+        'includeRelated': 1,
+        'includeRelatedCount': 1,
+        'includeReviews': 1,
+        'includeStations': 1
+    }
 
     def __eq__(self, other):
         return other not in [None, []] and self.key == other.key

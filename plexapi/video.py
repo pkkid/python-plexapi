@@ -28,26 +28,6 @@ class Video(PlexPartialObject):
             updatedAt (datatime): Datetime this item was updated.
             viewCount (int): Count of times this item was accessed.
     """
-    _includes = {
-        'checkFiles': 1,
-        'includeAllConcerts': 1,
-        'includeBandwidths': 1,
-        'includeChapters': 1,
-        'includeChildren': 1,
-        'includeConcerts': 1,
-        'includeExtras': 1,
-        'includeFields': [1, 'thumbBlurHash', 'artBlurHash'],
-        'includeGeolocation': 1,
-        'includeLoudnessRamps': 1,
-        'includeMarkers': 1,
-        'includeOnDeck': 1,
-        'includePopularLeaves': 1,
-        'includePreferences': 1,
-        'includeRelated': 1,
-        'includeRelatedCount': 1,
-        'includeReviews': 1,
-        'includeStations': 1
-    }
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
