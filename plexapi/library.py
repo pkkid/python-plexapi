@@ -1403,6 +1403,8 @@ class Collections(PlexPartialObject):
 
             ratingKey (int): Unique key identifying this item.
             addedAt (datetime): Datetime this item was added to the library.
+            art (str): URL to artwork image.
+            artBlurHash (str): BlurHash string for artwork image.
             childCount (int): Count of child object(s)
             collectionMode (str): How the items in the collection are displayed.
             collectionSort (str): How to sort the items in the collection.
@@ -1420,6 +1422,7 @@ class Collections(PlexPartialObject):
             subtype (str): Media type
             summary (str): Summary of the collection
             thumb (str): URL to thumbnail image.
+            thumbBlurHash (str): BlurHash string for thumbnail image.
             title (str): Collection Title
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): Hardcoded 'collection'

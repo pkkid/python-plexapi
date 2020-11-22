@@ -11,6 +11,8 @@ class Audio(PlexPartialObject):
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            art (str): URL to artwork image.
+            artBlurHash (str): BlurHash string for artwork image.
             fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index Number (often the track number).
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -20,6 +22,7 @@ class Audio(PlexPartialObject):
             ratingKey (int): Unique key identifying this item.
             summary (str): Summary of the artist, track, or album.
             thumb (str): URL to thumbnail image.
+            thumbBlurHash (str): BlurHash string for thumbnail image.
             title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'artist', 'album', or 'track'.
@@ -115,7 +118,6 @@ class Artist(Audio):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'artist'
-            art (str): Artist artwork (/library/metadata/<ratingkey>/art/<artid>)
             countries (list): List of :class:`~plexapi.media.Country` objects this artist respresents.
             genres (list): List of :class:`~plexapi.media.Genre` objects this artist respresents.
             guid (str): Unknown (unique ID; com.plexapp.agents.plexmusic://gracenote/artist/05517B8701668D28?lang=en)
@@ -200,7 +202,6 @@ class Album(Audio):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'album'
-            art (str): Album artwork (/library/metadata/<ratingkey>/art/<artid>)
             genres (list): List of :class:`~plexapi.media.Genre` objects this album respresents.
             key (str): API URL (/library/metadata/<ratingkey>).
             originallyAvailableAt (datetime): Datetime this album was released.
@@ -285,7 +286,6 @@ class Track(Audio, Playable):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'track'
-            art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (TYPE): Unknown
             duration (int): Length of this album in seconds.
             grandparentArt (str): Album artist artwork.

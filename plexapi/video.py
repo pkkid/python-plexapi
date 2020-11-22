@@ -14,6 +14,8 @@ class Video(PlexPartialObject):
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            art (str): URL to artwork image.
+            artBlurHash (str): BlurHash string for artwork image.
             fields (list): List of :class:`~plexapi.media.Field`.
             key (str): API URL (/library/metadata/<ratingkey>).
             lastViewedAt (datetime): Datetime item was last accessed.
@@ -22,6 +24,7 @@ class Video(PlexPartialObject):
             ratingKey (int): Unique key identifying this item.
             summary (str): Summary of the artist, track, or album.
             thumb (str): URL to thumbnail image.
+            thumbBlurHash (str): BlurHash string for thumbnail image.
             title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'artist', 'album', or 'track'.
