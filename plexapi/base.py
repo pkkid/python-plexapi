@@ -102,7 +102,7 @@ class PlexObject(object):
                 if value not in [False, 0, '0']:
                     includes[k] = 1 if value is True else value
             if includes:
-                details_key += '?' + urlencode(sorted(includes.items()), doseq=True)
+                details_key += '?' + urlencode(sorted(includes.items()))
         return details_key
 
     def fetchItem(self, ekey, cls=None, **kwargs):
@@ -336,7 +336,7 @@ class PlexPartialObject(PlexObject):
         'includeConcerts': 1,
         'includeExternalMedia': 1,
         'includeExtras': 1,
-        'includeFields': [1, 'thumbBlurHash', 'artBlurHash'],
+        'includeFields': 'thumbBlurHash,artBlurHash',
         'includeGeolocation': 1,
         'includeLoudnessRamps': 1,
         'includeMarkers': 1,

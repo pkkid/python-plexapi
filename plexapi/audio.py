@@ -34,6 +34,8 @@ class Audio(PlexPartialObject):
         self._data = data
         self.listType = 'audio'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
+        self.artBlurHash = data.attrib.get('artBlurHash')
         self.fields = self.findItems(data, etag='Field')
         self.index = data.attrib.get('index')
         self.key = data.attrib.get('key')
@@ -42,6 +44,7 @@ class Audio(PlexPartialObject):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
+        self.thumbBlurHash = data.attrib.get('thumbBlurHash')
         self.title = data.attrib.get('title')
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
@@ -126,7 +129,6 @@ class Artist(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.locations = self.listAttrs(data, 'path', etag='Location')
@@ -219,7 +221,6 @@ class Album(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.key = self.key.replace('/children', '')  # fixes bug #50
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey')
@@ -319,7 +320,6 @@ class Track(Audio, Playable):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.chapterSource = data.attrib.get('chapterSource')
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.grandparentArt = data.attrib.get('grandparentArt')
