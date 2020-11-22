@@ -223,8 +223,32 @@ class PlexObject(object):
         """ Reload the data for this object from self.key.
 
             Parameters:
-                key (string, optional): The key to reload.
-                **kwargs (dict): A dictionary of XML include parameters.
+                key (string, optional): Override the key to reload.
+                **kwargs (dict): A dictionary of XML include parameters to exclude or override.
+                    All parameters are included by default with the option to override each parameter
+                    or disable each parameter individually by setting it to False or 0.
+                    See :class:`~plexapi.base.PlexPartialObject` for all the available include parameters.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi.server import PlexServer
+                    plex = PlexServer('http://localhost:32400', token='xxxxxxxxxxxxxxxxxxxx')
+                    movie = plex.library.section('Movies').get('Cars')
+
+                    # Partial reload of the movie without the `checkFiles` parameter.
+                    # Excluding `checkFiles` will prevent the Plex server from reading the
+                    # file to check if the file still exists and is accessible.
+                    # The movie object will remain as a partial object.
+                    movie.reload(checkFiles=False)
+                    movie.isPartialObject()  # Returns True
+
+                    # Full reload of the movie with all include parameters.
+                    # The movie object will be a full object.
+                    movie.reload()
+                    movie.isFullObject()  # Returns True
+
         """
         details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
         key = key or details_key or self.key
