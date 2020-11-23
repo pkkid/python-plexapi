@@ -240,8 +240,8 @@ class Playlist(PlexPartialObject, Playable):
                              generated from metadata of current photo.
 
             Raises:
-                :exc:`plexapi.exceptions.BadRequest`: when playlist is not allowed to sync.
-                :exc:`plexapi.exceptions.Unsupported`: when playlist content is unsupported.
+                :exc:`~plexapi.exceptions.BadRequest`: when playlist is not allowed to sync.
+                :exc:`~plexapi.exceptions.Unsupported`: when playlist content is unsupported.
 
             Returns:
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.

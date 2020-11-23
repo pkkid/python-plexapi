@@ -13,14 +13,7 @@ recommonmark
 requests
 requests-mock
 sphinx
-sphinxcontrib-napoleon
+sphinx-rtd-theme
 tqdm
 websocket-client
 mock; python_version < '3.3'
-
-
-# Installing sphinx-rtd-theme directly from github above is used until a point release
-# above 0.4.3 is released. https://github.com/readthedocs/sphinx_rtd_theme/issues/739
-#sphinx-rtd-theme
--e git+https://github.com/readthedocs/sphinx_rtd_theme.git@feb0beb44a444f875f3369a945e6055965ee993f#egg=sphinx_rtd_theme
-

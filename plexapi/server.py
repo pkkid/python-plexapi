@@ -317,7 +317,7 @@ class PlexServer(PlexObject):
                 name (str): Name of the client to return.
 
             Raises:
-                :exc:`plexapi.exceptions.NotFound`: Unknown client name
+                :exc:`~plexapi.exceptions.NotFound`: Unknown client name
         """
         for client in self.clients():
             if client and client.title == name:
@@ -440,7 +440,7 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :exc:`plexapi.exceptions.NotFound`: Invalid playlist title
+                :exc:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
 
@@ -542,7 +542,7 @@ class PlexServer(PlexObject):
                 callback (func): Callback function to call on recieved messages.
 
             Raises:
-                :exc:`plexapi.exception.Unsupported`: Websocket-client not installed.
+                :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
         notifier = AlertListener(self, callback)
         notifier.start()
