@@ -1500,7 +1500,7 @@ class Collections(PlexPartialObject):
                 collection = 'plexapi.library.Collections'
                 collection.updateMode(mode="hide")
         """
-        mode_dict = {'default': '-2',
+        mode_dict = {'default': '-1',
                      'hide': '0',
                      'hideItems': '1',
                      'showItems': '2'}
