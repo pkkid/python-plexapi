@@ -76,20 +76,20 @@ class Audio(PlexPartialObject):
 
     def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
         """ Add current audio (artist, album or track) as sync item for specified device.
-            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
+            See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
             Parameters:
                 bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
-                               module :mod:`plexapi.sync`.
-                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
-                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
-                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                               module :mod:`~plexapi.sync`.
+                client (:class:`~plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`~plexapi.myplex.MyPlexAccount.sync`.
                 limit (int): maximum count of items to sync, unlimited if `None`.
-                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                title (str): descriptive title for the new :class:`~plexapi.sync.SyncItem`, if empty the value would be
                              generated from metadata of current media.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
@@ -183,7 +183,7 @@ class Artist(Audio):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
@@ -264,7 +264,7 @@ class Album(Audio):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.

@@ -450,13 +450,13 @@ class LibrarySection(PlexObject):
         return self.fetchItems(key, **kwargs)
 
     def folders(self):
-        """ Returns a list of available `:class:`~plexapi.library.Folder` for this library section.
+        """ Returns a list of available :class:`~plexapi.library.Folder` for this library section.
         """
         key = '/library/sections/%s/folder' % self.key
         return self.fetchItems(key, Folder)
 
     def hubs(self):
-        """ Returns a list of available `:class:`~plexapi.library.Hub` for this library section.
+        """ Returns a list of available :class:`~plexapi.library.Hub` for this library section.
         """
         key = '/hubs/sections/%s' % self.key
         return self.fetchItems(key)
@@ -467,7 +467,7 @@ class LibrarySection(PlexObject):
         return self.fetchItems(key, cls=Filter)
 
     def _sorts(self, mediaType=None):
-        """ Returns a list of available `:class:`~plexapi.library.Sort` for this library section.
+        """ Returns a list of available :class:`~plexapi.library.Sort` for this library section.
         """
         items = []
         for data in self.listChoices('sorts', mediaType):
@@ -477,7 +477,7 @@ class LibrarySection(PlexObject):
         return items
 
     def filterFields(self, mediaType=None):
-        """ Returns a list of available `:class:`~plexapi.library.FilterField` for this library section.
+        """ Returns a list of available :class:`~plexapi.library.FilterField` for this library section.
         """
         items = []
         key = '/library/sections/%s/filters?includeMeta=1' % self.key
@@ -496,7 +496,7 @@ class LibrarySection(PlexObject):
         return items
 
     def agents(self):
-        """ Returns a list of available `:class:`~plexapi.media.Agent` for this library section.
+        """ Returns a list of available :class:`~plexapi.media.Agent` for this library section.
         """
         return self._server.agents(utils.searchType(self.type))
 
@@ -605,7 +605,7 @@ class LibrarySection(PlexObject):
     def listChoices(self, category, libtype=None, **kwargs):
         """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the
             specified category and libtype. kwargs can be any of the same kwargs in
-            :func:`plexapi.library.LibraySection.search()` to help narrow down the choices
+            :func:`~plexapi.library.LibraySection.search` to help narrow down the choices
             to only those that matter in your current context.
 
             Parameters:
@@ -614,7 +614,7 @@ class LibrarySection(PlexObject):
                 **kwargs (dict): Additional kwargs to narrow down the choices.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
+                :class:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
         """
         # TODO: Should this be moved to base?
         if category in kwargs:
@@ -661,7 +661,7 @@ class LibrarySection(PlexObject):
                         * year: List of years to search within ([yyyy, ...]). [all]
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: when applying unknown filter
+                :class:`~plexapi.exceptions.BadRequest`: when applying unknown filter
         """
         # cleanup the core arguments
         args = {}
@@ -755,20 +755,20 @@ class LibrarySection(PlexObject):
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
         """ Add current library section as sync item for specified device.
-            See description of :func:`~plexapi.library.LibrarySection.search()` for details about filtering / sorting
-            and :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting
+            and :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
             Parameters:
-                policy (:class:`plexapi.sync.Policy`): policy of syncing the media (how many items to sync and process
+                policy (:class:`~plexapi.sync.Policy`): policy of syncing the media (how many items to sync and process
                                                        watched media or not), generated automatically when method
                                                        called on specific LibrarySection object.
-                mediaSettings (:class:`plexapi.sync.MediaSettings`): Transcoding settings used for the media, generated
+                mediaSettings (:class:`~plexapi.sync.MediaSettings`): Transcoding settings used for the media, generated
                                                                      automatically when method called on specific
                                                                      LibrarySection object.
-                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
-                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
-                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
-                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                client (:class:`~plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                title (str): descriptive title for the new :class:`~plexapi.sync.SyncItem`, if empty the value would be
                              generated from metadata of current media.
                 sort (str): formatted as `column:dir`; column can be any of {`addedAt`, `originallyAvailableAt`,
                             `lastViewedAt`, `titleSort`, `rating`, `mediaHeight`, `duration`}. dir can be `asc` or
@@ -777,10 +777,10 @@ class LibrarySection(PlexObject):
                                `track`).
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: when the library is not allowed to sync
+                :class:`~plexapi.exceptions.BadRequest`: when the library is not allowed to sync
 
             Example:
 
@@ -855,17 +855,17 @@ class MovieSection(LibrarySection):
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Movie library section as sync item for specified device.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
-            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
+            :func:`~plexapi.library.LibrarySection.sync` for details on syncing libraries and possible exceptions.
 
             Parameters:
                 videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
-                                    :mod:`plexapi.sync` module.
+                                    :mod:`~plexapi.sync` module.
                 limit (int): maximum count of movies to sync, unlimited if `None`.
                 unwatched (bool): if `True` watched videos wouldn't be synced.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Example:
 
@@ -903,11 +903,11 @@ class ShowSection(LibrarySection):
     CONTENT_TYPE = 'video'
 
     def searchShows(self, **kwargs):
-        """ Search for a show. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for a show. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='show', **kwargs)
 
     def searchEpisodes(self, **kwargs):
-        """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='episode', **kwargs)
 
     def recentlyAdded(self, libtype='episode', maxresults=50):
@@ -924,17 +924,17 @@ class ShowSection(LibrarySection):
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Show library section as sync item for specified device.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
-            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
+            :func:`~plexapi.library.LibrarySection.sync` for details on syncing libraries and possible exceptions.
 
             Parameters:
                 videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
-                                    :mod:`plexapi.sync` module.
+                                    :mod:`~plexapi.sync` module.
                 limit (int): maximum count of episodes to sync, unlimited if `None`.
                 unwatched (bool): if `True` watched videos wouldn't be synced.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Example:
 
@@ -982,15 +982,15 @@ class MusicSection(LibrarySection):
         return self.fetchItems(key, cls=Station)
 
     def searchArtists(self, **kwargs):
-        """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='artist', **kwargs)
 
     def searchAlbums(self, **kwargs):
-        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='album', **kwargs)
 
     def searchTracks(self, **kwargs):
-        """ Search for a track. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for a track. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='track', **kwargs)
 
     def collection(self, **kwargs):
@@ -999,16 +999,16 @@ class MusicSection(LibrarySection):
 
     def sync(self, bitrate, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
-            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
+            :func:`~plexapi.library.LibrarySection.sync` for details on syncing libraries and possible exceptions.
 
             Parameters:
                 bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
-                               module :mod:`plexapi.sync`.
+                               module :mod:`~plexapi.sync`.
                 limit (int): maximum count of tracks to sync, unlimited if `None`.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Example:
 
@@ -1045,25 +1045,25 @@ class PhotoSection(LibrarySection):
     METADATA_TYPE = 'photo'
 
     def searchAlbums(self, title, **kwargs):
-        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='photoalbum', title=title, **kwargs)
 
     def searchPhotos(self, title, **kwargs):
-        """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search()` for usage. """
+        """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='photo', title=title, **kwargs)
 
     def sync(self, resolution, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting and
-            :func:`plexapi.library.LibrarySection.sync()` for details on syncing libraries and possible exceptions.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
+            :func:`~plexapi.library.LibrarySection.sync` for details on syncing libraries and possible exceptions.
 
             Parameters:
                 resolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in the
-                                  module :mod:`plexapi.sync`.
+                                  module :mod:`~plexapi.sync`.
                 limit (int): maximum count of tracks to sync, unlimited if `None`.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Example:
 
@@ -1090,7 +1090,7 @@ class PhotoSection(LibrarySection):
 class FilterChoice(PlexObject):
     """ Represents a single filter choice. These objects are gathered when using filters
         while searching for library items and is the object returned in the result set of
-        :func:`~plexapi.library.LibrarySection.listChoices()`.
+        :func:`~plexapi.library.LibrarySection.listChoices`.
 
         Attributes:
             TAG (str): 'Directory'
@@ -1330,7 +1330,7 @@ class Folder(PlexObject):
         self.title = data.attrib.get('title')
 
     def subfolders(self):
-        """ Returns a list of available `:class:`~plexapi.library.Folder` for this folder.
+        """ Returns a list of available :class:`~plexapi.library.Folder` for this folder.
             Continue down subfolders until a mediaType is found.
         """
         if self.key.startswith('/library/metadata'):
@@ -1339,8 +1339,8 @@ class Folder(PlexObject):
             return self.fetchItems(self.key, Folder)
 
     def allSubfolders(self):
-        """ Returns a list of all available `:class:`~plexapi.library.Folder` for this folder.
-            Only returns `:class:`~plexapi.library.Folder`.
+        """ Returns a list of all available :class:`~plexapi.library.Folder` for this folder.
+            Only returns :class:`~plexapi.library.Folder`.
         """
         folders = []
         for folder in self.subfolders():

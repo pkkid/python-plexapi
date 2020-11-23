@@ -216,21 +216,21 @@ class Video(PlexPartialObject):
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
-            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
+            See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
             Parameters:
                 videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
-                                    :mod:`plexapi.sync` module.
-                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
-                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
-                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                                    :mod:`~plexapi.sync` module.
+                client (:class:`~plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`~plexapi.myplex.MyPlexAccount.sync`.
                 limit (int): maximum count of items to sync, unlimited if `None`.
                 unwatched (bool): if `True` watched videos wouldn't be synced.
-                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                title (str): descriptive title for the new :class:`~plexapi.sync.SyncItem`, if empty the value would be
                              generated from metadata of current media.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
@@ -351,7 +351,7 @@ class Movie(Playable, Video):
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
-                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
         locations = [i for i in self.iterParts() if i]
@@ -521,8 +521,8 @@ class Show(Video):
                 episode (int): Episode number (default:None; required if title not specified).
 
            Raises:
-                :class:`plexapi.exceptions.BadRequest`: If season and episode is missing.
-                :class:`plexapi.exceptions.NotFound`: If the episode is missing.
+                :class:`~plexapi.exceptions.BadRequest`: If season and episode is missing.
+                :class:`~plexapi.exceptions.NotFound`: If the episode is missing.
         """
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
@@ -543,7 +543,7 @@ class Show(Video):
         return self.episodes(viewCount=0)
 
     def get(self, title=None, season=None, episode=None):
-        """ Alias to :func:`~plexapi.video.Show.episode()`. """
+        """ Alias to :func:`~plexapi.video.Show.episode`. """
         return self.episode(title, season, episode)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
@@ -553,7 +553,7 @@ class Show(Video):
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
-                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
         for episode in self.episodes():
@@ -632,7 +632,7 @@ class Season(Video):
         return self.fetchItem(key, parentIndex=self.index, index=episode)
 
     def get(self, title=None, episode=None):
-        """ Alias to :func:`~plexapi.video.Season.episode()`. """
+        """ Alias to :func:`~plexapi.video.Season.episode`. """
         return self.episode(title, episode)
 
     def show(self):
@@ -654,7 +654,7 @@ class Season(Video):
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original file name otherwise
                     a friendlier is generated.
-                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL()`.
+                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
         for episode in self.episodes():

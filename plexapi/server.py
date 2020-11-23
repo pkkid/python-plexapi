@@ -199,7 +199,7 @@ class PlexServer(PlexObject):
         return activities
 
     def agents(self, mediaType=None):
-        """ Returns the `:class:`~plexapi.media.Agent` objects this server has available. """
+        """ Returns the :class:`~plexapi.media.Agent` objects this server has available. """
         key = '/system/agents'
         if mediaType:
             key += '?mediaType=%s' % mediaType
@@ -270,7 +270,7 @@ class PlexServer(PlexObject):
                 name (str): Name of the client to return.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: Unknown client name
+                :class:`~plexapi.exceptions.NotFound`: Unknown client name
         """
         for client in self.clients():
             if client and client.title == name:
@@ -393,7 +393,7 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: Invalid playlist title
+                :class:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
 
@@ -495,7 +495,7 @@ class PlexServer(PlexObject):
                 callback (func): Callback function to call on recieved messages.
 
             raises:
-                :class:`plexapi.exception.Unsupported`: Websocket-client not installed.
+                :class:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
         notifier = AlertListener(self, callback)
         notifier.start()

@@ -81,7 +81,7 @@ class PlexObject(object):
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, etype))
 
     def _buildItemOrNone(self, elem, cls=None, initpath=None):
-        """ Calls :func:`~plexapi.base.PlexObject._buildItem()` but returns
+        """ Calls :func:`~plexapi.base.PlexObject._buildItem` but returns
             None if elem is an unknown type.
         """
         try:
@@ -696,7 +696,7 @@ class Playable(object):
                     offset, copyts, protocol, mediaIndex, platform.
 
             Raises:
-                :class:`plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
+                :class:`~plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
         if self.TYPE not in ('movie', 'episode', 'track'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
@@ -761,7 +761,7 @@ class Playable(object):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Artist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
