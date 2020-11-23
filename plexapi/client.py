@@ -140,7 +140,7 @@ class PlexClient(PlexObject):
                 value (bool): Enable or disable proxying (optional, default True).
 
             Raises:
-                :class:`~plexapi.exceptions.Unsupported`: Cannot use client proxy with unknown server.
+                :exc:`plexapi.exceptions.Unsupported`: Cannot use client proxy with unknown server.
         """
         if server:
             self._server = server
@@ -183,7 +183,7 @@ class PlexClient(PlexObject):
                 **params (dict): Additional GET parameters to include with the command.
 
             Raises:
-                :class:`~plexapi.exceptions.Unsupported`: When we detect the client doesn't support this capability.
+                :exc:`plexapi.exceptions.Unsupported`: When we detect the client doesn't support this capability.
         """
         command = command.strip('/')
         controller = command.split('/')[0]
@@ -299,7 +299,7 @@ class PlexClient(PlexObject):
                 **params (dict): Additional GET parameters to include with the command.
 
             Raises:
-                :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
+                :exc:`plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')
@@ -469,7 +469,7 @@ class PlexClient(PlexObject):
                     also: https://github.com/plexinc/plex-media-player/wiki/Remote-control-API#modified-commands
 
             Raises:
-                :class:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
+                :exc:`plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
         if not self._server:
             raise Unsupported('A server must be specified before using this command.')

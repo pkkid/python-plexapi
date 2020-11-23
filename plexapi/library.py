@@ -614,7 +614,7 @@ class LibrarySection(PlexObject):
                 **kwargs (dict): Additional kwargs to narrow down the choices.
 
             Raises:
-                :class:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
+                :exc:`plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
         """
         # TODO: Should this be moved to base?
         if category in kwargs:
@@ -661,7 +661,7 @@ class LibrarySection(PlexObject):
                         * year: List of years to search within ([yyyy, ...]). [all]
 
             Raises:
-                :class:`~plexapi.exceptions.BadRequest`: when applying unknown filter
+                :exc:`plexapi.exceptions.BadRequest`: when applying unknown filter
         """
         # cleanup the core arguments
         args = {}
@@ -780,7 +780,7 @@ class LibrarySection(PlexObject):
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :class:`~plexapi.exceptions.BadRequest`: when the library is not allowed to sync
+                :exc:`plexapi.exceptions.BadRequest`: when the library is not allowed to sync
 
             Example:
 

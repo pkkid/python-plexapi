@@ -515,14 +515,14 @@ class Show(Video):
     def episode(self, title=None, season=None, episode=None):
         """ Find a episode using a title or season and episode.
 
-           Parameters:
+            Parameters:
                 title (str): Title of the episode to return
                 season (int): Season number (default:None; required if title not specified).
                 episode (int): Episode number (default:None; required if title not specified).
 
-           Raises:
-                :class:`~plexapi.exceptions.BadRequest`: If season and episode is missing.
-                :class:`~plexapi.exceptions.NotFound`: If the episode is missing.
+            Raises:
+                :exc:`plexapi.exceptions.BadRequest`: If season and episode is missing.
+                :exc:`plexapi.exceptions.NotFound`: If the episode is missing.
         """
         if title:
             key = '/library/metadata/%s/allLeaves' % self.ratingKey
