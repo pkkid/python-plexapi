@@ -11,6 +11,8 @@ class Audio(PlexPartialObject):
 
         Attributes:
             addedAt (datetime): Datetime this item was added to the library.
+            art (str): URL to artwork image.
+            artBlurHash (str): BlurHash string for artwork image.
             fields (list): List of :class:`~plexapi.media.Field`.
             index (sting): Index Number (often the track number).
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -20,6 +22,7 @@ class Audio(PlexPartialObject):
             ratingKey (int): Unique key identifying this item.
             summary (str): Summary of the artist, track, or album.
             thumb (str): URL to thumbnail image.
+            thumbBlurHash (str): BlurHash string for thumbnail image.
             title (str): Artist, Album or Track title. (Jason Mraz, We Sing, Lucky, etc.)
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'artist', 'album', or 'track'.
@@ -34,6 +37,8 @@ class Audio(PlexPartialObject):
         self._data = data
         self.listType = 'audio'
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.art = data.attrib.get('art')
+        self.artBlurHash = data.attrib.get('artBlurHash')
         self.fields = self.findItems(data, etag='Field')
         self.index = data.attrib.get('index')
         self.key = data.attrib.get('key')
@@ -42,6 +47,7 @@ class Audio(PlexPartialObject):
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
+        self.thumbBlurHash = data.attrib.get('thumbBlurHash')
         self.title = data.attrib.get('title')
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
@@ -70,20 +76,20 @@ class Audio(PlexPartialObject):
 
     def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
         """ Add current audio (artist, album or track) as sync item for specified device.
-            See :func:`plexapi.myplex.MyPlexAccount.sync()` for possible exceptions.
+            See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
             Parameters:
                 bitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values from the
-                               module :mod:`plexapi.sync`.
-                client (:class:`plexapi.myplex.MyPlexDevice`): sync destination, see
-                                                               :func:`plexapi.myplex.MyPlexAccount.sync`.
-                clientId (str): sync destination, see :func:`plexapi.myplex.MyPlexAccount.sync`.
+                               module :mod:`~plexapi.sync`.
+                client (:class:`~plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`~plexapi.myplex.MyPlexAccount.sync`.
                 limit (int): maximum count of items to sync, unlimited if `None`.
-                title (str): descriptive title for the new :class:`plexapi.sync.SyncItem`, if empty the value would be
+                title (str): descriptive title for the new :class:`~plexapi.sync.SyncItem`, if empty the value would be
                              generated from metadata of current media.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
         from plexapi.sync import SyncItem, Policy, MediaSettings
@@ -112,7 +118,6 @@ class Artist(Audio):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'artist'
-            art (str): Artist artwork (/library/metadata/<ratingkey>/art/<artid>)
             countries (list): List of :class:`~plexapi.media.Country` objects this artist respresents.
             genres (list): List of :class:`~plexapi.media.Genre` objects this artist respresents.
             guid (str): Unknown (unique ID; com.plexapp.agents.plexmusic://gracenote/artist/05517B8701668D28?lang=en)
@@ -126,7 +131,6 @@ class Artist(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.guid = data.attrib.get('guid')
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.locations = self.listAttrs(data, 'path', etag='Location')
@@ -179,7 +183,7 @@ class Artist(Audio):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
@@ -198,7 +202,6 @@ class Album(Audio):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'album'
-            art (str): Album artwork (/library/metadata/<ratingkey>/art/<artid>)
             genres (list): List of :class:`~plexapi.media.Genre` objects this album respresents.
             key (str): API URL (/library/metadata/<ratingkey>).
             originallyAvailableAt (datetime): Datetime this album was released.
@@ -219,7 +222,6 @@ class Album(Audio):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.key = self.key.replace('/children', '')  # fixes bug #50
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentKey = data.attrib.get('parentKey')
@@ -262,7 +264,7 @@ class Album(Audio):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Atrist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.
@@ -284,7 +286,6 @@ class Track(Audio, Playable):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'track'
-            art (str): Track artwork (/library/metadata/<ratingkey>/art/<artid>)
             chapterSource (TYPE): Unknown
             duration (int): Length of this album in seconds.
             grandparentArt (str): Album artist artwork.
@@ -319,7 +320,6 @@ class Track(Audio, Playable):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
-        self.art = data.attrib.get('art')
         self.chapterSource = data.attrib.get('chapterSource')
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.grandparentArt = data.attrib.get('grandparentArt')
