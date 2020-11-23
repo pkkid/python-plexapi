@@ -1570,3 +1570,54 @@ class Collections(PlexPartialObject):
 
     # def edit(self, **kwargs):
     #    TODO
+
+
+@utils.registerPlexObject
+class Path(PlexObject):
+    """ Represents a single directory Path.
+
+        Attributes:
+            TAG (str): 'Path'
+
+            home (bool): True if the path is the home directory
+            key (str): API URL (/services/browse/<base64path>)
+            network (bool): True if path is a network location
+            path (str): Full path to folder
+            title (str): Folder name
+    """
+    TAG = 'Path'
+
+    def _loadData(self, data):
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.key = data.attrib.get('key')
+        self.network = utils.cast(bool, data.attrib.get('network'))
+        self.path = data.attrib.get('path')
+        self.title = data.attrib.get('title')
+
+    def browse(self, includeFiles=True):
+        """ Alias for :func:`~plexapi.server.PlexServer.browse`. """
+        return self._server.browse(self, includeFiles)
+
+    def walk(self):
+        """ Alias for :func:`~plexapi.server.PlexServer.walk`. """
+        for path, paths, files in self._server.walk(self):
+            yield path, paths, files
+
+
+@utils.registerPlexObject
+class File(PlexObject):
+    """ Represents a single File.
+
+        Attributes:
+            TAG (str): 'File'
+
+            key (str): API URL (/services/browse/<base64path>)
+            path (str): Full path to file
+            title (str): File name
+    """
+    TAG = 'File'
+
+    def _loadData(self, data):
+        self.key = data.attrib.get('key')
+        self.path = data.attrib.get('path')
+        self.title = data.attrib.get('title')

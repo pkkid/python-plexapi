@@ -15,7 +15,7 @@ from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Hub, Library
+from plexapi.library import Hub, Library, Path, File
 from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
@@ -246,6 +246,53 @@ class PlexServer(PlexObject):
         except Exception as err:
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
+
+    def browse(self, path=None, includeFiles=True):
+        """ Browse the system file path using the Plex API.
+            Returns list of :class:`~plexapi.library.Path` and :class:`~plexapi.library.File` objects.
+
+            Parameters:
+                path (:class:`~plexapi.library.Path` or str, optional): Full path to browse.
+                includeFiles (bool): True to include files when browsing (Default).
+                                     False to only return folders.
+        """
+        if isinstance(path, Path):
+            key = path.key
+        elif path is not None:
+            base64path = utils.base64str(path)
+            key = '/services/browse/%s' % base64path
+        else:
+            key = '/services/browse'
+        if includeFiles:
+            key += '?includeFiles=1'
+        return self.fetchItems(key)
+
+    def walk(self, path=None):
+        """ Walk the system file tree using the Plex API similar to `os.walk`.
+            Yields a 3-tuple `(path, paths, files)` where
+            `path` is a string of the directory path,
+            `paths` is a list of :class:`~plexapi.library.Path` objects, and
+            `files` is a list of :class:`~plexapi.library.File` objects.
+
+            Parameters:
+                path (:class:`~plexapi.library.Path` or str, optional): Full path to walk.
+        """
+        paths = []
+        files = []
+        for item in self.browse(path):
+            if isinstance(item, Path):
+                paths.append(item)
+            elif isinstance(item, File):
+                files.append(item)
+
+        if isinstance(path, Path):
+            path = path.path
+
+        yield path or '', paths, files
+
+        for _path in paths:
+            for path, paths, files in self.walk(_path):
+                yield path, paths, files
 
     def clients(self):
         """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
