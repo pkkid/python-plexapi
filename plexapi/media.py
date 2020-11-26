@@ -53,6 +53,9 @@ class Media(PlexObject):
         self.id = cast(int, data.attrib.get('id'))
         self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.parts = self.findItems(data, MediaPart)
+        self.proxyType = cast(int, data.attrib.get('proxyType'))
+        # self.optimizedVersion = self.proxyType == SEARCHTYPES['optimizedVersion']
         self.target = data.attrib.get('target')
         self.title = data.attrib.get('title')
         self.videoCodec = data.attrib.get('videoCodec')
@@ -60,7 +63,6 @@ class Media(PlexObject):
         self.videoProfile = data.attrib.get('videoProfile')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
-        self.parts = self.findItems(data, MediaPart)
 
     def delete(self):
         part = self._initpath + '/media/%s' % self.id
