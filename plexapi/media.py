@@ -351,6 +351,25 @@ class SubtitleStream(MediaPartStream):
         self.transient = data.attrib.get('transient')
 
 
+class LyricStream(MediaPartStream):
+    """ Represents a lyric stream within a :class:`~plexapi.media.MediaPart`.
+
+        Attributes:
+            TAG (str): 'Stream'
+            STREAMTYPE (int): 4
+    """
+    TAG = 'Stream'
+    STREAMTYPE = 4
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        super(LyricStream, self)._loadData(data)
+        self.format = data.attrib.get('format')
+        self.minLines = cast(int, data.attrib.get('minLines'))
+        self.provider = data.attrib.get('provider')
+        self.timed = cast(bool, data.attrib.get('timed', '0'))
+
+
 @utils.registerPlexObject
 class Session(PlexObject):
     """ Represents a current session. """
