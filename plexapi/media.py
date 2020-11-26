@@ -193,16 +193,21 @@ class MediaPartStream(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.audioProfile = data.attrib.get('audioProfile')
         self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.codec = data.attrib.get('codec')
+        self.deepAnalysisVersion = cast(int, data.attrib.get('deepAnalysisVersion'))
         self.default = data.attrib.get('default')
         self.displayTitle = data.attrib.get('displayTitle')
         self.extendedDisplayTitle = data.attrib.get('extendedDisplayTitle')
         self.key = data.attrib.get('key')
+        self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
+        self.hasThumbnail = cast(bool, data.attrib.get('hasThumbnail'))
         self.id = cast(int, data.attrib.get('id'))
         self.index = cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')
         self.languageCode = data.attrib.get('languageCode')
+        self.packetLength = cast(int, data.attrib.get('packetLength'))
         self.requiredBandwidths = data.attrib.get('requiredBandwidths')
         self.selected = cast(bool, data.attrib.get('selected', '0'))
         self.streamType = cast(int, data.attrib.get('streamType'))
