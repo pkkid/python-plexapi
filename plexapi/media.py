@@ -257,8 +257,10 @@ class VideoStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(VideoStream, self)._loadData(data)
+        self.anamorphic = data.attrib.get('anamorphic')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.cabac = cast(int, data.attrib.get('cabac'))
+        self.chromaLocation = data.attrib.get('chromaLocation')
         self.codedHeight = data.attrib.get('codedHeight')
         self.codedWidth = data.attrib.get('codedWidth')
         self.colorPrimaries = data.attrib.get('colorPrimaries')
@@ -266,6 +268,14 @@ class VideoStream(MediaPartStream):
         self.chromaSubsampling = data.attrib.get('chromaSubsampling')
         self.colorSpace = data.attrib.get('colorSpace')
         self.colorTrc = data.attrib.get('colorTrc')
+        self.DOVIBLCompatID = cast(int, data.attrib.get('DOVIBLCompatID'))
+        self.DOVIBLPresent = cast(bool, data.attrib.get('DOVIBLPresent'))
+        self.DOVIELPresent = cast(bool, data.attrib.get('DOVIELPresent'))
+        self.DOVILevel = cast(int, data.attrib.get('DOVILevel'))
+        self.DOVIPresent = cast(bool, data.attrib.get('DOVIPresent'))
+        self.DOVIProfile = cast(int, data.attrib.get('DOVIProfile'))
+        self.DOVIRPUPresent = cast(bool, data.attrib.get('DOVIRPUPresent'))
+        self.DOVIVersion = cast(float, data.attrib.get('DOVIVersion'))
         self.duration = cast(int, data.attrib.get('duration'))
         self.frameRate = cast(float, data.attrib.get('frameRate'))
         self.frameRateMode = data.attrib.get('frameRateMode')
@@ -273,8 +283,11 @@ class VideoStream(MediaPartStream):
         self.height = cast(int, data.attrib.get('height'))
         self.level = cast(int, data.attrib.get('level'))
         self.profile = data.attrib.get('profile')
+        self.pixelAspectRatio = data.attrib.get('pixelAspectRatio')
+        self.pixelFormat = data.attrib.get('pixelFormat')
         self.refFrames = cast(int, data.attrib.get('refFrames'))
         self.scanType = data.attrib.get('scanType')
+        self.streamIdentifier = cast(int, data.attrib.get('streamIdentifier'))
         self.width = cast(int, data.attrib.get('width'))
 
 
