@@ -135,6 +135,10 @@ class MediaPart(PlexObject):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
         return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
 
+    def lyricStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
+        return [stream for stream in self.streams if stream.streamType == LyricStream.STREAMTYPE]
+
     def setDefaultAudioStream(self, stream):
         """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
 
