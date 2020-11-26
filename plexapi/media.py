@@ -312,12 +312,22 @@ class AudioStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(AudioStream, self)._loadData(data)
+        self.albumGain = cast(float, data.attrib.get('albumGain'))
+        self.albumPeak = cast(float, data.attrib.get('albumPeak'))
+        self.albumRange = cast(float, data.attrib.get('albumRange'))
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrateMode = data.attrib.get('bitrateMode')
         self.channels = cast(int, data.attrib.get('channels'))
         self.duration = cast(int, data.attrib.get('duration'))
+        self.endRamp = data.attrib.get('endRamp')
+        self.gain = cast(float, data.attrib.get('gain'))
+        self.loudness = cast(float, data.attrib.get('loudness'))
+        self.lra = cast(float, data.attrib.get('lra'))
+        self.peak = cast(float, data.attrib.get('peak'))
+        self.profile = data.attrib.get('profile')
         self.samplingRate = cast(int, data.attrib.get('samplingRate'))
+        self.startRamp = data.attrib.get('startRamp')
 
 
 @utils.registerPlexObject
