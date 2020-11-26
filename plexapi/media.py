@@ -229,7 +229,7 @@ class MediaPartStream(PlexObject):
 
 @utils.registerPlexObject
 class VideoStream(MediaPartStream):
-    """ Respresents a video stream within a :class:`~plexapi.media.MediaPart`.
+    """ Represents a video stream within a :class:`~plexapi.media.MediaPart`.
 
         Attributes:
             TAG (str): 'Stream'
@@ -297,7 +297,7 @@ class VideoStream(MediaPartStream):
 
 @utils.registerPlexObject
 class AudioStream(MediaPartStream):
-    """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
+    """ Represents a audio stream within a :class:`~plexapi.media.MediaPart`.
 
         Attributes:
             TAG (str): 'Stream'
@@ -336,7 +336,7 @@ class AudioStream(MediaPartStream):
 
 @utils.registerPlexObject
 class SubtitleStream(MediaPartStream):
-    """ Respresents a audio stream within a :class:`~plexapi.media.MediaPart`.
+    """ Represents a audio stream within a :class:`~plexapi.media.MediaPart`.
 
         Attributes:
             TAG (str): 'Stream'
