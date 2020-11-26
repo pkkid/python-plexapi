@@ -344,6 +344,10 @@ class SubtitleStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
+        self.container = data.attrib.get('container')
+        self.forced = cast(bool, data.attrib.get('forced', '0'))
+        self.format = data.attrib.get('format')
+        self.headerCompression = data.attrib.get('headerCompression')
         self.transient = data.attrib.get('transient')
 
 
