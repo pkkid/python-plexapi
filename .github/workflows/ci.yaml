@@ -183,9 +183,9 @@ jobs:
     - name: Cache dependencies
       uses: actions/cache@v2
       with:
-      path: ~/.cache/pip
-      key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
-      restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
+        restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       uses: actions/setup-python@v2
       with:
