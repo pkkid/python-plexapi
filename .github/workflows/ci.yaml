@@ -5,9 +5,7 @@ name: CI
 
 on:
   push:
-    branches: [ $default-branch ]
   pull_request:
-    branches: [ $default-branch ]
 
 env:
   DEFAULT_PYTHON: 3.7
@@ -40,6 +38,8 @@ jobs:
     name: pytest ${{ matrix.python-version }} (unclaimed)
     needs: lint-flake8
     runs-on: ubuntu-latest
+    env:
+      TEST_ACCOUNT_ONCE: 1
     strategy:
       matrix:
         python-version: [3.6]
@@ -54,15 +54,8 @@ jobs:
         pip install -U pip
         pip install -r requirements_dev.txt
         pip install -e .
-    - name: Test with unclaimed Plex server
-      env:
-        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
-        PLEXAPI_HEADER_PLATFORM: iOS
-        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
-        PLEXAPI_HEADER_DEVICE: iPhone
-        TEST_ACCOUNT_ONCE: 1
+    - name: Bootstrap Plex server
       run: |
-        # Set up docker PMS instance
         python \
           -u tools/plex-bootstraptest.py \
           --destination plex \
@@ -70,31 +63,43 @@ jobs:
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
           --unclaimed
-        # Run main tests
+    - name: Main tests with unclaimed server
+      run: |
         pytest \
           -rxXs \
           --ignore=tests/test_sync.py \
           --tb=native \
           --verbose \
-          --cov-config .coveragerc \
           --cov=plexapi \
           tests 
-        # Run sync tests
+    - name: Sync tests with unclaimed server
+      env:
+        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
+        PLEXAPI_HEADER_PLATFORM: iOS
+        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
+        PLEXAPI_HEADER_DEVICE: iPhone
+      run: |
         pytest \
           -rxXs \
           --tb=native \
           --verbose \
-          --cov-config .coveragerc \
           --cov=plexapi \
           --cov-append \
           tests/test_sync.py
-
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-${{ matrix.python-version }}-unclaimed
+        path: .coverage
 
   pytest-claimed:
     name: pytest (claimed)
     needs: pytest-unclaimed
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    env:
+      PLEXAPI_AUTH_MYPLEX_USERNAME: ${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}
+      PLEXAPI_AUTH_MYPLEX_PASSWORD: ${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}
     strategy:
       matrix:
         python-version: [3.6]
@@ -109,37 +114,67 @@ jobs:
         pip install -U pip
         pip install -r requirements_dev.txt
         pip install -e .
-    - name: Test with claimed Plex server
-      env:
-        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
-        PLEXAPI_HEADER_PLATFORM: iOS
-        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
-        PLEXAPI_HEADER_DEVICE: iPhone
-        PLEXAPI_AUTH_MYPLEX_USERNAME: ${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}
-        PLEXAPI_AUTH_MYPLEX_PASSWORD: ${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}
+    - name: Bootstrap Plex server
       run: |
-        # Set up docker PMS instance
         python \
           -u tools/plex-bootstraptest.py \
           --destination plex \
           --advertise-ip=127.0.0.1 \
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }}
-        # Run main tests
+    - name: Test with claimed Plex server
+      run: |
         pytest \
           -rxXs \
           --ignore=tests/test_sync.py \
           --tb=native \
           --verbose \
-          --cov-config .coveragerc \
           --cov=plexapi \
           tests 
-        # Run sync tests
+    - name: Test with claimed Plex server
+      env:
+        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
+        PLEXAPI_HEADER_PLATFORM: iOS
+        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
+        PLEXAPI_HEADER_DEVICE: iPhone
+      run: |
         pytest \
           -rxXs \
           --tb=native \
           --verbose \
-          --cov-config .coveragerc \
           --cov=plexapi \
           --cov-append \
           tests/test_sync.py
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-${{ matrix.python-version }}-claimed
+        path: .coverage
+
+  coverage:
+    name: Process test coverage
+    runs-on: ubuntu-latest
+    needs: pytest
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - name: Check out code from GitHub
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -U pip
+          pip install coverage
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v2
+      - name: Combine coverage results
+        run: |
+          coverage combine coverage*/.coverage*
+          coverage report --fail-under=50
+          coverage xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
