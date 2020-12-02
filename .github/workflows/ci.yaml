@@ -85,26 +85,11 @@ jobs:
           --verbose \
           --cov=plexapi \
           tests 
-    - name: Sync tests with unclaimed server
-      env:
-        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
-        PLEXAPI_HEADER_PLATFORM: iOS
-        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
-        PLEXAPI_HEADER_DEVICE: iPhone
-      run: |
-        pytest \
-          -rxXs \
-          --tb=native \
-          --verbose \
-          --cov=plexapi \
-          --cov-append \
-          tests/test_sync.py
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
         name: coverage-unclaimed-${{ matrix.python-version }}
         path: .coverage
-
 
   pytest-claimed:
     name: pytest ${{ matrix.python-version }} (claimed)
