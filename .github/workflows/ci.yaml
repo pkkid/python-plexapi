@@ -5,7 +5,9 @@ name: CI
 
 on:
   push:
+    branches: [ $default-branch ]
   pull_request:
+    branches: [ $default-branch ]
 
 env:
   DEFAULT_PYTHON: 3.7
@@ -145,6 +147,8 @@ jobs:
           --cov=plexapi \
           --cov-append \
           tests/test_sync.py
+    - name: Unlink PMS from MyPlex account
+      run: python -u tools/plex-teardowntest.py
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
