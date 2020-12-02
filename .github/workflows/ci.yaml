@@ -154,7 +154,7 @@ jobs:
   coverage:
     name: Process test coverage
     runs-on: ubuntu-latest
-    needs: pytest
+    needs: pytest-unclaimed
     strategy:
       matrix:
         python-version: [3.7]
