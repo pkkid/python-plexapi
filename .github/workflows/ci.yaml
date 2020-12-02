@@ -41,15 +41,22 @@ jobs:
         # The GitHub editor is 127 chars wide
         flake8 plexapi --count --max-complexity=12 --max-line-length=127 --statistics
 
-  pytest-unclaimed:
-    name: pytest ${{ matrix.python-version }} (unclaimed)
+  pytest:
+    name: pytest (${{ matrix.python-version }}-${{ matrix.plex }})
     needs: lint-flake8
     runs-on: ubuntu-latest
     env:
       TEST_ACCOUNT_ONCE: 1
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.6, 3.7]
+        plex: ['unclaimed', 'claimed']
+        is-master:
+          - ${{ github.ref == 'refs/heads/master' }}
+        exclude:
+          - is-master: false
+            plex: claimed
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -67,7 +74,12 @@ jobs:
         pip install -U pip
         pip install -r requirements_dev.txt
         pip install -e .
-    - name: Bootstrap Plex server
+    - name: Set Plex credentials
+      if: matrix.plex == 'claimed'
+      run: |
+        echo "PLEXAPI_AUTH_MYPLEX_USERNAME=${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}" > $GITHUB_ENV
+        echo "PLEXAPI_AUTH_MYPLEX_PASSWORD=${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}" >> $GITHUB_ENV
+    - name: Bootstrap Plex server (${{ matrix.plex }})
       run: |
         python \
           -u tools/plex-bootstraptest.py \
@@ -75,8 +87,10 @@ jobs:
           --advertise-ip=127.0.0.1 \
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
-          --unclaimed
-    - name: Main tests with unclaimed server
+          --${{ matrix.plex }}
+    - name: Main tests with ${{ matrix.plex }} server
+      env:
+        TEST_ACCOUNT_ONCE: ${{ matrix.plex == 'unclaimed' }}
       run: |
         pytest \
           -rxXs \
@@ -85,58 +99,8 @@ jobs:
           --verbose \
           --cov=plexapi \
           tests 
-    - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: coverage-unclaimed-${{ matrix.python-version }}
-        path: .coverage
-
-  pytest-claimed:
-    name: pytest ${{ matrix.python-version }} (claimed)
-    runs-on: ubuntu-latest
-    needs: pytest-unclaimed
-    if: github.ref == 'refs/heads/master'
-    env:
-      PLEXAPI_AUTH_MYPLEX_USERNAME: ${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}
-      PLEXAPI_AUTH_MYPLEX_PASSWORD: ${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements_dev.txt') }}
-        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pip
-    - name: Install dependencies
-      run: |
-        pip install -U pip
-        pip install -r requirements_dev.txt
-        pip install -e .
-    - name: Bootstrap claimed Plex server
-      run: |
-        python \
-          -u tools/plex-bootstraptest.py \
-          --destination plex \
-          --advertise-ip=127.0.0.1 \
-          --bootstrap-timeout 540 \
-          --docker-tag ${{ env.PLEX_CONTAINER_TAG }}
-    - name: Main tests with claimed Plex server
-      run: |
-        pytest \
-          -rxXs \
-          --ignore=tests/test_sync.py \
-          --tb=native \
-          --verbose \
-          --cov=plexapi \
-          tests 
-    - name: Sync tests with claimed Plex server
+    - name: Sync tests with ${{ matrix.plex }} server
+      if: matrix.plex == 'claimed'
       env:
         PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
         PLEXAPI_HEADER_PLATFORM: iOS
@@ -151,17 +115,18 @@ jobs:
           --cov-append \
           tests/test_sync.py
     - name: Unlink PMS from MyPlex account
+      if: matrix.plex == 'claimed' && always()
       run: python -u tools/plex-teardowntest.py
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
-        name: coverage-claimed-${{ matrix.python-version }}
+        name: coverage-${{ matrix.plex }}-${{ matrix.python-version }}
         path: .coverage
 
   coverage:
     name: Process test coverage
     runs-on: ubuntu-latest
-    needs: pytest-unclaimed
+    needs: pytest
     steps:
     - name: Check out code from GitHub
       uses: actions/checkout@v2
