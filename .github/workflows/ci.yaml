@@ -11,15 +11,14 @@ on:
 
 env:
   DEFAULT_PYTHON: 3.7
-  PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
-  PLEX_CONTAINER_TAG: latest
 
 jobs:
   lint-flake8:
     name: Check flake8
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out code from Github
+      uses: actions/checkout@v2
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       uses: actions/setup-python@v2
@@ -30,8 +29,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
-        restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
+        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-flake8
 
     - name: Install dependencies
       run: |
@@ -51,7 +49,8 @@ jobs:
     needs: lint-flake8
     runs-on: ubuntu-latest
     env:
-      TEST_ACCOUNT_ONCE: 1
+      PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
+      PLEX_CONTAINER_TAG: latest
     strategy:
       fail-fast: false
       matrix:
@@ -63,7 +62,8 @@ jobs:
           - is-master: false
             plex: claimed
     steps:
-    - uses: actions/checkout@v2
+    - name: Check out code from Github
+      uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -75,7 +75,7 @@ jobs:
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements_dev.txt') }}
-        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pip
+        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pip-
 
     - name: Install dependencies
       run: |
@@ -86,7 +86,7 @@ jobs:
     - name: Set Plex credentials
       if: matrix.plex == 'claimed'
       run: |
-        echo "PLEXAPI_AUTH_MYPLEX_USERNAME=${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}" > $GITHUB_ENV
+        echo "PLEXAPI_AUTH_MYPLEX_USERNAME=${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}" >> $GITHUB_ENV
         echo "PLEXAPI_AUTH_MYPLEX_PASSWORD=${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}" >> $GITHUB_ENV
 
     - name: Bootstrap ${{ matrix.plex }} Plex server
@@ -142,6 +142,7 @@ jobs:
     name: Process test coverage
     runs-on: ubuntu-latest
     needs: pytest
+    if: always()
     steps:
     - name: Check out code from GitHub
       uses: actions/checkout@v2
@@ -150,8 +151,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
-        restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
+        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-coverage
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       uses: actions/setup-python@v2
