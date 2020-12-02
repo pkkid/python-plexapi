@@ -5,7 +5,7 @@ name: CI
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ $default-branch, add_github_actions ]
   pull_request:
     branches: [ $default-branch ]
 
@@ -20,15 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
+        restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
     - name: Install dependencies
       run: |
         pip install -U pip
-        pip install -r requirements_dev.txt
-        pip install -e .
+        pip install flake8
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -44,13 +49,19 @@ jobs:
       TEST_ACCOUNT_ONCE: 1
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.6, 3.7]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements_dev.txt') }}
+        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pip
     - name: Install dependencies
       run: |
         pip install -U pip
@@ -91,32 +102,39 @@ jobs:
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
-        name: coverage-${{ matrix.python-version }}-unclaimed
+        name: coverage-unclaimed-${{ matrix.python-version }}
         path: .coverage
 
+
   pytest-claimed:
-    name: pytest (claimed)
+    name: pytest ${{ matrix.python-version }} (claimed)
+    runs-on: ubuntu-latest
     needs: pytest-unclaimed
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
     env:
       PLEXAPI_AUTH_MYPLEX_USERNAME: ${{ secrets.PLEXAPI_AUTH_MYPLEX_USERNAME }}
       PLEXAPI_AUTH_MYPLEX_PASSWORD: ${{ secrets.PLEXAPI_AUTH_MYPLEX_PASSWORD }}
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.6, 3.7]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements_dev.txt') }}
+        restore-keys: ${{ runner.os }}-${{ matrix.python-version }}-pip
     - name: Install dependencies
       run: |
         pip install -U pip
         pip install -r requirements_dev.txt
         pip install -e .
-    - name: Bootstrap Plex server
+    - name: Bootstrap claimed Plex server
       run: |
         python \
           -u tools/plex-bootstraptest.py \
@@ -124,7 +142,7 @@ jobs:
           --advertise-ip=127.0.0.1 \
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }}
-    - name: Test with claimed Plex server
+    - name: Main tests with claimed Plex server
       run: |
         pytest \
           -rxXs \
@@ -133,7 +151,7 @@ jobs:
           --verbose \
           --cov=plexapi \
           tests 
-    - name: Test with claimed Plex server
+    - name: Sync tests with claimed Plex server
       env:
         PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
         PLEXAPI_HEADER_PLATFORM: iOS
@@ -152,33 +170,36 @@ jobs:
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
-        name: coverage-${{ matrix.python-version }}-claimed
+        name: coverage-claimed-${{ matrix.python-version }}
         path: .coverage
 
   coverage:
     name: Process test coverage
     runs-on: ubuntu-latest
     needs: pytest-unclaimed
-    strategy:
-      matrix:
-        python-version: [3.7]
     steps:
-      - name: Check out code from GitHub
-        uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          pip install -U pip
-          pip install coverage
-      - name: Download all coverage artifacts
-        uses: actions/download-artifact@v2
-      - name: Combine coverage results
-        run: |
-          coverage combine coverage*/.coverage*
-          coverage report --fail-under=50
-          coverage xml
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+    - name: Check out code from GitHub
+      uses: actions/checkout@v2
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+      path: ~/.cache/pip
+      key: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip-${{ hashFiles('requirements_dev.txt') }}
+      restore-keys: ${{ runner.os }}-${{ env.DEFAULT_PYTHON }}-pip
+    - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.DEFAULT_PYTHON }}
+    - name: Install dependencies
+      run: |
+        pip install -U pip
+        pip install coverage
+    - name: Download all coverage artifacts
+      uses: actions/download-artifact@v2
+    - name: Combine coverage results
+      run: |
+        coverage combine coverage*/.coverage*
+        coverage report --fail-under=50
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
