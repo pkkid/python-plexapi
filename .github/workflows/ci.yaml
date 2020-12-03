@@ -33,13 +33,13 @@ jobs:
       with:
         path: venv
         key: >-
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
           steps.python.outputs.python-version }}-${{
           hashFiles('requirements_dev.txt') }}
         restore-keys: |
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
 
-    - name: Create Python ${{ env.DEFAULT_PYTHON}} virtual environment
+    - name: Create Python virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
         python -m venv venv
@@ -85,19 +85,19 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
+    - name: Restore Python ${{ matrix.python-version }} virtual environment
       id: cache-venv
       uses: actions/cache@v2
       with:
         path: venv
         key: >-
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
           steps.python.outputs.python-version }}-${{
           hashFiles('requirements_dev.txt') }}
         restore-keys: |
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
 
-    - name: Create Python ${{ matrix.python-version }} virtual environment
+    - name: Create Python virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
         python -m venv venv
