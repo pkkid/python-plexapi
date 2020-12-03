@@ -412,7 +412,7 @@ if __name__ == "__main__":
         default=False,
         action="store_true",
     )  # noqa
-    opts = parser.parse_args()
+    opts, _ = parser.parse_known_args()
 
     account = get_plex_account(opts)
     path = os.path.realpath(os.path.expanduser(opts.destination))
