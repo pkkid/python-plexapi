@@ -8,7 +8,7 @@ def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
     if artist.countries:
-        assert "United States" in [i.tag for i in artist.countries]
+        assert "United States of America" in [i.tag for i in artist.countries]
     #assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == "1"
