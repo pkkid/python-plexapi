@@ -16,7 +16,6 @@ env:
 jobs:
   lint-flake8:
     name: Check flake8
-    needs: prepare-venv
     runs-on: ubuntu-latest
     steps:
     - name: Check out code from Github
