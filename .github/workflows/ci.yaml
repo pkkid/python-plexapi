@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
+      PLEX_CONTAINER: plexinc/pms-docker
       PLEX_CONTAINER_TAG: latest
     strategy:
       fail-fast: false
@@ -83,6 +84,44 @@ jobs:
         pip install -r requirements_dev.txt
         pip install -e .
 
+    - name: Get PMS Docker image digest
+      id: docker-digest
+      run: |
+        mkdir -p ~/.cache/docker/${{ env.PLEX_CONTAINER }}
+        echo "Image: ${{ env.PLEX_CONTAINER }}"
+        echo "Tag: ${{ env.PLEX_CONTAINER_TAG }}"
+        token=$(curl \
+          --silent \
+          "https://auth.docker.io/token?scope=repository:${{ env.PLEX_CONTAINER }}:pull&service=registry.docker.io" \
+          | jq -r '.token')
+        digest=$(curl \
+          --silent \
+          --header "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+          --header "Authorization: Bearer $token" \
+          "https://registry-1.docker.io/v2/${{ env.PLEX_CONTAINER }}/manifests/${{ env.PLEX_CONTAINER_TAG }}" \
+          | jq -r '.config.digest')
+        echo "Digest: $digest"
+        echo ::set-output name=digest::$digest
+
+    - name: Cache PMS Docker image
+      id: docker-cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/docker/plexinc
+        key: ${{ runner.os }}-docker-pms-${{ steps.docker-digest.outputs.digest }}
+
+    - name: Pull PMS Docker image
+      if: steps.docker-cache.outputs.cache-hit != 'true'
+      run: |
+        docker pull ${{ env.PLEX_CONTAINER }}:${{ env.PLEX_CONTAINER_TAG }}
+        docker save -o ~/.cache/docker/${{ env.PLEX_CONTAINER }}-${{ env.PLEX_CONTAINER_TAG }}.tar ${{ env.PLEX_CONTAINER }}:${{ env.PLEX_CONTAINER_TAG }}
+        echo "Saved image: ${{ env.PLEX_CONTAINER }}:${{ env.PLEX_CONTAINER_TAG }}"
+
+    - name: Load PMS Docker image
+      if: steps.docker-cache.outputs.cache-hit == 'true'
+      run: |
+        docker load -i ~/.cache/docker/${{ env.PLEX_CONTAINER }}-${{ env.PLEX_CONTAINER_TAG }}.tar
+
     - name: Set Plex credentials
       if: matrix.plex == 'claimed'
       run: |
@@ -94,7 +133,7 @@ jobs:
         python \
           -u tools/plex-bootstraptest.py \
           --destination plex \
-          --advertise-ip=127.0.0.1 \
+          --advertise-ip 127.0.0.1 \
           --bootstrap-timeout 540 \
           --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
           --${{ matrix.plex }}
