@@ -4,8 +4,8 @@ Python-PlexAPI
     :target: http://python-plexapi.readthedocs.io/en/latest/?badge=latest
 .. image:: https://travis-ci.org/pkkid/python-plexapi.svg?branch=master
     :target: https://travis-ci.org/pkkid/python-plexapi
-.. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
-    :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
+.. image:: https://codecov.io/gh/pkkid/python-plexapi/branch/master/graph/badge.svg?token=fOECznuMtw
+    :target: https://codecov.io/gh/pkkid/python-plexapi
 .. image:: https://img.shields.io/github/tag/pkkid/python-plexapi.svg?label=github+release
     :target: https://github.com/pkkid/python-plexapi/releases
 .. image:: https://badge.fury.io/py/PlexAPI.svg
