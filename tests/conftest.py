@@ -106,7 +106,7 @@ def account():
 
 @pytest.fixture(scope="session")
 def account_once(account):
-    if environ.get("TEST_ACCOUNT_ONCE") != "1" and environ.get("CI") == "true":
+    if environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and environ.get("CI") == "true":
         pytest.skip("Do not forget to test this by providing TEST_ACCOUNT_ONCE=1")
     return account
 
