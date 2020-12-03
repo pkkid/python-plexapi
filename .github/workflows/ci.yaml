@@ -14,41 +14,6 @@ env:
   DEFAULT_PYTHON: 3.7
 
 jobs:
-  prepare-venv:
-    name: Prepare Python ${{ matrix.python-version }} virtual environment
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-    steps:
-    - name: Check out code from GitHub
-      uses: actions/checkout@v2
-
-    - name: Set up Python ${{ matrix.python-version }}
-      id: python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Restore Python virtual environment
-      id: cache-venv
-      uses: actions/cache@v2
-      with:
-        path: venv
-        key: ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-${{ hashFiles('requirements_dev.txt') }}
-        restore-keys: |
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
-
-    - name: Create Python virtual environment
-      if: steps.cache-venv.outputs.cache-hit != 'true'
-      run: |
-        python -m venv venv
-        . venv/bin/activate
-        pip install -U pip
-        pip install -r requirements_dev.txt
-        pip install -e .
-
-
   lint-flake8:
     name: Check flake8
     needs: prepare-venv
@@ -75,11 +40,14 @@ jobs:
         restore-keys: |
           ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
 
-    - name: Fail job if Python cache restore failed
+    - name: Create Python ${{ env.DEFAULT_PYTHON}} virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
-        echo "Failed to restore Python virtual environment from cache"
-        exit 1
+        python -m venv venv
+        . venv/bin/activate
+        pip install -U pip
+        pip install -r requirements_dev.txt
+        pip install -e .
 
     - name: Lint with flake8
       run: |
@@ -130,11 +98,14 @@ jobs:
         restore-keys: |
           ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
 
-    - name: Fail job if Python cache restore failed
+    - name: Create Python ${{ matrix.python-version }} virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
       run: |
-        echo "Failed to restore Python virtual environment from cache"
-        exit 1
+        python -m venv venv
+        . venv/bin/activate
+        pip install -U pip
+        pip install -r requirements_dev.txt
+        pip install -e .
 
     - name: Get PMS Docker image digest
       id: docker-digest
