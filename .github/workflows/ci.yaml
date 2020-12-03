@@ -10,7 +10,7 @@ on:
     branches: [ $default-branch ]
 
 env:
-  CACHE_VERSION: 1
+  CACHE_VERSION: 0
   DEFAULT_PYTHON: 3.7
 
 jobs:
