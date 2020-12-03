@@ -1,0 +1,9 @@
+codecov:
+  branch: master
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 10%
+comment: false
