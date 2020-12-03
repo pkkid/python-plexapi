@@ -81,6 +81,9 @@ jobs:
         echo "Failed to restore Python virtual environment from cache"
         exit 1
 
+    - name: Activate Python ${{ env.DEFAULT_PYTHON }} virtual environment
+      run: . venv/bin/activate
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -134,6 +137,9 @@ jobs:
       run: |
         echo "Failed to restore Python virtual environment from cache"
         exit 1
+
+    - name: Activate Python ${{ matrix.python-version }} virtual environment
+      run: . venv/bin/activate
 
     - name: Get PMS Docker image digest
       id: docker-digest
@@ -260,6 +266,9 @@ jobs:
       run: |
         echo "Failed to restore Python virtual environment from cache"
         exit 1
+
+    - name: Activate Python ${{ env.DEFAULT_PYTHON }} virtual environment
+      run: . venv/bin/activate
 
     - name: Download all coverage artifacts
       uses: actions/download-artifact@v2
