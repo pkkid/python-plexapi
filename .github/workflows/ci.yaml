@@ -5,11 +5,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [ $default-branch ]
   pull_request:
-    branches:
-      - master
+    branches: [ $default-branch ]
 
 env:
   CACHE_VERSION: 1
