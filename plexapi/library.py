@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import warnings
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
@@ -842,6 +843,20 @@ class LibrarySection(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
+    def collection(self, **kwargs):
+        warnings.simplefilter('always')
+        warnings.warn(
+            'collection() will be deprecated in the future, use collections() (plural) instead.',
+            DeprecationWarning
+        )
+        return self.collections()
+
+    def collections(self, **kwargs):
+        """ Returns a list of collections from this library section.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
+        """
+        return self.search(libtype='collection', **kwargs)
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
@@ -854,10 +869,6 @@ class MovieSection(LibrarySection):
     TYPE = 'movie'
     METADATA_TYPE = 'movie'
     CONTENT_TYPE = 'video'
-
-    def collection(self, **kwargs):
-        """ Returns a list of collections from this library section. """
-        return self.search(libtype='collection', **kwargs)
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Movie library section as sync item for specified device.
@@ -923,10 +934,6 @@ class ShowSection(LibrarySection):
                 maxresults (int): Max number of items to return (default 50).
         """
         return self.search(sort='episode.addedAt:desc', libtype=libtype, maxresults=maxresults)
-
-    def collection(self, **kwargs):
-        """ Returns a list of collections from this library section. """
-        return self.search(libtype='collection', **kwargs)
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Show library section as sync item for specified device.
@@ -999,10 +1006,6 @@ class MusicSection(LibrarySection):
         """ Search for a track. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='track', **kwargs)
 
-    def collection(self, **kwargs):
-        """ Returns a list of collections from this library section. """
-        return self.search(libtype='collection', **kwargs)
-
     def sync(self, bitrate, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
             See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
@@ -1049,6 +1052,9 @@ class PhotoSection(LibrarySection):
     TYPE = 'photo'
     CONTENT_TYPE = 'photo'
     METADATA_TYPE = 'photo'
+
+    def collections(self, **kwargs):
+        raise NotImplementedError('Collections are not available for a Photo library.')
 
     def searchAlbums(self, title, **kwargs):
         """ Search for an album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
