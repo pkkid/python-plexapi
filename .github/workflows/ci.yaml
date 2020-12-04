@@ -67,8 +67,9 @@ jobs:
       PLEX_CONTAINER_TAG: latest
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.6, 3.7, 3.8]
         plex: ['unclaimed', 'claimed']
         is-master:
           - ${{ github.ref == 'refs/heads/master' }}
