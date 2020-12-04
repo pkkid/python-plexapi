@@ -464,7 +464,9 @@ if __name__ == "__main__":
             if opts.accept_eula:
                 server.settings.get("acceptedEULA").set(True)
             server.settings.get("GenerateBIFBehavior").set("never")
+            server.settings.get("GenerateChapterThumbBehavior").set("never")
             server.settings.get("GenerateIntroMarkerBehavior").set("never")
+            server.settings.get("LoudnessAnalysisBehavior").set("never")
             server.settings.save()
 
         except KeyboardInterrupt:
