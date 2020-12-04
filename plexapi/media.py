@@ -99,27 +99,27 @@ class MediaPart(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.accessible = cast(bool, data.attrib.get('accessible'))
         self.audioProfile = data.attrib.get('audioProfile')
         self.container = data.attrib.get('container')
+        self.decision = data.attrib.get('decision')
         self.deepAnalysisVersion = cast(int, data.attrib.get('deepAnalysisVersion'))
         self.duration = cast(int, data.attrib.get('duration'))
+        self.exists = cast(bool, data.attrib.get('exists'))
         self.file = data.attrib.get('file')
         self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
         self.hasThumbnail = cast(bool, data.attrib.get('hasThumbnail'))
         self.id = cast(int, data.attrib.get('id'))
         self.indexes = data.attrib.get('indexes')
         self.key = data.attrib.get('key')
+        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.packetLength = cast(int, data.attrib.get('packetLength'))
         self.requiredBandwidths = data.attrib.get('requiredBandwidths')
         self.size = cast(int, data.attrib.get('size'))
-        self.decision = data.attrib.get('decision')
-        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.streams = self._buildStreams(data)
         self.syncItemId = cast(int, data.attrib.get('syncItemId'))
         self.syncState = data.attrib.get('syncState')
         self.videoProfile = data.attrib.get('videoProfile')
-        self.streams = self._buildStreams(data)
-        self.exists = cast(bool, data.attrib.get('exists'))
-        self.accessible = cast(bool, data.attrib.get('accessible'))
 
     def _buildStreams(self, data):
         streams = []
