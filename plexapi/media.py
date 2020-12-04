@@ -29,14 +29,15 @@ class Media(PlexObject):
             id (int): Plex ID of this media item (ex: 46184).
             has64bitOffsets (bool): True if video has 64 bit offsets (?).
             optimizedForStreaming (bool): True if video is optimized for streaming.
+            parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
+            proxyType (int):
             target (str): Media version target name.
             title (str): Media version title.
             videoCodec (str): Video codec used within the video (ex: ac3).
-            videoFrameRate (str): Video frame rate (ex: 24p).
-            videoResolution (str): Video resolution (ex: sd).
+            videoFrameRate (str): Video frame rate (ex: 24p).\
             videoProfile (str): Video profile (ex: high).
+            videoResolution (str): Video resolution (ex: sd).
             width (int): Width of the video in pixels (ex: 608).
-            parts (list<:class:`~plexapi.media.MediaPart`>): List of MediaParts in this video.
     """
     TAG = 'Media'
 
@@ -83,16 +84,27 @@ class MediaPart(PlexObject):
             server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
             initpath (str): Relative path requested when retrieving specified data.
             media (:class:`~plexapi.media.Media`): Media object this part belongs to.
+            accessible (bool): Determine if file is accessible
+            audioProfile (str):
             container (str): Container type of this media part (ex: avi).
+            decision (str):
+            deepAnalysisVersion
             duration (int): Length of this media part in milliseconds.
+            exists (bool): Determine if file exists
             file (str): Path to this file on disk (ex: /media/Movies/Cars.(2006)/Cars.cd2.avi)
+            has64bitOffsets (bool):
+            hasThumbnail (bool):
             id (int): Unique ID of this media part.
             indexes (str, None): None or SD.
             key (str): Key used to access this media part (ex: /library/parts/46618/1389985872/file.avi).
+            optimizedForStreaming
+            packetLength (int):
+            requiredBandwidths (str):
             size (int): Size of this file in bytes (ex: 733884416).
             streams (list<:class:`~plexapi.media.MediaPartStream`>): List of streams in this media part.
-            exists (bool): Determine if file exists
-            accessible (bool): Determine if file is accessible
+            syncItemId (int):
+            syncState (str):
+            videoProfile (str):
     """
     TAG = 'Part'
 
@@ -234,16 +246,25 @@ class VideoStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 1
+            anamorphic (str):
             bitDepth (int): Bit depth (ex: 8).
-            bitrate (int): Bitrate (ex: 1169)
             cabac (int): Unknown
+            chromaLocation
+            chromaSubsampling (str): Chroma Subsampling (ex: 4:2:0).
             codedHeight (str):
             codedWidth (str):
             colorPrimaries (str):
             colorRange (str):
-            chromaSubsampling (str): Chroma Subsampling (ex: 4:2:0).
             colorSpace (str): Unknown
             colorTrc (str):
+            DOVIBLCompatID (int):
+            DOVIBLPresent (bool):
+            DOVIELPresent (bool):
+            DOVILevel (int):
+            DOVIPresent (bool):
+            DOVIProfile (int):
+            DOVIRPUPresent (bool):
+            DOVIVersion (float):
             duration (int): Duration of video stream in milliseconds.
             frameRate (float): Frame rate (ex: 23.976)
             frameRateMode (str): Unknown
@@ -251,8 +272,11 @@ class VideoStream(MediaPartStream):
             height (int): Height of video stream.
             level (int): Videl stream level (?).
             profile (str): Video stream profile (ex: asp).
+            pixelAspectRatio (str):
+            pixelFormat (str):
             refFrames (int): Unknown
             scanType (str): Video stream scan type (ex: progressive).
+            streamIdentifier(int):
             width (int): Width of video stream.
     """
     TAG = 'Stream'
@@ -303,13 +327,22 @@ class AudioStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 2
+            albumGain (float):
+            albumPeak (float):
+            albumRange (float):
             audioChannelLayout (str): Audio channel layout (ex: 5.1(side)).
             bitDepth (int): Bit depth (ex: 16).
-            bitrate (int): Audio bitrate (ex: 448).
             bitrateMode (str): Bitrate mode (ex: cbr).
             channels (int): number of channels in this stream (ex: 6).
             duration (int): Duration of audio stream in milliseconds.
+            endRamp (str):
+            gain (float):
+            loudness (float):
+            lra (float):
+            peak (float):
+            profile (str):
             samplingRate (int): Sampling rate (ex: xxx)
+            startRamp (str):
     """
     TAG = 'Stream'
     STREAMTYPE = 2
