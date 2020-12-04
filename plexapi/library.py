@@ -857,6 +857,11 @@ class LibrarySection(PlexObject):
         """
         return self.search(libtype='collection', **kwargs)
 
+    def playlists(self, **kwargs):
+        """ Returns a list of playlists from this library section. """
+        key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
+        return self.fetchItems(key, **kwargs)
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
