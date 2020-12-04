@@ -87,7 +87,7 @@ class MyPlexAccount(PlexObject):
     key = 'https://plex.tv/users/account'
 
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
-        self._token = token
+        self._token = token or CONFIG.get('auth.server_token')
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0

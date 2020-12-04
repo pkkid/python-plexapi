@@ -22,6 +22,7 @@ except ImportError:
 SERVER_BASEURL = plexapi.CONFIG.get("auth.server_baseurl")
 MYPLEX_USERNAME = plexapi.CONFIG.get("auth.myplex_username")
 MYPLEX_PASSWORD = plexapi.CONFIG.get("auth.myplex_password")
+SERVER_TOKEN = plexapi.CONFIG.get("auth.server_token")
 CLIENT_BASEURL = plexapi.CONFIG.get("auth.client_baseurl")
 CLIENT_TOKEN = plexapi.CONFIG.get("auth.client_token")
 
@@ -76,15 +77,15 @@ def pytest_runtest_setup(item):
     if "client" in item.keywords and not item.config.getvalue("client"):
         return pytest.skip("Need --client option to run.")
     if TEST_AUTHENTICATED in item.keywords and not (
-        MYPLEX_USERNAME and MYPLEX_PASSWORD
+        MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN
     ):
         return pytest.skip(
-            "You have to specify MYPLEX_USERNAME and MYPLEX_PASSWORD to run authenticated tests"
+            "You have to specify MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN to run authenticated tests"
         )
-    if TEST_ANONYMOUSLY in item.keywords and MYPLEX_USERNAME and MYPLEX_PASSWORD:
+    if TEST_ANONYMOUSLY in item.keywords and (MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN):
         return pytest.skip(
             "Anonymous tests should be ran on unclaimed server, without providing MYPLEX_USERNAME and "
-            "MYPLEX_PASSWORD"
+            "MYPLEX_PASSWORD or SERVER_TOKEN"
         )
 
 
@@ -99,6 +100,8 @@ def get_account():
 
 @pytest.fixture(scope="session")
 def account():
+    if SERVER_TOKEN:
+        return get_account()
     assert MYPLEX_USERNAME, "Required MYPLEX_USERNAME not specified."
     assert MYPLEX_PASSWORD, "Required MYPLEX_PASSWORD not specified."
     return get_account()

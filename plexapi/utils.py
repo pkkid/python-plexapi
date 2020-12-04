@@ -368,6 +368,10 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     if config_username and config_password:
         print('Authenticating with Plex.tv as %s..' % config_username)
         return MyPlexAccount(config_username, config_password)
+    config_token = CONFIG.get('auth.server_token')
+    if config_token:
+        print('Authenticating with Plex.tv with token')
+        return MyPlexAccount(token=config_token)
     # 3. Prompt for username and password on the command line
     username = input('What is your plex.tv username: ')
     password = getpass('What is your plex.tv password: ')
