@@ -463,7 +463,9 @@ if __name__ == "__main__":
                 server = PlexServer("http://%s:32400" % opts.advertise_ip)
             if opts.accept_eula:
                 server.settings.get("acceptedEULA").set(True)
-                server.settings.save()
+            server.settings.get("GenerateBIFBehavior").set("never")
+            server.settings.get("GenerateIntroMarkerBehavior").set("never")
+            server.settings.save()
 
         except KeyboardInterrupt:
             break
