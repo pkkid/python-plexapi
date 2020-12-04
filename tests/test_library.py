@@ -300,6 +300,11 @@ def test_library_Collection_delete(movies, movie):
     assert len(collections) == 0
 
 
+def test_library_Collection_children(collection):
+    children = collection.children()
+    assert len(children) == 1
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
