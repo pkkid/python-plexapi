@@ -8,6 +8,8 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
 
+warnings.simplefilter('default')
+
 
 class Library(PlexObject):
     """ Represents a PlexServer library. This contains all sections of media defined
@@ -844,11 +846,9 @@ class LibrarySection(PlexObject):
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
     def collection(self, **kwargs):
-        warnings.simplefilter('always')
-        warnings.warn(
-            'collection() will be deprecated in the future, use collections() (plural) instead.',
-            DeprecationWarning
-        )
+        msg = 'LibrarySection.collection() will be deprecated in the future, use collections() (plural) instead.'
+        warnings.warn(msg, DeprecationWarning)
+        log.warning(msg)
         return self.collections()
 
     def collections(self, **kwargs):
