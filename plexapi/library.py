@@ -853,7 +853,7 @@ class LibrarySection(PlexObject):
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
+            See description of :func:`plexapi.library.LibrarySection.search` for details about filtering / sorting.
         """
         return self.search(libtype='collection', **kwargs)
 

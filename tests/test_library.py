@@ -290,10 +290,14 @@ def test_library_Colletion_edit(collection):
     collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
 
 
-def test_library_Collection_delete(movies, collection):
-    collection.delete()
-    movies.reload()
-    assert len(movies.collections()) == 0
+def test_library_Collection_delete(movies, movie):
+    delete_collection = 'delete_collection'
+    movie.addCollection(delete_collection)
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 1
+    collections[0].delete()
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 0
 
 
 def test_search_with_weird_a(plex):
