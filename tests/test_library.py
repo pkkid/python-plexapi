@@ -181,6 +181,10 @@ def test_library_MovieSection_analyze(movies):
     movies.analyze()
 
 
+def test_library_MovieSection_collections(movies, collection):
+    assert len(movies.collections())
+
+
 def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
 
@@ -191,6 +195,15 @@ def test_library_ShowSection_searchEpisodes(tvshows):
 
 def test_library_ShowSection_recentlyAdded(tvshows):
     assert len(tvshows.recentlyAdded())
+
+
+def test_library_ShowSection_playlists(plex, tvshows, show):
+    episodes = show.episodes()
+    playlist = plex.createPlaylist("test_library_ShowSection_playlists", episodes[:3])
+    try:
+        assert len(tvshows.playlists())
+    finally:
+        playlist.delete()
 
 
 def test_library_MusicSection_albums(music):
