@@ -1112,10 +1112,11 @@ class MyPlexPinLogin(object):
     LINK = 'https://plex.tv/api/v2/pins/link'          # put
     POLLINTERVAL = 1
 
-    def __init__(self, session=None, requestTimeout=None):
+    def __init__(self, session=None, requestTimeout=None, headers=None):
         super(MyPlexPinLogin, self).__init__()
         self._session = session or requests.Session()
         self._requestTimeout = requestTimeout or TIMEOUT
+        self.headers = headers
 
         self._loginTimeout = None
         self._callback = None
@@ -1197,17 +1198,21 @@ class MyPlexPinLogin(object):
 
         return False
 
-    def link(self, code=None):
+    def link(self, code=None, token=None):
         if code is None:
             code = self.pin
 
         url = self.LINK
-        headers = {
+        headers = BASE_HEADERS.copy()
+        headers.update({
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-Plex-Product': 'Plex SSO',
-            'X-Plex-Client-Identifier': CONFIG.get('header.identifier'),
-            'X-Plex-Token': CONFIG.get('auth.server_token')
-        }
+        })
+
+        token = token or CONFIG.get('auth.server_token')
+        if token:
+            headers['X-Plex-Token'] = token
+
         data = {'code': code}
         self._query(url, self._session.put, headers=headers, data=data)
 
@@ -1265,10 +1270,18 @@ class MyPlexPinLogin(object):
         finally:
             self.finished = True
 
+    def _headers(self, **kwargs):
+        """ Returns dict containing base headers for all requests for pin login. """
+        headers = BASE_HEADERS.copy()
+        if self.headers:
+            headers.update(self.headers)
+        headers.update(kwargs)
+        return headers
+
     def _query(self, url, method=None, headers=None, **kwargs):
         method = method or self._session.get
         log.debug('%s %s', method.__name__.upper(), url)
-        headers = headers or BASE_HEADERS.copy()
+        headers = headers or self._headers()
         response = method(url, headers=headers, timeout=self._requestTimeout, **kwargs)
         if not response.ok:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
