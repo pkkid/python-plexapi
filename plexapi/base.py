@@ -108,7 +108,7 @@ class PlexObject(object):
                 details_key += '?' + urlencode(sorted(includes.items()))
         return details_key
 
-    def _findParent(self, cls):
+    def _isChildOf(self, cls):
         """ Returns True if this object is a child of the given class.
         
             Parameters:
