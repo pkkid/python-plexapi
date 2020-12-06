@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import weakref
 from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
@@ -40,10 +41,11 @@ class PlexObject(object):
     TYPE = None     # xml element type
     key = None      # plex relative url
 
-    def __init__(self, server, data, initpath=None):
+    def __init__(self, server, data, initpath=None, parent=None):
         self._server = server
         self._data = data
         self._initpath = initpath or self.key
+        self._parent = weakref.ref(parent) if parent else None
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
@@ -70,7 +72,7 @@ class PlexObject(object):
         # cls is specified, build the object and return
         initpath = initpath or self._initpath
         if cls is not None:
-            return cls(self._server, elem, initpath)
+            return cls(self._server, elem, initpath, parent=self)
         # cls is not specified, try looking it up in PLEXOBJECTS
         etype = elem.attrib.get('type', elem.attrib.get('streamType'))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
@@ -104,6 +106,18 @@ class PlexObject(object):
             if includes:
                 details_key += '?' + urlencode(sorted(includes.items()))
         return details_key
+
+    def _findParent(self, cls):
+        """ Returns True if this object is a child of the given class.
+        
+            Parameters:
+                cls: The parent :class:`~plexapi.base.PlexObject` to search for.
+        """
+        obj = self
+        while obj._parent is not None:
+            if isinstance(obj._parent(), cls):
+                return True
+            obj = obj._parent()
 
     def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
