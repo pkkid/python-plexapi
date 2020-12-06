@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
 
-warnings.simplefilter('default')
+warnings.simplefilter('default', category=DeprecationWarning)
 
 
 class Library(PlexObject):
