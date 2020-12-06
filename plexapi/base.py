@@ -36,6 +36,7 @@ class PlexObject(object):
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
             data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
+            parent (:class:`~plexapi.base.PlexObject`): The parent object that this object is built from (optional).
     """
     TAG = None      # xml element tag
     TYPE = None     # xml element type
