@@ -1098,16 +1098,18 @@ class MyPlexPinLogin(object):
             requestTimeout (int): timeout in seconds on initial connect to plex.tv (default config.TIMEOUT).
 
         Attributes:
-            PINS (str): 'https://plex.tv/pins.xml'
-            CHECKPINS (str): 'https://plex.tv/pins/{pinid}.xml'
+            PINS (str): 'https://plex.tv/api/v2/pins'
+            CHECKPINS (str): 'https://plex.tv/api/v2/pins/{pinid}'
+            LINK (str): 'https://plex.tv/api/v2/pins/link'
             POLLINTERVAL (int): 1
             finished (bool): Whether the pin login has finished or not.
             expired (bool): Whether the pin login has expired or not.
             token (str): Token retrieved through the pin login.
             pin (str): Pin to use for the login on https://plex.tv/link.
     """
-    PINS = 'https://plex.tv/pins.xml'               # get
-    CHECKPINS = 'https://plex.tv/pins/{pinid}.xml'  # get
+    PINS = 'https://plex.tv/api/v2/pins'               # get
+    CHECKPINS = 'https://plex.tv/api/v2/pins/{pinid}'  # get
+    LINK = 'https://plex.tv/api/v2/pins/link'          # put
     POLLINTERVAL = 1
 
     def __init__(self, session=None, requestTimeout=None):
@@ -1120,11 +1122,19 @@ class MyPlexPinLogin(object):
         self._thread = None
         self._abort = False
         self._id = None
+        self._code = None
 
         self.finished = False
         self.expired = False
         self.token = None
-        self.pin = self._getPin()
+
+    @property
+    def pin(self):
+        if self._code:
+            return self._code
+        
+        self._getCode()
+        return self._code
 
     def run(self, callback=None, timeout=None):
         """ Starts the thread which monitors the PIN login state.
@@ -1187,21 +1197,35 @@ class MyPlexPinLogin(object):
 
         return False
 
-    def _getPin(self):
-        if self.pin:
-            return self.pin
+    def link(self, code=None):
+        if code is None:
+            code = self.pin
 
+        url = self.LINK
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Plex-Product': 'Plex SSO',
+            'X-Plex-Client-Identifier': CONFIG.get('header.identifier'),
+            'X-Plex-Token': CONFIG.get('auth.server_token')
+        }
+        data = {'code': code}
+        self._query(url, self._session.put, headers=headers, data=data)
+
+    def _getCode(self):
         url = self.PINS
         response = self._query(url, self._session.post)
         if not response:
             return None
 
-        self._id = response.find('id').text
-        self.pin = response.find('code').text
+        self._id = response.attrib.get('id')
+        self._code = response.attrib.get('code')
 
-        return self.pin
+        return self._code
 
     def _checkLogin(self):
+        if not self._code:
+            self._getCode()
+
         if not self._id:
             return False
 
@@ -1213,7 +1237,7 @@ class MyPlexPinLogin(object):
         if not response:
             return False
 
-        token = response.find('auth_token').text
+        token = response.attrib.get('authToken')
         if not token:
             return False
 
@@ -1241,11 +1265,11 @@ class MyPlexPinLogin(object):
         finally:
             self.finished = True
 
-    def _query(self, url, method=None):
+    def _query(self, url, method=None, headers=None, **kwargs):
         method = method or self._session.get
         log.debug('%s %s', method.__name__.upper(), url)
-        headers = BASE_HEADERS.copy()
-        response = method(url, headers=headers, timeout=self._requestTimeout)
+        headers = headers or BASE_HEADERS.copy()
+        response = method(url, headers=headers, timeout=self._requestTimeout, **kwargs)
         if not response.ok:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
