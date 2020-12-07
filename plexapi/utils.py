@@ -379,7 +379,7 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     return MyPlexAccount(username, password)
 
 
-def createMyPlexDevice(headers, timeout=None):
+def createMyPlexDevice(headers, timeout=None):  # pragma: no cover
     """ Helper function to create a new MyPlexDevice.
 
         Parameters:
