@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+import uuid
 from datetime import datetime
 from functools import partial
 from os import environ
@@ -8,8 +9,10 @@ import plexapi
 import pytest
 import requests
 from plexapi.client import PlexClient
+from plexapi.exceptions import NotFound
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
+from plexapi.utils import createMyPlexDevice
 
 from .payloads import ACCOUNT_XML
 
@@ -46,6 +49,15 @@ ENTITLEMENTS = {
     "xbox_360",
     "windows",
     "windows_phone",
+}
+SYNC_DEVICE_IDENTIFIER = "sync-client-%s" % plexapi.X_PLEX_IDENTIFIER
+SYNC_DEVICE_HEADERS = {
+    "X-Plex-Provides": "sync-target",
+    "X-Plex-Platform": "iOS",
+    "X-Plex-Platform-Version": "11.4.1",
+    "X-Plex-Device": "iPhone",
+    "X-Plex-Device-Name": "Test Sync Device",
+    "X-Plex-Client-Identifier": SYNC_DEVICE_IDENTIFIER
 }
 
 TEST_AUTHENTICATED = "authenticated"
@@ -125,19 +137,10 @@ def account_plexpass(account):
 
 @pytest.fixture(scope="session")
 def account_synctarget(account_plexpass):
-    assert "sync-target" in plexapi.X_PLEX_PROVIDES, (
-        "You have to set env var " "PLEXAPI_HEADER_PROVIDES=sync-target,controller"
-    )
-    assert "sync-target" in plexapi.BASE_HEADERS["X-Plex-Provides"]
-    assert (
-        "iOS" == plexapi.X_PLEX_PLATFORM
-    ), "You have to set env var PLEXAPI_HEADER_PLATFORM=iOS"
-    assert (
-        "11.4.1" == plexapi.X_PLEX_PLATFORM_VERSION
-    ), "You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1"
-    assert (
-        "iPhone" == plexapi.X_PLEX_DEVICE
-    ), "You have to set env var PLEXAPI_HEADER_DEVICE=iPhone"
+    assert "sync-target" in SYNC_DEVICE_HEADERS["X-Plex-Provides"]
+    assert "iOS" == SYNC_DEVICE_HEADERS["X-Plex-Platform"]
+    assert "11.4.1" == SYNC_DEVICE_HEADERS["X-Plex-Platform-Version"]
+    assert "iPhone" == SYNC_DEVICE_HEADERS["X-Plex-Device"]
     return account_plexpass
 
 
@@ -159,24 +162,23 @@ def plex(request):
 
 
 @pytest.fixture()
-def device(account):
-    d = None
-    for device in account.devices():
-        if device.clientIdentifier == plexapi.X_PLEX_IDENTIFIER:
-            d = device
-            break
-
-    assert d
-    return d
+def sync_device(account_synctarget):
+    try:
+        device = account_synctarget.device(clientIdentifier=SYNC_DEVICE_IDENTIFIER)
+    except NotFound:
+        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, timeout=10)
+    
+    assert device
+    return device
 
 
 @pytest.fixture()
-def clear_sync_device(device, account_synctarget, plex):
-    sync_items = account_synctarget.syncItems(clientId=device.clientIdentifier)
+def clear_sync_device(sync_device, plex):
+    sync_items = sync_device.syncItems()
     for item in sync_items.items:
         item.delete()
     plex.refreshSync()
-    return device
+    return sync_device
 
 
 @pytest.fixture
