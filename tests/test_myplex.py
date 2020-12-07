@@ -56,10 +56,7 @@ def test_myplex_devices(account):
 
 
 def test_myplex_device(account, plex):
-    from plexapi import X_PLEX_DEVICE_NAME
-
     assert account.device(plex.friendlyName)
-    assert account.device(X_PLEX_DEVICE_NAME)
 
 
 def _test_myplex_connect_to_device(account):
