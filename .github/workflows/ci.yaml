@@ -176,11 +176,6 @@ jobs:
 
     - name: Sync tests with ${{ matrix.plex }} server
       if: matrix.plex == 'claimed'
-      env:
-        PLEXAPI_HEADER_PROVIDES: 'controller,sync-target'
-        PLEXAPI_HEADER_PLATFORM: iOS
-        PLEXAPI_HEADER_PLATFORM_VERSION: 11.4.1
-        PLEXAPI_HEADER_DEVICE: iPhone
       run: |
         . venv/bin/activate
         pytest \
