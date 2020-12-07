@@ -19,7 +19,7 @@ if __name__ == '__main__':
             device.delete()
 
     # Remove the test sync client
-    sync_client_identifier = 'sync-client-%s' % X_PLEX_IDENTIFIER
+    sync_client_identifier = 'test-sync-client-%s' % X_PLEX_IDENTIFIER
     for device in plex.myPlexAccount().devices():
         if device.clientIdentifier == sync_client_identifier:
             print('Removing device "%s", with id "%s"' % (device.name, device. clientIdentifier))

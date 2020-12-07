@@ -49,7 +49,7 @@ ENTITLEMENTS = {
     "windows",
     "windows_phone",
 }
-SYNC_DEVICE_IDENTIFIER = "sync-client-%s" % plexapi.X_PLEX_IDENTIFIER
+SYNC_DEVICE_IDENTIFIER = "test-sync-client-%s" % plexapi.X_PLEX_IDENTIFIER
 SYNC_DEVICE_HEADERS = {
     "X-Plex-Provides": "sync-target",
     "X-Plex-Platform": "iOS",
