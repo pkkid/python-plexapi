@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import time
-import uuid
 from datetime import datetime
 from functools import partial
 from os import environ
