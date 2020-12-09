@@ -11,7 +11,7 @@ from threading import Event, Thread
 from urllib.parse import quote
 
 import requests
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 
 try:
     from tqdm import tqdm
@@ -377,6 +377,31 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     password = getpass('What is your plex.tv password: ')
     print('Authenticating with Plex.tv as %s..' % username)
     return MyPlexAccount(username, password)
+
+
+def createMyPlexDevice(headers, timeout=None):  # pragma: no cover
+    """ Helper function to create a new MyPlexDevice.
+
+        Parameters:
+            headers (dict): Provide the X-Plex- headers for the new device.
+                A unique X-Plex-Client-Identifier is required.
+            timeout (int): Timeout in seconds to wait for device login.
+    """
+    from plexapi.myplex import MyPlexPinLogin
+
+    if 'X-Plex-Client-Identifier' not in headers:
+        raise BadRequest('The X-Plex-Client-Identifier header is required.')
+
+    clientIdentifier = headers['X-Plex-Client-Identifier']
+
+    pinlogin = MyPlexPinLogin(headers=headers)
+    pinlogin.run(timeout=timeout)
+    pinlogin.link()
+    pinlogin.waitForLogin()
+
+    account = getMyPlexAccount()
+    device = account.device(clientIdentifier=clientIdentifier)
+    return device
 
 
 def choose(msg, items, attr):  # pragma: no cover

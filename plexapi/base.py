@@ -95,7 +95,7 @@ class PlexObject(object):
             or disable each parameter individually by setting it to False or 0.
         """
         details_key = self.key
-        if hasattr(self, '_INCLUDES'):
+        if details_key and hasattr(self, '_INCLUDES'):
             includes = {}
             for k, v in self._INCLUDES.items():
                 value = kwargs.get(k, v)

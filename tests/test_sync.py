@@ -5,15 +5,15 @@ from plexapi.sync import (AUDIO_BITRATE_192_KBPS, PHOTO_QUALITY_MEDIUM,
 from . import conftest as utils
 
 
-def get_sync_item_from_server(device, sync_item):
-    sync_list = device.syncItems()
+def get_sync_item_from_server(sync_device, sync_item):
+    sync_list = sync_device.syncItems()
     for item in sync_list.items:
         if item.id == sync_item.id:
             return item
 
 
-def is_sync_item_missing(device, sync_item):
-    return not get_sync_item_from_server(device, sync_item)
+def is_sync_item_missing(sync_device, sync_item):
+    return not get_sync_item_from_server(sync_device, sync_item)
 
 
 def test_current_device_got_sync_target(clear_sync_device):
@@ -38,7 +38,7 @@ def test_add_movie_to_sync(clear_sync_device, movie):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -55,7 +55,7 @@ def test_delete_sync_item(clear_sync_device, movie):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     sync_items = clear_sync_device.syncItems()
@@ -65,7 +65,7 @@ def test_delete_sync_item(clear_sync_device, movie):
         is_sync_item_missing,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item_in_myplex,
     )
 
@@ -77,7 +77,7 @@ def test_add_show_to_sync(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = show.episodes()
@@ -96,7 +96,7 @@ def test_add_season_to_sync(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = season.episodes()
@@ -114,7 +114,7 @@ def test_add_episode_to_sync(clear_sync_device, episode):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -134,7 +134,7 @@ def test_limited_watched(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = show.episodes()[:5]
@@ -162,7 +162,7 @@ def test_limited_unwatched(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = show.episodes(viewCount=0)[:5]
@@ -191,7 +191,7 @@ def test_unlimited_and_watched(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = show.episodes()
@@ -220,7 +220,7 @@ def test_unlimited_and_unwatched(clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     episodes = show.episodes(viewCount=0)
@@ -246,7 +246,7 @@ def test_add_music_artist_to_sync(clear_sync_device, artist):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     tracks = artist.tracks()
@@ -264,7 +264,7 @@ def test_add_music_album_to_sync(clear_sync_device, album):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     tracks = album.tracks()
@@ -282,7 +282,7 @@ def test_add_music_track_to_sync(clear_sync_device, track):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -300,7 +300,7 @@ def test_add_photo_to_sync(clear_sync_device, photoalbum):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -317,7 +317,7 @@ def test_sync_entire_library_movies(clear_sync_device, movies):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     section_content = movies.all()
@@ -335,7 +335,7 @@ def test_sync_entire_library_tvshows(clear_sync_device, tvshows):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     section_content = tvshows.searchEpisodes()
@@ -353,7 +353,7 @@ def test_sync_entire_library_music(clear_sync_device, music):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     section_content = music.searchTracks()
@@ -371,7 +371,7 @@ def test_sync_entire_library_photos(clear_sync_device, photos):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     # It's not that easy, to just get all the photos within the library, so let`s query for photos with device!=0x0
@@ -394,7 +394,7 @@ def test_playlist_movie_sync(plex, clear_sync_device, movies):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -416,7 +416,7 @@ def test_playlist_tvshow_sync(plex, clear_sync_device, show):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -438,7 +438,7 @@ def test_playlist_mixed_sync(plex, clear_sync_device, movie, episode):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -460,7 +460,7 @@ def test_playlist_music_sync(plex, clear_sync_device, artist):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
@@ -482,7 +482,7 @@ def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
         get_sync_item_from_server,
         delay=0.5,
         timeout=3,
-        device=clear_sync_device,
+        sync_device=clear_sync_device,
         sync_item=new_item,
     )
     media_list = utils.wait_until(
