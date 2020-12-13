@@ -301,7 +301,7 @@ def test_library_Collection_delete(movies, movie):
 
 
 def test_library_Collection_children(collection):
-    children = collection.children()
+    children = collection.items()
     assert len(children) == 1
 
 
