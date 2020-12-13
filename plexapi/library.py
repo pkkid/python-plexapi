@@ -1478,6 +1478,10 @@ class Collections(PlexPartialObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
+    @property
+    def children(self):
+        return self.fetchItems(self.key)
+        
     def items(self):
         """ Returns a list of all items in the collection. """
         key = '/library/metadata/%s/children' % self.ratingKey
