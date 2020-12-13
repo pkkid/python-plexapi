@@ -161,12 +161,12 @@ def searchType(libtype):
 
 
 def threaded(callback, listargs):
-    """ Returns the result of <callback> for each set of \*args in listargs. Each call
+    """ Returns the result of <callback> for each set of `*args` in listargs. Each call
         to <callback> is called concurrently in their own separate threads.
 
         Parameters:
-            callback (func): Callback function to apply to each set of \*args.
-            listargs (list): List of lists; \*args to pass each thread.
+            callback (func): Callback function to apply to each set of `*args`.
+            listargs (list): List of lists; `*args` to pass each thread.
     """
     threads, results = [], []
     job_is_done_event = Event()

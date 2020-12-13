@@ -702,7 +702,7 @@ class Playable(object):
             'mediaIndex': params.get('mediaIndex', 0),
             'X-Plex-Platform': params.get('platform', 'Chrome'),
             'maxVideoBitrate': max(mvb, 64) if mvb else None,
-            'videoResolution': vr if re.match('^\d+x\d+$', vr) else None
+            'videoResolution': vr if re.match(r'^\d+x\d+$', vr) else None
         }
         # remove None values
         params = {k: v for k, v in params.items() if v is not None}
