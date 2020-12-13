@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import warnings
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
@@ -7,8 +6,7 @@ from plexapi.base import PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
-
-warnings.simplefilter('default', category=DeprecationWarning)
+from plexapi.utils import deprecated
 
 
 class Library(PlexObject):
@@ -845,15 +843,13 @@ class LibrarySection(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
+    @deprecated('use "collections" (plural) instead')
     def collection(self, **kwargs):
-        msg = 'LibrarySection.collection() will be deprecated in the future, use collections() (plural) instead.'
-        warnings.warn(msg, DeprecationWarning)
-        log.warning(msg)
         return self.collections()
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
-            See description of :func:`plexapi.library.LibrarySection.search` for details about filtering / sorting.
+            See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting.
         """
         return self.search(libtype='collection', **kwargs)
 
@@ -1479,8 +1475,14 @@ class Collections(PlexPartialObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     @property
+    @deprecated('use "items" instead')
     def children(self):
         return self.fetchItems(self.key)
+        
+    def items(self):
+        """ Returns a list of all items in the collection. """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItems(key)
 
     def __len__(self):
         return self.childCount
