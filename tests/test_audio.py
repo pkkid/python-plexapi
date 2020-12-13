@@ -294,7 +294,6 @@ def test_audio_Track_attrs(album):
     assert stream.bitrateMode is None
     assert stream.channels == 2
     assert stream.codec == "mp3"
-    assert stream.dialogNorm is None
     assert stream.duration is None
     assert utils.is_int(stream.id)
     assert stream.index == 0
