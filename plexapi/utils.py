@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import base64
+import functools
 import logging
 import os
 import re
 import time
+import warnings
 import zipfile
 from datetime import datetime
 from getpass import getpass
@@ -19,6 +21,7 @@ except ImportError:
     tqdm = None
 
 log = logging.getLogger('plexapi')
+warnings.simplefilter('default', category=DeprecationWarning)
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
@@ -445,3 +448,18 @@ def getAgentIdentifier(section, agent):
 
 def base64str(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
+
+
+def deprecated(message):
+    def decorator(func):
+        """This is a decorator which can be used to mark functions
+        as deprecated. It will result in a warning being emitted
+        when the function is used."""
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
+            warnings.warn(msg, category=DeprecationWarning, stacklevel=3)
+            log.warning(msg)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
