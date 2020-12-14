@@ -621,7 +621,7 @@ class LibrarySection(PlexObject):
             raise BadRequest('Cannot include kwarg equal to specified category: %s' % category)
         args = {}
         for subcategory, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(subcategory, value)
+            args[category], libtype = self._cleanSearchFilter(subcategory, value)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
@@ -817,7 +817,7 @@ class LibrarySection(PlexObject):
 
         args = {}
         for category, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(category, value, libtype)
+            args[category], libtype = self._cleanSearchFilter(category, value, libtype)
         if sort is not None:
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
