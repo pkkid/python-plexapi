@@ -732,7 +732,7 @@ class LibrarySection(PlexObject):
             value = [value]
         # convert list of values to list of keys or ids
         result = set()
-        choices = self.listChoices(category, libtype)
+        choices = self.listChoices(libCategory, libtype)
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
         allowed = set(c.key for c in choices)
         for item in value:
