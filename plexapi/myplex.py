@@ -153,15 +153,15 @@ class MyPlexAccount(PlexObject):
         self.services = None
         self.joined_at = None
 
-    def device(self, name=None, clientIdentifier=None):
+    def device(self, name=None, clientId=None):
         """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
 
             Parameters:
                 name (str): Name to match against.
-                clientIdentifier (str): clientIdentifier to match against.
+                clientId (str): clientIdentifier to match against.
         """
         for device in self.devices():
-            if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientIdentifier):
+            if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientId):
                 return device
         raise NotFound('Unable to find device %s' % name)
 

@@ -404,7 +404,7 @@ def createMyPlexDevice(headers, account=None, timeout=10):  # pragma: no cover
     pinlogin.waitForLogin()
 
     account = getMyPlexAccount()
-    device = account.device(clientIdentifier=clientIdentifier)
+    device = account.device(clientId=clientIdentifier)
     return device
 
 
