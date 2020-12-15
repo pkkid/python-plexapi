@@ -382,7 +382,7 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     return MyPlexAccount(username, password)
 
 
-def createMyPlexDevice(headers, timeout=None):  # pragma: no cover
+def createMyPlexDevice(headers, account=None, timeout=10):  # pragma: no cover
     """ Helper function to create a new MyPlexDevice.
 
         Parameters:
@@ -396,10 +396,11 @@ def createMyPlexDevice(headers, timeout=None):  # pragma: no cover
         raise BadRequest('The X-Plex-Client-Identifier header is required.')
 
     clientIdentifier = headers['X-Plex-Client-Identifier']
+    token = account._token if account else None
 
     pinlogin = MyPlexPinLogin(headers=headers)
     pinlogin.run(timeout=timeout)
-    pinlogin.link()
+    pinlogin.link(token=token)
     pinlogin.waitForLogin()
 
     account = getMyPlexAccount()

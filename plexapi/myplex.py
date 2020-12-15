@@ -1125,6 +1125,7 @@ class MyPlexPinLogin(object):
         self._abort = False
         self._id = None
         self._code = None
+        self._getCode()
 
         self.finished = False
         self.expired = False
@@ -1132,10 +1133,6 @@ class MyPlexPinLogin(object):
 
     @property
     def pin(self):
-        if self._code:
-            return self._code
-        
-        self._getCode()
         return self._code
 
     def run(self, callback=None, timeout=None):
@@ -1229,9 +1226,6 @@ class MyPlexPinLogin(object):
         return self._code
 
     def _checkLogin(self):
-        if not self._code:
-            self._getCode()
-
         if not self._id:
             return False
 
