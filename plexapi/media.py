@@ -626,6 +626,7 @@ class MediaTag(PlexObject):
             raise BadRequest('Key is not defined for this tag: %s' % self.tag)
         return self.fetchItems(self.key)
 
+
 class GuidTag(PlexObject):
     """ Base class for guid tags used only for Guids, as they contain only a string identifier
 
@@ -728,10 +729,12 @@ class Genre(MediaTag):
     TAG = 'Genre'
     FILTER = 'genre'
 
+
 @utils.registerPlexObject
 class Guid(GuidTag):
     """ Represents a single Guid media tag. """
     TAG = "Guid"
+
 
 @utils.registerPlexObject
 class Mood(MediaTag):
