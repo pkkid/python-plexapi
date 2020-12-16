@@ -462,27 +462,32 @@ if __name__ == "__main__":
             else:
                 server = PlexServer("http://%s:32400" % opts.advertise_ip)
 
-            if opts.accept_eula:
-                server.settings.get("acceptedEULA").set(True)
-            if not opts.unclaimed and account.subscriptionActive:
-                server.settings.get("GenerateIntroMarkerBehavior").set("never")
-            server.settings.get("GenerateBIFBehavior").set("never")
-            server.settings.get("GenerateChapterThumbBehavior").set("never")
-            server.settings.get("LoudnessAnalysisBehavior").set("never")
-            server.settings.save()
-
         except KeyboardInterrupt:
             break
 
         except Exception as err:
             print(err)
             time.sleep(1)
+
         runtime = time.time() - start
+
     if not server:
         raise SystemExit(
             "Server didnt appear in your account after %ss" % opts.bootstrap_timeout
         )
+
     print("Plex container started after %ss, setting up content" % int(runtime))
+
+    if opts.accept_eula:
+        server.settings.get("acceptedEULA").set(True)
+    # Disable settings for background tasks when using the test server.
+    # These tasks won't work on the test server since we are using fake media files
+    if not opts.unclaimed and account and account.subscriptionActive:
+        server.settings.get("GenerateIntroMarkerBehavior").set("never")
+    server.settings.get("GenerateBIFBehavior").set("never")
+    server.settings.get("GenerateChapterThumbBehavior").set("never")
+    server.settings.get("LoudnessAnalysisBehavior").set("never")
+    server.settings.save()
 
     sections = []
 
