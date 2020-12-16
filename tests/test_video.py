@@ -84,7 +84,7 @@ def test_video_Movie_isFullObject_and_reload(plex):
     movie_via_section_search.reload()
     assert movie_via_section_search.isFullObject() is True
     # If the verify that the object has been reloaded. xml from search only returns 3 actors.
-    assert len(movie_via_section_search.roles) > 3
+    assert len(movie_via_section_search.roles) >= 3
 
 
 def test_video_Movie_isPartialObject(movie):
@@ -155,17 +155,26 @@ def test_video_Movie_attrs(movies):
     assert utils.is_datetime(movie.addedAt)
     assert utils.is_metadata(movie.art)
     assert movie.artUrl
-    assert movie.audienceRating == 8.5
-    # Disabled this since it failed on the last run, wasnt in the original xml result.
-    # assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
+    assert float(movie.rating) >= 6.4
+    assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
+    assert movie.audienceRating >= 8.5
+    assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     movie.reload()  # RELOAD
     assert movie.chapterSource is None
-    assert movie.collections == []
+    assert not movie.collections
     assert movie.contentRating in utils.CONTENTRATINGS
-    assert all([i.tag in ["US", "USA"] for i in movie.countries])
-    assert [i.tag for i in movie.directors] == ["Nina Paley"]
+    if movie.countries:
+        assert "United States of America" in [i.tag for i in movie.countries]
+    if movie.producers:
+        assert "Nina Paley" in [i.tag for i in movie.producers]
+    if movie.directors:
+        assert "Nina Paley" in [i.tag for i in movie.directors]
+    if movie.roles:
+        assert "Reena Shah" in [i.tag for i in movie.roles]
+    if movie.writers:
+        assert "Nina Paley" in [i.tag for i in movie.writers]
     assert movie.duration >= 160000
-    assert movie.fields == []
+    assert not movie.fields
     assert movie.posters()
     assert sorted([i.tag for i in movie.genres]) == [
         "Animation",
@@ -175,7 +184,8 @@ def test_video_Movie_attrs(movies):
         "Musical",
         "Romance",
     ]
-    assert movie.guid == "com.plexapp.agents.imdb://tt1172203?lang=en"
+    assert "imdb://tt1172203" in [i.id for i in movie.guids]
+    assert movie.guid == "plex://movie/5d776846880197001ec967c6"
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
     assert utils.is_datetime(movie.lastViewedAt)
@@ -186,16 +196,7 @@ def test_video_Movie_attrs(movies):
     assert movie.playlistItemID is None
     if movie.primaryExtraKey:
         assert utils.is_metadata(movie.primaryExtraKey)
-    assert [i.tag for i in movie.producers] == []
-    assert float(movie.rating) >= 6.4
-    # assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.ratingKey >= 1
-    assert set(sorted([i.tag for i in movie.roles])) >= {
-        "Aladdin Ullah",
-        "Annette Hanshaw",
-        "Aseem Chhabra",
-        "Debargo Sanyal",
-    }  # noqa
     assert movie._server._baseurl == utils.SERVER_BASEURL
     assert movie.sessionKey is None
     assert movie.studio == "Nina Paley"
@@ -211,7 +212,6 @@ def test_video_Movie_attrs(movies):
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
-    assert sorted([i.tag for i in movie.writers][:4]) == ["Nina Paley"]  # noqa
     assert movie.year == 2008
     # Audio
     audio = movie.media[0].parts[0].audioStreams()[0]
@@ -329,7 +329,7 @@ def test_video_Movie_attrs(movies):
     assert part.container in utils.CONTAINERS
     assert part.decision is None
     assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
-    assert utils.is_int(part.duration, 160000)
+    assert utils.is_int(part.duration, gte=160000)
     assert part.exists
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
