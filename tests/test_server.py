@@ -56,21 +56,19 @@ def test_server_url(plex):
     assert "ohno" in plex.url("ohno")
 
 
-def test_server_transcodeImage(tmpdir, plex, show):
+def test_server_transcodeImage(tmpdir, plex, movie):
     width, height = 500, 500
-    imgurl = plex.transcodeImage(show.banner, height, width)
-    gray = imgurl = plex.transcodeImage(show.banner, height, width, saturation=0)
-    resized_img = download(
-        imgurl, plex._token, savepath=str(tmpdir), filename="resize_image"
-    )
+    original_url = plex.url(movie.thumb)
+    resize_url = plex.transcodeImage(movie.thumb, height, width)
+    grayscale_url = plex.transcodeImage(movie.thumb, height, width, saturation=0)
     original_img = download(
-        show._server.url(show.banner),
-        plex._token,
-        savepath=str(tmpdir),
-        filename="original_img",
+        original_url, plex._token, savepath=str(tmpdir), filename="original_img",
+    )
+    resized_img = download(
+        resize_url, plex._token, savepath=str(tmpdir), filename="resize_image"
     )
     grayscale_img = download(
-        gray, plex._token, savepath=str(tmpdir), filename="grayscale_img"
+        grayscale_url, plex._token, savepath=str(tmpdir), filename="grayscale_img"
     )
     with Image.open(resized_img) as image:
         assert width, height == image.size
