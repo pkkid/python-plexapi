@@ -205,10 +205,18 @@ jobs:
 
 
   coverage:
-    name: Process test coverage
+    name: Process test coverage (${{ matrix.plex }})
     runs-on: ubuntu-latest
     needs: pytest
     if: always()
+    strategy:
+      matrix:
+        plex: ['unclaimed', 'claimed']
+        is-master:
+          - ${{ github.ref == 'refs/heads/master' }}
+        exclude:
+          - is-master: false
+            plex: claimed
     steps:
     - name: Check out code from GitHub
       uses: actions/checkout@v2
@@ -240,12 +248,14 @@ jobs:
     - name: Download all coverage artifacts
       uses: actions/download-artifact@v2
 
-    - name: Combine coverage results
+    - name: Combine ${{ matrix.plex }} coverage results
       run: |
         . venv/bin/activate
-        coverage combine coverage*/.coverage*
+        coverage combine coverage-${{ matrix.plex }}*/.coverage*
         coverage report --fail-under=50
         coverage xml
 
-    - name: Upload coverage to Codecov
+    - name: Upload ${{ matrix.plex }} coverage to Codecov
       uses: codecov/codecov-action@v1
+      with:
+        flags: ${{ matrix.plex }}
