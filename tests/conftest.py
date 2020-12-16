@@ -160,14 +160,15 @@ def plex(request):
     return PlexServer(SERVER_BASEURL, token, session=session)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sync_device(account_synctarget):
     try:
-        device = account_synctarget.device(clientIdentifier=SYNC_DEVICE_IDENTIFIER)
+        device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
     except NotFound:
-        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, timeout=10)
+        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
     
     assert device
+    assert "sync-target" in device.provides
     return device
 
 
