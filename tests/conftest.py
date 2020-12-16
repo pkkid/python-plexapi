@@ -165,7 +165,7 @@ def sync_device(account_synctarget):
     try:
         device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
     except NotFound:
-        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account=account_synctarget)
+        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
     
     assert device
     assert "sync-target" in device.provides

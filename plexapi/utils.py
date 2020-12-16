@@ -382,12 +382,13 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     return MyPlexAccount(username, password)
 
 
-def createMyPlexDevice(headers, account=None, timeout=10):  # pragma: no cover
+def createMyPlexDevice(headers, account, timeout=10):  # pragma: no cover
     """ Helper function to create a new MyPlexDevice.
 
         Parameters:
             headers (dict): Provide the X-Plex- headers for the new device.
                 A unique X-Plex-Client-Identifier is required.
+            account (MyPlexAccount): The Plex account to create the device on.
             timeout (int): Timeout in seconds to wait for device login.
     """
     from plexapi.myplex import MyPlexPinLogin
@@ -396,16 +397,13 @@ def createMyPlexDevice(headers, account=None, timeout=10):  # pragma: no cover
         raise BadRequest('The X-Plex-Client-Identifier header is required.')
 
     clientIdentifier = headers['X-Plex-Client-Identifier']
-    token = account._token if account else None
 
     pinlogin = MyPlexPinLogin(headers=headers)
     pinlogin.run(timeout=timeout)
-    pinlogin.link(token=token)
+    account.link(pinlogin.pin)
     pinlogin.waitForLogin()
 
-    account = getMyPlexAccount()
-    device = account.device(clientId=clientIdentifier)
-    return device
+    return account.device(clientId=clientIdentifier)
 
 
 def choose(msg, items, attr):  # pragma: no cover

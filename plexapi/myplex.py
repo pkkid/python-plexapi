@@ -76,6 +76,7 @@ class MyPlexAccount(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
+    LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/'                                                       # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
@@ -684,6 +685,19 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    def link(self, pin):
+        """ Link a device to the account using a pin code.
+
+            Parameters:
+                pin (str): The 4 digit link pin code.
+        """
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Plex-Product': 'Plex SSO'
+        }
+        data = {'code': pin}
+        self.query(self.LINK, self._session.put, headers=headers, data=data)
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
@@ -1110,7 +1124,6 @@ class MyPlexPinLogin(object):
     """
     PINS = 'https://plex.tv/api/v2/pins'               # get
     CHECKPINS = 'https://plex.tv/api/v2/pins/{pinid}'  # get
-    LINK = 'https://plex.tv/api/v2/pins/link'          # put
     POLLINTERVAL = 1
 
     def __init__(self, session=None, requestTimeout=None, headers=None):
@@ -1195,24 +1208,6 @@ class MyPlexPinLogin(object):
             self.finished = True
 
         return False
-
-    def link(self, code=None, token=None):
-        if code is None:
-            code = self.pin
-
-        url = self.LINK
-        headers = BASE_HEADERS.copy()
-        headers.update({
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Plex-Product': 'Plex SSO',
-        })
-
-        token = token or CONFIG.get('auth.server_token')
-        if token:
-            headers['X-Plex-Token'] = token
-
-        data = {'code': code}
-        self._query(url, self._session.put, headers=headers, data=data)
 
     def _getCode(self):
         url = self.PINS
