@@ -1413,33 +1413,32 @@ class Collections(PlexPartialObject):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'collection'
-
-            ratingKey (int): Unique key identifying this item.
-            addedAt (datetime): Datetime this item was added to the library.
-            art (str): URL to artwork image.
+            addedAt (datetime): Datetime the collection was added to the library.
+            art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
-            childCount (int): Count of child object(s)
+            childCount (int): Number of items in the collection.
             collectionMode (str): How the items in the collection are displayed.
             collectionSort (str): How to sort the items in the collection.
             contentRating (str) Content rating (PG-13; NR; TV-G).
-            fields (list): List of :class:`~plexapi.media.Field`.
-            guid (str): Plex GUID (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
-            index (int): Unknown
+            fields (List<:class:`~plexapi.media.Field`>): List of field objects.
+            guid (str): Plex GUID for the collection (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
+            index (int): Plex index number for the collection.
             key (str): API URL (/library/metadata/<ratingkey>).
-            labels (List<:class:`~plexapi.media.Label`>): List of field objects.
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
-            librarySectionKey (str): API URL (/library/sections/<sectionkey>).
-            librarySectionTitle (str): Section Title
-            maxYear (int): Year
-            minYear (int): Year
-            subtype (str): Media type
-            summary (str): Summary of the collection
-            thumb (str): URL to thumbnail image.
+            librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
+            librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
+            maxYear (int): Maximum year for the items in the collection.
+            minYear (int): Minimum year for the items in the collection.
+            ratingKey (int): Unique key identifying the collection.
+            subtype (str): Media type of the items in the collection (movie, show, artist, or album).
+            summary (str): Summary of the collection.
+            thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
             thumbBlurHash (str): BlurHash string for thumbnail image.
-            title (str): Collection Title
+            title (str): Name of the collection.
             titleSort (str): Title to use when sorting (defaults to title).
-            type (str): Hardcoded 'collection'
-            updatedAt (datatime): Datetime this item was updated.
+            type (str): 'collection'
+            updatedAt (datatime): Datetime the collection was updated.
 
     """
 
@@ -1447,7 +1446,6 @@ class Collections(PlexPartialObject):
     TYPE = 'collection'
 
     def _loadData(self, data):
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
@@ -1465,12 +1463,13 @@ class Collections(PlexPartialObject):
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.subtype = data.attrib.get('subtype')
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
         self.thumbBlurHash = data.attrib.get('thumbBlurHash')
         self.title = data.attrib.get('title')
-        self.titleSort = data.attrib.get('titleSort')
+        self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
