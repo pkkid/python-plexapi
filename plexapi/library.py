@@ -437,18 +437,15 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
-    def all(self, sort=None, **kwargs):
-        """ Returns a list of media from this library section.
-
-            Parameters:
-                    sort (string): The sort string
+    def all(self, libtype=None, **kwargs):
+        """ Returns a list of all items from this library section.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
         """
-        sortStr = ''
-        if sort is not None:
-            sortStr = '?sort=' + sort
-
-        key = '/library/sections/%s/all%s' % (self.key, sortStr)
-        return self.fetchItems(key, **kwargs)
+        if isinstance(self, PhotoSection):
+            libtype = 'photoalbum'
+        elif libtype is None:
+            libtype = self.TYPE
+        return self.search(libtype=libtype, **kwargs)
 
     def folders(self):
         """ Returns a list of available :class:`~plexapi.library.Folder` for this library section.
