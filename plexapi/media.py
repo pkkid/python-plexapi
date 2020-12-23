@@ -603,6 +603,18 @@ class Mood(MediaTag):
 
 
 @utils.registerPlexObject
+class Style(MediaTag):
+    """ Represents a single Style media tag.
+
+        Attributes:
+            TAG (str): 'Style'
+            FILTER (str): 'style'
+    """
+    TAG = 'Style'
+    FILTER = 'style'
+
+
+@utils.registerPlexObject
 class Poster(PlexObject):
     """ Represents a Poster.
 
