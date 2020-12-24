@@ -749,7 +749,6 @@ def test_video_Season(show):
     assert len(seasons) == 2
     assert ["Season 1", "Season 2"] == [s.title for s in seasons[:2]]
     assert show.season("Season 1") == seasons[0]
-    assert show.season(season=1) == seasons[0]
 
 
 def test_video_Season_history(show):
@@ -815,7 +814,7 @@ def test_video_Season_episode(show):
 
 
 def test_video_Season_episode_by_index(show):
-    episode = show.season("Season 1").episode(episode=1)
+    episode = show.season(season=1).episode(episode=1)
     assert episode.index == 1
 
 
