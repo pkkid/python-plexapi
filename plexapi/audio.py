@@ -189,7 +189,7 @@ class Artist(Audio):
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
-        key = '/library/section/%s/allLeaves' % self.ratingKey
+        key = '/library/metadata/%s/allLeaves' % self.ratingKey
         return self.fetchItems(key, Track, **kwargs)
 
     def get(self, title=None, album=None, track=None):
