@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 
 from plexapi import utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
@@ -91,13 +91,28 @@ class Playlist(PlexPartialObject, Playable):
     def __getitem__(self, key):  # pragma: no cover
         return self.items()[key]
 
+    def item(self, title):
+        """ Returns the item in the playlist that matches the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        for item in self.items():
+            if item.title.lower() == title:
+                return item
+        raise NotFound('Item with title "%s" not found in the playlist')
+
     def items(self):
         """ Returns a list of all items in the playlist. """
         if self._items is None:
-            key = '%s/items' % self.key
+            key = '/playlist/%s/items' % self.ratingKey
             items = self.fetchItems(key)
             self._items = items
         return self._items
+
+    def get(self, title):
+        """ Alias to :func:`~plexapi.playlist.Playlist.item`. """
+        return self.item(title)
 
     def addItems(self, items):
         """ Add items to a playlist. """
