@@ -504,7 +504,7 @@ class Show(Video):
             return self.fetchItem(key, Season, title__iexact=title)
         elif season:
             return self.fetchItem(key, Season, index=season)
-        raise BadRequest('Missing argument: title or season is required')        
+        raise BadRequest('Missing argument: title or season is required')
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
