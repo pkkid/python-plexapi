@@ -810,7 +810,7 @@ def test_video_Season_get(show):
 
 
 def test_video_Season_episode(show):
-    episode = show.season("Season ").get("Winter Is Coming")
+    episode = show.season("Season 1").get("Winter Is Coming")
     assert episode.title == "Winter Is Coming"
 
 
