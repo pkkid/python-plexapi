@@ -227,6 +227,7 @@ class PlexObject(object):
                 return value
 
     def listAttrs(self, data, attr, **kwargs):
+        """ Return a list of values from matching attribute. """
         results = []
         for elem in data:
             kwargs['%s__exists' % attr] = True
