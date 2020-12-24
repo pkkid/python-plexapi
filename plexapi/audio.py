@@ -7,8 +7,8 @@ from plexapi.exceptions import BadRequest
 
 
 class Audio(PlexPartialObject):
-    """ Base class for audio :class:`~plexapi.audio.Artist`, :class:`~plexapi.audio.Album`
-        and :class:`~plexapi.audio.Track` objects.
+    """ Base class for all audio objects including :class:`~plexapi.audio.Artist`,
+        :class:`~plexapi.audio.Album`, and :class:`~plexapi.audio.Track`.
 
         Attributes:
             addedAt (datetime): Datetime the item was added to the library.
@@ -124,7 +124,7 @@ class Audio(PlexPartialObject):
 
 @utils.registerPlexObject
 class Artist(Audio):
-    """ Represents a single audio artist.
+    """ Represents a single Artist.
 
         Attributes:
             TAG (str): 'Directory'
@@ -218,7 +218,7 @@ class Artist(Audio):
 
 @utils.registerPlexObject
 class Album(Audio):
-    """ Represents a single audio album.
+    """ Represents a single Album.
 
         Attributes:
             TAG (str): 'Directory'
@@ -324,7 +324,7 @@ class Album(Audio):
 
 @utils.registerPlexObject
 class Track(Audio, Playable):
-    """ Represents a single audio track.
+    """ Represents a single Track.
 
         Attributes:
             TAG (str): 'Directory'

@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest
 
 @utils.registerPlexObject
 class Photoalbum(PlexPartialObject):
-    """ Represents a photoalbum (collection of photos).
+    """ Represents a single Photoalbum (collection of photos).
 
         Attributes:
             TAG (str): 'Directory'
@@ -137,7 +137,7 @@ class Photoalbum(PlexPartialObject):
 
 @utils.registerPlexObject
 class Photo(PlexPartialObject, Playable):
-    """ Represents a single photo.
+    """ Represents a single Photo.
 
         Attributes:
             TAG (str): 'Photo'

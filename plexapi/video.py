@@ -10,7 +10,7 @@ from plexapi.exceptions import BadRequest, NotFound
 class Video(PlexPartialObject):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
-        :class:`~plexapi.video.Episode`, :class:`~plexapi.video.Clip`.
+        :class:`~plexapi.video.Episode`, and :class:`~plexapi.video.Clip`.
 
         Attributes:
             addedAt (datetime): Datetime the item was added to the library.
