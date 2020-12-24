@@ -43,6 +43,9 @@ def test_audio_Artist_history(artist):
 def test_audio_Artist_track(artist):
     track = artist.track("As Colourful as Ever")
     assert track.title == "As Colourful as Ever"
+    track = artist.track(album="Layers", track=1)
+    assert track.parentTitle == "Layers"
+    assert track.index == 1
 
 
 def test_audio_Artist_tracks(artist):
@@ -135,6 +138,8 @@ def test_audio_Album_tracks(album):
 def test_audio_Album_track(album, track=None):
     # this is not reloaded. its not that much info missing.
     track = track or album.track("As Colourful As Ever")
+    track2 = album.track(track=1)
+    assert track == track2
     assert utils.is_datetime(track.addedAt)
     assert utils.is_int(track.duration)
     assert utils.is_metadata(track.grandparentKey)
@@ -225,6 +230,8 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == "audio"
+    assert len(track.locations) == 1
+    assert len(track.locations[0]) >= 10
     # Assign 0 track.media
     media = track.media[0]
     assert track.moods == []

@@ -145,6 +145,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
 def test_video_Movie_attrs(movies):
     movie = movies.get("Sita Sings the Blues")
+    assert len(movie.locations) == 1
     assert len(movie.locations[0]) >= 10
     assert utils.is_datetime(movie.addedAt)
     assert utils.is_metadata(movie.art)
@@ -498,6 +499,7 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == "video"
+    assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
     assert utils.is_datetime(show.originallyAvailableAt)
     assert show.rating >= 8.0
@@ -549,13 +551,6 @@ def test_video_Show_unwatched(tvshows):
     episodes[0].markWatched()
     unwatched = show.unwatched()
     assert len(unwatched) == len(episodes) - 1
-
-
-def test_video_Show_location(plex):
-    # This should be a part of test test_video_Show_attrs but is excluded
-    # because of https://github.com/mjs7231/python-plexapi/issues/97
-    show = plex.library.section("TV Shows").get("The 100")
-    assert len(show.locations) >= 1
 
 
 def test_video_Show_settings(show):
@@ -715,6 +710,8 @@ def test_video_Episode_attrs(episode):
     )
     assert episode.year == 2011
     assert episode.isWatched in [True, False]
+    assert len(episode.locations) == 1
+    assert len(episode.locations[0]) >= 10
     # Media
     media = episode.media[0]
     assert media.aspectRatio == 1.78
@@ -752,6 +749,7 @@ def test_video_Season(show):
     assert len(seasons) == 2
     assert ["Season 1", "Season 2"] == [s.title for s in seasons[:2]]
     assert show.season("Season 1") == seasons[0]
+    assert show.season(season=1) == seasons[0]
 
 
 def test_video_Season_history(show):
@@ -794,38 +792,35 @@ def test_video_Season_show(show):
     assert season.ratingKey == season_by_name.ratingKey
 
 
-def test_video_Season_watched(tvshows):
-    show = tvshows.get("Game of Thrones")
-    season = show.season(1)
-    sne = show.season("Season 1")
-    assert season == sne
+def test_video_Season_watched(show):
+    season = show.season("Season 1")
     season.markWatched()
     assert season.isWatched
 
 
-def test_video_Season_unwatched(tvshows):
-    season = tvshows.get("Game of Thrones").season(1)
+def test_video_Season_unwatched(show):
+    season = show.season("Season 1")
     season.markUnwatched()
     assert not season.isWatched
 
 
 def test_video_Season_get(show):
-    episode = show.season(1).get("Winter Is Coming")
+    episode = show.season("Season 1").get("Winter Is Coming")
     assert episode.title == "Winter Is Coming"
 
 
 def test_video_Season_episode(show):
-    episode = show.season(1).get("Winter Is Coming")
+    episode = show.season("Season ").get("Winter Is Coming")
     assert episode.title == "Winter Is Coming"
 
 
 def test_video_Season_episode_by_index(show):
-    episode = show.season(1).episode(episode=1)
+    episode = show.season("Season 1").episode(episode=1)
     assert episode.index == 1
 
 
 def test_video_Season_episodes(show):
-    episodes = show.season(2).episodes()
+    episodes = show.season("Season 2").episodes()
     assert len(episodes) >= 1
 
 
@@ -859,9 +854,9 @@ def test_that_reload_return_the_same_object(plex):
         == tvshow_section_get_key
         == tvshow_section_get.reload().key
     )  # noqa
-    season_library_search = tvshow_library_search.season(1)
-    season_search = tvshow_search.season(1)
-    season_section_get = tvshow_section_get.season(1)
+    season_library_search = tvshow_library_search.season("Season 1")
+    season_search = tvshow_search.season("Season 1")
+    season_section_get = tvshow_section_get.season("Season 1")
     season_library_search_key = season_library_search.key
     season_search_key = season_search.key
     season_section_get_key = season_section_get.key

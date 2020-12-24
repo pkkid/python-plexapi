@@ -50,6 +50,20 @@ def test_create_playlist(plex, show):
         playlist.delete()
 
 
+def test_playlist_item(plex, show):
+    title = 'test_create_playlist_item_show'
+    episodes = show.episodes()
+    try:
+        playlist = plex.createPlaylist(title, episodes[:3])
+        item1 = playlist.item("Winter Is Coming")
+        assert item1 in playlist.items()
+        item2 = playlist.get("Winter Is Coming")
+        assert item2 in playlist.items()
+        assert item1 == item2
+    finally:
+        playlist.delete()
+
+
 @pytest.mark.client
 def test_playlist_play(plex, client, artist, album):
     try:
