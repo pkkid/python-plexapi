@@ -135,7 +135,7 @@ class Photo(PlexPartialObject, Playable):
             addedAt (datetime): Datetime the photo was added to the library.
             createdAtAccuracy (str): Unknown (local).
             createdAtTZOffset (int): Unknown (-25200).
-            fields (list): List of :class:`~plexapi.media.Field`.
+            fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the photo (com.plexapp.agents.none://231714?lang=xn).
             index (sting): Plex index number for the photo.
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -220,6 +220,9 @@ class Photo(PlexPartialObject, Playable):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the photo.
+
+            Retruns:
+                List<str> of file paths where the photo is found on disk.
         """
         return [part.file for item in self.media for part in item.parts if part]
         

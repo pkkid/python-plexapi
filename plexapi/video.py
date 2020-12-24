@@ -336,6 +336,9 @@ class Movie(Playable, Video):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the movie.
+
+            Retruns:
+                List<str> of file paths where the movie is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
 
@@ -387,7 +390,7 @@ class Show(Video):
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             leafCount (int): Number of items in the show view.
-            locations (list<str>): List of folder paths where the show is found on disk.
+            locations (List<str>): List of folder paths where the show is found on disk.
             originallyAvailableAt (datetime): Datetime the show was released.
             rating (float): Show rating (7.9; 9.8; 8.1).
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
@@ -754,6 +757,9 @@ class Episode(Playable, Video):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the episode.
+
+            Retruns:
+                List<str> of file paths where the episode is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
 
@@ -832,5 +838,8 @@ class Clip(Playable, Video):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the clip.
+
+            Retruns:
+                List<str> of file paths where the clip is found on disk.
         """
         return [part.file for part in self.iterParts() if part]

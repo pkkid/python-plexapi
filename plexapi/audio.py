@@ -132,7 +132,7 @@ class Artist(Audio):
             countries (List<:class:`~plexapi.media.Country`>): List country objects.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             key (str): API URL (/library/metadata/<ratingkey>).
-            locations (list): List of folder paths where the artist is found on disk.
+            locations (List<str>): List of folder paths where the artist is found on disk.
             similar (List<:class:`~plexapi.media.Similar`>): List of similar objects.
             styles (List<:class:`~plexapi.media.Style`>): List of style objects.
     """
@@ -377,6 +377,9 @@ class Track(Audio, Playable):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the track.
+
+            Retruns:
+                List<str> of file paths where the track is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
 
