@@ -312,26 +312,22 @@ class LibrarySection(PlexObject):
     """ Base class for a single library section.
 
         Attributes:
-            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
-            initpath (str): Path requested when building this object.
-            agent (str): Unknown (com.plexapp.agents.imdb, etc)
-            allowSync (bool): True if you allow syncing content from this section.
-            art (str): Wallpaper artwork used to respresent this section.
-            composite (str): Composit image used to represent this section.
-            createdAt (datetime): Datetime this library section was created.
+            agent (str): The metadata agent used for the library section (com.plexapp.agents.imdb, etc).
+            allowSync (bool): True if you allow syncing content from the library section.
+            art (str): Background artwork used to respresent the library section.
+            composite (str): Composite image used to represent the library section.
+            createdAt (datetime): Datetime the library section was created.
             filters (str): Unknown
             key (str): Key (or ID) of this library section.
             language (str): Language represented in this section (en, xn, etc).
-            locations (str): Paths on disk where section content is stored.
-            refreshing (str): True if this section is currently being refreshed.
+            locations (List<str>): List of folder paths added to the library section.
+            refreshing (bool): True if this section is currently being refreshed.
             scanner (str): Internal scanner used to find media (Plex Movie Scanner, Plex Premium Music Scanner, etc.)
-            thumb (str): Thumbnail image used to represent this section.
-            title (str): Title of this section.
-            type (str): Type of content section represents (movie, artist, photo, show).
-            updatedAt (datetime): Datetime this library section was last updated.
-            uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
-            totalSize (int): Total number of item in the library
-
+            thumb (str): Thumbnail image used to represent the library section.
+            title (str): Name of the library section.
+            type (str): Type of content section represents (movie, show, artist, photo).
+            updatedAt (datetime): Datetime the library section was last updated.
+            uuid (str): Unique id for the section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
     """
 
     def _loadData(self, data):
@@ -391,6 +387,7 @@ class LibrarySection(PlexObject):
 
     @property
     def totalSize(self):
+        """ Retruns the total number of item in the library. """
         if self._total_size is None:
             part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
             data = self._server.query(part)
