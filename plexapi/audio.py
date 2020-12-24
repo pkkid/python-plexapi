@@ -3,6 +3,7 @@ from urllib.parse import quote_plus
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
+from plexapi.exceptions import BadRequest
 
 
 class Audio(PlexPartialObject):
@@ -160,31 +161,40 @@ class Artist(Audio):
             Parameters:
                 title (str): Title of the album to return.
         """
-        key = '%s/children' % self.key
-        return self.fetchItem(key, title__iexact=title)
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, Album, title__iexact=title)
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        key = '%s/children' % self.key
-        return self.fetchItems(key, **kwargs)
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItems(key, Album, **kwargs)
 
-    def track(self, title):
+    def track(self, title=None, album=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
                 title (str): Title of the track to return.
+                album (str): Album name (default: None; required if title not specified).
+                track (int): Track number (default: None; required if title not specified).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: If title or album and track parameters are missing.
         """
-        key = '%s/allLeaves' % self.key
-        return self.fetchItem(key, title__iexact=title)
+        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        if title:
+            return self.fetchItem(key, Track, title__iexact=title)
+        elif album is not None and track is not None:
+            return self.fetchItem(key, Track, parentTitle__iexact=album, index=track)
+        raise BadRequest('Missing argument: title or album and track are required')
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
-        key = '%s/allLeaves' % self.key
-        return self.fetchItems(key, **kwargs)
+        key = '/library/section/%s/allLeaves' % self.ratingKey
+        return self.fetchItems(key, Track, **kwargs)
 
-    def get(self, title):
+    def get(self, title=None, album=None, track=None):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
-        return self.track(title)
+        return self.track(title, album, track)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Downloads all tracks for the artist to the specified location.
@@ -259,23 +269,31 @@ class Album(Audio):
         for track in self.tracks():
             yield track
 
-    def track(self, title):
+    def track(self, title=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
                 title (str): Title of the track to return.
+                track (int): Track number (default: None; required if title not specified).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
-        key = '%s/children' % self.key
-        return self.fetchItem(key, title__iexact=title)
+        key = '/library/metadata/%s/children' % self.ratingKey
+        if title:
+            return self.fetchItem(key, Track, title__iexact=title)
+        elif track:
+            return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=track)
+        raise BadRequest('Missing argument: title or track is required')
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in the album. """
-        key = '%s/children' % self.key
-        return self.fetchItems(key, **kwargs)
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItems(key, Track, **kwargs)
 
-    def get(self, title):
+    def get(self, title=None, track=None):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
-        return self.track(title)
+        return self.track(title, track)
 
     def artist(self):
         """ Return the album's :class:`~plexapi.audio.Artist`. """

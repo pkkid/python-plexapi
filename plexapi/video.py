@@ -489,48 +489,54 @@ class Show(Video):
         data = self._server.query(self._details_key)
         return self.findItems([item for item in data.iter('OnDeck')][0])[0]
 
-    def seasons(self, **kwargs):
-        """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
-        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
-        return self.fetchItems(key, **kwargs)
-
-    def season(self, title=None):
+    def season(self, title=None, season=None):
         """ Returns the season with the specified title or number.
 
             Parameters:
-                title (str or int): Title or Number of the season to return.
+                title (str): Title of the season to return.
+                season (int): Season number (default: None; required if title not specified).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if isinstance(title, int):
-            return self.fetchItem(key, index__iexact=str(title))
-        return self.fetchItem(key, title__iexact=title)
+        if title:
+            return self.fetchItem(key, Season, title__iexact=title)
+        elif season:
+            return self.fetchItem(key, Season, index=season)
+        raise BadRequest('Missing argument: title or season is required')        
 
-    def episodes(self, **kwargs):
-        """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
-        key = '/library/metadata/%s/allLeaves' % self.ratingKey
-        return self.fetchItems(key, **kwargs)
+    def seasons(self, **kwargs):
+        """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
+        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
+        return self.fetchItems(key, Season, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
         """ Find a episode using a title or season and episode.
 
             Parameters:
                 title (str): Title of the episode to return
-                season (int): Season number (default:None; required if title not specified).
-                episode (int): Episode number (default:None; required if title not specified).
+                season (int): Season number (default: None; required if title not specified).
+                episode (int): Episode number (default: None; required if title not specified).
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: If season and episode is missing.
-                :exc:`~plexapi.exceptions.NotFound`: If the episode is missing.
+                :exc:`~plexapi.exceptions.BadRequest`: If title or season and episode parameters are missing.
         """
+        key = '/library/metadata/%s/allLeaves' % self.ratingKey
         if title:
-            key = '/library/metadata/%s/allLeaves' % self.ratingKey
-            return self.fetchItem(key, title__iexact=title)
-        elif season is not None and episode:
-            results = [i for i in self.episodes() if i.seasonNumber == season and i.index == episode]
-            if results:
-                return results[0]
-            raise NotFound('Couldnt find %s S%s E%s' % (self.title, season, episode))
+            return self.fetchItem(key, Episode, title__iexact=title)
+        elif season is not None and episode is not None:
+            return self.fetchItem(key, Episode, parentIndex=season, index=episode)
         raise BadRequest('Missing argument: title or season and episode are required')
+
+    def episodes(self, **kwargs):
+        """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
+        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        return self.fetchItems(key, Episode, **kwargs)
+
+    def get(self, title=None, season=None, episode=None):
+        """ Alias to :func:`~plexapi.video.Show.episode`. """
+        return self.episode(title, season, episode)
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
@@ -539,10 +545,6 @@ class Show(Video):
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(viewCount=0)
-
-    def get(self, title=None, season=None, episode=None):
-        """ Alias to :func:`~plexapi.video.Show.episode`. """
-        return self.episode(title, season, episode)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
@@ -621,21 +623,24 @@ class Season(Video):
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, **kwargs)
+        return self.fetchItems(key, Episode, **kwargs)
 
     def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
 
             Parameters:
                 title (str): Title of the episode to return.
-                episode (int): Episode number (default:None; required if title not specified).
+                episode (int): Episode number (default: None; required if title not specified).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
-        if not title and not episode:
-            raise BadRequest('Missing argument, you need to use title or episode.')
         key = '/library/metadata/%s/children' % self.ratingKey
         if title:
-            return self.fetchItem(key, title=title)
-        return self.fetchItem(key, parentIndex=self.index, index=episode)
+            return self.fetchItem(key, Episode, title__iexact=title)
+        elif episode:
+            return self.fetchItem(key, Episode, parentIndex=self.index, index=episode)
+        raise BadRequest('Missing argument: title or episode is required')
 
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode`. """
@@ -643,7 +648,7 @@ class Season(Video):
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
-        return self.fetchItem(int(self.parentRatingKey))
+        return self.fetchItem(self.parentRatingKey)
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
@@ -788,7 +793,7 @@ class Episode(Playable, Video):
 
     def show(self):
         """" Return the episode's :class:`~plexapi.video.Show`. """
-        return self.fetchItem(int(self.grandparentRatingKey))
+        return self.fetchItem(self.grandparentRatingKey)
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """

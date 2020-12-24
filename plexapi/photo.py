@@ -58,41 +58,51 @@ class Photoalbum(PlexPartialObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.userRating = utils.cast(float, data.attrib.get('userRating', 0))
 
+    def album(self, title):
+        """ Returns the :class:`~plexapi.photo.Photoalbum` that matches the specified title.
+
+            Parameters:
+                title (str): Title of the photo album to return.
+        """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, Photoalbum, title__iexact=title)
+
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photoalbum` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key, Photoalbum, **kwargs)
 
-    def album(self, title):
-        """ Returns the :class:`~plexapi.photo.Photoalbum` that matches the specified title. """
-        for album in self.albums():
-            if album.title.lower() == title.lower():
-                return album
-        raise NotFound('Unable to find album: %s' % title)
+    def photo(self, title):
+        """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title.
+
+            Parameters:
+                title (str): Title of the photo to return.
+        """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, Photo, title__iexact=title)
 
     def photos(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key, Photo, **kwargs)
 
-    def photo(self, title):
-        """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
-        for photo in self.photos():
-            if photo.title.lower() == title.lower():
-                return photo
-        raise NotFound('Unable to find photo: %s' % title)
+    def clip(self, title):
+        """ Returns the :class:`~plexapi.video.Clip` that matches the specified title.
+
+            Parameters:
+                title (str): Title of the clip to return.
+        """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, video.Clip, title__iexact=title)
 
     def clips(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Clip` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key, video.Clip, **kwargs)
 
-    def clip(self, title):
-        """ Returns the :class:`~plexapi.video.Clip` that matches the specified title. """
-        for clip in self.clips():
-            if clip.title.lower() == title.lower():
-                return clip
-        raise NotFound('Unable to find clip: %s' % title)
+    def get(self, title):
+        """ Alias to :func:`~plexapi.photo.Photoalbum.photo`. """
+        return self.episode(title)
 
     def iterParts(self):
         """ Iterates over the parts of the media item. """

@@ -1474,10 +1474,23 @@ class Collections(PlexPartialObject):
     def children(self):
         return self.fetchItems(self.key)
         
+    def item(self, title):
+        """ Returns the item in the collection that matches the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, title__iexact=title)
+
     def items(self):
         """ Returns a list of all items in the collection. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key)
+
+    def get(self, title):
+        """ Alias to :func:`~plexapi.library.Collection.item`. """
+        return self.item(title)
 
     def __len__(self):
         return self.childCount
