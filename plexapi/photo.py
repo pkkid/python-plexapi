@@ -41,7 +41,7 @@ class Photoalbum(PlexPartialObject):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.composite = data.attrib.get('composite')
-        self.fields = self.findItems(data, etag='Field')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')

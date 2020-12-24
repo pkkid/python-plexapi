@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
-from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
+from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.media import MediaTag
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
@@ -732,7 +731,7 @@ class LibrarySection(PlexObject):
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
         allowed = set(c.key for c in choices)
         for item in value:
-            item = str((item.id or item.tag) if isinstance(item, MediaTag) else item).lower()
+            item = str((item.id or item.tag) if isinstance(item, media.MediaTag) else item).lower()
             # find most logical choice(s) to use in url
             if item in allowed: result.add(item); continue
             if item in lookup: result.add(lookup[item]); continue
@@ -757,7 +756,7 @@ class LibrarySection(PlexObject):
     def _locations(self):
         """ Returns a list of :class:`~plexapi.library.Location` objects
         """
-        return self.findItems(self._data, etag='Location')
+        return self.findItems(self._data, Location)
 
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
@@ -1453,11 +1452,11 @@ class Collections(PlexPartialObject):
         self.collectionMode = data.attrib.get('collectionMode')
         self.collectionSort = data.attrib.get('collectionSort')
         self.contentRating = data.attrib.get('contentRating')
-        self.fields = self.findItems(data, etag='Field')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key').replace('/children', '')  # FIX_BUG_50
-        self.labels = self.findItems(data, etag='Label')
+        self.labels = self.findItems(data, media.Label)
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')

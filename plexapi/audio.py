@@ -43,7 +43,7 @@ class Audio(PlexPartialObject):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
-        self.fields = self.findItems(data, etag='Field')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key')

@@ -41,7 +41,7 @@ class Video(PlexPartialObject):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
-        self.fields = self.findItems(data, etag='Field')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.key = data.attrib.get('key')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
@@ -499,8 +499,8 @@ class Show(Video):
         """
         key = '/library/metadata/%s/children' % self.ratingKey
         if isinstance(title, int):
-            return self.fetchItem(key, etag='Directory', index__iexact=str(title))
-        return self.fetchItem(key, etag='Directory', title__iexact=title)
+            return self.fetchItem(key, index__iexact=str(title))
+        return self.fetchItem(key, title__iexact=title)
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
