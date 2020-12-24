@@ -387,7 +387,7 @@ class LibrarySection(PlexObject):
 
     @property
     def totalSize(self):
-        """ Retruns the total number of item in the library. """
+        """ Returns the total number of items in the library. """
         if self._total_size is None:
             part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
             data = self._server.query(part)
