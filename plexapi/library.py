@@ -2,7 +2,7 @@
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
-from plexapi.base import PlexObject, PlexPartialObject
+from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.media import MediaTag
 from plexapi.settings import Setting
@@ -670,11 +670,9 @@ class LibrarySection(PlexObject):
         # cleanup the core arguments
         args = {}
         for category, value in list(kwargs.items()):
-            try:
+            if category.split('__')[-1] not in OPERATORS:
                 args[category] = self._cleanSearchFilter(category, value, libtype)
                 del kwargs[category]
-            except BadRequest:
-                continue
         if title is not None:
             args['title'] = title
         if sort is not None:
