@@ -1435,7 +1435,6 @@ class Collections(PlexPartialObject):
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'collection'
             updatedAt (datatime): Datetime the collection was updated.
-
     """
 
     TAG = 'Directory'
@@ -1452,7 +1451,7 @@ class Collections(PlexPartialObject):
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
-        self.key = data.attrib.get('key').replace('/children', '')  # FIX_BUG_50
+        self.key = data.attrib.get('key', '').replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.librarySectionKey = data.attrib.get('librarySectionKey')

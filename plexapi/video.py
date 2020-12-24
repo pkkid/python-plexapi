@@ -43,7 +43,7 @@ class Video(PlexPartialObject):
         self.artBlurHash = data.attrib.get('artBlurHash')
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
-        self.key = data.attrib.get('key')
+        self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.librarySectionKey = data.attrib.get('librarySectionKey')
