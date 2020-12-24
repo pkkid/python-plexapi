@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote_plus
 
-from plexapi import media, utils
+from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -61,7 +61,7 @@ class Photoalbum(PlexPartialObject):
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photoalbum` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, etag='Directory', **kwargs)
+        return self.fetchItems(key, Photoalbum, **kwargs)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.photo.Photoalbum` that matches the specified title. """
@@ -73,7 +73,7 @@ class Photoalbum(PlexPartialObject):
     def photos(self, **kwargs):
         """ Returns a list of :class:`~plexapi.photo.Photo` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, etag='Photo', **kwargs)
+        return self.fetchItems(key, Photo, **kwargs)
 
     def photo(self, title):
         """ Returns the :class:`~plexapi.photo.Photo` that matches the specified title. """
@@ -85,7 +85,7 @@ class Photoalbum(PlexPartialObject):
     def clips(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Clip` objects in the album. """
         key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key, etag='Video', **kwargs)
+        return self.fetchItems(key, video.Clip, **kwargs)
 
     def clip(self, title):
         """ Returns the :class:`~plexapi.video.Clip` that matches the specified title. """
