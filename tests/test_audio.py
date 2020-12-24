@@ -11,7 +11,7 @@ def test_audio_Artist_attr(artist):
         assert "United States of America" in [i.tag for i in artist.countries]
     #assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
-    assert artist.index == "1"
+    assert artist.index == 1
     assert utils.is_metadata(artist._initpath)
     assert utils.is_metadata(artist.key)
     assert utils.is_int(artist.librarySectionID)
@@ -63,7 +63,7 @@ def test_audio_Artist_albums(artist):
 def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     assert isinstance(album.genres, list)
-    assert album.index == "1"
+    assert album.index == 1
     assert utils.is_metadata(album._initpath)
     assert utils.is_metadata(album.key)
     assert utils.is_int(album.librarySectionID)
@@ -106,7 +106,7 @@ def test_audio_Album_tracks(album):
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == "Broke For Free"
-    assert track.index == "1"
+    assert track.index == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
     assert track.listType == "audio"
