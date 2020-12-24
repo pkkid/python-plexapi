@@ -669,8 +669,12 @@ class LibrarySection(PlexObject):
         """
         # cleanup the core arguments
         args = {}
-        for category, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(category, value, libtype)
+        for category, value in list(kwargs.items()):
+            try:
+                args[category] = self._cleanSearchFilter(category, value, libtype)
+                del kwargs[category]
+            except BadRequest:
+                continue
         if title is not None:
             args['title'] = title
         if sort is not None:
@@ -687,7 +691,7 @@ class LibrarySection(PlexObject):
         while True:
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key, container_start=container_start,
-                                         container_size=container_size)
+                                         container_size=container_size, **kwargs)
             if not len(subresults):
                 if offset > self.totalSize:
                     log.info("container_start is higher then the number of items in the library")
