@@ -2,6 +2,7 @@
 import time
 
 import pytest
+from plexapi.exceptions import NotFound
 
 
 def test_create_playlist(plex, show):
@@ -51,7 +52,7 @@ def test_create_playlist(plex, show):
 
 
 def test_playlist_item(plex, show):
-    title = 'test_create_playlist_item_show'
+    title = 'test_playlist_item'
     episodes = show.episodes()
     try:
         playlist = plex.createPlaylist(title, episodes[:3])
@@ -60,6 +61,8 @@ def test_playlist_item(plex, show):
         item2 = playlist.get("Winter Is Coming")
         assert item2 in playlist.items()
         assert item1 == item2
+        with pytest.raises(NotFound):
+            playlist.item("Does not exist")
     finally:
         playlist.delete()
 

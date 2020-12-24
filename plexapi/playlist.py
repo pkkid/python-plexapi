@@ -98,14 +98,14 @@ class Playlist(PlexPartialObject, Playable):
                 title (str): Title of the item to return.
         """
         for item in self.items():
-            if item.title.lower() == title:
+            if item.title.lower() == title.lower():
                 return item
-        raise NotFound('Item with title "%s" not found in the playlist')
+        raise NotFound('Item with title "%s" not found in the playlist' % title)
 
     def items(self):
         """ Returns a list of all items in the playlist. """
         if self._items is None:
-            key = '/playlist/%s/items' % self.ratingKey
+            key = '/playlists/%s/items' % self.ratingKey
             items = self.fetchItems(key)
             self._items = items
         return self._items
