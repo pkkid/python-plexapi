@@ -656,6 +656,11 @@ class PlexPartialObject(PlexObject):
         data = key + '?' + urlencode(params)
         self._server.query(data, method=self._server._session.put)
 
+    def split(self):
+        """Split a duplicate."""
+        key = '/library/metadata/%s/split' % self.ratingKey
+        return self._server.query(key, method=self._server._session.put)
+
     # The photo tag cant be built atm. TODO
     # def arts(self):
     #     part = '%s/arts' % self.key
@@ -732,11 +737,6 @@ class Playable(object):
         for item in self.media:
             for part in item.parts:
                 yield part
-
-    def split(self):
-        """Split a duplicate."""
-        key = '%s/split' % self.key
-        return self._server.query(key, method=self._server._session.put)
 
     def merge(self, ratingKeys):
         """Merge duplicate items."""
