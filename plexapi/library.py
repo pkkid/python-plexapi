@@ -441,10 +441,7 @@ class LibrarySection(PlexObject):
         """ Returns a list of all items from this library section.
             See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
         """
-        if isinstance(self, PhotoSection):
-            libtype = 'photoalbum'
-        elif libtype is None:
-            libtype = self.TYPE
+        libtype = libtype or self.TYPE
         return self.search(libtype=libtype, **kwargs)
 
     def folders(self):
@@ -1052,6 +1049,13 @@ class PhotoSection(LibrarySection):
     TYPE = 'photo'
     CONTENT_TYPE = 'photo'
     METADATA_TYPE = 'photo'
+
+    def all(self, libtype=None, **kwargs):
+        """ Returns a list of all items from this library section.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
+        """
+        libtype = libtype or 'photoalbum'
+        return self.search(libtype=libtype, **kwargs)
 
     def collections(self, **kwargs):
         raise NotImplementedError('Collections are not available for a Photo library.')
