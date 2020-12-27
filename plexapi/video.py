@@ -802,6 +802,7 @@ class Clip(Playable, Video):
         originallyAvailableAt (datetime): Datetime movie was released.
         subtype (str): Type of clip
         viewOffset (int): View offset in milliseconds.
+        media (List<:class:`~plexapi.media.Media`>): List of media objects.
     """
 
     TAG = 'Video'
@@ -819,6 +820,7 @@ class Clip(Playable, Video):
         self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
         self.subtype = data.attrib.get('subtype')
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.media = self.findItems(data, media.Media)
 
     def section(self):
         """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
