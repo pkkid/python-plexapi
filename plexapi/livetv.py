@@ -21,6 +21,7 @@ class IPTVChannel(Video):
 
     def _loadData(self, data):
         self._data = data
+        self.art = data.attrib.get('art')
         self.guid = data.attrib.get('id')
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
@@ -152,7 +153,7 @@ class LiveTV(PlexObject):
         self._token = token
         self._session = session or requests.Session()
         self._server = server
-        self.dvrs = []  # cached DVR objects
+        self._dvrs = []  # cached DVR objects
         super().__init__(server, data)
 
     def _loadData(self, data):
@@ -172,9 +173,9 @@ class LiveTV(PlexObject):
     def dvrs(self):
         """ Returns a list of :class:`~plexapi.livetv.DVR` objects available to your server.
         """
-        if not self.dvrs:
-            self.dvrs = self.fetchItems('/livetv/dvrs')
-        return self.dvrs
+        if not self._dvrs:
+            self._dvrs = self.fetchItems('/livetv/dvrs')
+        return self._dvrs
 
     def sessions(self):
         """ Returns a list of all active live tv session (currently playing) media objects.

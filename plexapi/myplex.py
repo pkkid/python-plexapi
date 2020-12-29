@@ -678,16 +678,16 @@ class MyPlexAccount(PlexObject):
         return self.findItems(elem)
 
     def tidal(self):
-        """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
+        """ Returns a list of Tidal Hub items :class:`~plexapi.library.Hub`
         """
         req = requests.get(self.MUSIC + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
-      
-   def iptv(self):
+
+    def iptv(self):
         """ Returns a list of IPTV Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.IPTV + 'hubs/sections/all/', headers={'X-Plex-Token': self._token})
+        req = requests.get(self.IPTV + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 

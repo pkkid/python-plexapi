@@ -246,7 +246,7 @@ class PlexServer(PlexObject):
         """
         if self._liveTV is None:
             from plexapi.livetv import LiveTV
-            self._liveTV = LiveTV(token=self._token)
+            self._liveTV = LiveTV(token=self._token, data=None, server=self)
         return self._liveTV
 
     def clients(self):
