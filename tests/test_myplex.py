@@ -56,10 +56,7 @@ def test_myplex_devices(account):
 
 
 def test_myplex_device(account, plex):
-    from plexapi import X_PLEX_DEVICE_NAME
-
     assert account.device(plex.friendlyName)
-    assert account.device(X_PLEX_DEVICE_NAME)
 
 
 def _test_myplex_connect_to_device(account):
@@ -215,7 +212,7 @@ def test_myplex_plexpass_attributes(account_plexpass):
     assert "sync" in account_plexpass.subscriptionFeatures
     assert "premium_music_metadata" in account_plexpass.subscriptionFeatures
     assert "plexpass" in account_plexpass.roles
-    assert set(account_plexpass.entitlements) == utils.ENTITLEMENTS
+    assert utils.ENTITLEMENTS <= set(account_plexpass.entitlements)
 
 
 def test_myplex_claimToken(account):

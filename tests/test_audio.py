@@ -7,8 +7,9 @@ from . import conftest as utils
 def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
-    assert artist.countries == []
-    assert "Electronic" in [i.tag for i in artist.genres]
+    if artist.countries:
+        assert "United States of America" in [i.tag for i in artist.countries]
+    #assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == "1"
     assert utils.is_metadata(artist._initpath)
@@ -20,7 +21,8 @@ def test_audio_Artist_attr(artist):
     assert artist.ratingKey >= 1
     assert artist._server._baseurl == utils.SERVER_BASEURL
     assert isinstance(artist.similar, list)
-    assert "Alias" in artist.summary
+    if artist.summary:
+        assert "Alias" in artist.summary
     assert artist.title == "Broke For Free"
     assert artist.titleSort == "Broke For Free"
     assert artist.type == "artist"
@@ -66,8 +68,7 @@ def test_audio_Album_attrs(album):
     assert utils.is_metadata(album.key)
     assert utils.is_int(album.librarySectionID)
     assert album.listType == "audio"
-    if album.originallyAvailableAt:
-        assert utils.is_datetime(album.originallyAvailableAt)
+    assert utils.is_datetime(album.originallyAvailableAt)
     assert utils.is_metadata(album.parentKey)
     assert utils.is_int(album.parentRatingKey)
     if album.parentThumb:
@@ -75,7 +76,7 @@ def test_audio_Album_attrs(album):
     assert album.parentTitle == "Broke For Free"
     assert album.ratingKey >= 1
     assert album._server._baseurl == utils.SERVER_BASEURL
-    assert album.studio is None
+    assert album.studio == "[no label]"
     assert album.summary == ""
     if album.thumb:
         assert utils.is_metadata(album.thumb, contains="/thumb/")
@@ -113,13 +114,15 @@ def test_audio_Album_tracks(album):
     # assert utils.is_int(track.parentIndex)
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     # assert track.ratingCount == 9 # Flaky
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.summary == ""
-    assert utils.is_metadata(track.thumb, contains="/thumb/")
+    if track.thumb:
+        assert utils.is_metadata(track.thumb, contains="/thumb/")
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
     assert not track.transcodeSessions
@@ -148,13 +151,15 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_int(track.parentIndex)
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     # assert track.ratingCount == 9
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.summary == ""
-    assert utils.is_metadata(track.thumb, contains="/thumb/")
+    if track.thumb:
+        assert utils.is_metadata(track.thumb, contains="/thumb/")
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
     assert not track.transcodeSessions
@@ -213,12 +218,11 @@ def test_audio_Track_attrs(album):
     if track.grandparentThumb:
         assert utils.is_metadata(track.grandparentThumb, contains="/thumb/")
     assert track.grandparentTitle == "Broke For Free"
-    assert track.guid.startswith("local://")
+    assert track.guid.startswith("mbid://") or track.guid.startswith("plex://track/")
     assert int(track.index) == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
-    if track.lastViewedAt:
-        assert utils.is_datetime(track.lastViewedAt)
+    assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == "audio"
     # Assign 0 track.media
@@ -228,7 +232,8 @@ def test_audio_Track_attrs(album):
     assert int(track.parentIndex) == 1
     assert utils.is_metadata(track.parentKey)
     assert utils.is_int(track.parentRatingKey)
-    assert utils.is_metadata(track.parentThumb, contains="/thumb/")
+    if track.parentThumb:
+        assert utils.is_metadata(track.parentThumb, contains="/thumb/")
     assert track.parentTitle == "Layers"
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
@@ -237,7 +242,8 @@ def test_audio_Track_attrs(album):
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.sessionKey is None
     assert track.summary == ""
-    assert utils.is_metadata(track.thumb, contains="/thumb/")
+    if track.thumb:
+        assert utils.is_metadata(track.thumb, contains="/thumb/")
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
     assert not track.transcodeSessions

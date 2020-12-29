@@ -1,11 +1,11 @@
 Python-PlexAPI
 ==============
+.. image:: https://github.com/pkkid/python-plexapi/workflows/CI/badge.svg
+    :target: https://github.com/pkkid/python-plexapi/actions?query=workflow%3ACI
 .. image:: https://readthedocs.org/projects/python-plexapi/badge/?version=latest
     :target: http://python-plexapi.readthedocs.io/en/latest/?badge=latest
-.. image:: https://travis-ci.org/pkkid/python-plexapi.svg?branch=master
-    :target: https://travis-ci.org/pkkid/python-plexapi
-.. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
-    :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
+.. image:: https://codecov.io/gh/pkkid/python-plexapi/branch/master/graph/badge.svg?token=fOECznuMtw
+    :target: https://codecov.io/gh/pkkid/python-plexapi
 .. image:: https://img.shields.io/github/tag/pkkid/python-plexapi.svg?label=github+release
     :target: https://github.com/pkkid/python-plexapi/releases
 .. image:: https://badge.fury.io/py/PlexAPI.svg
@@ -53,7 +53,7 @@ the top left above your available libraries.
     plex = account.resource('<SERVERNAME>').connect()  # returns a PlexServer instance
 
 If you want to avoid logging into MyPlex and you already know your auth token
-string, you can use the PlexServer object directly as above, but passing in
+string, you can use the PlexServer object directly as above, by passing in
 the baseurl and auth token directly.
 
 .. code-block:: python
@@ -192,7 +192,7 @@ For skipping the docker and reuse a existing server use
 
 .. code-block:: bash
 
-    python plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
+    python plex-bootstraptest.py --no-docker --username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
 
 Also in order to run most of the tests you have to provide some environment variables:
 

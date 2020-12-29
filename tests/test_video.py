@@ -66,6 +66,8 @@ def test_video_Movie_getStreamURL(movie, account):
 def test_video_Movie_isFullObject_and_reload(plex):
     movie = plex.library.section("Movies").get("Sita Sings the Blues")
     assert movie.isFullObject() is False
+    movie.reload(checkFiles=False)
+    assert movie.isFullObject() is False
     movie.reload()
     assert movie.isFullObject() is True
     movie_via_search = plex.library.search(movie.title)[0]
@@ -169,8 +171,7 @@ def test_video_Movie_attrs(movies):
     assert movie.guid == "com.plexapp.agents.imdb://tt1172203?lang=en"
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
-    if movie.lastViewedAt:
-        assert utils.is_datetime(movie.lastViewedAt)
+    assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == "video"
     assert movie.originalTitle is None
@@ -494,8 +495,7 @@ def test_video_Show_attrs(show):
     assert utils.is_metadata(show._initpath)
     assert utils.is_int(show.index)
     assert utils.is_metadata(show.key)
-    if show.lastViewedAt:
-        assert utils.is_datetime(show.lastViewedAt)
+    assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == "video"
     assert len(show.locations[0]) >= 10
@@ -556,6 +556,30 @@ def test_video_Show_location(plex):
     # because of https://github.com/mjs7231/python-plexapi/issues/97
     show = plex.library.section("TV Shows").get("The 100")
     assert len(show.locations) >= 1
+
+
+def test_video_Show_settings(show):
+    preferences = show.preferences()
+    assert len(preferences) >= 1
+
+
+def test_video_Show_editAdvanced_default(show):
+    show.editAdvanced(showOrdering='absolute')
+    show.reload()
+    for pref in show.preferences():
+        if pref.id == 'showOrdering':
+            assert pref.value == 'absolute'
+
+    show.editAdvanced(flattenSeasons=1)
+    show.reload()
+    for pref in show.preferences():
+        if pref.id == 'flattenSeasons':
+            assert pref.value == 1
+
+    show.defaultAdvanced()
+    show.reload()
+    for pref in show.preferences():
+        assert pref.value == pref.default
 
 
 def test_video_Show_reload(plex):
@@ -744,8 +768,7 @@ def test_video_Season_attrs(show):
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
-    if season.lastViewedAt:
-        assert utils.is_datetime(season.lastViewedAt)
+    assert utils.is_datetime(season.lastViewedAt)
     assert utils.is_int(season.leafCount, gte=3)
     assert season.listType == "video"
     assert utils.is_metadata(season.parentKey)
@@ -878,6 +901,27 @@ def test_video_exists_accessible(movie, episode):
     episode.reload()
     assert episode.media[0].parts[0].exists is True
     assert episode.media[0].parts[0].accessible is True
+
+
+def test_video_edits_locked(movie, episode):
+    edits = {'titleSort.value':'New Title Sort', 'titleSort.locked': 1}
+    movieTitleSort = movie.titleSort
+    movie.edit(**edits)
+    movie.reload()
+    for field in movie.fields:
+        if field.name == 'titleSort':
+            assert movie.titleSort == 'New Title Sort'
+            assert field.locked is True
+    movie.edit(**{'titleSort.value': movieTitleSort, 'titleSort.locked': 0})
+
+    episodeTitleSort = episode.titleSort
+    episode.edit(**edits)
+    episode.reload()
+    for field in episode.fields:
+        if field.name == 'titleSort':
+            assert episode.titleSort == 'New Title Sort'
+            assert field.locked is True
+    episode.edit(**{'titleSort.value': episodeTitleSort, 'titleSort.locked': 0})
 
 
 @pytest.mark.skip(

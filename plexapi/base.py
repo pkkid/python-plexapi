@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import weakref
 from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
@@ -35,18 +36,20 @@ class PlexObject(object):
             server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to (optional)
             data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
+            parent (:class:`~plexapi.base.PlexObject`): The parent object that this object is built from (optional).
     """
     TAG = None      # xml element tag
     TYPE = None     # xml element type
     key = None      # plex relative url
 
-    def __init__(self, server, data, initpath=None):
+    def __init__(self, server, data, initpath=None, parent=None):
         self._server = server
         self._data = data
         self._initpath = initpath or self.key
-        self._details_key = ''
+        self._parent = weakref.ref(parent) if parent else None
         if data is not None:
             self._loadData(data)
+        self._details_key = self._buildDetailsKey()
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
@@ -54,8 +57,8 @@ class PlexObject(object):
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):
-        # dont overwrite an attr with None unless its a private variable
-        if value is not None or attr.startswith('_') or attr not in self.__dict__:
+        # Don't overwrite an attr with None or [] unless it's a private variable
+        if value not in [None, []] or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
 
     def _clean(self, value):
@@ -70,7 +73,7 @@ class PlexObject(object):
         # cls is specified, build the object and return
         initpath = initpath or self._initpath
         if cls is not None:
-            return cls(self._server, elem, initpath)
+            return cls(self._server, elem, initpath, parent=self)
         # cls is not specified, try looking it up in PLEXOBJECTS
         etype = elem.attrib.get('type', elem.attrib.get('streamType'))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
@@ -81,13 +84,41 @@ class PlexObject(object):
         raise UnknownType("Unknown library type <%s type='%s'../>" % (elem.tag, etype))
 
     def _buildItemOrNone(self, elem, cls=None, initpath=None):
-        """ Calls :func:`~plexapi.base.PlexObject._buildItem()` but returns
+        """ Calls :func:`~plexapi.base.PlexObject._buildItem` but returns
             None if elem is an unknown type.
         """
         try:
             return self._buildItem(elem, cls, initpath)
         except UnknownType:
             return None
+
+    def _buildDetailsKey(self, **kwargs):
+        """ Builds the details key with the XML include parameters.
+            All parameters are included by default with the option to override each parameter
+            or disable each parameter individually by setting it to False or 0.
+        """
+        details_key = self.key
+        if details_key and hasattr(self, '_INCLUDES'):
+            includes = {}
+            for k, v in self._INCLUDES.items():
+                value = kwargs.get(k, v)
+                if value not in [False, 0, '0']:
+                    includes[k] = 1 if value is True else value
+            if includes:
+                details_key += '?' + urlencode(sorted(includes.items()))
+        return details_key
+
+    def _isChildOf(self, cls):
+        """ Returns True if this object is a child of the given class.
+        
+            Parameters:
+                cls: The parent :class:`~plexapi.base.PlexObject` to search for.
+        """
+        obj = self
+        while obj._parent is not None:
+            if isinstance(obj._parent(), cls):
+                return True
+            obj = obj._parent()
 
     def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
@@ -203,9 +234,39 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key=None):
-        """ Reload the data for this object from self.key. """
-        key = key or self._details_key or self.key
+    def reload(self, key=None, **kwargs):
+        """ Reload the data for this object from self.key.
+
+            Parameters:
+                key (string, optional): Override the key to reload.
+                **kwargs (dict): A dictionary of XML include parameters to exclude or override.
+                    All parameters are included by default with the option to override each parameter
+                    or disable each parameter individually by setting it to False or 0.
+                    See :class:`~plexapi.base.PlexPartialObject` for all the available include parameters.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi.server import PlexServer
+                    plex = PlexServer('http://localhost:32400', token='xxxxxxxxxxxxxxxxxxxx')
+                    movie = plex.library.section('Movies').get('Cars')
+
+                    # Partial reload of the movie without the `checkFiles` parameter.
+                    # Excluding `checkFiles` will prevent the Plex server from reading the
+                    # file to check if the file still exists and is accessible.
+                    # The movie object will remain as a partial object.
+                    movie.reload(checkFiles=False)
+                    movie.isPartialObject()  # Returns True
+
+                    # Full reload of the movie with all include parameters.
+                    # The movie object will be a full object.
+                    movie.reload()
+                    movie.isFullObject()  # Returns True
+
+        """
+        details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
+        key = key or details_key or self.key
         if not key:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
@@ -281,9 +342,30 @@ class PlexPartialObject(PlexObject):
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
     """
+    _INCLUDES = {
+        'checkFiles': 1,
+        'includeAllConcerts': 1,
+        'includeBandwidths': 1,
+        'includeChapters': 1,
+        'includeChildren': 1,
+        'includeConcerts': 1,
+        'includeExternalMedia': 1,
+        'includeExtras': 1,
+        'includeFields': 'thumbBlurHash,artBlurHash',
+        'includeGeolocation': 1,
+        'includeLoudnessRamps': 1,
+        'includeMarkers': 1,
+        'includeOnDeck': 1,
+        'includePopularLeaves': 1,
+        'includePreferences': 1,
+        'includeRelated': 1,
+        'includeRelatedCount': 1,
+        'includeReviews': 1,
+        'includeStations': 1
+    }
 
     def __eq__(self, other):
-        return other is not None and self.key == other.key
+        return other not in [None, []] and self.key == other.key
 
     def __hash__(self):
         return hash(repr(self))
@@ -334,9 +416,9 @@ class PlexPartialObject(PlexObject):
         """ Retruns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
-            object (main url) for that movie contain.
+            object (main url) for that movie would contain.
         """
-        return not self.key or self.key == self._initpath
+        return not self.key or (self._details_key or self.key) == self._initpath
 
     def isPartialObject(self):
         """ Returns True if this is not a full object. """
@@ -598,6 +680,7 @@ class Playable(object):
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
+            playQueueItemID (int): PlayQueue item ID (only populated for :class:`~plexapi.playlist.PlayQueue` items).
     """
 
     def _loadData(self, data):
@@ -609,14 +692,7 @@ class Playable(object):
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
-
-    def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
-            were populated from the api path representing only this item. For example, the
-            search result for a movie often only contain a portion of the attributes a full
-            object (main url) for that movie contain.
-        """
-        return self._details_key == self._initpath or not self.key
+        self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
 
     def getStreamURL(self, **params):
         """ Returns a stream url that may be used by external applications such as VLC.
@@ -627,7 +703,7 @@ class Playable(object):
                     offset, copyts, protocol, mediaIndex, platform.
 
             Raises:
-                :class:`plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
+                :exc:`~plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
         if self.TYPE not in ('movie', 'episode', 'track'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
@@ -641,7 +717,7 @@ class Playable(object):
             'mediaIndex': params.get('mediaIndex', 0),
             'X-Plex-Platform': params.get('platform', 'Chrome'),
             'maxVideoBitrate': max(mvb, 64) if mvb else None,
-            'videoResolution': vr if re.match('^\d+x\d+$', vr) else None
+            'videoResolution': vr if re.match(r'^\d+x\d+$', vr) else None
         }
         # remove None values
         params = {k: v for k, v in params.items() if v is not None}
@@ -692,7 +768,7 @@ class Playable(object):
                 keep_original_name (bool): Set True to keep the original filename as stored in
                     the Plex server. False will create a new filename with the format
                     "<Artist> - <Album> <Track>".
-                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL()` will
+                kwargs (dict): If specified, a :func:`~plexapi.audio.Track.getStreamURL` will
                     be returned and the additional arguments passed in will be sent to that
                     function. If kwargs is not specified, the media items will be downloaded
                     and saved to disk.

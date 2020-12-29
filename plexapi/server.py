@@ -191,8 +191,16 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    @property
+    def activities(self):
+        """Returns all current PMS activities."""
+        activities = []
+        for elem in self.query(Activity.key):
+            activities.append(Activity(self, elem))
+        return activities
+
     def agents(self, mediaType=None):
-        """ Returns the `:class:`~plexapi.media.Agent` objects this server has available. """
+        """ Returns the :class:`~plexapi.media.Agent` objects this server has available. """
         key = '/system/agents'
         if mediaType:
             key += '?mediaType=%s' % mediaType
@@ -319,7 +327,7 @@ class PlexServer(PlexObject):
                 name (str): Name of the client to return.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: Unknown client name
+                :exc:`~plexapi.exceptions.NotFound`: Unknown client name
         """
         for client in self.clients():
             if client and client.title == name:
@@ -341,7 +349,7 @@ class PlexServer(PlexObject):
 
             Parameters:
                 item (Media or Playlist): Media or playlist to add to PlayQueue.
-                kwargs (dict): See `~plexapi.playerque.PlayQueue.create`.
+                kwargs (dict): See `~plexapi.playqueue.PlayQueue.create`.
         """
         return PlayQueue.create(self, item, **kwargs)
 
@@ -442,7 +450,7 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: Invalid playlist title
+                :exc:`~plexapi.exceptions.NotFound`: Invalid playlist title
         """
         return self.fetchItem('/playlists', title=title)
 
@@ -487,7 +495,7 @@ class PlexServer(PlexObject):
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=timeout, **kwargs)
-        if response.status_code not in (200, 201):
+        if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
             message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
@@ -543,8 +551,8 @@ class PlexServer(PlexObject):
             Parameters:
                 callback (func): Callback function to call on recieved messages.
 
-            raises:
-                :class:`plexapi.exception.Unsupported`: Websocket-client not installed.
+            Raises:
+                :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
         notifier = AlertListener(self, callback)
         notifier.start()
@@ -656,6 +664,20 @@ class Account(PlexObject):
         self.subscriptionFeatures = utils.toList(data.attrib.get('subscriptionFeatures'))
         self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')
+
+
+class Activity(PlexObject):
+    """A currently running activity on the PlexServer."""
+    key = '/activities'
+
+    def _loadData(self, data):
+        self._data = data
+        self.cancellable = cast(bool, data.attrib.get('cancellable'))
+        self.progress = cast(int, data.attrib.get('progress'))
+        self.title = data.attrib.get('title')
+        self.subtitle = data.attrib.get('subtitle')
+        self.type = data.attrib.get('type')
+        self.uuid = data.attrib.get('uuid')
 
 
 class SystemAccount(PlexObject):

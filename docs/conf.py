@@ -24,7 +24,7 @@ import plexapi
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.napoleon',
+    'sphinx.ext.napoleon',
 ]
 
 # -- Monkey-patch docstring to not auto-link :ivars ------------------------

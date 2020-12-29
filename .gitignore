@@ -12,6 +12,7 @@ syntax: glob
 .coverage
 .idea/
 .Python
+.vscode
 bin/
 build
 config.ini
@@ -25,3 +26,7 @@ lib/
 pip-selfcheck.json
 pyvenv.cfg
 MANIFEST
+
+
+# path for the test lib.
+tools/plex

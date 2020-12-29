@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import pytest
 from plexapi.exceptions import NotFound
 
@@ -138,6 +139,10 @@ def test_library_MovieSection_update(movies):
     movies.update()
 
 
+def test_library_MovieSection_update_path(movies):
+    movies.update(path=movies.locations[0])
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
@@ -176,6 +181,10 @@ def test_library_MovieSection_analyze(movies):
     movies.analyze()
 
 
+def test_library_MovieSection_collections(movies, collection):
+    assert len(movies.collections())
+
+
 def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
 
@@ -186,6 +195,15 @@ def test_library_ShowSection_searchEpisodes(tvshows):
 
 def test_library_ShowSection_recentlyAdded(tvshows):
     assert len(tvshows.recentlyAdded())
+
+
+def test_library_ShowSection_playlists(plex, tvshows, show):
+    episodes = show.episodes()
+    playlist = plex.createPlaylist("test_library_ShowSection_playlists", episodes[:3])
+    try:
+        assert len(tvshows.playlists())
+    finally:
+        playlist.delete()
 
 
 def test_library_MusicSection_albums(music):
@@ -218,8 +236,30 @@ def test_library_and_section_search_for_movie(plex):
     assert l_search == s_search
 
 
+def test_library_settings(movies):
+    settings = movies.settings()
+    assert len(settings) >= 1
+
+
+def test_library_editAdvanced_default(movies):
+    movies.editAdvanced(hidden=2)
+    for setting in movies.settings():
+        if setting.id == 'hidden':
+            assert int(setting.value) == 2
+
+    movies.editAdvanced(collectionMode=0)
+    for setting in movies.settings():
+        if setting.id == 'collectionMode':
+            assert int(setting.value) == 0
+
+    movies.reload()
+    movies.defaultAdvanced()
+    for setting in movies.settings():
+        assert int(setting.value) == int(setting.default)
+
+
 def test_library_Collection_modeUpdate(collection):
-    mode_dict = {"default": "-2", "hide": "0", "hideItems": "1", "showItems": "2"}
+    mode_dict = {"default": "-1", "hide": "0", "hideItems": "1", "showItems": "2"}
     for key, value in mode_dict.items():
         collection.modeUpdate(key)
         collection.reload()
@@ -236,6 +276,33 @@ def test_library_Colletion_sortRelease(collection):
     collection.sortUpdate(sort="release")
     collection.reload()
     assert collection.collectionSort == "0"
+
+
+def test_library_Colletion_edit(collection):
+    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
+    collectionTitleSort = collection.titleSort
+    collection.edit(**edits)
+    collection.reload()
+    for field in collection.fields:
+        if field.name == 'titleSort':
+            assert collection.titleSort == 'New Title Sort'
+            assert field.locked is True
+    collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
+
+
+def test_library_Collection_delete(movies, movie):
+    delete_collection = 'delete_collection'
+    movie.addCollection(delete_collection)
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 1
+    collections[0].delete()
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 0
+
+
+def test_library_Collection_children(collection):
+    children = collection.items()
+    assert len(children) == 1
 
 
 def test_search_with_weird_a(plex):
@@ -265,3 +332,22 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_size=1)) == 4
     assert len(movies.search(container_start=9999, container_size=1)) == 0
     assert len(movies.search(container_start=2, container_size=1)) == 2
+
+
+def test_library_section_timeline(plex):
+    movies = plex.library.section("Movies")
+    tl = movies.timeline()
+    assert tl.TAG == "LibraryTimeline"
+    assert tl.size > 0
+    assert tl.allowSync is False
+    assert tl.art == "/:/resources/movie-fanart.jpg"
+    assert tl.content == "secondary"
+    assert tl.identifier == "com.plexapp.plugins.library"
+    assert datetime.fromtimestamp(tl.latestEntryTime).date() == datetime.today().date()
+    assert tl.mediaTagPrefix == "/system/bundle/media/flags/"
+    assert tl.mediaTagVersion > 1
+    assert tl.thumb == "/:/resources/movie.png"
+    assert tl.title1 == "Movies"
+    assert tl.updateQueueSize == 0
+    assert tl.viewGroup == "secondary"
+    assert tl.viewMode == 65592
