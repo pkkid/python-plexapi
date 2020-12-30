@@ -54,7 +54,7 @@ def test_library_section_get_movie(plex):
 def test_library_section_movies_all(movies):
     # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
-    assert len(movies.all(container_start=0, container_size=1)) == 1
+    assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
 
 
 def test_library_section_delete(movies, patched_http_call):
