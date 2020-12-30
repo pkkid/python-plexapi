@@ -2,7 +2,7 @@
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
-from plexapi.base import PlexObject, PlexPartialObject
+from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
@@ -433,18 +433,12 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
-    def all(self, sort=None, **kwargs):
-        """ Returns a list of media from this library section.
-
-            Parameters:
-                    sort (string): The sort string
+    def all(self, libtype=None, **kwargs):
+        """ Returns a list of all items from this library section.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
         """
-        sortStr = ''
-        if sort is not None:
-            sortStr = '?sort=' + sort
-
-        key = '/library/sections/%s/all%s' % (self.key, sortStr)
-        return self.fetchItems(key, **kwargs)
+        libtype = libtype or self.TYPE
+        return self.search(libtype=libtype, **kwargs)
 
     def folders(self):
         """ Returns a list of available :class:`~plexapi.library.Folder` for this library section.
@@ -668,8 +662,10 @@ class LibrarySection(PlexObject):
         """
         # cleanup the core arguments
         args = {}
-        for category, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(category, value, libtype)
+        for category, value in list(kwargs.items()):
+            if category.split('__')[-1] not in OPERATORS:
+                args[category] = self._cleanSearchFilter(category, value, libtype)
+                del kwargs[category]
         if title is not None:
             args['title'] = title
         if sort is not None:
@@ -686,7 +682,7 @@ class LibrarySection(PlexObject):
         while True:
             key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key, container_start=container_start,
-                                         container_size=container_size)
+                                         container_size=container_size, **kwargs)
             if not len(subresults):
                 if offset > self.totalSize:
                     log.info("container_start is higher then the number of items in the library")
@@ -1049,6 +1045,13 @@ class PhotoSection(LibrarySection):
     TYPE = 'photo'
     CONTENT_TYPE = 'photo'
     METADATA_TYPE = 'photo'
+
+    def all(self, libtype=None, **kwargs):
+        """ Returns a list of all items from this library section.
+            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
+        """
+        libtype = libtype or 'photoalbum'
+        return self.search(libtype=libtype, **kwargs)
 
     def collections(self, **kwargs):
         raise NotImplementedError('Collections are not available for a Photo library.')
