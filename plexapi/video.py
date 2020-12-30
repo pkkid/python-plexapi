@@ -2,7 +2,7 @@
 import os
 from urllib.parse import quote_plus, urlencode
 
-from plexapi import media, utils, settings, library
+from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -500,10 +500,11 @@ class Show(Video):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title:
+        if title and not isinstance(title, int):
             return self.fetchItem(key, Season, title__iexact=title)
-        elif season:
-            return self.fetchItem(key, Season, index=season)
+        elif season or isinstance(title, int):
+            idx = season or title
+            return self.fetchItem(key, Season, index=idx)
         raise BadRequest('Missing argument: title or season is required')
 
     def seasons(self, **kwargs):
