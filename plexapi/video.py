@@ -503,8 +503,11 @@ class Show(Video):
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Season, title__iexact=title)
         elif season is not None or isinstance(title, int):
-            idx = season or title
-            return self.fetchItem(key, Season, index=idx)
+            if isinstance(title, int):
+                index = title
+            else:
+                index = season
+            return self.fetchItem(key, Season, index=index)
         raise BadRequest('Missing argument: title or season is required')
 
     def seasons(self, **kwargs):
@@ -524,7 +527,7 @@ class Show(Video):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season and episode parameters are missing.
         """
         key = '/library/metadata/%s/allLeaves' % self.ratingKey
-        if title:
+        if title is not None:
             return self.fetchItem(key, Episode, title__iexact=title)
         elif season is not None and episode is not None:
             return self.fetchItem(key, Episode, parentIndex=season, index=episode)
@@ -637,9 +640,9 @@ class Season(Video):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title:
+        if title is not None:
             return self.fetchItem(key, Episode, title__iexact=title)
-        elif episode:
+        elif episode is not None:
             return self.fetchItem(key, Episode, parentIndex=self.index, index=episode)
         raise BadRequest('Missing argument: title or episode is required')
 

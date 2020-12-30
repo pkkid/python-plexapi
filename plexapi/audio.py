@@ -181,7 +181,7 @@ class Artist(Audio):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or album and track parameters are missing.
         """
         key = '/library/metadata/%s/allLeaves' % self.ratingKey
-        if title:
+        if title is not None:
             return self.fetchItem(key, Track, title__iexact=title)
         elif album is not None and track is not None:
             return self.fetchItem(key, Track, parentTitle__iexact=album, index=track)
@@ -280,9 +280,9 @@ class Album(Audio):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title:
+        if title is not None:
             return self.fetchItem(key, Track, title__iexact=title)
-        elif track:
+        elif track is not None:
             return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=track)
         raise BadRequest('Missing argument: title or track is required')
 
