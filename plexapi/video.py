@@ -500,9 +500,9 @@ class Show(Video):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title and not isinstance(title, int):
+        if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Season, title__iexact=title)
-        elif season or isinstance(title, int):
+        elif season is not None or isinstance(title, int):
             idx = season or title
             return self.fetchItem(key, Season, index=idx)
         raise BadRequest('Missing argument: title or season is required')
