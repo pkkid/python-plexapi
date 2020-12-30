@@ -107,7 +107,7 @@ def pytest_runtest_setup(item):
 
 @pytest.fixture(scope="session")
 def sess():
-    session = request.Session()
+    session = requests.Session()
     session.request = partial(session.request, timeout=120)
     return session
 
