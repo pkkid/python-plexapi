@@ -300,9 +300,17 @@ def test_library_Collection_delete(movies, movie):
     assert len(collections) == 0
 
 
-def test_library_Collection_children(collection):
-    children = collection.items()
-    assert len(children) == 1
+def test_library_Collection_item(collection):
+    item1 = collection.item("Elephants Dream")
+    assert item1.title == "Elephants Dream"
+    item2 = collection.get("Elephants Dream")
+    assert item2.title == "Elephants Dream"
+    assert item1 == item2
+
+
+def test_library_Collection_items(collection):
+    items = collection.items()
+    assert len(items) == 1
 
 
 def test_search_with_weird_a(plex):

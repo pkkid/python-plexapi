@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
-from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
+from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.media import MediaTag
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
@@ -313,26 +312,22 @@ class LibrarySection(PlexObject):
     """ Base class for a single library section.
 
         Attributes:
-            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
-            initpath (str): Path requested when building this object.
-            agent (str): Unknown (com.plexapp.agents.imdb, etc)
-            allowSync (bool): True if you allow syncing content from this section.
-            art (str): Wallpaper artwork used to respresent this section.
-            composite (str): Composit image used to represent this section.
-            createdAt (datetime): Datetime this library section was created.
+            agent (str): The metadata agent used for the library section (com.plexapp.agents.imdb, etc).
+            allowSync (bool): True if you allow syncing content from the library section.
+            art (str): Background artwork used to respresent the library section.
+            composite (str): Composite image used to represent the library section.
+            createdAt (datetime): Datetime the library section was created.
             filters (str): Unknown
             key (str): Key (or ID) of this library section.
             language (str): Language represented in this section (en, xn, etc).
-            locations (str): Paths on disk where section content is stored.
-            refreshing (str): True if this section is currently being refreshed.
+            locations (List<str>): List of folder paths added to the library section.
+            refreshing (bool): True if this section is currently being refreshed.
             scanner (str): Internal scanner used to find media (Plex Movie Scanner, Plex Premium Music Scanner, etc.)
-            thumb (str): Thumbnail image used to represent this section.
-            title (str): Title of this section.
-            type (str): Type of content section represents (movie, artist, photo, show).
-            updatedAt (datetime): Datetime this library section was last updated.
-            uuid (str): Unique id for this section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
-            totalSize (int): Total number of item in the library
-
+            thumb (str): Thumbnail image used to represent the library section.
+            title (str): Name of the library section.
+            type (str): Type of content section represents (movie, show, artist, photo).
+            updatedAt (datetime): Datetime the library section was last updated.
+            uuid (str): Unique id for the section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
     """
 
     def _loadData(self, data):
@@ -392,6 +387,7 @@ class LibrarySection(PlexObject):
 
     @property
     def totalSize(self):
+        """ Returns the total number of items in the library. """
         if self._total_size is None:
             part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
             data = self._server.query(part)
@@ -728,7 +724,7 @@ class LibrarySection(PlexObject):
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
         allowed = set(c.key for c in choices)
         for item in value:
-            item = str((item.id or item.tag) if isinstance(item, MediaTag) else item).lower()
+            item = str((item.id or item.tag) if isinstance(item, media.MediaTag) else item).lower()
             # find most logical choice(s) to use in url
             if item in allowed: result.add(item); continue
             if item in lookup: result.add(lookup[item]); continue
@@ -753,7 +749,7 @@ class LibrarySection(PlexObject):
     def _locations(self):
         """ Returns a list of :class:`~plexapi.library.Location` objects
         """
-        return self.findItems(self._data, etag='Location')
+        return self.findItems(self._data, Location)
 
     def sync(self, policy, mediaSettings, client=None, clientId=None, title=None, sort=None, libtype=None,
              **kwargs):
@@ -1416,41 +1412,38 @@ class Collections(PlexPartialObject):
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'collection'
-
-            ratingKey (int): Unique key identifying this item.
-            addedAt (datetime): Datetime this item was added to the library.
-            art (str): URL to artwork image.
+            addedAt (datetime): Datetime the collection was added to the library.
+            art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
-            childCount (int): Count of child object(s)
+            childCount (int): Number of items in the collection.
             collectionMode (str): How the items in the collection are displayed.
             collectionSort (str): How to sort the items in the collection.
             contentRating (str) Content rating (PG-13; NR; TV-G).
-            fields (list): List of :class:`~plexapi.media.Field`.
-            guid (str): Plex GUID (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
-            index (int): Unknown
+            fields (List<:class:`~plexapi.media.Field`>): List of field objects.
+            guid (str): Plex GUID for the collection (collection://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
+            index (int): Plex index number for the collection.
             key (str): API URL (/library/metadata/<ratingkey>).
-            labels (List<:class:`~plexapi.media.Label`>): List of field objects.
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
-            librarySectionKey (str): API URL (/library/sections/<sectionkey>).
-            librarySectionTitle (str): Section Title
-            maxYear (int): Year
-            minYear (int): Year
-            subtype (str): Media type
-            summary (str): Summary of the collection
-            thumb (str): URL to thumbnail image.
+            librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
+            librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
+            maxYear (int): Maximum year for the items in the collection.
+            minYear (int): Minimum year for the items in the collection.
+            ratingKey (int): Unique key identifying the collection.
+            subtype (str): Media type of the items in the collection (movie, show, artist, or album).
+            summary (str): Summary of the collection.
+            thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
             thumbBlurHash (str): BlurHash string for thumbnail image.
-            title (str): Collection Title
+            title (str): Name of the collection.
             titleSort (str): Title to use when sorting (defaults to title).
-            type (str): Hardcoded 'collection'
-            updatedAt (datatime): Datetime this item was updated.
-
+            type (str): 'collection'
+            updatedAt (datatime): Datetime the collection was updated.
     """
 
     TAG = 'Directory'
     TYPE = 'collection'
 
     def _loadData(self, data):
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
@@ -1458,22 +1451,23 @@ class Collections(PlexPartialObject):
         self.collectionMode = data.attrib.get('collectionMode')
         self.collectionSort = data.attrib.get('collectionSort')
         self.contentRating = data.attrib.get('contentRating')
-        self.fields = self.findItems(data, etag='Field')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
-        self.key = data.attrib.get('key').replace('/children', '')  # FIX_BUG_50
-        self.labels = self.findItems(data, etag='Label')
+        self.key = data.attrib.get('key', '').replace('/children', '')  # FIX_BUG_50
+        self.labels = self.findItems(data, media.Label)
         self.librarySectionID = data.attrib.get('librarySectionID')
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.maxYear = utils.cast(int, data.attrib.get('maxYear'))
         self.minYear = utils.cast(int, data.attrib.get('minYear'))
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.subtype = data.attrib.get('subtype')
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
         self.thumbBlurHash = data.attrib.get('thumbBlurHash')
         self.title = data.attrib.get('title')
-        self.titleSort = data.attrib.get('titleSort')
+        self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
@@ -1482,10 +1476,23 @@ class Collections(PlexPartialObject):
     def children(self):
         return self.fetchItems(self.key)
         
+    def item(self, title):
+        """ Returns the item in the collection that matches the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        key = '/library/metadata/%s/children' % self.ratingKey
+        return self.fetchItem(key, title__iexact=title)
+
     def items(self):
         """ Returns a list of all items in the collection. """
         key = '/library/metadata/%s/children' % self.ratingKey
         return self.fetchItems(key)
+
+    def get(self, title):
+        """ Alias to :func:`~plexapi.library.Collection.item`. """
+        return self.item(title)
 
     def __len__(self):
         return self.childCount
