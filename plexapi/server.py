@@ -107,6 +107,8 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
+        self._systemAccounts = None # cached list of SystemAccount
+        self._systemDevices = None # cached list of SystemDevice
         data = self.query(self.key, timeout=timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
@@ -215,13 +217,17 @@ class PlexServer(PlexObject):
 
     def systemAccounts(self):
         """ Returns a list of :class:`~plexapi.server.SystemAccounts` objects this server contains. """
-        data = self.query('/accounts')
-        return self.findItems(data, SystemAccount)
+        if self._systemAccounts is None:
+            data = self.query('/accounts')
+            self._systemAccounts = self.findItems(data, SystemAccount)
+        return self._systemAccounts
 
     def systemDevices(self):
         """ Returns a list of :class:`~plexapi.server.SystemDevices` objects this server contains. """
-        data = self.query('/devices')
-        return self.findItems(data, SystemDevice)
+        if self._systemDevices is None:
+            data = self.query('/devices')
+            self._systemDevices = self.findItems(data, SystemDevice)
+        return self._systemDevices
 
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
