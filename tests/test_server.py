@@ -11,6 +11,7 @@ from plexapi.utils import download
 from requests import Session
 
 from . import conftest as utils
+from .payloads import SERVER_RESOURCES
 
 
 def test_server_attr(plex, account):
@@ -345,14 +346,14 @@ def test_server_allowMediaDeletion(account):
 def test_server_system_accounts(plex):
     accounts = plex.systemAccounts()
     assert len(accounts)
-    account = accounts[0]
+    account = accounts[-1]
     assert utils.is_bool(account.autoSelectAudio)
     assert account.defaultAudioLanguage == "en"
     assert account.defaultSubtitleLanguage == "en"
     assert utils.is_int(account.id, gte=0)
     assert len(account.key)
-    assert account.name == ""
-    assert account.subtitleMode == 1
+    assert len(account.name)
+    assert account.subtitleMode == 0
     assert account.thumb == ""
     assert account.accountID == account.id
     assert account.accountKey == account.key
@@ -361,12 +362,12 @@ def test_server_system_accounts(plex):
 def test_server_system_devices(plex):
     devices = plex.systemDevices()
     assert len(devices)
-    device = devices[0]
+    device = devices[-1]
     assert utils.is_datetime(device.createdAt)
     assert utils.is_int(device.id)
     assert len(device.key)
-    assert len(device.name)
-    assert len(device.platform)
+    assert len(device.name) or device.name == ""
+    assert len(device.platform) or device.platform == ""
     
 
 @pytest.mark.authenticated
@@ -414,13 +415,15 @@ def test_server_dashboard_bandwidth_filters(plex):
 
 
 @pytest.mark.authenticated
-def test_server_dashboard_resources(plex):
+def test_server_dashboard_resources(plex, requests_mock):
+    url = plex.url("/statistics/resources")
+    requests_mock.get(url, text=SERVER_RESOURCES)
     resourceData = plex.resources()
     assert len(resourceData)
     resource = resourceData[0]
     assert utils.is_datetime(resource.at)
-    assert utils.is_float(resource.hostCpuUtilization)
-    assert utils.is_float(resource.hostMemoryUtilization)
-    assert utils.is_float(resource.processCpuUtilization)
-    assert utils.is_float(resource.processMemoryUtilization)
+    assert utils.is_float(resource.hostCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.hostMemoryUtilization, gte=0.0)
+    assert utils.is_float(resource.processCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.processMemoryUtilization, gte=0.0)
     assert resource.timespan == 6  # Default seconds timespan
