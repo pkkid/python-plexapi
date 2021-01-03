@@ -341,6 +341,10 @@ def is_float(value, gte=1.0):
     return float(value) >= gte
 
 
+def is_bool(value):
+    return value is True or value is False
+
+
 def is_metadata(key, prefix="/library/metadata/", contains="", suffix=""):
     try:
         assert key.startswith(prefix)

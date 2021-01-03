@@ -3,6 +3,7 @@ import re
 import time
 
 import pytest
+from datetime import datetime
 from PIL import Image, ImageStat
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
@@ -339,3 +340,87 @@ def test_server_allowMediaDeletion(account):
         # Test redundant toggle
         with pytest.raises(BadRequest):
             plex._allowMediaDeletion(False)
+
+
+def test_server_system_accounts(plex):
+    accounts = plex.systemAccounts()
+    assert len(accounts)
+    account = accounts[0]
+    assert utils.is_bool(account.autoSelectAudio)
+    assert account.defaultAudioLanguage == "en"
+    assert account.defaultSubtitleLanguage == "en"
+    assert utils.is_int(account.id, gte=0)
+    assert len(account.key)
+    assert account.name == ""
+    assert account.subtitleMode == 1
+    assert account.thumb == ""
+    assert account.accountID == account.id
+    assert account.accountKey == account.key
+
+
+def test_server_system_devices(plex):
+    devices = plex.systemDevices()
+    assert len(devices)
+    device = devices[0]
+    assert utils.is_datetime(device.createdAt)
+    assert utils.is_int(device.id)
+    assert len(device.key)
+    assert len(device.name)
+    assert len(device.platform)
+    
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth(plex):
+    bandwidthData = plex.bandwidth()
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert utils.is_int(bandwidth.accountID, gte=0)
+    assert utils.is_datetime(bandwidth.at)
+    assert utils.is_int(bandwidth.bytes)
+    assert utils.is_int(bandwidth.deviceID)
+    assert utils.is_bool(bandwidth.lan)
+    assert bandwidth.timespan == 6  # Default seconds timespan
+    account = bandwidth.account()
+    assert utils.is_int(account.id, gte=0)
+    device = bandwidth.device()
+    assert utils.is_int(device.id)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth_filters(plex):
+    at = datetime(2021, 1, 1)
+    filters = {
+        'at>': at,
+        'bytes>': 1,
+        'lan': True,
+        'accountID': 1
+    }
+    bandwidthData = plex.bandwidth(timespan='hours', **filters)
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert bandwidth.accountID == 1
+    assert bandwidth.at >= at
+    assert bandwidth.bytes >= 1
+    assert bandwidth.lan is True
+    assert bandwidth.timespan == 4
+    with pytest.raises(BadRequest):
+        plex.bandwidth(timespan='n/a')
+    with pytest.raises(BadRequest):
+        filters = {'n/a': None}
+        plex.bandwidth(**filters)
+    with pytest.raises(BadRequest):
+        filters = {'at': 123456}
+        plex.bandwidth(**filters)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_resources(plex):
+    resourceData = plex.resources()
+    assert len(resourceData)
+    resource = resourceData[0]
+    assert utils.is_datetime(resource.at)
+    assert utils.is_float(resource.hostCpuUtilization)
+    assert utils.is_float(resource.hostMemoryUtilization)
+    assert utils.is_float(resource.processCpuUtilization)
+    assert utils.is_float(resource.processMemoryUtilization)
+    assert resource.timespan == 6  # Default seconds timespan
