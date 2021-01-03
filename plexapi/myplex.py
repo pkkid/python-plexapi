@@ -43,7 +43,7 @@ class MyPlexAccount(PlexObject):
             guest (bool): Unknown.
             home (bool): Unknown.
             homeSize (int): Unknown.
-            id (str): Your Plex account ID.
+            id (int): Your Plex account ID.
             locale (str): Your Plex locale
             mailing_list_status (str): Your current mailing list status.
             maxHomeSize (int): Unknown.
@@ -115,7 +115,7 @@ class MyPlexAccount(PlexObject):
         self.guest = utils.cast(bool, data.attrib.get('guest'))
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.homeSize = utils.cast(int, data.attrib.get('homeSize'))
-        self.id = data.attrib.get('id')
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.locale = data.attrib.get('locale')
         self.mailing_list_status = data.attrib.get('mailing_list_status')
         self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))

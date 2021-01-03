@@ -66,6 +66,7 @@ class PlexObject(object):
         if value:
             value = str(value).replace('/library/metadata/', '')
             value = value.replace('/children', '')
+            value = value.replace('/accounts/', '')
             return value.replace(' ', '-')[:20]
 
     def _buildItem(self, elem, cls=None, initpath=None):
