@@ -671,7 +671,9 @@ class PlexServer(PlexObject):
         """
         params = {}
 
-        if timespan is not None:
+        if timespan is None:
+            params['timespan'] = 6  # Default to seconds
+        else:
             timespans = {
                 'seconds': 6,
                 'hours': 4,
@@ -684,8 +686,6 @@ class PlexServer(PlexObject):
             except KeyError:
                 raise BadRequest('Invalid timespan specified: %s. '
                     'Available timespans: %s' % (timespan, ', '.join(timespans.keys())))
-        else:
-            params['timespan'] = 6  # Default to seconds
 
         filters = {'accountID', 'at', 'at<', 'at>', 'bytes', 'bytes<', 'bytes>', 'deviceID', 'lan'}
 
