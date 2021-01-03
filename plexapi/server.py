@@ -621,8 +621,8 @@ class PlexServer(PlexObject):
             with the Plex server dashboard bandwidth data.
 
             Parameters:
-                timespan (str, optional): The timespan to bin the bandwidth data. Default returns bandwidth
-                    for all available timespans. Available timespans: seconds, hours, days, weeks, months.
+                timespan (str, optional): The timespan to bin the bandwidth data. Default is seconds.
+                    Available timespans: seconds, hours, days, weeks, months.
                 **kwargs (dict, optional): Any of the available filters that can be applied to the bandwidth data.
                     The time frame (at) and bytes can also be filtered using less than or greater than (see examples below).
 
@@ -684,6 +684,8 @@ class PlexServer(PlexObject):
             except KeyError:
                 raise BadRequest('Invalid timespan specified: %s. '
                     'Available timespans: %s' % (timespan, ', '.join(timespans.keys())))
+        else:
+            params['timespan'] = 6  # Default to seconds
 
         filters = {'accountID', 'at', 'at<', 'at>', 'bytes', 'bytes<', 'bytes>', 'deviceID', 'lan'}
 
