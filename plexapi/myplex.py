@@ -580,8 +580,8 @@ class MyPlexAccount(PlexObject):
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when client with provided clientId wasn`t found.
-                :exc:`~plexapi.exceptions.BadRequest`: provided client doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn`t found.
+                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn`t provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -1155,8 +1155,8 @@ class MyPlexPinLogin(object):
                 timeout (int): Timeout in seconds waiting for the PIN login to succeed (optional).
 
             Raises:
-                :class:`RuntimeError`: if the thread is already running.
-                :class:`RuntimeError`: if the PIN login for the current PIN has expired.
+                :class:`RuntimeError`: If the thread is already running.
+                :class:`RuntimeError`: If the PIN login for the current PIN has expired.
         """
         if self._thread and not self._abort:
             raise RuntimeError('MyPlexPinLogin thread is already running')
