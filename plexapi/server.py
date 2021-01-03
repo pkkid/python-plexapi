@@ -218,15 +218,15 @@ class PlexServer(PlexObject):
     def systemAccounts(self):
         """ Returns a list of :class:`~plexapi.server.SystemAccounts` objects this server contains. """
         if self._systemAccounts is None:
-            data = self.query('/accounts')
-            self._systemAccounts = self.findItems(data, SystemAccount)
+            key = '/accounts'
+            self._systemAccounts = self.fetchItems(key, SystemAccount)
         return self._systemAccounts
 
     def systemDevices(self):
         """ Returns a list of :class:`~plexapi.server.SystemDevices` objects this server contains. """
         if self._systemDevices is None:
-            data = self.query('/devices')
-            self._systemDevices = self.findItems(data, SystemDevice)
+            key = '/devices'
+            self._systemDevices = self.fetchItems(key, SystemDevice)
         return self._systemDevices
 
     def myPlexAccount(self):
@@ -705,15 +705,13 @@ class PlexServer(PlexObject):
             params[key] = value
 
         key = '/statistics/bandwidth?%s' % urlencode(params)
-        data = self.query(key)
-        return self.findItems(data, StatisticsBandwidth)
+        return self.fetchItems(key, StatisticsBandwidth)
 
     def resources(self):
         """ Returns a list of :class:`~plexapi.server.StatisticsResources` objects
             with the Plex server dashboard resources data. """
         key = '/statistics/resources?timespan=6'
-        data = self.query(key)
-        return self.findItems(data, StatisticsResources)
+        return self.fetchItems(key, StatisticsResources)
 
 
 class Account(PlexObject):
