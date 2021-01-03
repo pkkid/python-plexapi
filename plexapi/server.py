@@ -860,7 +860,8 @@ class StatisticsBandwidth(PlexObject):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
             self._clean(self.accountID),
-            self._clean(self.deviceID)
+            self._clean(self.deviceID),
+            self._clean(int(self.at.timestamp()))
         ] if p])
 
     def account(self):
@@ -900,5 +901,5 @@ class StatisticsResources(PlexObject):
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
             self.__class__.__name__,
-            self._clean(self.at)
+            self._clean(int(self.at.timestamp()))
         ] if p])
