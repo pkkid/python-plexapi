@@ -611,25 +611,26 @@ class PlexServer(PlexObject):
         """ Returns a :class:`~plexapi.server.DashboardBandwidth` object with the Plex server dashboard bandwidth data.
 
             Parameters:
-                timespan (str, optional): The timespan to group the bandwidth data. Default returns bandwidth
-                    for all available timespans. Available options are seconds, hours, days, weeks, months.
+                timespan (str, optional): The timespan to bin the bandwidth data. Default returns bandwidth
+                    for all available timespans. Available timespans: seconds, hours, days, weeks, months.
                 **kwargs (dict, optional): Any of the available filters that can be applied to the bandwidth data.
                     The time frame (at) and bytes can also be filtered using less than or greater than (see examples below).
 
                     * accountID (int): The :class:`~plexapi.server.StatisticsAccount` ID to filter.
-                    * at (datetime): The time frame to filter (inclusive). The time frame can either be:
+                    * at (datetime): The time frame to filter (inclusive). The time frame can be either:
                         1. An exact time frame (e.g. Only December 1st 2020 `at=datetime(2020, 12, 1)`)
                         2. Before a specific time (e.g. Before and including December 2020 `at<=datetime(2020, 12, 1)`)
                         3. After a specific time (e.g. After and including January 2021 `at>=datetime(2021, 1, 1)`)
-                    * bytes (int): The amount of bytes to filter (inclusive).
+                    * bytes (int): The amount of bytes to filter (inclusive). The bytes can be either:
                         1. An exact number of bytes (not very useful) (e.g. `bytes=1024**3`)
                         2. Less than or equal number of bytes (e.g. `bytes<=1024**3`)
                         3. Greater than or equal number of bytes (e.g. `bytes>=1024**3`)
                     * deviceID (int): The :class:`~plexapi.server.StatisticsDevice` ID to filter.
                     * lan (bool): True to only retrieve local bandwidth, False to only retrieve remote bandwidth.
+                        Default returns all local and remote bandwidth.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown filter.
+                :exc:`~plexapi.exceptions.BadRequest`: When applying an invalid timespan or unknown filter.
 
             Example:
 
@@ -671,8 +672,8 @@ class PlexServer(PlexObject):
             try:
                 params['timespan'] = timespans[timespan]
             except KeyError:
-                raise BadRequest('Invalid bandwidth timespan specified: %s. '
-                    'Available options are: %s' % (timespan, ', '.join(timespans.keys())))
+                raise BadRequest('Invalid timespan specified: %s. '
+                    'Available timespans: %s' % (timespan, ', '.join(timespans.keys())))
 
         filters = {'accountID', 'at', 'at<', 'at>', 'bytes', 'bytes<', 'bytes>', 'deviceID', 'lan'}
 
