@@ -865,12 +865,18 @@ class StatisticsBandwidth(PlexObject):
     def account(self):
         """ Returns the :class:`~plexapi.server.SystemAccount` associated with the bandwidth data. """
         accounts = self._server.systemAccounts()
-        return next(account for account in accounts if account.id == self.accountID)
+        try:
+            return next(account for account in accounts if account.id == self.accountID)
+        except StopIteration:
+            raise NotFound('Unknown account for this bandwidth data: accountID=%s' % self.accountID)
 
     def device(self):
         """ Returns the :class:`~plexapi.server.SystemDevice` associated with the bandwidth data. """
         devices = self._server.systemDevices()
-        return next(device for device in devices if device.id == self.deviceID)
+        try:
+            return next(device for device in devices if device.id == self.deviceID)
+        except StopIteration:
+            raise NotFound('Unknown device for this bandwidth data: deviceID=%s' % self.deviceID)
 
 
 class StatisticsResources(PlexObject):
