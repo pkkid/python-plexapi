@@ -617,7 +617,8 @@ class PlexServer(PlexObject):
         return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
 
     def dashboardBandwidth(self, timespan=None, **kwargs):
-        """ Returns a :class:`~plexapi.server.DashboardBandwidth` object with the Plex server dashboard bandwidth data.
+        """ Returns a list of :class:`~plexapi.server.StatisticsBandwidth` objects
+            with the Plex server dashboard bandwidth data.
 
             Parameters:
                 timespan (str, optional): The timespan to bin the bandwidth data. Default returns bandwidth
@@ -658,7 +659,7 @@ class PlexServer(PlexObject):
                     dashboardBandwidth = plex.dashboardBandwidth(timespan='days', **filters)
 
                     # Print out bandwidth usage for each account and device combination
-                    for bandwidth in sorted(dashboardBandwidth.bandwidth, key=lambda x: x.at):
+                    for bandwidth in sorted(dashboardBandwidth, key=lambda x: x.at):
                         account = bandwidth.account()
                         device = bandwidth.device()
                         gigabytes = round(bandwidth.bytes / 1024**3, 3)
@@ -703,13 +704,14 @@ class PlexServer(PlexObject):
 
         key = '/statistics/bandwidth?%s' % urlencode(params)
         data = self.query(key)
-        return DashboardBandwidth(self, data, initpath=key)
+        return self.findItems(data, StatisticsBandwidth)
 
     def dashboardResources(self):
-        """ Returns a :class:`~plexapi.server.DashboardResources` object with the Plex server dashboard resources data. """
+        """ Returns a list of :class:`~plexapi.server.StatisticsResources` objects
+            with the Plex server dashboard resources data. """
         key = '/statistics/resources?timespan=6'
         data = self.query(key)
-        return DashboardResources(self, data, initpath=key)
+        return self.findItems(data, StatisticsResources)
 
 
 class Account(PlexObject):
@@ -827,32 +829,6 @@ class SystemDevice(PlexObject):
         self.platform = data.attrib.get('platform')
 
 
-class DashboardBandwidth(PlexObject):
-    """ Represents a Plex server dashboard bandwidth object.
-    
-        Attributes:
-            accounts (List<:class:`~plexapi.server.SystemAccount`>): List of statistic account objects.
-            bandwidth (List<:class:`~plexapi.server.StatisticsBandwidth`>): List of statistic bandwidth objects.
-            devices (List<:class:`~plexapi.server.SystemDevice`>): List of statistic device objects.
-    """
-
-    def _loadData(self, data):
-        self.accounts = self.findItems(data, SystemAccount)
-        self.bandwidth = self.findItems(data, StatisticsBandwidth)
-        self.devices = self.findItems(data, SystemDevice)
-
-
-class DashboardResources(PlexObject):
-    """ Represents a Plex server dashboard resources object.
-    
-        Attributes:
-            resources (List<:class:`~plexapi.server.StatisticsResources`>): List of statistic resources objects.
-    """
-
-    def _loadData(self, data):
-        self.resources = self.findItems(data, StatisticsResources)
-
-
 class StatisticsBandwidth(PlexObject):
     """ Represents a single statistics bandwidth data.
 
@@ -887,13 +863,13 @@ class StatisticsBandwidth(PlexObject):
 
     def account(self):
         """ Returns the :class:`~plexapi.server.SystemAccount` associated with the bandwidth data. """
-        dashboardBandwidth = self._parent()
-        return next(account for account in dashboardBandwidth.accounts if account.id == self.accountID)
+        accounts = self._server.systemAccounts()
+        return next(account for account in accounts if account.id == self.accountID)
 
     def device(self):
         """ Returns the :class:`~plexapi.server.SystemDevice` associated with the bandwidth data. """
-        dashboardBandwidth = self._parent()
-        return next(device for device in dashboardBandwidth.devices if device.id == self.deviceID)
+        devices = self._server.systemDevices()
+        return next(device for device in devices if device.id == self.deviceID)
 
 
 class StatisticsResources(PlexObject):
