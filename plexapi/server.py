@@ -616,7 +616,7 @@ class PlexServer(PlexObject):
         value = 1 if toggle is True else 0
         return self.query('/:/prefs?allowMediaDeletion=%s' % value, self._session.put)
 
-    def dashboardBandwidth(self, timespan=None, **kwargs):
+    def bandwidth(self, timespan=None, **kwargs):
         """ Returns a list of :class:`~plexapi.server.StatisticsBandwidth` objects
             with the Plex server dashboard bandwidth data.
 
@@ -656,10 +656,10 @@ class PlexServer(PlexObject):
                     }
 
                     # Retrieve bandwidth data in one day timespans.
-                    dashboardBandwidth = plex.dashboardBandwidth(timespan='days', **filters)
+                    bandwidthData = plex.bandwidth(timespan='days', **filters)
 
                     # Print out bandwidth usage for each account and device combination
-                    for bandwidth in sorted(dashboardBandwidth, key=lambda x: x.at):
+                    for bandwidth in sorted(bandwidthData, key=lambda x: x.at):
                         account = bandwidth.account()
                         device = bandwidth.device()
                         gigabytes = round(bandwidth.bytes / 1024**3, 3)
@@ -706,7 +706,7 @@ class PlexServer(PlexObject):
         data = self.query(key)
         return self.findItems(data, StatisticsBandwidth)
 
-    def dashboardResources(self):
+    def resources(self):
         """ Returns a list of :class:`~plexapi.server.StatisticsResources` objects
             with the Plex server dashboard resources data. """
         key = '/statistics/resources?timespan=6'
