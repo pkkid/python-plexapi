@@ -107,8 +107,8 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
-        self._systemAccounts = None # cached list of SystemAccount
-        self._systemDevices = None # cached list of SystemDevice
+        self._systemAccounts = None   # cached list of SystemAccount
+        self._systemDevices = None   # cached list of SystemDevice
         data = self.query(self.key, timeout=timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
