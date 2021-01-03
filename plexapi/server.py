@@ -214,11 +214,14 @@ class PlexServer(PlexObject):
         return q.attrib.get('token')
 
     def systemAccounts(self):
-        """ Returns the :class:`~plexapi.server.SystemAccounts` objects this server contains. """
-        accounts = []
-        for elem in self.query('/accounts'):
-            accounts.append(SystemAccount(self, data=elem))
-        return accounts
+        """ Returns a list of :class:`~plexapi.server.SystemAccounts` objects this server contains. """
+        data = self.query('/accounts')
+        return self.findItems(data, SystemAccount)
+
+    def systemDevices(self):
+        """ Returns a list of :class:`~plexapi.server.SystemDevices` objects this server contains. """
+        data = self.query('/devices')
+        return self.findItems(data, SystemDevice)
 
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
@@ -616,7 +619,7 @@ class PlexServer(PlexObject):
                 **kwargs (dict, optional): Any of the available filters that can be applied to the bandwidth data.
                     The time frame (at) and bytes can also be filtered using less than or greater than (see examples below).
 
-                    * accountID (int): The :class:`~plexapi.server.StatisticsAccount` ID to filter.
+                    * accountID (int): The :class:`~plexapi.server.SystemAccount` ID to filter.
                     * at (datetime): The time frame to filter (inclusive). The time frame can be either:
                         1. An exact time frame (e.g. Only December 1st 2020 `at=datetime(2020, 12, 1)`)
                         2. Before a specific time (e.g. Before and including December 2020 `at<=datetime(2020, 12, 1)`)
@@ -625,7 +628,7 @@ class PlexServer(PlexObject):
                         1. An exact number of bytes (not very useful) (e.g. `bytes=1024**3`)
                         2. Less than or equal number of bytes (e.g. `bytes<=1024**3`)
                         3. Greater than or equal number of bytes (e.g. `bytes>=1024**3`)
-                    * deviceID (int): The :class:`~plexapi.server.StatisticsDevice` ID to filter.
+                    * deviceID (int): The :class:`~plexapi.server.SystemDevice` ID to filter.
                     * lan (bool): True to only retrieve local bandwidth, False to only retrieve remote bandwidth.
                         Default returns all local and remote bandwidth.
 
@@ -766,44 +769,7 @@ class Activity(PlexObject):
 
 
 class SystemAccount(PlexObject):
-    """ Minimal api to list system accounts. """
-    key = '/accounts'
-
-    def _loadData(self, data):
-        self._data = data
-        self.accountID = cast(int, data.attrib.get('id'))
-        self.accountKey = data.attrib.get('key')
-        self.name = data.attrib.get('name')
-
-
-class DashboardBandwidth(PlexObject):
-    """ Represents a Plex server dashboard bandwidth object.
-    
-        Attributes:
-            accounts (List<:class:`~plexapi.server.StatisticsAccount`>): List of statistic account objects.
-            bandwidth (List<:class:`~plexapi.server.StatisticsBandwidth`>): List of statistic bandwidth objects.
-            devices (List<:class:`~plexapi.server.StatisticsDevice`>): List of statistic device objects.
-    """
-
-    def _loadData(self, data):
-        self.accounts = self.findItems(data, StatisticsAccount)
-        self.bandwidth = self.findItems(data, StatisticsBandwidth)
-        self.devices = self.findItems(data, StatisticsDevice)
-
-
-class DashboardResources(PlexObject):
-    """ Represents a Plex server dashboard resources object.
-    
-        Attributes:
-            resources (List<:class:`~plexapi.server.StatisticsResources`>): List of statistic resources objects.
-    """
-
-    def _loadData(self, data):
-        self.resources = self.findItems(data, StatisticsResources)
-
-
-class StatisticsAccount(PlexObject):
-    """ Represents a single statistics account.
+    """ Represents a single system account.
 
         Attributes:
             TAG (str): 'Account'
@@ -828,15 +794,19 @@ class StatisticsAccount(PlexObject):
         self.name = data.attrib.get('name')
         self.subtitleMode = cast(int, data.attrib.get('subtitleMode'))
         self.thumb = data.attrib.get('thumb')
+        # For backwards compatibility
+        self.accountID = self.id
+        self.accountKey = self.key
 
 
-class StatisticsDevice(PlexObject):
-    """ Represents a single statistics device.
+class SystemDevice(PlexObject):
+    """ Represents a single system device.
 
         Attributes:
             TAG (str): 'Device'
             createdAt (datatime): Datetime the device was created.
             id (int): The ID of the device.
+            key (str): API URL (/devices/<id>)
             name (str): The name of the device.
             platform (str): OS the device is running (Linux, Windows, Chrome, etc.)
     """
@@ -846,8 +816,35 @@ class StatisticsDevice(PlexObject):
         self._data = data
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
         self.id = cast(int, data.attrib.get('id'))
+        self.key = '/devices/%s' % self.id
         self.name = data.attrib.get('name')
         self.platform = data.attrib.get('platform')
+
+
+class DashboardBandwidth(PlexObject):
+    """ Represents a Plex server dashboard bandwidth object.
+    
+        Attributes:
+            accounts (List<:class:`~plexapi.server.SystemAccount`>): List of statistic account objects.
+            bandwidth (List<:class:`~plexapi.server.StatisticsBandwidth`>): List of statistic bandwidth objects.
+            devices (List<:class:`~plexapi.server.SystemDevice`>): List of statistic device objects.
+    """
+
+    def _loadData(self, data):
+        self.accounts = self.findItems(data, SystemAccount)
+        self.bandwidth = self.findItems(data, StatisticsBandwidth)
+        self.devices = self.findItems(data, SystemDevice)
+
+
+class DashboardResources(PlexObject):
+    """ Represents a Plex server dashboard resources object.
+    
+        Attributes:
+            resources (List<:class:`~plexapi.server.StatisticsResources`>): List of statistic resources objects.
+    """
+
+    def _loadData(self, data):
+        self.resources = self.findItems(data, StatisticsResources)
 
 
 class StatisticsBandwidth(PlexObject):
@@ -855,10 +852,10 @@ class StatisticsBandwidth(PlexObject):
 
         Attributes:
             TAG (str): 'StatisticsBandwidth'
-            accountID (int): The associated :class:`~plexapi.server.StatisticsAccount` ID.
+            accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
             at (datatime): Datetime of the bandwidth data.
             bytes (int): The total number of bytes for the specified timespan.
-            deviceID (int): The associated :class:`~plexapi.server.StatisticsDevice` ID.
+            deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
             lan (bool): True or False wheter the bandwidth is local or remote.
             timespan (int): The timespan for the bandwidth data.
                 1: months, 2: weeks, 3: days, 4: hours, 6: seconds.
@@ -883,12 +880,12 @@ class StatisticsBandwidth(PlexObject):
         ] if p])
 
     def account(self):
-        """ Returns the :class:`~plexapi.server.StatisticsAccount` associated with the bandwidth data. """
+        """ Returns the :class:`~plexapi.server.SystemAccount` associated with the bandwidth data. """
         dashboardBandwidth = self._parent()
         return next(account for account in dashboardBandwidth.accounts if account.id == self.accountID)
 
     def device(self):
-        """ Returns the :class:`~plexapi.server.StatisticsDevice` associated with the bandwidth data. """
+        """ Returns the :class:`~plexapi.server.SystemDevice` associated with the bandwidth data. """
         dashboardBandwidth = self._parent()
         return next(device for device in dashboardBandwidth.devices if device.id == self.deviceID)
 
