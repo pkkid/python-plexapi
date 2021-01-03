@@ -628,13 +628,13 @@ class PlexServer(PlexObject):
 
                     * accountID (int): The :class:`~plexapi.server.SystemAccount` ID to filter.
                     * at (datetime): The time frame to filter (inclusive). The time frame can be either:
-                        1. An exact time frame (e.g. Only December 1st 2020 `at=datetime(2020, 12, 1)`)
-                        2. Before a specific time (e.g. Before and including December 2020 `at<=datetime(2020, 12, 1)`)
-                        3. After a specific time (e.g. After and including January 2021 `at>=datetime(2021, 1, 1)`)
+                        1. An exact time frame (e.g. Only December 1st 2020 `at=datetime(2020, 12, 1)`).
+                        2. Before a specific time (e.g. Before and including December 2020 `at<=datetime(2020, 12, 1)`).
+                        3. After a specific time (e.g. After and including January 2021 `at>=datetime(2021, 1, 1)`).
                     * bytes (int): The amount of bytes to filter (inclusive). The bytes can be either:
-                        1. An exact number of bytes (not very useful) (e.g. `bytes=1024**3`)
-                        2. Less than or equal number of bytes (e.g. `bytes<=1024**3`)
-                        3. Greater than or equal number of bytes (e.g. `bytes>=1024**3`)
+                        1. An exact number of bytes (not very useful) (e.g. `bytes=1024**3`).
+                        2. Less than or equal number of bytes (e.g. `bytes<=1024**3`).
+                        3. Greater than or equal number of bytes (e.g. `bytes>=1024**3`).
                     * deviceID (int): The :class:`~plexapi.server.SystemDevice` ID to filter.
                     * lan (bool): True to only retrieve local bandwidth, False to only retrieve remote bandwidth.
                         Default returns all local and remote bandwidth.
@@ -649,7 +649,7 @@ class PlexServer(PlexObject):
                     from plexapi.server import PlexServer
                     plex = PlexServer('http://localhost:32400', token='xxxxxxxxxxxxxxxxxxxx')
 
-                    # Filter bandwidth data for December 2020 and later and more than 1 GB used.
+                    # Filter bandwidth data for December 2020 and later, and more than 1 GB used.
                     filters = {
                         'at>': datetime(2020, 12, 1),
                         'bytes>': 1024**3
@@ -658,7 +658,7 @@ class PlexServer(PlexObject):
                     # Retrieve bandwidth data in one day timespans.
                     bandwidthData = plex.bandwidth(timespan='days', **filters)
 
-                    # Print out bandwidth usage for each account and device combination
+                    # Print out bandwidth usage for each account and device combination.
                     for bandwidth in sorted(bandwidthData, key=lambda x: x.at):
                         account = bandwidth.account()
                         device = bandwidth.device()
@@ -815,7 +815,7 @@ class SystemDevice(PlexObject):
         Attributes:
             TAG (str): 'Device'
             createdAt (datatime): Datetime the device was created.
-            id (int): The ID of the device.
+            id (int): The ID of the device (not the same as :class:`~plexapi.myplex.MyPlexDevice` ID).
             key (str): API URL (/devices/<id>)
             name (str): The name of the device.
             platform (str): OS the device is running (Linux, Windows, Chrome, etc.)
