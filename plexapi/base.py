@@ -739,19 +739,6 @@ class Playable(object):
             for part in item.parts:
                 yield part
 
-    def split(self):
-        """Split a duplicate."""
-        key = '%s/split' % self.key
-        return self._server.query(key, method=self._server._session.put)
-
-    def merge(self, ratingKeys):
-        """Merge duplicate items."""
-        if not isinstance(ratingKeys, list):
-            ratingKeys = str(ratingKeys).split(",")
-
-        key = '%s/merge?ids=%s' % (self.key, ','.join(ratingKeys))
-        return self._server.query(key, method=self._server._session.put)
-
     def unmatch(self):
         """Unmatch a media file."""
         key = '%s/unmatch' % self.key
