@@ -135,27 +135,26 @@ class MediaPart(PlexObject):
 
     def _buildStreams(self, data):
         streams = []
-        for elem in data:
-            for cls in (VideoStream, AudioStream, SubtitleStream, LyricStream):
-                if elem.attrib.get('streamType') == str(cls.STREAMTYPE):
-                    streams.append(cls(self._server, elem, self._initpath))
+        for cls in (VideoStream, AudioStream, SubtitleStream, LyricStream):
+            items = self.findItems(data, cls, streamType=cls.STREAMTYPE)
+            streams.extend(items)
         return streams
 
     def videoStreams(self):
         """ Returns a list of :class:`~plexapi.media.VideoStream` objects in this MediaPart. """
-        return [stream for stream in self.streams if stream.streamType == VideoStream.STREAMTYPE]
+        return [stream for stream in self.streams if isinstance(stream, VideoStream)]
 
     def audioStreams(self):
         """ Returns a list of :class:`~plexapi.media.AudioStream` objects in this MediaPart. """
-        return [stream for stream in self.streams if stream.streamType == AudioStream.STREAMTYPE]
+        return [stream for stream in self.streams if isinstance(stream, AudioStream)]
 
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
-        return [stream for stream in self.streams if stream.streamType == SubtitleStream.STREAMTYPE]
+        return [stream for stream in self.streams if isinstance(stream, SubtitleStream)]
 
     def lyricStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
-        return [stream for stream in self.streams if stream.streamType == LyricStream.STREAMTYPE]
+        return [stream for stream in self.streams if isinstance(stream, LyricStream)]
 
     def setDefaultAudioStream(self, stream):
         """ Set the default :class:`~plexapi.media.AudioStream` for this MediaPart.
