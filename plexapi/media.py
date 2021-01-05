@@ -136,7 +136,7 @@ class MediaPart(PlexObject):
     def _buildStreams(self, data):
         streams = []
         for elem in data:
-            for cls in (VideoStream, AudioStream, SubtitleStream):
+            for cls in (VideoStream, AudioStream, SubtitleStream, LyricStream):
                 if elem.attrib.get('streamType') == str(cls.STREAMTYPE):
                     streams.append(cls(self._server, elem, self._initpath))
         return streams
