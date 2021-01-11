@@ -658,7 +658,7 @@ class LibrarySection(PlexObject):
                         * year: List of years to search within ([yyyy, ...]). [all]
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when applying unknown filter
+                :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown filter.
         """
         # cleanup the core arguments
         args = {}
@@ -779,7 +779,7 @@ class LibrarySection(PlexObject):
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when the library is not allowed to sync
+                :exc:`~plexapi.exceptions.BadRequest`: When the library is not allowed to sync.
 
             Example:
 

@@ -43,7 +43,7 @@ class MyPlexAccount(PlexObject):
             guest (bool): Unknown.
             home (bool): Unknown.
             homeSize (int): Unknown.
-            id (str): Your Plex account ID.
+            id (int): Your Plex account ID.
             locale (str): Your Plex locale
             mailing_list_status (str): Your current mailing list status.
             maxHomeSize (int): Unknown.
@@ -115,7 +115,7 @@ class MyPlexAccount(PlexObject):
         self.guest = utils.cast(bool, data.attrib.get('guest'))
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.homeSize = utils.cast(int, data.attrib.get('homeSize'))
-        self.id = data.attrib.get('id')
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.locale = data.attrib.get('locale')
         self.mailing_list_status = data.attrib.get('mailing_list_status')
         self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))
@@ -580,8 +580,8 @@ class MyPlexAccount(PlexObject):
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when client with provided clientId wasn`t found.
-                :exc:`~plexapi.exceptions.BadRequest`: provided client doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn`t found.
+                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn`t provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -1155,8 +1155,8 @@ class MyPlexPinLogin(object):
                 timeout (int): Timeout in seconds waiting for the PIN login to succeed (optional).
 
             Raises:
-                :class:`RuntimeError`: if the thread is already running.
-                :class:`RuntimeError`: if the PIN login for the current PIN has expired.
+                :class:`RuntimeError`: If the thread is already running.
+                :class:`RuntimeError`: If the PIN login for the current PIN has expired.
         """
         if self._thread and not self._abort:
             raise RuntimeError('MyPlexPinLogin thread is already running')
