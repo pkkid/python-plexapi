@@ -167,6 +167,9 @@ class Playlist(PlexPartialObject, Playable):
     @classmethod
     def _create(cls, server, title, items):
         """ Create a playlist. """
+        if not items:
+            raise BadRequest('Must include items to add when creating new playlist')
+            
         if items and not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
@@ -198,6 +201,9 @@ class Playlist(PlexPartialObject, Playable):
             smart (bool): default False.
 
             **kwargs (dict): is passed to the filters. For a example see the search method.
+            
+        Raises:
+            :class:`plexapi.exceptions.BadRequest`: when no items are included in create request.
 
         Returns:
             :class:`~plexapi.playlist.Playlist`: an instance of created Playlist.
