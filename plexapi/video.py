@@ -487,7 +487,10 @@ class Show(Video):
             If show is unwatched, return will likely be the first episode.
         """
         data = self._server.query(self._details_key)
-        return self.findItems([item for item in data.iter('OnDeck')][0])[0]
+        episode = next(data.iter('OnDeck'), None)
+        if episode:
+            return self.findItems(episode)[0]
+        return None
 
     def season(self, title=None, season=None):
         """ Returns the season with the specified title or number.
