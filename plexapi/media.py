@@ -248,8 +248,9 @@ class VideoStream(MediaPartStream):
             anamorphic (str):
             bitDepth (int): Bit depth (ex: 8).
             cabac (int): Unknown
-            chromaLocation
+            chromaLocation (str):
             chromaSubsampling (str): Chroma Subsampling (ex: 4:2:0).
+            codecID (str): Codec ID (ex: XVID).
             codedHeight (str):
             codedWidth (str):
             colorPrimaries (str):
@@ -342,6 +343,7 @@ class AudioStream(MediaPartStream):
             profile (str):
             samplingRate (int): Sampling rate (ex: xxx)
             startRamp (str):
+            streamIdentifier (int):
     """
     TAG = 'Stream'
     STREAMTYPE = 2
@@ -365,6 +367,7 @@ class AudioStream(MediaPartStream):
         self.profile = data.attrib.get('profile')
         self.samplingRate = cast(int, data.attrib.get('samplingRate'))
         self.startRamp = data.attrib.get('startRamp')
+        self.streamIdentifier = cast(int, data.attrib.get('streamIdentifier'))
 
 
 @utils.registerPlexObject
@@ -374,6 +377,11 @@ class SubtitleStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 3
+            container (str):
+            forced (bool): True if this is a forced subtitle
+            format (str): Subtitle format (ex: srt).
+            headerCommpression (str):
+            transient (str):
     """
     TAG = 'Stream'
     STREAMTYPE = 3
@@ -394,6 +402,10 @@ class LyricStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 4
+            format (str):
+            minLines (int):
+            provider (str):
+            timed (bool):
     """
     TAG = 'Stream'
     STREAMTYPE = 4
@@ -420,12 +432,7 @@ class Session(PlexObject):
 
 @utils.registerPlexObject
 class TranscodeSession(PlexObject):
-    """ Represents a current transcode session.
-
-        Attributes:
-            TAG (str): 'TranscodeSession'
-            TODO: Document this.
-    """
+    """ Represents a current transcode session. """
     TAG = 'TranscodeSession'
 
     def _loadData(self, data):
@@ -454,7 +461,7 @@ class TranscodeSession(PlexObject):
 class TranscodeJob(PlexObject):
     """ Represents an Optimizing job.
         TrancodeJobs are the process for optimizing conversions.
-        Active or paused optimization items. Usually one item as a time"""
+        Active or paused optimization items. Usually one item as a time."""
     TAG = 'TranscodeJob'
 
     def _loadData(self, data):
