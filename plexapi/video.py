@@ -483,7 +483,7 @@ class Show(Video):
             return self.findItems(item, library.Hub)
 
     def onDeck(self):
-        """ Returns shows On Deck :class:`~plexapi.video.Video` object.
+        """ Returns show's On Deck :class:`~plexapi.video.Video` object or `None`.
             If show is unwatched, return will likely be the first episode.
         """
         data = self._server.query(self._details_key)
@@ -652,6 +652,16 @@ class Season(Video):
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode`. """
         return self.episode(title, episode)
+
+    def onDeck(self):
+        """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
+            If show is unwatched, return will likely be the first episode.
+        """
+        data = self._server.query(self._details_key)
+        episode = next(data.iter('OnDeck'), None)
+        if episode:
+            return self.findItems(episode)[0]
+        return None
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
