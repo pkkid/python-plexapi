@@ -655,7 +655,7 @@ class Season(Video):
 
     def onDeck(self):
         """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
-            If show is unwatched, return will likely be the first episode.
+            Will only return a match if the show's On Deck episode is in this season.
         """
         data = self._server.query(self._details_key)
         episode = next(data.iter('OnDeck'), None)
