@@ -346,6 +346,15 @@ class Movie(Playable, Video):
         # This is just for compat.
         return self.title
 
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        data = self._server.query(self._details_key)
+        directory = data.find('Video')
+        if directory:
+            related = directory.find('Related')
+            if related:
+                return self.findItems(related, library.Hub)
+
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
 
@@ -479,8 +488,11 @@ class Show(Video):
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        for item in data.iter('Related'):
-            return self.findItems(item, library.Hub)
+        directory = data.find('Directory')
+        if directory:
+            related = directory.find('Related')
+            if related:
+                return self.findItems(related, library.Hub)
 
     def onDeck(self):
         """ Returns shows On Deck :class:`~plexapi.video.Video` object.

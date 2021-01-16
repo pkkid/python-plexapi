@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote_plus
 
-from plexapi import media, utils
+from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 
@@ -154,6 +154,15 @@ class Artist(Audio):
     def __iter__(self):
         for album in self.albums():
             yield album
+
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        data = self._server.query(self._details_key)
+        directory = data.find('Directory')
+        if directory:
+            related = directory.find('Related')
+            if related:
+                return self.findItems(related, library.Hub)
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
