@@ -110,17 +110,20 @@ class PlexObject(object):
                 details_key += '?' + urlencode(sorted(includes.items()))
         return details_key
 
-    def _isChildOf(self, cls):
-        """ Returns True if this object is a child of the given class.
+    def _isChildOf(self, **kwargs):
+        """ Returns True if this object is a child of the given attributes.
+            This will search the parent objects all the way to the top.
         
             Parameters:
-                cls: The parent :class:`~plexapi.base.PlexObject` to search for.
+                **kwargs (dict): The attributes and values to search for in the parent objects.
+                    See all possible `**kwargs*` in :func:`~plexapi.base.PlexObject.fetchItem`.
         """
         obj = self
         while obj._parent is not None:
-            if isinstance(obj._parent(), cls):
-                return True
             obj = obj._parent()
+            if obj._checkAttrs(obj._data, **kwargs):
+                return True
+        return False
 
     def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
