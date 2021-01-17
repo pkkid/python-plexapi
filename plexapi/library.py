@@ -1232,6 +1232,110 @@ class Hub(PlexObject):
         return self.size
 
 
+class HubMediaTag(PlexObject):
+    """ Base class of hub media tag search results.
+
+        Attributes:
+            count (int): The number of items where this tag is found.
+            filter (str): The URL filter for the tag.
+            id (int): The id of the tag.
+            key (str): API URL (/library/section/<librarySectionID>/all?<filter>).
+            librarySectionID (int): The library section ID where the tag is found.
+            librarySectionKey (str): API URL for the library section (/library/section/<librarySectionID>)
+            librarySectionTitle (str): The library title where the tag is found.
+            librarySectionType (int): The library type where the tag is found.
+            reason (str): The reason for the search result.
+            reasonID (int): The reason ID for the search result.
+            reasonTitle (str): The reason title for the search result.
+            type (str): The type of search result (tag).
+            tag (str): The title of the tag.
+            tagType (int): The type ID of the tag.
+            tagValue (int): The value of the tag.
+            thumb (str): The URL for the thumbnail of the tag (if available).
+    """
+    TAG = 'Directory'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.count = utils.cast(int, data.attrib.get('count'))
+        self.filter = data.attrib.get('filter')
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.key = data.attrib.get('key')
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionKey = data.attrib.get('librarySectionKey')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionType = utils.cast(int, data.attrib.get('librarySectionType'))
+        self.reason = data.attrib.get('reason')
+        self.reasonID = utils.cast(int, data.attrib.get('reasonID'))
+        self.reasonTitle = data.attrib.get('reasonTitle')
+        self.type = data.attrib.get('type')
+        self.tag = data.attrib.get('tag')
+        self.tagType = utils.cast(int, data.attrib.get('tagType'))
+        self.tagValue = utils.cast(int, data.attrib.get('tagValue'))
+        self.thumb = data.attrib.get('tag')
+
+
+@utils.registerPlexObject
+class Tag(HubMediaTag):
+    """ Represents a single Tag hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 0
+    """
+    TAGTYPE = 0
+
+
+@utils.registerPlexObject
+class Genre(HubMediaTag):
+    """ Represents a single Genre hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 1
+    """
+    TAGTYPE = 1
+
+
+@utils.registerPlexObject
+class Director(HubMediaTag):
+    """ Represents a single Director hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 4
+    """
+    TAGTYPE = 4
+
+
+@utils.registerPlexObject
+class Actor(HubMediaTag):
+    """ Represents a single Actor hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 6
+    """
+    TAGTYPE = 6
+
+
+@utils.registerPlexObject
+class AutoTag(HubMediaTag):
+    """ Represents a single AutoTag hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 207
+    """
+    TAGTYPE = 207
+
+
+@utils.registerPlexObject
+class Place(HubMediaTag):
+    """ Represents a single Place hub search media tag.
+
+        Attributes:
+            TAGTYPE (int): 400
+    """
+    TAGTYPE = 400
+
+
 @utils.registerPlexObject
 class Station(PlexObject):
     """ Represents the Station area in the MusicSection.
