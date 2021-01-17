@@ -1214,7 +1214,7 @@ class Hub(PlexObject):
             hubKey (str): API URL for these specific hub items.
             hubIdentifier (str): The identifier of the hub.
             key (str): API URL for the hub.
-            more (bool): True if there are more items to load (call items() to reload).
+            more (bool): True if there are more items to load (call reload() to fetch all items).
             size (int): The number of items in the hub.
             style (str): The style of the hub.
             title (str): The title of the hub.
@@ -1228,25 +1228,23 @@ class Hub(PlexObject):
         self.context = data.attrib.get('context')
         self.hubKey = data.attrib.get('hubKey')
         self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.items = self.findItems(data)
         self.key = data.attrib.get('key')
         self.more = utils.cast(bool, data.attrib.get('more'))
         self.size = utils.cast(int, data.attrib.get('size'))
         self.style = data.attrib.get('style')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self._items = None  # cached hub items
 
     def __len__(self):
         return self.size
 
-    def items(self):
-        """ Returns a list of all items in the hub. """
-        if self._items:
-            return self._items
-        self._items = self.fetchItems(self.key)
-        self.size = len(self._items)
-        self.more = False
-        return self._items
+    def reload(self):
+        """ Reloads the hub to fetch all items in the hub. """
+        if self.more and self.key:
+            self.items = self.fetchItems(self.key)
+            self.more = False
+            self.size = len(self.items)
 
 
 @utils.registerPlexObject
