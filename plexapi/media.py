@@ -65,6 +65,10 @@ class Media(PlexObject):
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
 
+    @property
+    def isOptimizedVersion(self):
+        return self.proxyType == utils.SEARCHTYPES['optimizedVersion']
+
     def delete(self):
         part = self._initpath + '/media/%s' % self.id
         try:
