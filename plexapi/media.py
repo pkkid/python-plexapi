@@ -16,12 +16,10 @@ class Media(PlexObject):
 
         Attributes:
             TAG (str): 'Media'
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            initpath (str): Relative path requested when retrieving specified data.
-            video (str): Video this media belongs to.
             aspectRatio (float): Aspect ratio of the video (ex: 2.35).
             audioChannels (int): Number of audio channels for this video (ex: 6).
             audioCodec (str): Audio codec used within the video (ex: ac3).
+            audioProfile (str): 
             bitrate (int): Bitrate of the video (ex: 1624)
             container (str): Container this video is in (ex: avi).
             duration (int): Length of the video in milliseconds (ex: 6990483).
@@ -34,10 +32,17 @@ class Media(PlexObject):
             target (str): Media version target name.
             title (str): Media version title.
             videoCodec (str): Video codec used within the video (ex: ac3).
-            videoFrameRate (str): Video frame rate (ex: 24p).\
+            videoFrameRate (str): Video frame rate (ex: 24p).
             videoProfile (str): Video profile (ex: high).
             videoResolution (str): Video resolution (ex: sd).
             width (int): Width of the video in pixels (ex: 608).
+
+            aperture
+            exposure
+            iso
+            lens
+            make
+            model
     """
     TAG = 'Media'
 
@@ -47,6 +52,7 @@ class Media(PlexObject):
         self.aspectRatio = cast(float, data.attrib.get('aspectRatio'))
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
+        self.audioProfile = data.attrib.get('audioProfile')
         self.bitrate = cast(int, data.attrib.get('bitrate'))
         self.container = data.attrib.get('container')
         self.duration = cast(int, data.attrib.get('duration'))
@@ -64,6 +70,14 @@ class Media(PlexObject):
         self.videoProfile = data.attrib.get('videoProfile')
         self.videoResolution = data.attrib.get('videoResolution')
         self.width = cast(int, data.attrib.get('width'))
+
+        if self._isChildOf(etag='Photo'):
+            self.aperture = data.attrib.get('aperture')
+            self.exposure = data.attrib.get('exposure')
+            self.iso = cast(int, data.attrib.get('iso'))
+            self.lens = data.attrib.get('lens')
+            self.make = data.attrib.get('make')
+            self.model = data.attrib.get('model')
 
     @property
     def isOptimizedVersion(self):
@@ -85,9 +99,6 @@ class MediaPart(PlexObject):
 
         Attributes:
             TAG (str): 'Part'
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            initpath (str): Relative path requested when retrieving specified data.
-            media (:class:`~plexapi.media.Media`): Media object this part belongs to.
             accessible (bool): Determine if file is accessible
             audioProfile (str):
             container (str): Container type of this media part (ex: avi).
@@ -194,9 +205,6 @@ class MediaPartStream(PlexObject):
     """ Base class for media streams. These consist of video, audio and subtitles.
 
         Attributes:
-            server (:class:`~plexapi.server.PlexServer`): PlexServer object this is from.
-            initpath (str): Relative path requested when retrieving specified data.
-            part (:class:`~plexapi.media.MediaPart`): Media part this stream belongs to.
             bitrate (int):
             codec (str): Codec of this stream (ex: srt, ac3, mpeg4).
             default (str):
@@ -207,7 +215,6 @@ class MediaPartStream(PlexObject):
             index (int): Unknown
             language (str): Stream language (ex: English, ไทย).
             languageCode (str): Ascii code for language (ex: eng, tha).
-            requiredBandwidths (str):
             selected (bool): True if this stream is selected.
             streamType (int): Stream type (1=:class:`~plexapi.media.VideoStream`,
                 2=:class:`~plexapi.media.AudioStream`, 3=:class:`~plexapi.media.SubtitleStream`).
@@ -331,23 +338,24 @@ class AudioStream(MediaPartStream):
         Attributes:
             TAG (str): 'Stream'
             STREAMTYPE (int): 2
-            albumGain (float):
-            albumPeak (float):
-            albumRange (float):
             audioChannelLayout (str): Audio channel layout (ex: 5.1(side)).
             bitDepth (int): Bit depth (ex: 16).
             bitrateMode (str): Bitrate mode (ex: cbr).
             channels (int): number of channels in this stream (ex: 6).
             duration (int): Duration of audio stream in milliseconds.
+            profile (str):
+            samplingRate (int): Sampling rate (ex: xxx)
+            streamIdentifier (int):
+
+            albumGain (float):
+            albumPeak (float):
+            albumRange (float):
             endRamp (str):
             gain (float):
             loudness (float):
             lra (float):
             peak (float):
-            profile (str):
-            samplingRate (int): Sampling rate (ex: xxx)
             startRamp (str):
-            streamIdentifier (int):
     """
     TAG = 'Stream'
     STREAMTYPE = 2
@@ -355,24 +363,25 @@ class AudioStream(MediaPartStream):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         super(AudioStream, self)._loadData(data)
-        self.albumGain = cast(float, data.attrib.get('albumGain'))
-        self.albumPeak = cast(float, data.attrib.get('albumPeak'))
-        self.albumRange = cast(float, data.attrib.get('albumRange'))
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
         self.bitDepth = cast(int, data.attrib.get('bitDepth'))
         self.bitrateMode = data.attrib.get('bitrateMode')
         self.channels = cast(int, data.attrib.get('channels'))
         self.duration = cast(int, data.attrib.get('duration'))
-        self.endRamp = data.attrib.get('endRamp')
-        self.gain = cast(float, data.attrib.get('gain'))
-        self.loudness = cast(float, data.attrib.get('loudness'))
-        self.lra = cast(float, data.attrib.get('lra'))
-        self.peak = cast(float, data.attrib.get('peak'))
         self.profile = data.attrib.get('profile')
         self.samplingRate = cast(int, data.attrib.get('samplingRate'))
-        self.startRamp = data.attrib.get('startRamp')
         self.streamIdentifier = cast(int, data.attrib.get('streamIdentifier'))
 
+        if self._isChildOf(etag='Track'):
+            self.albumGain = cast(float, data.attrib.get('albumGain'))
+            self.albumPeak = cast(float, data.attrib.get('albumPeak'))
+            self.albumRange = cast(float, data.attrib.get('albumRange'))
+            self.endRamp = data.attrib.get('endRamp')
+            self.gain = cast(float, data.attrib.get('gain'))
+            self.loudness = cast(float, data.attrib.get('loudness'))
+            self.lra = cast(float, data.attrib.get('lra'))
+            self.peak = cast(float, data.attrib.get('peak'))
+            self.startRamp = data.attrib.get('startRamp')
 
 @utils.registerPlexObject
 class SubtitleStream(MediaPartStream):
