@@ -1210,15 +1210,15 @@ class Hub(PlexObject):
 
         Attributes:
             TAG (str): 'Hub'
-            context (str): Context for the hub.
-            hubKey (str): The Plex API URL for these specific hub items.
-            hubIdentifier (str): The identifier for the hub.
-            key (str): The Plex API URL for the entire hub.
-            more (bool): True if there are more items to load.
-            size (int): Number of items listed in this hub.
+            context (str): The context of the hub.
+            hubKey (str): API URL for these specific hub items.
+            hubIdentifier (str): The identifier of the hub.
+            key (str): API URL for the hub.
+            more (bool): True if there are more items to load (call items() to reload).
+            size (int): The number of items in the hub.
             style (str): The style of the hub.
-            title (str): Title of the hub.
-            type (str): Type of items in the hub.
+            title (str): The title of the hub.
+            type (str): The type of items in the hub.
     """
     TAG = 'Hub'
 
