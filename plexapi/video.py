@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus, urlencode
 
 from plexapi import library, media, settings, utils
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject, MediaContainer
 from plexapi.exceptions import BadRequest, NotFound
 
 
