@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from plexapi.exceptions import BadRequest
+from plexapi.playqueue import PlayQueue
 import pytest
 
 
@@ -138,3 +139,11 @@ def test_create_playqueue_from_playlist(plex, album):
         assert len(pq) == 2 * len(playlist)
     finally:
         playlist.delete()
+
+
+def test_lookup_playqueue(plex, movie):
+    pq = PlayQueue.create(plex, movie)
+    pq_id = pq.playQueueID
+    pq2 = PlayQueue.get(plex, pq_id)
+    assert pq.playQueueID == pq2.playQueueID
+    assert pq.items == pq2.items

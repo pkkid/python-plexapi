@@ -3,6 +3,7 @@ import re
 import time
 
 import pytest
+from datetime import datetime
 from PIL import Image, ImageStat
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
@@ -10,6 +11,7 @@ from plexapi.utils import download
 from requests import Session
 
 from . import conftest as utils
+from .payloads import SERVER_RESOURCES
 
 
 def test_server_attr(plex, account):
@@ -56,21 +58,19 @@ def test_server_url(plex):
     assert "ohno" in plex.url("ohno")
 
 
-def test_server_transcodeImage(tmpdir, plex, show):
+def test_server_transcodeImage(tmpdir, plex, movie):
     width, height = 500, 500
-    imgurl = plex.transcodeImage(show.banner, height, width)
-    gray = imgurl = plex.transcodeImage(show.banner, height, width, saturation=0)
-    resized_img = download(
-        imgurl, plex._token, savepath=str(tmpdir), filename="resize_image"
-    )
+    original_url = plex.url(movie.thumb)
+    resize_url = plex.transcodeImage(movie.thumb, height, width)
+    grayscale_url = plex.transcodeImage(movie.thumb, height, width, saturation=0)
     original_img = download(
-        show._server.url(show.banner),
-        plex._token,
-        savepath=str(tmpdir),
-        filename="original_img",
+        original_url, plex._token, savepath=str(tmpdir), filename="original_img",
+    )
+    resized_img = download(
+        resize_url, plex._token, savepath=str(tmpdir), filename="resize_image"
     )
     grayscale_img = download(
-        gray, plex._token, savepath=str(tmpdir), filename="grayscale_img"
+        grayscale_url, plex._token, savepath=str(tmpdir), filename="grayscale_img"
     )
     with Image.open(resized_img) as image:
         assert width, height == image.size
@@ -287,6 +287,23 @@ def test_server_downloadDatabases(tmpdir, plex):
     assert len(tmpdir.listdir()) > 1
 
 
+def test_server_browse(plex, movies):
+    movies_path = movies.locations[0]
+    # browse root
+    paths = plex.browse()
+    assert len(paths)
+    # browse the path of the movie library
+    paths = plex.browse(movies_path)
+    assert len(paths)
+    # browse the path of the movie library without files
+    paths = plex.browse(movies_path, includeFiles=False)
+    assert not len([f for f in paths if f.TAG == 'File'])
+    # walk the path of the movie library
+    for path, paths, files in plex.walk(movies_path):
+        assert path.startswith(movies_path)
+        assert len(paths) or len(files)
+
+
 def test_server_allowMediaDeletion(account):
     plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
     # Check server current allowMediaDeletion setting
@@ -324,3 +341,89 @@ def test_server_allowMediaDeletion(account):
         # Test redundant toggle
         with pytest.raises(BadRequest):
             plex._allowMediaDeletion(False)
+
+
+def test_server_system_accounts(plex):
+    accounts = plex.systemAccounts()
+    assert len(accounts)
+    account = accounts[-1]
+    assert utils.is_bool(account.autoSelectAudio)
+    assert account.defaultAudioLanguage == "en"
+    assert account.defaultSubtitleLanguage == "en"
+    assert utils.is_int(account.id, gte=0)
+    assert len(account.key)
+    assert len(account.name)
+    assert account.subtitleMode == 0
+    assert account.thumb == ""
+    assert account.accountID == account.id
+    assert account.accountKey == account.key
+
+
+def test_server_system_devices(plex):
+    devices = plex.systemDevices()
+    assert len(devices)
+    device = devices[-1]
+    assert utils.is_datetime(device.createdAt)
+    assert utils.is_int(device.id)
+    assert len(device.key)
+    assert len(device.name) or device.name == ""
+    assert len(device.platform) or device.platform == ""
+    
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth(plex):
+    bandwidthData = plex.bandwidth()
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert utils.is_int(bandwidth.accountID, gte=0)
+    assert utils.is_datetime(bandwidth.at)
+    assert utils.is_int(bandwidth.bytes)
+    assert utils.is_int(bandwidth.deviceID)
+    assert utils.is_bool(bandwidth.lan)
+    assert bandwidth.timespan == 6  # Default seconds timespan
+    account = bandwidth.account()
+    assert utils.is_int(account.id, gte=0)
+    device = bandwidth.device()
+    assert utils.is_int(device.id)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth_filters(plex):
+    at = datetime(2021, 1, 1)
+    filters = {
+        'at>': at,
+        'bytes>': 1,
+        'lan': True,
+        'accountID': 1
+    }
+    bandwidthData = plex.bandwidth(timespan='hours', **filters)
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert bandwidth.accountID == 1
+    assert bandwidth.at >= at
+    assert bandwidth.bytes >= 1
+    assert bandwidth.lan is True
+    assert bandwidth.timespan == 4
+    with pytest.raises(BadRequest):
+        plex.bandwidth(timespan='n/a')
+    with pytest.raises(BadRequest):
+        filters = {'n/a': None}
+        plex.bandwidth(**filters)
+    with pytest.raises(BadRequest):
+        filters = {'at': 123456}
+        plex.bandwidth(**filters)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_resources(plex, requests_mock):
+    url = plex.url("/statistics/resources")
+    requests_mock.get(url, text=SERVER_RESOURCES)
+    resourceData = plex.resources()
+    assert len(resourceData)
+    resource = resourceData[0]
+    assert utils.is_datetime(resource.at)
+    assert utils.is_float(resource.hostCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.hostMemoryUtilization, gte=0.0)
+    assert utils.is_float(resource.processCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.processMemoryUtilization, gte=0.0)
+    assert resource.timespan == 6  # Default seconds timespan

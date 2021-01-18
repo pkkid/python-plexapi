@@ -22,3 +22,10 @@ SONOS_RESOURCES = """<MediaContainer size="3">
   <Player title="Speaker 3" machineIdentifier="RINCON_12345678901234563:1234567893" deviceClass="speaker" product="Sonos" platform="Sonos" platformVersion="56.0-76060" protocol="plex" protocolVersion="1" protocolCapabilities="timeline,playback,playqueues,provider-playback" lanIP="192.168.1.13"/>
 </MediaContainer>
 """
+
+SERVER_RESOURCES = """<MediaContainer size="3">
+<StatisticsResources timespan="6" at="1609708609" hostCpuUtilization="0.000" processCpuUtilization="0.207" hostMemoryUtilization="64.946" processMemoryUtilization="3.665"/>
+<StatisticsResources timespan="6" at="1609708614" hostCpuUtilization="5.000" processCpuUtilization="0.713" hostMemoryUtilization="64.939" processMemoryUtilization="3.666"/>
+<StatisticsResources timespan="6" at="1609708619" hostCpuUtilization="10.000" processCpuUtilization="4.415" hostMemoryUtilization="64.281" processMemoryUtilization="3.669"/>
+</MediaContainer>
+"""

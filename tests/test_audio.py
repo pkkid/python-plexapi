@@ -8,10 +8,10 @@ def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
     if artist.countries:
-        assert "United States" in [i.tag for i in artist.countries]
+        assert "United States of America" in [i.tag for i in artist.countries]
     #assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
-    assert artist.index == "1"
+    assert artist.index == 1
     assert utils.is_metadata(artist._initpath)
     assert utils.is_metadata(artist.key)
     assert utils.is_int(artist.librarySectionID)
@@ -43,6 +43,9 @@ def test_audio_Artist_history(artist):
 def test_audio_Artist_track(artist):
     track = artist.track("As Colourful as Ever")
     assert track.title == "As Colourful as Ever"
+    track = artist.track(album="Layers", track=1)
+    assert track.parentTitle == "Layers"
+    assert track.index == 1
 
 
 def test_audio_Artist_tracks(artist):
@@ -63,7 +66,7 @@ def test_audio_Artist_albums(artist):
 def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     assert isinstance(album.genres, list)
-    assert album.index == "1"
+    assert album.index == 1
     assert utils.is_metadata(album._initpath)
     assert utils.is_metadata(album.key)
     assert utils.is_int(album.librarySectionID)
@@ -106,7 +109,7 @@ def test_audio_Album_tracks(album):
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
     assert track.grandparentTitle == "Broke For Free"
-    assert track.index == "1"
+    assert track.index == 1
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
     assert track.listType == "audio"
@@ -135,6 +138,8 @@ def test_audio_Album_tracks(album):
 def test_audio_Album_track(album, track=None):
     # this is not reloaded. its not that much info missing.
     track = track or album.track("As Colourful As Ever")
+    track2 = album.track(track=1)
+    assert track == track2
     assert utils.is_datetime(track.addedAt)
     assert utils.is_int(track.duration)
     assert utils.is_metadata(track.grandparentKey)
@@ -225,6 +230,8 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == "audio"
+    assert len(track.locations) == 1
+    assert len(track.locations[0]) >= 10
     # Assign 0 track.media
     media = track.media[0]
     assert track.moods == []

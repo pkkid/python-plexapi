@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import base64
+import functools
 import logging
 import os
 import re
 import time
+import warnings
 import zipfile
 from datetime import datetime
 from getpass import getpass
@@ -10,7 +13,7 @@ from threading import Event, Thread
 from urllib.parse import quote
 
 import requests
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 
 try:
     from tqdm import tqdm
@@ -18,6 +21,7 @@ except ImportError:
     tqdm = None
 
 log = logging.getLogger('plexapi')
+warnings.simplefilter('default', category=DeprecationWarning)
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
@@ -146,7 +150,7 @@ def searchType(libtype):
             libtype (str): LibType to lookup (movie, show, season, episode, artist, album, track,
                                               collection)
         Raises:
-            :class:`plexapi.exceptions.NotFound`: Unknown libtype
+            :exc:`~plexapi.exceptions.NotFound`: Unknown libtype
     """
     libtype = str(libtype)
     if libtype in [str(v) for v in SEARCHTYPES.values()]:
@@ -157,12 +161,12 @@ def searchType(libtype):
 
 
 def threaded(callback, listargs):
-    """ Returns the result of <callback> for each set of \*args in listargs. Each call
+    """ Returns the result of <callback> for each set of `*args` in listargs. Each call
         to <callback> is called concurrently in their own separate threads.
 
         Parameters:
-            callback (func): Callback function to apply to each set of \*args.
-            listargs (list): List of lists; \*args to pass each thread.
+            callback (func): Callback function to apply to each set of `*args`.
+            listargs (list): List of lists; `*args` to pass each thread.
     """
     threads, results = [], []
     job_is_done_event = Event()
@@ -367,11 +371,39 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     if config_username and config_password:
         print('Authenticating with Plex.tv as %s..' % config_username)
         return MyPlexAccount(config_username, config_password)
+    config_token = CONFIG.get('auth.server_token')
+    if config_token:
+        print('Authenticating with Plex.tv with token')
+        return MyPlexAccount(token=config_token)
     # 3. Prompt for username and password on the command line
     username = input('What is your plex.tv username: ')
     password = getpass('What is your plex.tv password: ')
     print('Authenticating with Plex.tv as %s..' % username)
     return MyPlexAccount(username, password)
+
+
+def createMyPlexDevice(headers, account, timeout=10):  # pragma: no cover
+    """ Helper function to create a new MyPlexDevice.
+
+        Parameters:
+            headers (dict): Provide the X-Plex- headers for the new device.
+                A unique X-Plex-Client-Identifier is required.
+            account (MyPlexAccount): The Plex account to create the device on.
+            timeout (int): Timeout in seconds to wait for device login.
+    """
+    from plexapi.myplex import MyPlexPinLogin
+
+    if 'X-Plex-Client-Identifier' not in headers:
+        raise BadRequest('The X-Plex-Client-Identifier header is required.')
+
+    clientIdentifier = headers['X-Plex-Client-Identifier']
+
+    pinlogin = MyPlexPinLogin(headers=headers)
+    pinlogin.run(timeout=timeout)
+    account.link(pinlogin.pin)
+    pinlogin.waitForLogin()
+
+    return account.device(clientId=clientIdentifier)
 
 
 def choose(msg, items, attr):  # pragma: no cover
@@ -411,3 +443,22 @@ def getAgentIdentifier(section, agent):
         agents += identifiers
     raise NotFound('Couldnt find "%s" in agents list (%s)' %
                    (agent, ', '.join(agents)))
+
+
+def base64str(text):
+    return base64.b64encode(text.encode('utf-8')).decode('utf-8')
+
+
+def deprecated(message):
+    def decorator(func):
+        """This is a decorator which can be used to mark functions
+        as deprecated. It will result in a warning being emitted
+        when the function is used."""
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
+            warnings.warn(msg, category=DeprecationWarning, stacklevel=3)
+            log.warning(msg)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator

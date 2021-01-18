@@ -412,7 +412,7 @@ if __name__ == "__main__":
         default=False,
         action="store_true",
     )  # noqa
-    opts = parser.parse_args()
+    opts, _ = parser.parse_known_args()
 
     account = get_plex_account(opts)
     path = os.path.realpath(os.path.expanduser(opts.destination))
@@ -461,9 +461,6 @@ if __name__ == "__main__":
                 server = account.device(opts.server_name).connect()
             else:
                 server = PlexServer("http://%s:32400" % opts.advertise_ip)
-            if opts.accept_eula:
-                server.settings.get("acceptedEULA").set(True)
-                server.settings.save()
 
         except KeyboardInterrupt:
             break
@@ -471,12 +468,26 @@ if __name__ == "__main__":
         except Exception as err:
             print(err)
             time.sleep(1)
+
         runtime = time.time() - start
+
     if not server:
         raise SystemExit(
             "Server didnt appear in your account after %ss" % opts.bootstrap_timeout
         )
+
     print("Plex container started after %ss, setting up content" % int(runtime))
+
+    if opts.accept_eula:
+        server.settings.get("acceptedEULA").set(True)
+    # Disable settings for background tasks when using the test server.
+    # These tasks won't work on the test server since we are using fake media files
+    if not opts.unclaimed and account and account.subscriptionActive:
+        server.settings.get("GenerateIntroMarkerBehavior").set("never")
+    server.settings.get("GenerateBIFBehavior").set("never")
+    server.settings.get("GenerateChapterThumbBehavior").set("never")
+    server.settings.get("LoudnessAnalysisBehavior").set("never")
+    server.settings.save()
 
     sections = []
 
