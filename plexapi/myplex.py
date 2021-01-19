@@ -973,7 +973,7 @@ class MyPlexResource(PlexObject):
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
         listargs = [[cls, url, self.accessToken, timeout] for url in connections]
-        log.info('Testing %s resource connections..', len(listargs))
+        log.debug('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
 
@@ -1068,7 +1068,7 @@ class MyPlexDevice(PlexObject):
         """
         cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.token, timeout] for url in self.connections]
-        log.info('Testing %s device connections..', len(listargs))
+        log.debug('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Device', self.name, results)
 
@@ -1315,9 +1315,9 @@ def _chooseConnection(ctype, name, results):
     # or (url, token, None, runtime) in the case a connection could not be established.
     for url, token, result, runtime in results:
         okerr = 'OK' if result else 'ERR'
-        log.info('%s connection %s (%ss): %s?X-Plex-Token=%s', ctype, okerr, runtime, url, token)
+        log.debug('%s connection %s (%ss): %s?X-Plex-Token=%s', ctype, okerr, runtime, url, token)
     results = [r[2] for r in results if r and r[2] is not None]
     if results:
-        log.info('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
+        log.debug('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
     raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
