@@ -463,7 +463,7 @@ def test_video_Movie_hubs(movies):
     assert utils.is_metadata(hub.key)
     assert hub.more is False
     assert hub.size == 1
-    assert hub.style == "shelf"
+    assert hub.style in (None, "shelf")
     assert hub.title == "Related Movies"
     assert hub.type == "movie"
     assert len(hub) == hub.size
