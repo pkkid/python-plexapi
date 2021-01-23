@@ -349,9 +349,9 @@ class Movie(Playable, Video):
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        directory = data.find('Video')
-        if directory:
-            related = directory.find('Related')
+        video = data.find('Video')
+        if video:
+            related = video.find('Related')
             if related:
                 return self.findItems(related, library.Hub)
 
