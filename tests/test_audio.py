@@ -307,6 +307,15 @@ def test_audio_Track_attrs(album):
     assert stream.streamType == 2
     assert stream.title is None
     assert stream.type == 2
+    assert stream.albumGain is None
+    assert stream.albumPeak is None
+    assert stream.albumRange is None
+    assert stream.endRamp is None
+    assert stream.gain is None
+    assert stream.loudness is None
+    assert stream.lra is None
+    assert stream.peak is None
+    assert stream.startRamp is None
 
 
 def test_audio_Track_album(album):
