@@ -53,12 +53,17 @@ def test_video_Movie_addCollection(movie):
 
 def test_video_Movie_getStreamURL(movie, account):
     key = movie.ratingKey
-    assert movie.getStreamURL() == "{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}".format(
+    assert movie.getStreamURL() == (
+        "{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}").format(
         utils.SERVER_BASEURL, key, account.authenticationToken
     )  # noqa
     assert movie.getStreamURL(
         videoResolution="800x600"
-    ) == "{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}".format(
+    ) == ("{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}").format(
         utils.SERVER_BASEURL, key, account.authenticationToken
     )  # noqa
 
@@ -227,7 +232,7 @@ def test_video_Movie_attrs(movies):
     assert audio.language is None
     assert audio.languageCode is None
     assert audio.profile == "lc"
-    assert all(utils.is_int(b) for b in audio.requiredBandwidths.split(","))
+    assert audio.requiredBandwidths is None or audio.requiredBandwidths
     assert audio.samplingRate == 44100
     assert audio.selected is True
     assert audio.streamIdentifier == 2
@@ -307,7 +312,7 @@ def test_video_Movie_attrs(movies):
     assert video.pixelAspectRatio is None
     assert video.pixelFormat is None
     assert utils.is_int(video.refFrames)
-    assert all(utils.is_int(b) for b in video.requiredBandwidths.split(","))
+    assert video.requiredBandwidths is None or video.requiredBandwidths
     assert video.scanType in ("progressive", None)
     assert video.selected is False
     assert video.streamType == 1
@@ -335,7 +340,7 @@ def test_video_Movie_attrs(movies):
     assert len(part.key) >= 10
     assert part.optimizedForStreaming is True
     assert part.packetLength is None
-    assert all(utils.is_int(b) for b in part.requiredBandwidths.split(","))
+    assert part.requiredBandwidths is None or part.requiredBandwidths
     assert utils.is_int(part.size, gte=1000000)
     assert part.syncItemId is None
     assert part.syncState is None
@@ -945,7 +950,7 @@ def test_video_exists_accessible(movie, episode):
 
 
 def test_video_edits_locked(movie, episode):
-    edits = {'titleSort.value':'New Title Sort', 'titleSort.locked': 1}
+    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
     movieTitleSort = movie.titleSort
     movie.edit(**edits)
     movie.reload()
