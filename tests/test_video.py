@@ -328,7 +328,7 @@ def test_video_Movie_attrs(movies):
     assert part.audioProfile == "lc"
     assert part.container in utils.CONTAINERS
     assert part.decision is None
-    assert utils.is_int(part.deepAnalysisVersion)
+    assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
     assert utils.is_int(part.duration, 160000)
     assert part.exists
     assert len(part.file) >= 10
