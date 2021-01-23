@@ -109,7 +109,38 @@ def test_server_search(plex, movie):
     title = movie.title
     #  this search seem to fail on my computer but not at travis, wtf.
     assert plex.search(title)
-    assert plex.search(title, mediatype="movie")
+    results = plex.search(title, mediatype="movie")
+    assert results[0] == movie
+    # Test genre search
+    genre = movie.genres[0]
+    results = plex.search(genre.tag, mediatype="genre")
+    hub_tag = results[0]
+    assert utils.is_int(hub_tag.count)
+    assert hub_tag.filter == "genre={}".format(hub_tag.id)
+    assert utils.is_int(hub_tag.id)
+    assert utils.is_metadata(
+        hub_tag.key,
+        prefix=hub_tag.librarySectionKey,
+        contains="{}/all".format(hub_tag.librarySectionID),
+        suffix=hub_tag.filter)
+    assert utils.is_int(hub_tag.librarySectionID)
+    assert utils.is_metadata(hub_tag.librarySectionKey, prefix="/library/sections")
+    assert hub_tag.librarySectionTitle == "Movies"
+    assert hub_tag.librarySectionType == 1
+    assert hub_tag.reason == "section"
+    assert hub_tag.reasonID == hub_tag.librarySectionID
+    assert hub_tag.reasonTitle == hub_tag.librarySectionTitle
+    assert hub_tag.type == "tag"
+    assert hub_tag.tag == genre.tag
+    assert hub_tag.tagType == 1
+    assert hub_tag.tagValue is None
+    assert hub_tag.thumb is None
+    # Test director search
+    director = movie.directors[0]
+    assert plex.search(director.tag, mediatype="director")
+    # Test actor search
+    role = movie.roles[0]
+    assert plex.search(role.tag, mediatype="actor")
 
 
 def test_server_playlist(plex, show):
