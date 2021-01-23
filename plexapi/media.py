@@ -256,8 +256,8 @@ class VideoStream(MediaPartStream):
             chromaLocation (str): The chroma location of the video stream.
             chromaSubsampling (str): The chroma subsampling of the video stream (ex: 4:2:0).
             codecID (str): The codec ID (ex: XVID).
-            codedHeight (str): The coded height of the video stream in pixels.
-            codedWidth (str): The coded width of the video stream in pixels.
+            codedHeight (int): The coded height of the video stream in pixels.
+            codedWidth (int): The coded width of the video stream in pixels.
             colorPrimaries (str): The color primaries of the video stream.
             colorRange (str): The color range of the video stream.
             colorSpace (str): The color space of the video stream (ex: bt2020).
@@ -296,8 +296,8 @@ class VideoStream(MediaPartStream):
         self.chromaLocation = data.attrib.get('chromaLocation')
         self.chromaSubsampling = data.attrib.get('chromaSubsampling')
         self.codecID = data.attrib.get('codecID')
-        self.codedHeight = data.attrib.get('codedHeight')
-        self.codedWidth = data.attrib.get('codedWidth')
+        self.codedHeight = cast(int, data.attrib.get('codedHeight'))
+        self.codedWidth = cast(int, data.attrib.get('codedWidth'))
         self.colorPrimaries = data.attrib.get('colorPrimaries')
         self.colorRange = data.attrib.get('colorRange')
         self.colorSpace = data.attrib.get('colorSpace')
