@@ -64,7 +64,6 @@ class Media(PlexObject):
         self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
         self.parts = self.findItems(data, MediaPart)
         self.proxyType = cast(int, data.attrib.get('proxyType'))
-        # self.optimizedVersion = self.proxyType == SEARCHTYPES['optimizedVersion']
         self.target = data.attrib.get('target')
         self.title = data.attrib.get('title')
         self.videoCodec = data.attrib.get('videoCodec')
@@ -83,6 +82,7 @@ class Media(PlexObject):
 
     @property
     def isOptimizedVersion(self):
+        """ Returns True if the media is a Plex optimized version. """
         return self.proxyType == utils.SEARCHTYPES['optimizedVersion']
 
     def delete(self):
