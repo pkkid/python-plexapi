@@ -165,6 +165,7 @@ def test_video_Movie_attrs(movies):
     assert sorted([i.tag for i in movie.genres]) == [
         "Animation",
         "Comedy",
+        "Drama",
         "Fantasy",
         "Musical",
         "Romance",
@@ -216,47 +217,82 @@ def test_video_Movie_attrs(movies):
     assert audio.bitrateMode is None
     assert audio.channels in utils.AUDIOCHANNELS
     assert audio.codec in utils.CODECS
+    assert audio.default is True
+    assert audio.displayTitle == "Unknown (AAC Stereo)"
     assert audio.duration is None
+    assert audio.extendedDisplayTitle == "Unknown (AAC Stereo)"
     assert audio.id >= 1
     assert audio.index == 1
     assert utils.is_metadata(audio._initpath)
     assert audio.language is None
     assert audio.languageCode is None
+    assert audio.profile == "lc"
+    assert all(utils.is_int(b) for b in audio.requiredBandwidths.split(","))
     assert audio.samplingRate == 44100
     assert audio.selected is True
-    assert audio._server._baseurl == utils.SERVER_BASEURL
+    assert audio.streamIdentifier == 2
     assert audio.streamType == 2
+    assert audio._server._baseurl == utils.SERVER_BASEURL
     assert audio.title is None
     assert audio.type == 2
+    with pytest.raises(AttributeError):
+        assert audio.albumGain is None  # Check track only attributes are not available
     # Media
     media = movie.media[0]
     assert media.aspectRatio >= 1.3
     assert media.audioChannels in utils.AUDIOCHANNELS
     assert media.audioCodec in utils.CODECS
+    assert media.audioProfile == "lc"
     assert utils.is_int(media.bitrate)
     assert media.container in utils.CONTAINERS
     assert utils.is_int(media.duration, gte=160000)
     assert utils.is_int(media.height)
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
+    assert media.has64bitOffsets is False
     assert media.optimizedForStreaming in [None, False, True]
+    assert media.proxyType is None
     assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.target is None
+    assert media.title is None
     assert media.videoCodec in utils.CODECS
     assert media.videoFrameRate in utils.FRAMERATES
+    assert media.videoProfile == "main"
     assert media.videoResolution in utils.RESOLUTIONS
     assert utils.is_int(media.width, gte=200)
+    with pytest.raises(AttributeError):
+        assert media.aperture is None  # Check photo only attributes are not available
     # Video
     video = movie.media[0].parts[0].videoStreams()[0]
+    assert video.anamorphic is None
     assert video.bitDepth in (
         8,
         None,
     )  # Different versions of Plex Server return different values
     assert utils.is_int(video.bitrate)
     assert video.cabac is None
+    assert video.chromaLocation == "left"
     assert video.chromaSubsampling in ("4:2:0", None)
     assert video.codec in utils.CODECS
+    assert video.codecID is None
+    assert utils.is_int(video.codedHeight, gte=1080)
+    assert utils.is_int(video.codedWidth, gte=1920)
+    assert video.colorPrimaries is None
+    assert video.colorRange is None
     assert video.colorSpace is None
+    assert video.colorTrc is None
+    assert video.default is True
+    assert video.displayTitle == "1080p (H.264)"
+    assert video.DOVIBLCompatID is None
+    assert video.DOVIBLPresent is None
+    assert video.DOVIELPresent is None
+    assert video.DOVILevel is None
+    assert video.DOVIPresent is None
+    assert video.DOVIProfile is None
+    assert video.DOVIRPUPresent is None
+    assert video.DOVIVersion is None
     assert video.duration is None
+    assert video.extendedDisplayTitle == "1080p (H.264)"
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
     assert video.hasScallingMatrix is None
@@ -268,9 +304,14 @@ def test_video_Movie_attrs(movies):
     assert video.languageCode is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
+    assert video.pixelAspectRatio is None
+    assert video.pixelFormat is None
     assert utils.is_int(video.refFrames)
+    assert all(utils.is_int(b) for b in video.requiredBandwidths.split(","))
     assert video.scanType in ("progressive", None)
     assert video.selected is False
+    assert video.streamType == 1
+    assert video.streamIdentifier == 1
     assert video._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(video.streamType)
     assert video.title is None
@@ -278,16 +319,28 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.width, gte=400)
     # Part
     part = media.parts[0]
+    assert part.accessible
+    assert part.audioProfile == "lc"
     assert part.container in utils.CONTAINERS
+    assert part.decision is None
+    assert utils.is_int(part.deepAnalysisVersion)
     assert utils.is_int(part.duration, 160000)
+    assert part.exists
     assert len(part.file) >= 10
+    assert part.has64bitOffsets is False
+    assert part.hasThumbnail is False
     assert utils.is_int(part.id)
+    assert part.indexes is None
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
-    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.optimizedForStreaming is True
+    assert part.packetLength is None
+    assert all(utils.is_int(b) for b in part.requiredBandwidths.split(","))
     assert utils.is_int(part.size, gte=1000000)
-    assert part.exists
-    assert part.accessible
+    assert part.syncItemId is None
+    assert part.syncState is None
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.videoProfile == "main"
     # Stream 1
     stream1 = part.streams[0]
     assert stream1.bitDepth in (8, None)
