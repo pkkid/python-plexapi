@@ -1273,7 +1273,7 @@ class HubMediaTag(PlexObject):
         self.tag = data.attrib.get('tag')
         self.tagType = utils.cast(int, data.attrib.get('tagType'))
         self.tagValue = utils.cast(int, data.attrib.get('tagValue'))
-        self.thumb = data.attrib.get('tag')
+        self.thumb = data.attrib.get('thumb')
 
 
 @utils.registerPlexObject
