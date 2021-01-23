@@ -451,6 +451,30 @@ def test_video_Movie_match(movies):
         assert len(results) == 0
 
 
+def test_video_Movie_hubs(movies):
+    movie = movies.get('Big Buck Bunny')
+    hubs = movie.hubs()
+    assert len(hubs)
+    hub = hubs[0]
+    assert hub.context == "hub.movie.similar"
+    assert utils.is_metadata(hub.hubKey)
+    assert hub.hubIdentifier == "movie.similar"
+    assert len(hub.items) == hub.size
+    assert utils.is_metadata(hub.key)
+    assert hub.more is False
+    assert hub.size == 1
+    assert hub.style == "shelf"
+    assert hub.title == "Related Movies"
+    assert hub.type == "movie"
+    assert len(hub) == hub.size
+    # Force hub reload
+    hub.more = True
+    hub.reload()
+    assert len(hub.items) == hub.size
+    assert hub.more is False
+    assert hub.size == 1
+
+
 def test_video_Show(show):
     assert show.title == "Game of Thrones"
 
