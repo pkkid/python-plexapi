@@ -333,7 +333,7 @@ def test_video_Movie_attrs(movies):
     assert part.exists
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
-    assert part.hasThumbnail is False
+    assert part.hasThumbnail is None
     assert utils.is_int(part.id)
     assert part.indexes is None
     assert utils.is_metadata(part._initpath)
