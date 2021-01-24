@@ -677,15 +677,6 @@ class PlexPartialObject(PlexObject):
         data = key + '?' + urlencode(params)
         self._server.query(data, method=self._server._session.put)
 
-    # The photo tag cant be built atm. TODO
-    # def arts(self):
-    #     part = '%s/arts' % self.key
-    #     return self.fetchItem(part)
-
-    # def poster(self):
-    #     part = '%s/posters' % self.key
-    #     return self.fetchItem(part, etag='Photo')
-
 
 class Playable(object):
     """ This is a general place to store functions specific to media that is Playable.
