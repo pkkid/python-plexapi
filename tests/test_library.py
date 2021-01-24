@@ -4,6 +4,7 @@ import pytest
 from plexapi.exceptions import NotFound
 
 from . import conftest as utils
+from . import test_mixin
 
 
 def test_library_Library_section(plex):
@@ -311,6 +312,10 @@ def test_library_Collection_item(collection):
 def test_library_Collection_items(collection):
     items = collection.items()
     assert len(items) == 1
+
+
+def test_library_Collection_mixin_tags(collection):
+    test_mixin.edit_label(collection)
 
 
 def test_search_with_weird_a(plex):

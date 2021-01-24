@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from . import conftest as utils
+from . import test_mixin
 
 
 def test_audio_Artist_attr(artist):
@@ -61,6 +62,15 @@ def test_audio_Artist_album(artist):
 def test_audio_Artist_albums(artist):
     albums = artist.albums()
     assert len(albums) == 1 and albums[0].title == "Layers"
+
+
+def test_audio_Artist_mixin_tags(artist):
+    test_mixin.edit_collection(artist)
+    test_mixin.edit_country(artist)
+    test_mixin.edit_genre(artist)
+    test_mixin.edit_mood(artist)
+    test_mixin.edit_similar_artist(artist)
+    test_mixin.edit_style(artist)
 
 
 def test_audio_Album_attrs(album):
@@ -211,6 +221,14 @@ def test_audio_Album_artist(album):
     artist.title == "Broke For Free"
 
 
+def test_audio_Album_mixin_tags(album):
+    test_mixin.edit_collection(album)
+    test_mixin.edit_genre(album)
+    test_mixin.edit_label(album)
+    test_mixin.edit_mood(album)
+    test_mixin.edit_style(album)
+
+
 def test_audio_Track_attrs(album):
     track = album.get("As Colourful As Ever").reload()
     assert utils.is_datetime(track.addedAt)
@@ -328,6 +346,10 @@ def test_audio_Track_artist(album, artist):
     assert tracks[0].artist() == artist
 
 
+def test_audio_Track_mixin_tags(track):
+    test_mixin.edit_mood(track)
+
+
 def test_audio_Audio_section(artist, album, track):
     assert artist.section()
     assert album.section()
@@ -348,7 +370,3 @@ def test_audio_album_download(monkeydownload, album, tmpdir):
 def test_audio_Artist_download(monkeydownload, artist, tmpdir):
     f = artist.download(savepath=str(tmpdir))
     assert len(f) == 1
-
-
-def test_audio_Album_label(album, patched_http_call):
-    album.addLabel("YO")
