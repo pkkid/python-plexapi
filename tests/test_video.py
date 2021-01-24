@@ -53,12 +53,17 @@ def test_video_Movie_addCollection(movie):
 
 def test_video_Movie_getStreamURL(movie, account):
     key = movie.ratingKey
-    assert movie.getStreamURL() == "{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}".format(
+    assert movie.getStreamURL() == (
+        "{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}").format(
         utils.SERVER_BASEURL, key, account.authenticationToken
     )  # noqa
     assert movie.getStreamURL(
         videoResolution="800x600"
-    ) == "{0}/video/:/transcode/universal/start.m3u8?X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}".format(
+    ) == ("{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}").format(
         utils.SERVER_BASEURL, key, account.authenticationToken
     )  # noqa
 
@@ -165,6 +170,7 @@ def test_video_Movie_attrs(movies):
     assert sorted([i.tag for i in movie.genres]) == [
         "Animation",
         "Comedy",
+        "Drama",
         "Fantasy",
         "Musical",
         "Romance",
@@ -216,50 +222,82 @@ def test_video_Movie_attrs(movies):
     assert audio.bitrateMode is None
     assert audio.channels in utils.AUDIOCHANNELS
     assert audio.codec in utils.CODECS
-    assert audio.codecID is None
-    assert audio.dialogNorm is None
+    assert audio.default is True
+    assert audio.displayTitle == "Unknown (AAC Stereo)"
     assert audio.duration is None
+    assert audio.extendedDisplayTitle == "Unknown (AAC Stereo)"
     assert audio.id >= 1
     assert audio.index == 1
     assert utils.is_metadata(audio._initpath)
     assert audio.language is None
     assert audio.languageCode is None
+    assert audio.profile == "lc"
+    assert audio.requiredBandwidths is None or audio.requiredBandwidths
     assert audio.samplingRate == 44100
     assert audio.selected is True
-    assert audio._server._baseurl == utils.SERVER_BASEURL
+    assert audio.streamIdentifier == 2
     assert audio.streamType == 2
+    assert audio._server._baseurl == utils.SERVER_BASEURL
     assert audio.title is None
     assert audio.type == 2
+    with pytest.raises(AttributeError):
+        assert audio.albumGain is None  # Check track only attributes are not available
     # Media
     media = movie.media[0]
     assert media.aspectRatio >= 1.3
     assert media.audioChannels in utils.AUDIOCHANNELS
     assert media.audioCodec in utils.CODECS
+    assert media.audioProfile == "lc"
     assert utils.is_int(media.bitrate)
     assert media.container in utils.CONTAINERS
     assert utils.is_int(media.duration, gte=160000)
     assert utils.is_int(media.height)
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
+    assert media.has64bitOffsets is False
     assert media.optimizedForStreaming in [None, False, True]
+    assert media.proxyType is None
     assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.target is None
+    assert media.title is None
     assert media.videoCodec in utils.CODECS
     assert media.videoFrameRate in utils.FRAMERATES
+    assert media.videoProfile == "main"
     assert media.videoResolution in utils.RESOLUTIONS
     assert utils.is_int(media.width, gte=200)
+    with pytest.raises(AttributeError):
+        assert media.aperture is None  # Check photo only attributes are not available
     # Video
     video = movie.media[0].parts[0].videoStreams()[0]
+    assert video.anamorphic is None
     assert video.bitDepth in (
         8,
         None,
     )  # Different versions of Plex Server return different values
     assert utils.is_int(video.bitrate)
     assert video.cabac is None
+    assert video.chromaLocation == "left"
     assert video.chromaSubsampling in ("4:2:0", None)
     assert video.codec in utils.CODECS
     assert video.codecID is None
+    assert utils.is_int(video.codedHeight, gte=1080)
+    assert utils.is_int(video.codedWidth, gte=1920)
+    assert video.colorPrimaries is None
+    assert video.colorRange is None
     assert video.colorSpace is None
+    assert video.colorTrc is None
+    assert video.default is True
+    assert video.displayTitle == "1080p (H.264)"
+    assert video.DOVIBLCompatID is None
+    assert video.DOVIBLPresent is None
+    assert video.DOVIELPresent is None
+    assert video.DOVILevel is None
+    assert video.DOVIPresent is None
+    assert video.DOVIProfile is None
+    assert video.DOVIRPUPresent is None
+    assert video.DOVIVersion is None
     assert video.duration is None
+    assert video.extendedDisplayTitle == "1080p (H.264)"
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
     assert video.hasScallingMatrix is None
@@ -271,9 +309,14 @@ def test_video_Movie_attrs(movies):
     assert video.languageCode is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
+    assert video.pixelAspectRatio is None
+    assert video.pixelFormat is None
     assert utils.is_int(video.refFrames)
+    assert video.requiredBandwidths is None or video.requiredBandwidths
     assert video.scanType in ("progressive", None)
     assert video.selected is False
+    assert video.streamType == 1
+    assert video.streamIdentifier == 1
     assert video._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(video.streamType)
     assert video.title is None
@@ -281,16 +324,28 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.width, gte=400)
     # Part
     part = media.parts[0]
+    assert part.accessible
+    assert part.audioProfile == "lc"
     assert part.container in utils.CONTAINERS
+    assert part.decision is None
+    assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
     assert utils.is_int(part.duration, 160000)
+    assert part.exists
     assert len(part.file) >= 10
+    assert part.has64bitOffsets is False
+    assert part.hasThumbnail is None
     assert utils.is_int(part.id)
+    assert part.indexes is None
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
-    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.optimizedForStreaming is True
+    assert part.packetLength is None
+    assert part.requiredBandwidths is None or part.requiredBandwidths
     assert utils.is_int(part.size, gte=1000000)
-    assert part.exists
-    assert part.accessible
+    assert part.syncItemId is None
+    assert part.syncState is None
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.videoProfile == "main"
     # Stream 1
     stream1 = part.streams[0]
     assert stream1.bitDepth in (8, None)
@@ -298,7 +353,6 @@ def test_video_Movie_attrs(movies):
     assert stream1.cabac is None
     assert stream1.chromaSubsampling in ("4:2:0", None)
     assert stream1.codec in utils.CODECS
-    assert stream1.codecID is None
     assert stream1.colorSpace is None
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
@@ -329,8 +383,6 @@ def test_video_Movie_attrs(movies):
     assert stream2.bitrateMode is None
     assert stream2.channels in utils.AUDIOCHANNELS
     assert stream2.codec in utils.CODECS
-    assert stream2.codecID is None
-    assert stream2.dialogNorm is None
     assert stream2.duration is None
     assert utils.is_int(stream2.id)
     assert utils.is_int(stream2.index)
@@ -493,6 +545,30 @@ def test_video_Movie_art(movie):
     file_art = next(a for a in arts if a.ratingKey.startswith('upload://'))
     assert file_art.selected is True
     movie.setArt(arts[0])  # Reset to default art
+
+ 
+def test_video_Movie_hubs(movies):
+    movie = movies.get('Big Buck Bunny')
+    hubs = movie.hubs()
+    assert len(hubs)
+    hub = hubs[0]
+    assert hub.context == "hub.movie.similar"
+    assert utils.is_metadata(hub.hubKey)
+    assert hub.hubIdentifier == "movie.similar"
+    assert len(hub.items) == hub.size
+    assert utils.is_metadata(hub.key)
+    assert hub.more is False
+    assert hub.size == 1
+    assert hub.style in (None, "shelf")
+    assert hub.title == "Related Movies"
+    assert hub.type == "movie"
+    assert len(hub) == hub.size
+    # Force hub reload
+    hub.more = True
+    hub.reload()
+    assert len(hub.items) == hub.size
+    assert hub.more is False
+    assert hub.size == 1
 
 
 def test_video_Show(show):
@@ -942,7 +1018,7 @@ def test_video_exists_accessible(movie, episode):
 
 
 def test_video_edits_locked(movie, episode):
-    edits = {'titleSort.value':'New Title Sort', 'titleSort.locked': 1}
+    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
     movieTitleSort = movie.titleSort
     movie.edit(**edits)
     movie.reload()

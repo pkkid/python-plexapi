@@ -3,14 +3,9 @@ from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
-# Need these imports to populate utils.PLEXOBJECTS
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
                      logfilter)
-from plexapi import media as _media  # noqa: F401
-from plexapi import photo as _photo  # noqa: F401
-from plexapi import playlist as _playlist  # noqa: F401
 from plexapi import utils
-from plexapi import video as _video  # noqa: F401
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
@@ -23,7 +18,12 @@ from plexapi.settings import Settings
 from plexapi.utils import cast
 from requests.status_codes import _codes as codes
 
+# Need these imports to populate utils.PLEXOBJECTS
 from plexapi import audio as _audio  # noqa: F401; noqa: F401
+from plexapi import media as _media  # noqa: F401
+from plexapi import photo as _photo  # noqa: F401
+from plexapi import playlist as _playlist  # noqa: F401
+from plexapi import video as _video  # noqa: F401
 
 
 class PlexServer(PlexObject):
@@ -522,17 +522,24 @@ class PlexServer(PlexObject):
             Parameters:
                 query (str): Query to use when searching your library.
                 mediatype (str): Optionally limit your search to the specified media type.
+                    actor, album, artist, autotag, collection, director, episode, game, genre,
+                    movie, photo, photoalbum, place, playlist, shared, show, tag, track
                 limit (int): Optionally limit to the specified number of results per Hub.
         """
         results = []
-        params = {'query': query}
-        if mediatype:
-            params['section'] = utils.SEARCHTYPES[mediatype]
+        params = {
+            'query': query,
+            'includeCollections': 1,
+            'includeExternalMedia': 1}
         if limit:
             params['limit'] = limit
         key = '/hubs/search?%s' % urlencode(params)
         for hub in self.fetchItems(key, Hub):
-            results += hub.items
+            if mediatype:
+                if hub.type == mediatype:
+                    return hub.items
+            else:
+                results += hub.items
         return results
 
     def sessions(self):
