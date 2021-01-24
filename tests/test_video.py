@@ -176,14 +176,7 @@ def test_video_Movie_attrs(movies):
     assert movie.duration >= 160000
     assert not movie.fields
     assert movie.posters()
-    assert sorted([i.tag for i in movie.genres]) == [
-        "Animation",
-        "Comedy",
-        "Drama",
-        "Fantasy",
-        "Musical",
-        "Romance",
-    ]
+    assert "Animation" in [i.tag for i in movie.genres]
     assert "imdb://tt1172203" in [i.id for i in movie.guids]
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
     assert utils.is_metadata(movie._initpath)
