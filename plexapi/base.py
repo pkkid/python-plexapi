@@ -468,34 +468,6 @@ class PlexPartialObject(PlexObject):
         self.edit(**d)
         self.refresh()
 
-    def addCollection(self, collections):
-        """ Add a collection(s).
-
-           Parameters:
-                collections (list): list of strings
-        """
-        self._edit_tags('collection', collections)
-
-    def removeCollection(self, collections):
-        """ Remove a collection(s). """
-        self._edit_tags('collection', collections, remove=True)
-
-    def addLabel(self, labels):
-        """ Add a label(s). """
-        self._edit_tags('label', labels)
-
-    def removeLabel(self, labels):
-        """ Remove a label(s). """
-        self._edit_tags('label', labels, remove=True)
-
-    def addGenre(self, genres):
-        """ Add a genre(s). """
-        self._edit_tags('genre', genres)
-
-    def removeGenre(self, genres):
-        """ Remove a genre(s). """
-        self._edit_tags('genre', genres, remove=True)
-
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
             refreshed, even if it already has metadata. You can think of refreshing as

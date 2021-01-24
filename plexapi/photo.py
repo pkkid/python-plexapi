@@ -4,6 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
+from plexapi.mixin import EditTag
 
 
 @utils.registerPlexObject
@@ -136,7 +137,7 @@ class Photoalbum(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject, Playable):
+class Photo(PlexPartialObject, Playable, EditTag):
     """ Represents a single Photo.
 
         Attributes:
