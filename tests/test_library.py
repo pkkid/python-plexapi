@@ -313,6 +313,16 @@ def test_library_Collection_items(collection):
     assert len(items) == 1
 
 
+def test_library_Collection_posters(collection):
+    posters = collection.posters()
+    assert posters
+
+
+def test_library_Collection_posters(collection):
+    arts = collection.arts()
+    assert not arts  # Collection has no default art
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)

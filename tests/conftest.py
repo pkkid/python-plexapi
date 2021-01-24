@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 import time
 from datetime import datetime
 from functools import partial
-from os import environ
 
 import plexapi
 import pytest
@@ -64,6 +64,11 @@ TEST_ANONYMOUSLY = "anonymously"
 ANON_PARAM = pytest.param(TEST_ANONYMOUSLY, marks=pytest.mark.anonymous)
 AUTH_PARAM = pytest.param(TEST_AUTHENTICATED, marks=pytest.mark.authenticated)
 
+BASE_DIR_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STUB_MOVIE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "video_stub.mp4")
+STUB_MP3_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "audio_stub.mp3")
+STUB_IMAGE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "cute_cat.jpg")
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -120,7 +125,7 @@ def account():
 
 @pytest.fixture(scope="session")
 def account_once(account):
-    if environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and environ.get("CI") == "true":
+    if os.environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and os.environ.get("CI") == "true":
         pytest.skip("Do not forget to test this by providing TEST_ACCOUNT_ONCE=1")
     return account
 
@@ -277,7 +282,7 @@ def subtitle():
 
 @pytest.fixture()
 def shared_username(account):
-    username = environ.get("SHARED_USERNAME", "PKKid")
+    username = os.environ.get("SHARED_USERNAME", "PKKid")
     for user in account.users():
         if user.title.lower() == username.lower():
             return username
