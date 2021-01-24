@@ -164,7 +164,7 @@ class Photo(PlexPartialObject, Playable, EditTag):
             parentTitle (str): Name of the photo album for the photo.
             ratingKey (int): Unique key identifying the photo.
             summary (str): Summary of the photo.
-            tag (List<:class:`~plexapi.media.Tag`>): List of tag objects.
+            tags (List<:class:`~plexapi.media.Tag`>): List of tag objects.
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
             title (str): Name of the photo.
             titleSort (str): Title to use when sorting (defaults to title).
@@ -200,7 +200,7 @@ class Photo(PlexPartialObject, Playable, EditTag):
         self.parentTitle = data.attrib.get('parentTitle')
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
-        self.tag = self.findItems(data, media.Tag)
+        self.tags = self.findItems(data, media.Tag)
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.titleSort = data.attrib.get('titleSort', self.title)
