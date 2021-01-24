@@ -545,10 +545,10 @@ class PlexPartialObject(PlexObject):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '%s/posters?url=%s' % (self.key, quote_plus(url))
+            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '%s/posters?' % self.key
+            key = '/library/metadata/%s/posters?' % self.ratingKey
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
