@@ -335,6 +335,15 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     return fullpath
 
 
+def get_plural_attr(tag):
+    if tag == 'country':
+        return 'countries'
+    elif tag == 'similar':
+        return 'similar'
+    else:
+        return tag + 's'
+
+
 def tag_helper(tag, items, locked=True, remove=False):
     """ Simple tag helper for editing a object. """
     if not isinstance(items, list):
