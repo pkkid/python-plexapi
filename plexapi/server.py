@@ -522,17 +522,24 @@ class PlexServer(PlexObject):
             Parameters:
                 query (str): Query to use when searching your library.
                 mediatype (str): Optionally limit your search to the specified media type.
+                    actor, album, artist, autotag, collection, director, episode, game, genre,
+                    movie, photo, photoalbum, place, playlist, shared, show, tag, track
                 limit (int): Optionally limit to the specified number of results per Hub.
         """
         results = []
-        params = {'query': query}
-        if mediatype:
-            params['section'] = utils.SEARCHTYPES[mediatype]
+        params = {
+            'query': query,
+            'includeCollections': 1,
+            'includeExternalMedia': 1}
         if limit:
             params['limit'] = limit
         key = '/hubs/search?%s' % urlencode(params)
         for hub in self.fetchItems(key, Hub):
-            results += hub.items
+            if mediatype:
+                if hub.type == mediatype:
+                    return hub.items
+            else:
+                results += hub.items
         return results
 
     def sessions(self):

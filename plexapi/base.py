@@ -77,7 +77,7 @@ class PlexObject(object):
         if cls is not None:
             return cls(self._server, elem, initpath, parent=self)
         # cls is not specified, try looking it up in PLEXOBJECTS
-        etype = elem.attrib.get('type', elem.attrib.get('streamType'))
+        etype = elem.attrib.get('streamType', elem.attrib.get('tagType', elem.attrib.get('type')))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
         # log.debug('Building %s as %s', elem.tag, ecls.__name__)
