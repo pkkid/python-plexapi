@@ -533,12 +533,17 @@ class PlexPartialObject(PlexObject):
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
 
     def posters(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
+        """ Returns list of available :class:`~plexapi.media.Poster` objects. """
         from plexapi.media import Poster
         return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=Poster)
 
     def uploadPoster(self, url=None, filepath=None):
-        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        """ Upload poster from url or filepath and set it as the selected poster.
+
+            Parameters:
+                url (str): The full URL to the image to upload.
+                filepath (str): The full file path the the image to upload.
+        """
         if url:
             key = '%s/posters?url=%s' % (self.key, quote_plus(url))
             self._server.query(key, method=self._server._session.post)
@@ -548,16 +553,25 @@ class PlexPartialObject(PlexObject):
             self._server.query(key, method=self._server._session.post, data=data)
 
     def setPoster(self, poster):
-        """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        """ Set the poster for a Plex object.
+        
+            Parameters:
+                poster (:class:`~plexapi.media.Poster`): The poster object to select.
+        """
         poster.select()
 
     def arts(self):
-        """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
+        """ Returns list of available :class:`~plexapi.media.Art` objects. """
         from plexapi.media import Art
         return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=Art)
 
     def uploadArt(self, url=None, filepath=None):
-        """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
+        """ Upload art from url or filepath and set it as the selected art.
+        
+            Parameters:
+                url (str): The full URL to the image to upload.
+                filepath (str): The full file path the the image to upload.
+        """
         if url:
             key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
             self._server.query(key, method=self._server._session.post)
@@ -567,7 +581,11 @@ class PlexPartialObject(PlexObject):
             self._server.query(key, method=self._server._session.post, data=data)
 
     def setArt(self, art):
-        """ Set :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
+        """ Set the artwork for a Plex object.
+        
+            Parameters:
+                art (:class:`~plexapi.media.Art`): The art object to select.
+        """
         art.select()
 
     def unmatch(self):
