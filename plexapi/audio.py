@@ -4,6 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
+from plexapi.mixins import PosterArt
 
 
 class Audio(PlexPartialObject):
@@ -123,7 +124,7 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio):
+class Artist(Audio, PosterArt):
     """ Represents a single Artist.
 
         Attributes:
@@ -226,7 +227,7 @@ class Artist(Audio):
 
 
 @utils.registerPlexObject
-class Album(Audio):
+class Album(Audio, PosterArt):
     """ Represents a single Album.
 
         Attributes:
