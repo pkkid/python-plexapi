@@ -3,14 +3,9 @@ from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
-# Need these imports to populate utils.PLEXOBJECTS
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
                      logfilter)
-from plexapi import media as _media  # noqa: F401
-from plexapi import photo as _photo  # noqa: F401
-from plexapi import playlist as _playlist  # noqa: F401
 from plexapi import utils
-from plexapi import video as _video  # noqa: F401
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
@@ -23,7 +18,12 @@ from plexapi.settings import Settings
 from plexapi.utils import cast
 from requests.status_codes import _codes as codes
 
+# Need these imports to populate utils.PLEXOBJECTS
 from plexapi import audio as _audio  # noqa: F401; noqa: F401
+from plexapi import media as _media  # noqa: F401
+from plexapi import photo as _photo  # noqa: F401
+from plexapi import playlist as _playlist  # noqa: F401
+from plexapi import video as _video  # noqa: F401
 
 
 class PlexServer(PlexObject):
