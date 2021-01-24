@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import SplitMerge
+from plexapi.mixins import SplitMerge, UnmatchMatch
 
 
 class Video(PlexPartialObject):
@@ -260,7 +260,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Playable, Video, SplitMerge):
+class Movie(Playable, Video, SplitMerge, UnmatchMatch):
     """ Represents a single Movie.
 
         Attributes:
@@ -384,7 +384,7 @@ class Movie(Playable, Video, SplitMerge):
 
 
 @utils.registerPlexObject
-class Show(Video, SplitMerge):
+class Show(Video, SplitMerge, UnmatchMatch):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
