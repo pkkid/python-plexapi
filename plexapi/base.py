@@ -534,8 +534,8 @@ class PlexPartialObject(PlexObject):
 
     def posters(self):
         """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('%s/posters' % self.key)
+        from plexapi.media import Poster
+        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=Poster)
 
     def uploadPoster(self, url=None, filepath=None):
         """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
@@ -553,8 +553,8 @@ class PlexPartialObject(PlexObject):
 
     def arts(self):
         """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('%s/arts' % self.key)
+        from plexapi.media import Art
+        return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=Art)
 
     def uploadArt(self, url=None, filepath=None):
         """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
