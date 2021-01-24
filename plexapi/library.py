@@ -1210,26 +1210,41 @@ class Hub(PlexObject):
 
         Attributes:
             TAG (str): 'Hub'
-            hubIdentifier (str): Unknown.
-            size (int): Number of items found.
-            title (str): Title of this Hub.
-            type (str): Type of items in the Hub.
-            items (str): List of items in the Hub.
+            context (str): The context of the hub.
+            hubKey (str): API URL for these specific hub items.
+            hubIdentifier (str): The identifier of the hub.
+            key (str): API URL for the hub.
+            more (bool): True if there are more items to load (call reload() to fetch all items).
+            size (int): The number of items in the hub.
+            style (str): The style of the hub.
+            title (str): The title of the hub.
+            type (str): The type of items in the hub.
     """
     TAG = 'Hub'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.context = data.attrib.get('context')
+        self.hubKey = data.attrib.get('hubKey')
         self.hubIdentifier = data.attrib.get('hubIdentifier')
+        self.items = self.findItems(data)
+        self.key = data.attrib.get('key')
+        self.more = utils.cast(bool, data.attrib.get('more'))
         self.size = utils.cast(int, data.attrib.get('size'))
+        self.style = data.attrib.get('style')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self.key = data.attrib.get('key')
-        self.items = self.findItems(data)
 
     def __len__(self):
         return self.size
+
+    def reload(self):
+        """ Reloads the hub to fetch all items in the hub. """
+        if self.more and self.key:
+            self.items = self.fetchItems(self.key)
+            self.more = False
+            self.size = len(self.items)
 
 
 @utils.registerPlexObject
