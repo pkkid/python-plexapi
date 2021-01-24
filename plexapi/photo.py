@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixin import EditTag
+from plexapi.mixins import EditTag
 
 
 @utils.registerPlexObject

@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from . import conftest as utils
-from . import test_mixin
+from . import test_mixins
 
 
 def test_audio_Artist_attr(artist):
@@ -64,13 +64,13 @@ def test_audio_Artist_albums(artist):
     assert len(albums) == 1 and albums[0].title == "Layers"
 
 
-def test_audio_Artist_mixin_tags(artist):
-    test_mixin.edit_collection(artist)
-    test_mixin.edit_country(artist)
-    test_mixin.edit_genre(artist)
-    test_mixin.edit_mood(artist)
-    test_mixin.edit_similar_artist(artist)
-    test_mixin.edit_style(artist)
+def test_audio_Artist_mixins_tags(artist):
+    test_mixins.edit_collection(artist)
+    test_mixins.edit_country(artist)
+    test_mixins.edit_genre(artist)
+    test_mixins.edit_mood(artist)
+    test_mixins.edit_similar_artist(artist)
+    test_mixins.edit_style(artist)
 
 
 def test_audio_Album_attrs(album):
@@ -221,12 +221,12 @@ def test_audio_Album_artist(album):
     artist.title == "Broke For Free"
 
 
-def test_audio_Album_mixin_tags(album):
-    test_mixin.edit_collection(album)
-    test_mixin.edit_genre(album)
-    test_mixin.edit_label(album)
-    test_mixin.edit_mood(album)
-    test_mixin.edit_style(album)
+def test_audio_Album_mixins_tags(album):
+    test_mixins.edit_collection(album)
+    test_mixins.edit_genre(album)
+    test_mixins.edit_label(album)
+    test_mixins.edit_mood(album)
+    test_mixins.edit_style(album)
 
 
 def test_audio_Track_attrs(album):
@@ -346,8 +346,8 @@ def test_audio_Track_artist(album, artist):
     assert tracks[0].artist() == artist
 
 
-def test_audio_Track_mixin_tags(track):
-    test_mixin.edit_mood(track)
+def test_audio_Track_mixins_tags(track):
+    test_mixins.edit_mood(track)
 
 
 def test_audio_Audio_section(artist, album, track):

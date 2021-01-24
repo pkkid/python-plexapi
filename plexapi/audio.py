@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixin import EditCollection, EditCountry, EditGenre, EditLabel, EditMood, EditSimilarArtist, EditStyle
+from plexapi.mixins import EditCollection, EditCountry, EditGenre, EditLabel, EditMood, EditSimilarArtist, EditStyle
 
 
 class Audio(PlexPartialObject):

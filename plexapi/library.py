@@ -4,7 +4,7 @@ from urllib.parse import quote, quote_plus, unquote, urlencode
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixin import EditLabel
+from plexapi.mixins import EditLabel
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 

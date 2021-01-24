@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixin import EditCollection, EditCountry, EditDirector, EditGenre, EditLabel, EditProducer, EditWriter
+from plexapi.mixins import EditCollection, EditCountry, EditDirector, EditGenre, EditLabel, EditProducer, EditWriter
 
 
 class Video(PlexPartialObject):
