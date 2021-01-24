@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import SplitMergeAble
+from plexapi.mixins import SplitMerge
 
 
 class Audio(PlexPartialObject):
@@ -124,7 +124,7 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, SplitMergeAble):
+class Artist(Audio, SplitMerge):
     """ Represents a single Artist.
 
         Attributes:

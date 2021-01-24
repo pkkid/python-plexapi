@@ -113,7 +113,7 @@ class PlexObject(object):
     def _isChildOf(self, **kwargs):
         """ Returns True if this object is a child of the given attributes.
             This will search the parent objects all the way to the top.
-        
+
             Parameters:
                 **kwargs (dict): The attributes and values to search for in the parent objects.
                     See all possible `**kwargs*` in :func:`~plexapi.base.PlexObject.fetchItem`.
