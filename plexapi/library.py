@@ -167,11 +167,12 @@ class Library(PlexObject):
 
             **Movie Preferences**
 
-                * **agent** (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                * **agent** (str): com.plexapp.agents.none, com.plexapp.agents.imdb, tv.plex.agents.movie,
+                  com.plexapp.agents.themoviedb
                 * **enableBIFGeneration** (bool): Enable video preview thumbnails. Default value true.
                 * **enableCinemaTrailers** (bool): Enable Cinema Trailers. Default value true.
                 * **includeInGlobal** (bool): Include in dashboard. Default value true.
-                * **scanner** (str): Plex Movie Scanner, Plex Video Files Scanner
+                * **scanner** (str): Plex Movie, Plex Movie Scanner, Plex Video Files Scanner, Plex Video Files
 
             **IMDB Movie Options** (com.plexapp.agents.imdb)
 
