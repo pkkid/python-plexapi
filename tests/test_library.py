@@ -313,6 +313,16 @@ def test_library_Collection_items(collection):
     assert len(items) == 1
 
 
+def test_library_Collection_thumbUrl(collection):
+    assert utils.SERVER_BASEURL in collection.thumbUrl
+    assert "/library/collections/" in collection.thumbUrl
+    assert "/composite/" in collection.thumbUrl
+
+
+def test_library_Collection_artUrl(collection):
+    assert collection.artUrl is None  # Collections don't have default art
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
