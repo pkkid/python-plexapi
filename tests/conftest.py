@@ -40,6 +40,8 @@ CONTENTRATINGS = {"TV-14", "TV-MA", "G", "NR", "Not Rated"}
 FRAMERATES = {"24p", "PAL", "NTSC"}
 PROFILES = {"advanced simple", "main", "constrained baseline"}
 RESOLUTIONS = {"sd", "480", "576", "720", "1080"}
+HW_DECODERS = {'dxva2', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvdec'}
+HW_ENCODERS = {'qsv', 'mf', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvenc', 'x264'}
 ENTITLEMENTS = {
     "ios",
     "roku",

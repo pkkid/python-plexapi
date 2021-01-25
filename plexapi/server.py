@@ -546,6 +546,10 @@ class PlexServer(PlexObject):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
 
+    def transcodeSessions(self):
+        """ Returns a list of all active :class:`~plexapi.media.TranscodeSession` objects. """
+        return self.fetchItems('/transcode/sessions')
+
     def startAlertListener(self, callback=None):
         """ Creates a websocket connection to the Plex Server to optionally recieve
             notifications. These often include messages from Plex about media scans
