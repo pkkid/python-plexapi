@@ -545,9 +545,9 @@ class PlexServer(PlexObject):
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
-      
+
     def transcodeSessions(self):
-        """ Returns a list of all active transcode session objects. """
+        """ Returns a list of all active :class:`~plexapi.media.TranscodeSession` objects. """
         return self.fetchItems('/transcode/sessions')
 
     def startAlertListener(self, callback=None):
