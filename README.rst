@@ -36,6 +36,10 @@ Documentation_ can be found at Read the Docs.
 
 .. _Documentation: http://python-plexapi.readthedocs.io/en/latest/
 
+Join our Discord_ for support and discussion.
+
+.. _Discord: https://discord.gg/GtAnnZAkuw
+
 
 Getting a PlexServer Instance
 -----------------------------
