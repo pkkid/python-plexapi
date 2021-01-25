@@ -11,7 +11,7 @@ from plexapi.utils import download
 from requests import Session
 
 from . import conftest as utils
-from .payloads import SERVER_RESOURCES
+from .payloads import SERVER_RESOURCES, SEVER_TRANSCODE_SESSIONS
 
 
 def test_server_attr(plex, account):
@@ -109,7 +109,38 @@ def test_server_search(plex, movie):
     title = movie.title
     #  this search seem to fail on my computer but not at travis, wtf.
     assert plex.search(title)
-    assert plex.search(title, mediatype="movie")
+    results = plex.search(title, mediatype="movie")
+    assert results[0] == movie
+    # Test genre search
+    genre = movie.genres[0]
+    results = plex.search(genre.tag, mediatype="genre")
+    hub_tag = results[0]
+    assert utils.is_int(hub_tag.count)
+    assert hub_tag.filter == "genre={}".format(hub_tag.id)
+    assert utils.is_int(hub_tag.id)
+    assert utils.is_metadata(
+        hub_tag.key,
+        prefix=hub_tag.librarySectionKey,
+        contains="{}/all".format(hub_tag.librarySectionID),
+        suffix=hub_tag.filter)
+    assert utils.is_int(hub_tag.librarySectionID)
+    assert utils.is_metadata(hub_tag.librarySectionKey, prefix="/library/sections")
+    assert hub_tag.librarySectionTitle == "Movies"
+    assert hub_tag.librarySectionType == 1
+    assert hub_tag.reason == "section"
+    assert hub_tag.reasonID == hub_tag.librarySectionID
+    assert hub_tag.reasonTitle == hub_tag.librarySectionTitle
+    assert hub_tag.type == "tag"
+    assert hub_tag.tag == genre.tag
+    assert hub_tag.tagType == 1
+    assert hub_tag.tagValue is None
+    assert hub_tag.thumb is None
+    # Test director search
+    director = movie.directors[0]
+    assert plex.search(director.tag, mediatype="director")
+    # Test actor search
+    role = movie.roles[0]
+    assert plex.search(role.tag, mediatype="actor")
 
 
 def test_server_playlist(plex, show):
@@ -427,3 +458,41 @@ def test_server_dashboard_resources(plex, requests_mock):
     assert utils.is_float(resource.processCpuUtilization, gte=0.0)
     assert utils.is_float(resource.processMemoryUtilization, gte=0.0)
     assert resource.timespan == 6  # Default seconds timespan
+
+
+def test_server_transcode_sessions(plex, requests_mock):
+    url = plex.url("/transcode/sessions")
+    requests_mock.get(url, text=SEVER_TRANSCODE_SESSIONS)
+    transcode_sessions = plex.transcodeSessions()
+    assert len(transcode_sessions)
+    session = transcode_sessions[0]
+    assert session.audioChannels == 2
+    assert session.audioCodec in utils.CODECS
+    assert session.audioDecision == "transcode"
+    assert session.complete is False
+    assert session.container in utils.CONTAINERS
+    assert session.context == "streaming"
+    assert utils.is_int(session.duration, gte=100000)
+    assert utils.is_int(session.height, gte=480)
+    assert len(session.key)
+    assert utils.is_float(session.maxOffsetAvailable, gte=0.0)
+    assert utils.is_float(session.minOffsetAvailable, gte=0.0)
+    assert utils.is_float(session.progress)
+    assert session.protocol == "dash"
+    assert utils.is_int(session.remaining)
+    assert utils.is_int(session.size)
+    assert session.sourceAudioCodec in utils.CODECS
+    assert session.sourceVideoCodec in utils.CODECS
+    assert utils.is_float(session.speed)
+    assert session.subtitleDecision is None
+    assert session.throttled is False
+    assert utils.is_float(session.timestamp, gte=1600000000)
+    assert session.transcodeHwDecoding in utils.HW_DECODERS
+    assert session.transcodeHwDecodingTitle == "Windows (DXVA2)"
+    assert session.transcodeHwEncoding in utils.HW_ENCODERS
+    assert session.transcodeHwEncodingTitle == "Intel (QuickSync)"
+    assert session.transcodeHwFullPipeline is False
+    assert session.transcodeHwRequested is True
+    assert session.videoCodec in utils.CODECS
+    assert session.videoDecision == "transcode"
+    assert utils.is_int(session.width, gte=852)

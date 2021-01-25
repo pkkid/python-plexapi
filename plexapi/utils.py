@@ -27,7 +27,7 @@ warnings.simplefilter('default', category=DeprecationWarning)
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4, 'trailer': 5, 'comic': 6, 'person': 7,
                'artist': 8, 'album': 9, 'track': 10, 'picture': 11, 'clip': 12, 'photo': 13, 'photoalbum': 14,
-               'playlist': 15, 'playlistFolder': 16, 'collection': 18, 'userPlaylistItem': 1001}
+               'playlist': 15, 'playlistFolder': 16, 'collection': 18, 'optimizedVersion': 42, 'userPlaylistItem': 1001}
 PLEXOBJECTS = {}
 
 
@@ -57,7 +57,7 @@ def registerPlexObject(cls):
         define a few helper functions to dynamically convery the XML into objects. See
         buildItem() below for an example.
     """
-    etype = getattr(cls, 'STREAMTYPE', cls.TYPE)
+    etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
     ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
     if ehash in PLEXOBJECTS:
         raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %

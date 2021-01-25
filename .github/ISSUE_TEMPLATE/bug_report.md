@@ -1,6 +1,6 @@
 ---
-name: bug_report
-about: Create a report to help us improve
+name: Bug Report
+about: Create a bug report to help us improve.
 title: ''
 labels: ''
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Describe the issue**
-A clear and concise description of what the issue is.
+A clear and concise description the issue.
 
 **Code snipppets**
 Add code snippet to help explain your problem.
@@ -19,9 +19,9 @@ A clear and concise description of what you expected to happen.
 
 **Enviroment (please complete the following information):**
  - OS: [e.g. Linux, Windows, Docker]
- - Plex version [eg. version 1.19.3.2852]
- - Python Version [e.g. 2.7.15, 3.6]
- - PlexAPI version [e.g. 3.6.0]
+ - Plex version [eg. version 1.21.1.3830]
+ - Python Version [e.g. 3.7.8]
+ - PlexAPI version [e.g. 4.3.0]
 
 **Additional context**
 Add any other context about the issue here.
