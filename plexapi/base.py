@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import get_plural_attr, tag_helper
+from plexapi.utils import tag_plural, tag_helper
 
 DONT_RELOAD_FOR_KEYS = ['key', 'session']
 OPERATORS = {
@@ -462,7 +462,7 @@ class PlexPartialObject(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        value = getattr(self, get_plural_attr(tag))
+        value = getattr(self, tag_plural(tag))
         existing_cols = [t.tag for t in value if t and remove is False]
         d = tag_helper(tag, existing_cols + items, locked, remove)
         self.edit(**d)

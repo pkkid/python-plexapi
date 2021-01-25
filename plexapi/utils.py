@@ -335,7 +335,7 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     return fullpath
 
 
-def get_plural_attr(tag):
+def tag_plural(tag):
     if tag == 'country':
         return 'countries'
     elif tag == 'similar':
