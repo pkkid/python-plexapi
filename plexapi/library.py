@@ -667,8 +667,10 @@ class LibrarySection(PlexObject):
         args = {}
         for category, value in kwargs.items():
             args[category], libtype = self._cleanSearchFilter(category, value, libtype)
-        if title is not None:
+        if all([title, libtype]):
             args['title'] = title
+        elif title is not None and libtype is None:
+            args['title'], libtype = self._cleanSearchFilter('title', title)
         if sort is not None:
             args['sort'] = self._cleanSearchSort(sort)
         if libtype is not None:
