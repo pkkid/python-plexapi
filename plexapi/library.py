@@ -720,8 +720,28 @@ class LibrarySection(PlexObject):
             libCategory = ''.join(e for e in category if e.isalnum())
             operator = category.split(libCategory)[1]
             category = libCategory
-        if category not in categories.keys():
+            libCategory = '%s.%s' % (libtype, category) if libtype else category
+        # First check that category exists
+        categoryKeys = categories.keys()
+        _categories = [x for x in categoryKeys if x.endswith(category)]
+        if len(_categories) == 0:
             raise BadRequest('Unknown filter category: %s' % category)
+        if len(_categories) > 1:
+            options = '(), '.join([x for x in dir(self)
+                                   if x.startswith('search') and len(x) > len('search')]) + '()'
+            dupCategories = '**{' + ': ""}, **{'.join(_categories) + ': ""}'
+            raise BadRequest('Specify the libtype. This category exists in multiple libtypes in '
+                             'this library. Use %s or %s' % (options, dupCategories))
+        if category not in categoryKeys:
+            if libCategory not in categoryKeys:
+                # Preventing incorrect libtype.category pairing
+                if _categories[0] not in categoryKeys:
+                    raise BadRequest('Unknown filter category: %s' % libCategory)
+                else:
+                    category = _categories[0]
+                    libtype, _ = category.split('.')
+            else:
+                category = libCategory
         if category in booleanFilters:
             if value not in ['0', '1', 0, 1]:
                 raise BadRequest('Unknown booleanFilter value: %s' % value)
