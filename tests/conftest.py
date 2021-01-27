@@ -107,8 +107,15 @@ def pytest_runtest_setup(item):
 # ---------------------------------
 
 
-def get_account():
-    return MyPlexAccount()
+@pytest.fixture(scope="session")
+def sess():
+    session = requests.Session()
+    session.request = partial(session.request, timeout=120)
+    return session
+
+
+def get_account(sess):
+    return MyPlexAccount(session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -152,14 +159,14 @@ def mocked_account(requests_mock):
 
 
 @pytest.fixture(scope="session")
-def plex(request):
+def plex(request, sess):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
-    session = requests.Session()
+
     if request.param == TEST_AUTHENTICATED:
         token = get_account().authenticationToken
     else:
         token = None
-    return PlexServer(SERVER_BASEURL, token, session=session)
+    return PlexServer(SERVER_BASEURL, token, session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -168,7 +175,7 @@ def sync_device(account_synctarget):
         device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
     except NotFound:
         device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
-    
+
     assert device
     assert "sync-target" in device.provides
     return device
