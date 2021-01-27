@@ -709,7 +709,7 @@ class LibrarySection(PlexObject):
         return results
 
     def _cleanSearchFilter(self, category, value, libtype=None):
-        # check a few things before we begin
+        # Checking existence of categories and associating the correct libtype.category pairing
         filterFields = self.filterFields()
         categories = {x.key: x.operators for x in filterFields}
         booleanFilters = [x.key for x in filterFields if x.type == 'boolean']
