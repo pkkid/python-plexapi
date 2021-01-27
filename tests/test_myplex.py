@@ -56,10 +56,7 @@ def test_myplex_devices(account):
 
 
 def test_myplex_device(account, plex):
-    from plexapi import X_PLEX_DEVICE_NAME
-
     assert account.device(plex.friendlyName)
-    assert account.device(X_PLEX_DEVICE_NAME)
 
 
 def _test_myplex_connect_to_device(account):
@@ -132,20 +129,19 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
     secs = plex.library.sections()
 
     ids = account._getSectionIds(plex.machineIdentifier, secs)
-    with mocker.patch.object(account, "_getSectionIds", return_value=ids):
-        with utils.callable_http_patch():
-
-            account.inviteFriend(
-                inv_user,
-                plex,
-                secs,
-                allowSync=True,
-                allowCameraUpload=True,
-                allowChannels=False,
-                filterMovies=vid_filter,
-                filterTelevision=vid_filter,
-                filterMusic={"label": ["foo"]},
-            )
+    mocker.patch.object(account, "_getSectionIds", return_value=ids)
+    with utils.callable_http_patch():
+        account.inviteFriend(
+            inv_user,
+            plex,
+            secs,
+            allowSync=True,
+            allowCameraUpload=True,
+            allowChannels=False,
+            filterMovies=vid_filter,
+            filterTelevision=vid_filter,
+            filterMusic={"label": ["foo"]},
+        )
 
         assert inv_user not in [u.title for u in account.users()]
 
@@ -160,22 +156,22 @@ def test_myplex_updateFriend(account, plex, mocker, shared_username):
     user = account.user(shared_username)
 
     ids = account._getSectionIds(plex.machineIdentifier, secs)
-    with mocker.patch.object(account, "_getSectionIds", return_value=ids):
-        with mocker.patch.object(account, "user", return_value=user):
-            with utils.callable_http_patch():
+    mocker.patch.object(account, "_getSectionIds", return_value=ids)
+    mocker.patch.object(account, "user", return_value=user)
+    with utils.callable_http_patch():
 
-                account.updateFriend(
-                    shared_username,
-                    plex,
-                    secs,
-                    allowSync=True,
-                    removeSections=True,
-                    allowCameraUpload=True,
-                    allowChannels=False,
-                    filterMovies=vid_filter,
-                    filterTelevision=vid_filter,
-                    filterMusic={"label": ["foo"]},
-                )
+        account.updateFriend(
+            shared_username,
+            plex,
+            secs,
+            allowSync=True,
+            removeSections=True,
+            allowCameraUpload=True,
+            allowChannels=False,
+            filterMovies=vid_filter,
+            filterTelevision=vid_filter,
+            filterMusic={"label": ["foo"]},
+        )
 
 
 def test_myplex_createExistingUser(account, plex, shared_username):
@@ -215,7 +211,7 @@ def test_myplex_plexpass_attributes(account_plexpass):
     assert "sync" in account_plexpass.subscriptionFeatures
     assert "premium_music_metadata" in account_plexpass.subscriptionFeatures
     assert "plexpass" in account_plexpass.roles
-    assert set(account_plexpass.entitlements) == utils.ENTITLEMENTS
+    assert utils.ENTITLEMENTS <= set(account_plexpass.entitlements)
 
 
 def test_myplex_claimToken(account):

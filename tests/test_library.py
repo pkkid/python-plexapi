@@ -22,7 +22,7 @@ def test_library_Library_sectionByID_is_equal_section(plex, movies):
 
 
 def test_library_sectionByID_with_attrs(plex, movies):
-    assert movies.agent == "com.plexapp.agents.imdb"
+    assert movies.agent == "tv.plex.agents.movie"
     # This seems to fail for some reason.
     # my account alloew of sync, didnt find any about settings about the library.
     # assert movies.allowSync is ('sync' in plex.ownerFeatures)
@@ -34,11 +34,11 @@ def test_library_sectionByID_with_attrs(plex, movies):
     assert movies.filters == "1"
     assert movies._initpath == "/library/sections"
     assert utils.is_int(movies.key)
-    assert movies.language == "en"
+    assert movies.language == "en-US"
     assert len(movies.locations) == 1
     assert len(movies.locations[0]) >= 10
     assert movies.refreshing is False
-    assert movies.scanner == "Plex Movie Scanner"
+    assert movies.scanner == "Plex Movie"
     assert movies._server._baseurl == utils.SERVER_BASEURL
     assert movies.thumb == "/:/resources/movie.png"
     assert movies.title == "Movies"
@@ -54,7 +54,7 @@ def test_library_section_get_movie(plex):
 def test_library_section_movies_all(movies):
     # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
-    assert len(movies.all(container_start=0, container_size=1)) == 1
+    assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
 
 
 def test_library_section_delete(movies, patched_http_call):
@@ -139,6 +139,10 @@ def test_library_MovieSection_update(movies):
     movies.update()
 
 
+def test_library_MovieSection_update_path(movies):
+    movies.update(path=movies.locations[0])
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
@@ -148,8 +152,8 @@ def test_library_MovieSection_refresh(movies, patched_http_call):
 
 
 def test_library_MovieSection_search_genre(movie, movies):
-    animation = [i for i in movie.genres if i.tag == "Animation"]
-    assert len(movies.search(genre=animation[0])) > 1
+    genre = movie.genres[0]
+    assert len(movies.search(genre=genre)) >= 1
 
 
 def test_library_MovieSection_cancelUpdate(movies):
@@ -177,6 +181,10 @@ def test_library_MovieSection_analyze(movies):
     movies.analyze()
 
 
+def test_library_MovieSection_collections(movies, collection):
+    assert len(movies.collections())
+
+
 def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
 
@@ -187,6 +195,15 @@ def test_library_ShowSection_searchEpisodes(tvshows):
 
 def test_library_ShowSection_recentlyAdded(tvshows):
     assert len(tvshows.recentlyAdded())
+
+
+def test_library_ShowSection_playlists(plex, tvshows, show):
+    episodes = show.episodes()
+    playlist = plex.createPlaylist("test_library_ShowSection_playlists", episodes[:3])
+    try:
+        assert len(tvshows.playlists())
+    finally:
+        playlist.delete()
 
 
 def test_library_MusicSection_albums(music):
@@ -238,11 +255,11 @@ def test_library_editAdvanced_default(movies):
     movies.reload()
     movies.defaultAdvanced()
     for setting in movies.settings():
-        assert int(setting.value) == int(setting.default)
+        assert str(setting.value) == str(setting.default)
 
 
 def test_library_Collection_modeUpdate(collection):
-    mode_dict = {"default": "-2", "hide": "0", "hideItems": "1", "showItems": "2"}
+    mode_dict = {"default": "-1", "hide": "0", "hideItems": "1", "showItems": "2"}
     for key, value in mode_dict.items():
         collection.modeUpdate(key)
         collection.reload()
@@ -269,8 +286,31 @@ def test_library_Colletion_edit(collection):
     for field in collection.fields:
         if field.name == 'titleSort':
             assert collection.titleSort == 'New Title Sort'
-            assert field.locked == True
+            assert field.locked is True
     collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
+
+
+def test_library_Collection_delete(movies, movie):
+    delete_collection = 'delete_collection'
+    movie.addCollection(delete_collection)
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 1
+    collections[0].delete()
+    collections = movies.collections(title=delete_collection)
+    assert len(collections) == 0
+
+
+def test_library_Collection_item(collection):
+    item1 = collection.item("Elephants Dream")
+    assert item1.title == "Elephants Dream"
+    item2 = collection.get("Elephants Dream")
+    assert item2.title == "Elephants Dream"
+    assert item1 == item2
+
+
+def test_library_Collection_items(collection):
+    items = collection.items()
+    assert len(items) == 1
 
 
 def test_search_with_weird_a(plex):

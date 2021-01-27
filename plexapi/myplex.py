@@ -43,7 +43,7 @@ class MyPlexAccount(PlexObject):
             guest (bool): Unknown.
             home (bool): Unknown.
             homeSize (int): Unknown.
-            id (str): Your Plex account ID.
+            id (int): Your Plex account ID.
             locale (str): Your Plex locale
             mailing_list_status (str): Your current mailing list status.
             maxHomeSize (int): Unknown.
@@ -71,11 +71,12 @@ class MyPlexAccount(PlexObject):
     PLEXSERVERS = 'https://plex.tv/api/servers/{machineId}'                                     # get
     FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
     REMOVEHOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                  # delete
-    REMOVEINVITE = 'https://plex.tv/api/invites/requested/{userId}?friend=0&server=1&home=0'    # delete
+    REMOVEINVITE = 'https://plex.tv/api/invites/requested/{userId}?friend=1&server=1&home=1'    # delete
     REQUESTED = 'https://plex.tv/api/invites/requested'                                         # get
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
+    LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/'                                                       # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
@@ -87,7 +88,7 @@ class MyPlexAccount(PlexObject):
     key = 'https://plex.tv/users/account'
 
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
-        self._token = token
+        self._token = token or CONFIG.get('auth.server_token')
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
@@ -114,7 +115,7 @@ class MyPlexAccount(PlexObject):
         self.guest = utils.cast(bool, data.attrib.get('guest'))
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.homeSize = utils.cast(int, data.attrib.get('homeSize'))
-        self.id = data.attrib.get('id')
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.locale = data.attrib.get('locale')
         self.mailing_list_status = data.attrib.get('mailing_list_status')
         self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))
@@ -153,14 +154,15 @@ class MyPlexAccount(PlexObject):
         self.services = None
         self.joined_at = None
 
-    def device(self, name):
+    def device(self, name=None, clientId=None):
         """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
 
             Parameters:
                 name (str): Name to match against.
+                clientId (str): clientIdentifier to match against.
         """
         for device in self.devices():
-            if device.name.lower() == name.lower():
+            if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientId):
                 return device
         raise NotFound('Unable to find device %s' % name)
 
@@ -544,7 +546,7 @@ class MyPlexAccount(PlexObject):
         return self.query(url, method=self._session.put, data=params)
 
     def syncItems(self, client=None, clientId=None):
-        """ Returns an instance of :class:`plexapi.sync.SyncList` for specified client.
+        """ Returns an instance of :class:`~plexapi.sync.SyncList` for specified client.
 
             Parameters:
                 client (:class:`~plexapi.myplex.MyPlexDevice`): a client to query SyncItems for.
@@ -564,22 +566,22 @@ class MyPlexAccount(PlexObject):
 
     def sync(self, sync_item, client=None, clientId=None):
         """ Adds specified sync item for the client. It's always easier to use methods defined directly in the media
-            objects, e.g. :func:`plexapi.video.Video.sync`, :func:`plexapi.audio.Audio.sync`.
+            objects, e.g. :func:`~plexapi.video.Video.sync`, :func:`~plexapi.audio.Audio.sync`.
 
             Parameters:
                 client (:class:`~plexapi.myplex.MyPlexDevice`): a client for which you need to add SyncItem to.
                 clientId (str): an identifier of a client for which you need to add SyncItem to.
-                sync_item (:class:`plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
+                sync_item (:class:`~plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
 
             If both `client` and `clientId` provided the client would be preferred.
             If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
 
             Returns:
-                :class:`plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: when client with provided clientId wasn`t found.
-                :class:`plexapi.exceptions.BadRequest`: provided client doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn`t found.
+                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn`t provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -683,10 +685,23 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    def link(self, pin):
+        """ Link a device to the account using a pin code.
+
+            Parameters:
+                pin (str): The 4 digit link pin code.
+        """
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Plex-Product': 'Plex SSO'
+        }
+        data = {'code': pin}
+        self.query(self.LINK, self._session.put, headers=headers, data=data)
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
-        accounts. NOTE: This should not be confused with the :class:`~myplex.MyPlexAccount`
+        accounts. NOTE: This should not be confused with the :class:`~plexapi.myplex.MyPlexAccount`
         which is your specific account. The raw xml for the data presented here
         can be found at: https://plex.tv/api/users/
 
@@ -885,7 +900,7 @@ class MyPlexResource(PlexObject):
             key (str): 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
             accessToken (str): This resources accesstoken.
             clientIdentifier (str): Unique ID for this resource.
-            connections (list): List of :class:`~myplex.ResourceConnection` objects
+            connections (list): List of :class:`~plexapi.myplex.ResourceConnection` objects
                 for this resource.
             createdAt (datetime): Timestamp this resource first connected to your server.
             device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
@@ -930,7 +945,7 @@ class MyPlexResource(PlexObject):
         self.sourceTitle = data.attrib.get('sourceTitle')  # owners plex username.
 
     def connect(self, ssl=None, timeout=None):
-        """ Returns a new :class:`~server.PlexServer` or :class:`~client.PlexClient` object.
+        """ Returns a new :class:`~plexapi.server.PlexServer` or :class:`~plexapi.client.PlexClient` object.
             Often times there is more than one address specified for a server or client.
             This function will prioritize local connections before remote and HTTPS before HTTP.
             After trying to connect to all available addresses for this resource and
@@ -942,7 +957,7 @@ class MyPlexResource(PlexObject):
                     HTTP or HTTPS connection.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
+                :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
         # Sort connections from (https, local) to (http, remote)
         # Only check non-local connections unless we own the resource
@@ -958,14 +973,14 @@ class MyPlexResource(PlexObject):
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
         listargs = [[cls, url, self.accessToken, timeout] for url in connections]
-        log.info('Testing %s resource connections..', len(listargs))
+        log.debug('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
 
 
 class ResourceConnection(PlexObject):
     """ Represents a Resource Connection object found within the
-        :class:`~myplex.MyPlexResource` objects.
+        :class:`~plexapi.myplex.MyPlexResource` objects.
 
         Attributes:
             TAG (str): 'Connection'
@@ -1049,11 +1064,11 @@ class MyPlexDevice(PlexObject):
             at least one connection was successful, the PlexClient object is built and returned.
 
             Raises:
-                :class:`plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
+                :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
         cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.token, timeout] for url in self.connections]
-        log.info('Testing %s device connections..', len(listargs))
+        log.debug('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Device', self.name, results)
 
@@ -1063,10 +1078,10 @@ class MyPlexDevice(PlexObject):
         self._server.query(key, self._server._session.delete)
 
     def syncItems(self):
-        """ Returns an instance of :class:`plexapi.sync.SyncList` for current device.
+        """ Returns an instance of :class:`~plexapi.sync.SyncList` for current device.
 
             Raises:
-                :class:`plexapi.exceptions.BadRequest`: when the device doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: when the device doesn`t provides `sync-target`.
         """
         if 'sync-target' not in self.provides:
             raise BadRequest('Requested syncList for device which do not provides sync-target')
@@ -1082,12 +1097,12 @@ class MyPlexPinLogin(object):
         This helper class supports a polling, threaded and callback approach.
 
         - The polling approach expects the developer to periodically check if the PIN login was
-          successful using :func:`plexapi.myplex.MyPlexPinLogin.checkLogin`.
+          successful using :func:`~plexapi.myplex.MyPlexPinLogin.checkLogin`.
         - The threaded approach expects the developer to call
-          :func:`plexapi.myplex.MyPlexPinLogin.run` and then at a later time call
-          :func:`plexapi.myplex.MyPlexPinLogin.waitForLogin` to wait for and check the result.
+          :func:`~plexapi.myplex.MyPlexPinLogin.run` and then at a later time call
+          :func:`~plexapi.myplex.MyPlexPinLogin.waitForLogin` to wait for and check the result.
         - The callback approach is an extension of the threaded approach and expects the developer
-          to pass the `callback` parameter to the call to :func:`plexapi.myplex.MyPlexPinLogin.run`.
+          to pass the `callback` parameter to the call to :func:`~plexapi.myplex.MyPlexPinLogin.run`.
           The callback will be called when the thread waiting for the PIN login to succeed either
           finishes or expires. The parameter passed to the callback is the received authentication
           token or `None` if the login expired.
@@ -1098,33 +1113,40 @@ class MyPlexPinLogin(object):
             requestTimeout (int): timeout in seconds on initial connect to plex.tv (default config.TIMEOUT).
 
         Attributes:
-            PINS (str): 'https://plex.tv/pins.xml'
-            CHECKPINS (str): 'https://plex.tv/pins/{pinid}.xml'
+            PINS (str): 'https://plex.tv/api/v2/pins'
+            CHECKPINS (str): 'https://plex.tv/api/v2/pins/{pinid}'
+            LINK (str): 'https://plex.tv/api/v2/pins/link'
             POLLINTERVAL (int): 1
             finished (bool): Whether the pin login has finished or not.
             expired (bool): Whether the pin login has expired or not.
             token (str): Token retrieved through the pin login.
             pin (str): Pin to use for the login on https://plex.tv/link.
     """
-    PINS = 'https://plex.tv/pins.xml'               # get
-    CHECKPINS = 'https://plex.tv/pins/{pinid}.xml'  # get
+    PINS = 'https://plex.tv/api/v2/pins'               # get
+    CHECKPINS = 'https://plex.tv/api/v2/pins/{pinid}'  # get
     POLLINTERVAL = 1
 
-    def __init__(self, session=None, requestTimeout=None):
+    def __init__(self, session=None, requestTimeout=None, headers=None):
         super(MyPlexPinLogin, self).__init__()
         self._session = session or requests.Session()
         self._requestTimeout = requestTimeout or TIMEOUT
+        self.headers = headers
 
         self._loginTimeout = None
         self._callback = None
         self._thread = None
         self._abort = False
         self._id = None
+        self._code = None
+        self._getCode()
 
         self.finished = False
         self.expired = False
         self.token = None
-        self.pin = self._getPin()
+
+    @property
+    def pin(self):
+        return self._code
 
     def run(self, callback=None, timeout=None):
         """ Starts the thread which monitors the PIN login state.
@@ -1133,8 +1155,8 @@ class MyPlexPinLogin(object):
                 timeout (int): Timeout in seconds waiting for the PIN login to succeed (optional).
 
             Raises:
-                :class:`RuntimeError`: if the thread is already running.
-                :class:`RuntimeError`: if the PIN login for the current PIN has expired.
+                :class:`RuntimeError`: If the thread is already running.
+                :class:`RuntimeError`: If the PIN login for the current PIN has expired.
         """
         if self._thread and not self._abort:
             raise RuntimeError('MyPlexPinLogin thread is already running')
@@ -1187,19 +1209,16 @@ class MyPlexPinLogin(object):
 
         return False
 
-    def _getPin(self):
-        if self.pin:
-            return self.pin
-
+    def _getCode(self):
         url = self.PINS
         response = self._query(url, self._session.post)
         if not response:
             return None
 
-        self._id = response.find('id').text
-        self.pin = response.find('code').text
+        self._id = response.attrib.get('id')
+        self._code = response.attrib.get('code')
 
-        return self.pin
+        return self._code
 
     def _checkLogin(self):
         if not self._id:
@@ -1213,7 +1232,7 @@ class MyPlexPinLogin(object):
         if not response:
             return False
 
-        token = response.find('auth_token').text
+        token = response.attrib.get('authToken')
         if not token:
             return False
 
@@ -1241,11 +1260,19 @@ class MyPlexPinLogin(object):
         finally:
             self.finished = True
 
-    def _query(self, url, method=None):
+    def _headers(self, **kwargs):
+        """ Returns dict containing base headers for all requests for pin login. """
+        headers = BASE_HEADERS.copy()
+        if self.headers:
+            headers.update(self.headers)
+        headers.update(kwargs)
+        return headers
+
+    def _query(self, url, method=None, headers=None, **kwargs):
         method = method or self._session.get
         log.debug('%s %s', method.__name__.upper(), url)
-        headers = BASE_HEADERS.copy()
-        response = method(url, headers=headers, timeout=self._requestTimeout)
+        headers = headers or self._headers()
+        response = method(url, headers=headers, timeout=self._requestTimeout, **kwargs)
         if not response.ok:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
@@ -1288,9 +1315,9 @@ def _chooseConnection(ctype, name, results):
     # or (url, token, None, runtime) in the case a connection could not be established.
     for url, token, result, runtime in results:
         okerr = 'OK' if result else 'ERR'
-        log.info('%s connection %s (%ss): %s?X-Plex-Token=%s', ctype, okerr, runtime, url, token)
+        log.debug('%s connection %s (%ss): %s?X-Plex-Token=%s', ctype, okerr, runtime, url, token)
     results = [r[2] for r in results if r and r[2] is not None]
     if results:
-        log.info('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
+        log.debug('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
     raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))

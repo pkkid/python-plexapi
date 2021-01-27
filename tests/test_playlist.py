@@ -2,6 +2,7 @@
 import time
 
 import pytest
+from plexapi.exceptions import NotFound
 
 
 def test_create_playlist(plex, show):
@@ -46,6 +47,22 @@ def test_create_playlist(plex, show):
         items = playlist.items()
         assert toremove not in items, 'Removed item still in playlist: %s' % items[3]
         assert len(items) == 5, 'Playlist should have 5 items, %s found' % len(items)
+    finally:
+        playlist.delete()
+
+
+def test_playlist_item(plex, show):
+    title = 'test_playlist_item'
+    episodes = show.episodes()
+    try:
+        playlist = plex.createPlaylist(title, episodes[:3])
+        item1 = playlist.item("Winter Is Coming")
+        assert item1 in playlist.items()
+        item2 = playlist.get("Winter Is Coming")
+        assert item2 in playlist.items()
+        assert item1 == item2
+        with pytest.raises(NotFound):
+            playlist.item("Does not exist")
     finally:
         playlist.delete()
 
@@ -95,6 +112,9 @@ def test_copyToUser(plex, show, fresh_plex, shared_username):
 
 
 def test_smart_playlist(plex, movies):
-    pl = plex.createPlaylist(title='smart_playlist', smart=True, limit=1, section=movies, year=2008)
-    assert len(pl.items()) == 1
-    assert pl.smart
+    try:
+        pl = plex.createPlaylist(title='smart_playlist', smart=True, limit=1, section=movies, year=2008)
+        assert len(pl.items()) == 1
+        assert pl.smart
+    finally:
+        pl.delete()

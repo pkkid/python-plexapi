@@ -8,8 +8,10 @@ import plexapi
 import pytest
 import requests
 from plexapi.client import PlexClient
+from plexapi.exceptions import NotFound
 from plexapi.myplex import MyPlexAccount
 from plexapi.server import PlexServer
+from plexapi.utils import createMyPlexDevice
 
 from .payloads import ACCOUNT_XML
 
@@ -22,6 +24,7 @@ except ImportError:
 SERVER_BASEURL = plexapi.CONFIG.get("auth.server_baseurl")
 MYPLEX_USERNAME = plexapi.CONFIG.get("auth.myplex_username")
 MYPLEX_PASSWORD = plexapi.CONFIG.get("auth.myplex_password")
+SERVER_TOKEN = plexapi.CONFIG.get("auth.server_token")
 CLIENT_BASEURL = plexapi.CONFIG.get("auth.client_baseurl")
 CLIENT_TOKEN = plexapi.CONFIG.get("auth.client_token")
 
@@ -37,6 +40,8 @@ CONTENTRATINGS = {"TV-14", "TV-MA", "G", "NR", "Not Rated"}
 FRAMERATES = {"24p", "PAL", "NTSC"}
 PROFILES = {"advanced simple", "main", "constrained baseline"}
 RESOLUTIONS = {"sd", "480", "576", "720", "1080"}
+HW_DECODERS = {'dxva2', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvdec'}
+HW_ENCODERS = {'qsv', 'mf', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvenc', 'x264'}
 ENTITLEMENTS = {
     "ios",
     "roku",
@@ -45,6 +50,15 @@ ENTITLEMENTS = {
     "xbox_360",
     "windows",
     "windows_phone",
+}
+SYNC_DEVICE_IDENTIFIER = "test-sync-client-%s" % plexapi.X_PLEX_IDENTIFIER
+SYNC_DEVICE_HEADERS = {
+    "X-Plex-Provides": "sync-target",
+    "X-Plex-Platform": "iOS",
+    "X-Plex-Platform-Version": "11.4.1",
+    "X-Plex-Device": "iPhone",
+    "X-Plex-Device-Name": "Test Sync Device",
+    "X-Plex-Client-Identifier": SYNC_DEVICE_IDENTIFIER
 }
 
 TEST_AUTHENTICATED = "authenticated"
@@ -76,15 +90,15 @@ def pytest_runtest_setup(item):
     if "client" in item.keywords and not item.config.getvalue("client"):
         return pytest.skip("Need --client option to run.")
     if TEST_AUTHENTICATED in item.keywords and not (
-        MYPLEX_USERNAME and MYPLEX_PASSWORD
+        MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN
     ):
         return pytest.skip(
-            "You have to specify MYPLEX_USERNAME and MYPLEX_PASSWORD to run authenticated tests"
+            "You have to specify MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN to run authenticated tests"
         )
-    if TEST_ANONYMOUSLY in item.keywords and MYPLEX_USERNAME and MYPLEX_PASSWORD:
+    if TEST_ANONYMOUSLY in item.keywords and (MYPLEX_USERNAME and MYPLEX_PASSWORD or SERVER_TOKEN):
         return pytest.skip(
             "Anonymous tests should be ran on unclaimed server, without providing MYPLEX_USERNAME and "
-            "MYPLEX_PASSWORD"
+            "MYPLEX_PASSWORD or SERVER_TOKEN"
         )
 
 
@@ -99,6 +113,8 @@ def get_account():
 
 @pytest.fixture(scope="session")
 def account():
+    if SERVER_TOKEN:
+        return get_account()
     assert MYPLEX_USERNAME, "Required MYPLEX_USERNAME not specified."
     assert MYPLEX_PASSWORD, "Required MYPLEX_PASSWORD not specified."
     return get_account()
@@ -106,7 +122,7 @@ def account():
 
 @pytest.fixture(scope="session")
 def account_once(account):
-    if environ.get("TEST_ACCOUNT_ONCE") != "1" and environ.get("CI") == "true":
+    if environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and environ.get("CI") == "true":
         pytest.skip("Do not forget to test this by providing TEST_ACCOUNT_ONCE=1")
     return account
 
@@ -122,19 +138,10 @@ def account_plexpass(account):
 
 @pytest.fixture(scope="session")
 def account_synctarget(account_plexpass):
-    assert "sync-target" in plexapi.X_PLEX_PROVIDES, (
-        "You have to set env var " "PLEXAPI_HEADER_PROVIDES=sync-target,controller"
-    )
-    assert "sync-target" in plexapi.BASE_HEADERS["X-Plex-Provides"]
-    assert (
-        "iOS" == plexapi.X_PLEX_PLATFORM
-    ), "You have to set env var PLEXAPI_HEADER_PLATFORM=iOS"
-    assert (
-        "11.4.1" == plexapi.X_PLEX_PLATFORM_VERSION
-    ), "You have to set env var PLEXAPI_HEADER_PLATFORM_VERSION=11.4.1"
-    assert (
-        "iPhone" == plexapi.X_PLEX_DEVICE
-    ), "You have to set env var PLEXAPI_HEADER_DEVICE=iPhone"
+    assert "sync-target" in SYNC_DEVICE_HEADERS["X-Plex-Provides"]
+    assert "iOS" == SYNC_DEVICE_HEADERS["X-Plex-Platform"]
+    assert "11.4.1" == SYNC_DEVICE_HEADERS["X-Plex-Platform-Version"]
+    assert "iPhone" == SYNC_DEVICE_HEADERS["X-Plex-Device"]
     return account_plexpass
 
 
@@ -155,25 +162,25 @@ def plex(request):
     return PlexServer(SERVER_BASEURL, token, session=session)
 
 
+@pytest.fixture(scope="session")
+def sync_device(account_synctarget):
+    try:
+        device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
+    except NotFound:
+        device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
+    
+    assert device
+    assert "sync-target" in device.provides
+    return device
+
+
 @pytest.fixture()
-def device(account):
-    d = None
-    for device in account.devices():
-        if device.clientIdentifier == plexapi.X_PLEX_IDENTIFIER:
-            d = device
-            break
-
-    assert d
-    return d
-
-
-@pytest.fixture()
-def clear_sync_device(device, account_synctarget, plex):
-    sync_items = account_synctarget.syncItems(clientId=device.clientIdentifier)
+def clear_sync_device(sync_device, plex):
+    sync_items = sync_device.syncItems()
     for item in sync_items.items:
         item.delete()
     plex.refreshSync()
-    return device
+    return sync_device
 
 
 @pytest.fixture
@@ -219,13 +226,13 @@ def movie(movies):
 @pytest.fixture()
 def collection(plex):
     try:
-        return plex.library.section("Movies").collection()[0]
+        return plex.library.section("Movies").collections()[0]
     except IndexError:
         movie = plex.library.section("Movies").get("Elephants Dream")
         movie.addCollection(["marvel"])
 
         n = plex.library.section("Movies").reload()
-        return n.collection()[0]
+        return n.collections()[0]
 
 
 @pytest.fixture()
@@ -334,6 +341,10 @@ def is_int(value, gte=1):
 
 def is_float(value, gte=1.0):
     return float(value) >= gte
+
+
+def is_bool(value):
+    return value is True or value is False
 
 
 def is_metadata(key, prefix="/library/metadata/", contains="", suffix=""):

@@ -1,11 +1,11 @@
 Python-PlexAPI
 ==============
+.. image:: https://github.com/pkkid/python-plexapi/workflows/CI/badge.svg
+    :target: https://github.com/pkkid/python-plexapi/actions?query=workflow%3ACI
 .. image:: https://readthedocs.org/projects/python-plexapi/badge/?version=latest
     :target: http://python-plexapi.readthedocs.io/en/latest/?badge=latest
-.. image:: https://travis-ci.org/pkkid/python-plexapi.svg?branch=master
-    :target: https://travis-ci.org/pkkid/python-plexapi
-.. image:: https://coveralls.io/repos/github/pkkid/python-plexapi/badge.svg?branch=master
-    :target: https://coveralls.io/github/pkkid/python-plexapi?branch=master
+.. image:: https://codecov.io/gh/pkkid/python-plexapi/branch/master/graph/badge.svg?token=fOECznuMtw
+    :target: https://codecov.io/gh/pkkid/python-plexapi
 .. image:: https://img.shields.io/github/tag/pkkid/python-plexapi.svg?label=github+release
     :target: https://github.com/pkkid/python-plexapi/releases
 .. image:: https://badge.fury.io/py/PlexAPI.svg
@@ -35,6 +35,10 @@ Installation & Documentation
 Documentation_ can be found at Read the Docs.
 
 .. _Documentation: http://python-plexapi.readthedocs.io/en/latest/
+
+Join our Discord_ for support and discussion.
+
+.. _Discord: https://discord.gg/GtAnnZAkuw
 
 
 Getting a PlexServer Instance
@@ -108,8 +112,8 @@ Usage Examples
 
     # Example 6: List all movies directed by the same person as Elephants Dream.
     movies = plex.library.section('Movies')
-    die_hard = movies.get('Elephants Dream')
-    director = die_hard.directors[0]
+    elephants_dream = movies.get('Elephants Dream')
+    director = elephants_dream.directors[0]
     for movie in movies.search(None, director=director):
         print(movie.title)
 
@@ -192,7 +196,7 @@ For skipping the docker and reuse a existing server use
 
 .. code-block:: bash
 
-    python plex-boostraptest.py --no-docker -username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
+    python plex-bootstraptest.py --no-docker --username USERNAME --password PASSWORD --server-name NAME-OF-YOUR-SEVER
 
 Also in order to run most of the tests you have to provide some environment variables:
 

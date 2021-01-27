@@ -3,6 +3,7 @@ import re
 import time
 
 import pytest
+from datetime import datetime
 from PIL import Image, ImageStat
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
@@ -10,6 +11,7 @@ from plexapi.utils import download
 from requests import Session
 
 from . import conftest as utils
+from .payloads import SERVER_RESOURCES, SEVER_TRANSCODE_SESSIONS
 
 
 def test_server_attr(plex, account):
@@ -56,21 +58,19 @@ def test_server_url(plex):
     assert "ohno" in plex.url("ohno")
 
 
-def test_server_transcodeImage(tmpdir, plex, show):
+def test_server_transcodeImage(tmpdir, plex, movie):
     width, height = 500, 500
-    imgurl = plex.transcodeImage(show.banner, height, width)
-    gray = imgurl = plex.transcodeImage(show.banner, height, width, saturation=0)
-    resized_img = download(
-        imgurl, plex._token, savepath=str(tmpdir), filename="resize_image"
-    )
+    original_url = plex.url(movie.thumb)
+    resize_url = plex.transcodeImage(movie.thumb, height, width)
+    grayscale_url = plex.transcodeImage(movie.thumb, height, width, saturation=0)
     original_img = download(
-        show._server.url(show.banner),
-        plex._token,
-        savepath=str(tmpdir),
-        filename="original_img",
+        original_url, plex._token, savepath=str(tmpdir), filename="original_img",
+    )
+    resized_img = download(
+        resize_url, plex._token, savepath=str(tmpdir), filename="resize_image"
     )
     grayscale_img = download(
-        gray, plex._token, savepath=str(tmpdir), filename="grayscale_img"
+        grayscale_url, plex._token, savepath=str(tmpdir), filename="grayscale_img"
     )
     with Image.open(resized_img) as image:
         assert width, height == image.size
@@ -109,7 +109,38 @@ def test_server_search(plex, movie):
     title = movie.title
     #  this search seem to fail on my computer but not at travis, wtf.
     assert plex.search(title)
-    assert plex.search(title, mediatype="movie")
+    results = plex.search(title, mediatype="movie")
+    assert results[0] == movie
+    # Test genre search
+    genre = movie.genres[0]
+    results = plex.search(genre.tag, mediatype="genre")
+    hub_tag = results[0]
+    assert utils.is_int(hub_tag.count)
+    assert hub_tag.filter == "genre={}".format(hub_tag.id)
+    assert utils.is_int(hub_tag.id)
+    assert utils.is_metadata(
+        hub_tag.key,
+        prefix=hub_tag.librarySectionKey,
+        contains="{}/all".format(hub_tag.librarySectionID),
+        suffix=hub_tag.filter)
+    assert utils.is_int(hub_tag.librarySectionID)
+    assert utils.is_metadata(hub_tag.librarySectionKey, prefix="/library/sections")
+    assert hub_tag.librarySectionTitle == "Movies"
+    assert hub_tag.librarySectionType == 1
+    assert hub_tag.reason == "section"
+    assert hub_tag.reasonID == hub_tag.librarySectionID
+    assert hub_tag.reasonTitle == hub_tag.librarySectionTitle
+    assert hub_tag.type == "tag"
+    assert hub_tag.tag == genre.tag
+    assert hub_tag.tagType == 1
+    assert hub_tag.tagValue is None
+    assert hub_tag.thumb is None
+    # Test director search
+    director = movie.directors[0]
+    assert plex.search(director.tag, mediatype="director")
+    # Test actor search
+    role = movie.roles[0]
+    assert plex.search(role.tag, mediatype="actor")
 
 
 def test_server_playlist(plex, show):
@@ -287,6 +318,23 @@ def test_server_downloadDatabases(tmpdir, plex):
     assert len(tmpdir.listdir()) > 1
 
 
+def test_server_browse(plex, movies):
+    movies_path = movies.locations[0]
+    # browse root
+    paths = plex.browse()
+    assert len(paths)
+    # browse the path of the movie library
+    paths = plex.browse(movies_path)
+    assert len(paths)
+    # browse the path of the movie library without files
+    paths = plex.browse(movies_path, includeFiles=False)
+    assert not len([f for f in paths if f.TAG == 'File'])
+    # walk the path of the movie library
+    for path, paths, files in plex.walk(movies_path):
+        assert path.startswith(movies_path)
+        assert len(paths) or len(files)
+
+
 def test_server_allowMediaDeletion(account):
     plex = PlexServer(utils.SERVER_BASEURL, account.authenticationToken)
     # Check server current allowMediaDeletion setting
@@ -324,3 +372,127 @@ def test_server_allowMediaDeletion(account):
         # Test redundant toggle
         with pytest.raises(BadRequest):
             plex._allowMediaDeletion(False)
+
+
+def test_server_system_accounts(plex):
+    accounts = plex.systemAccounts()
+    assert len(accounts)
+    account = accounts[-1]
+    assert utils.is_bool(account.autoSelectAudio)
+    assert account.defaultAudioLanguage == "en"
+    assert account.defaultSubtitleLanguage == "en"
+    assert utils.is_int(account.id, gte=0)
+    assert len(account.key)
+    assert len(account.name)
+    assert account.subtitleMode == 0
+    assert account.thumb == ""
+    assert account.accountID == account.id
+    assert account.accountKey == account.key
+
+
+def test_server_system_devices(plex):
+    devices = plex.systemDevices()
+    assert len(devices)
+    device = devices[-1]
+    assert utils.is_datetime(device.createdAt)
+    assert utils.is_int(device.id)
+    assert len(device.key)
+    assert len(device.name) or device.name == ""
+    assert len(device.platform) or device.platform == ""
+    
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth(plex):
+    bandwidthData = plex.bandwidth()
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert utils.is_int(bandwidth.accountID, gte=0)
+    assert utils.is_datetime(bandwidth.at)
+    assert utils.is_int(bandwidth.bytes)
+    assert utils.is_int(bandwidth.deviceID)
+    assert utils.is_bool(bandwidth.lan)
+    assert bandwidth.timespan == 6  # Default seconds timespan
+    account = bandwidth.account()
+    assert utils.is_int(account.id, gte=0)
+    device = bandwidth.device()
+    assert utils.is_int(device.id)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_bandwidth_filters(plex):
+    at = datetime(2021, 1, 1)
+    filters = {
+        'at>': at,
+        'bytes>': 1,
+        'lan': True,
+        'accountID': 1
+    }
+    bandwidthData = plex.bandwidth(timespan='hours', **filters)
+    assert len(bandwidthData)
+    bandwidth = bandwidthData[0]
+    assert bandwidth.accountID == 1
+    assert bandwidth.at >= at
+    assert bandwidth.bytes >= 1
+    assert bandwidth.lan is True
+    assert bandwidth.timespan == 4
+    with pytest.raises(BadRequest):
+        plex.bandwidth(timespan='n/a')
+    with pytest.raises(BadRequest):
+        filters = {'n/a': None}
+        plex.bandwidth(**filters)
+    with pytest.raises(BadRequest):
+        filters = {'at': 123456}
+        plex.bandwidth(**filters)
+
+
+@pytest.mark.authenticated
+def test_server_dashboard_resources(plex, requests_mock):
+    url = plex.url("/statistics/resources")
+    requests_mock.get(url, text=SERVER_RESOURCES)
+    resourceData = plex.resources()
+    assert len(resourceData)
+    resource = resourceData[0]
+    assert utils.is_datetime(resource.at)
+    assert utils.is_float(resource.hostCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.hostMemoryUtilization, gte=0.0)
+    assert utils.is_float(resource.processCpuUtilization, gte=0.0)
+    assert utils.is_float(resource.processMemoryUtilization, gte=0.0)
+    assert resource.timespan == 6  # Default seconds timespan
+
+
+def test_server_transcode_sessions(plex, requests_mock):
+    url = plex.url("/transcode/sessions")
+    requests_mock.get(url, text=SEVER_TRANSCODE_SESSIONS)
+    transcode_sessions = plex.transcodeSessions()
+    assert len(transcode_sessions)
+    session = transcode_sessions[0]
+    assert session.audioChannels == 2
+    assert session.audioCodec in utils.CODECS
+    assert session.audioDecision == "transcode"
+    assert session.complete is False
+    assert session.container in utils.CONTAINERS
+    assert session.context == "streaming"
+    assert utils.is_int(session.duration, gte=100000)
+    assert utils.is_int(session.height, gte=480)
+    assert len(session.key)
+    assert utils.is_float(session.maxOffsetAvailable, gte=0.0)
+    assert utils.is_float(session.minOffsetAvailable, gte=0.0)
+    assert utils.is_float(session.progress)
+    assert session.protocol == "dash"
+    assert utils.is_int(session.remaining)
+    assert utils.is_int(session.size)
+    assert session.sourceAudioCodec in utils.CODECS
+    assert session.sourceVideoCodec in utils.CODECS
+    assert utils.is_float(session.speed)
+    assert session.subtitleDecision is None
+    assert session.throttled is False
+    assert utils.is_float(session.timestamp, gte=1600000000)
+    assert session.transcodeHwDecoding in utils.HW_DECODERS
+    assert session.transcodeHwDecodingTitle == "Windows (DXVA2)"
+    assert session.transcodeHwEncoding in utils.HW_ENCODERS
+    assert session.transcodeHwEncodingTitle == "Intel (QuickSync)"
+    assert session.transcodeHwFullPipeline is False
+    assert session.transcodeHwRequested is True
+    assert session.videoCodec in utils.CODECS
+    assert session.videoDecision == "transcode"
+    assert utils.is_int(session.width, gte=852)
