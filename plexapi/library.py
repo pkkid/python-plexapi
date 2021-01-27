@@ -665,7 +665,7 @@ class LibrarySection(PlexObject):
         args = {}
         for category, value in list(kwargs.items()):
             if category.split('__')[-1] not in OPERATORS:
-                args[category] = self._cleanSearchFilter(category, value, libtype)
+                args[category], libtype = self._cleanSearchFilter(category, value, libtype)
                 del kwargs[category]
         if all([title, libtype]):
             args['title'] = title
