@@ -361,6 +361,6 @@ def test_library_section_timeline(plex):
     assert tl.mediaTagVersion > 1
     assert tl.thumb == "/:/resources/movie.png"
     assert tl.title1 == "Movies"
-    assert tl.updateQueueSize == 0
+    assert utils.is_int(tl.updateQueueSize, gte=0)
     assert tl.viewGroup == "secondary"
     assert tl.viewMode == 65592
