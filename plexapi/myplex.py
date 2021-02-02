@@ -947,15 +947,15 @@ class MyPlexResource(PlexObject):
     def connect(self, ssl=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` or :class:`~plexapi.client.PlexClient` object.
             Often times there is more than one address specified for a server or client.
-            This function will prioritize local connections before remote and HTTPS before HTTP.
+            This function will prioritize local connections before remote or relay and HTTPS before HTTP.
             After trying to connect to all available addresses for this resource and
             assuming at least one connection was successful, the PlexServer object is built and returned.
 
             Parameters:
-                ssl (optional): Set True to only connect to HTTPS connections. Set False to
+                ssl (bool, optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
-                timeout (int): The timeout in seconds to attempt each connection.
+                timeout (int, optional): The timeout in seconds to attempt each connection.
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
