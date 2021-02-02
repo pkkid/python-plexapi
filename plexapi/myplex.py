@@ -964,12 +964,12 @@ class MyPlexResource(PlexObject):
         locations = ['local', 'remote', 'relay']
         schemes = ['https', 'http']
         connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
-        for c in self.connections:
+        for connection in self.connections:
             # Only check non-local connections unless we own the resource
-            if self.owned or (not self.owned and not c.local):
-                location = 'relay' if c.relay else ('local' if c.local else 'remote')
-                connections_dict[location]['http'].append(c.httpuri)
-                connections_dict[location]['https'].append(c.uri)
+            if self.owned or (not self.owned and not connection.local):
+                location = 'relay' if connection.relay else ('local' if connection.local else 'remote')
+                connections_dict[location]['http'].append(connection.httpuri)
+                connections_dict[location]['https'].append(connection.uri)
         if ssl is True: schemes.remove('http')
         elif ssl is False: schemes.remove('https')
         connections = []
