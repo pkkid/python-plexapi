@@ -155,11 +155,11 @@ def mocked_account(requests_mock):
 
 
 @pytest.fixture(scope="session")
-def plex(account, request, sess):
+def plex(request, sess):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
 
     if request.param == TEST_AUTHENTICATED:
-        token = account.authenticationToken
+        token = MyPlexAccount(session=sess).authenticationToken
     else:
         token = None
     return PlexServer(SERVER_BASEURL, token, session=sess)
