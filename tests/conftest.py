@@ -114,17 +114,13 @@ def sess():
     return session
 
 
-def get_account(session):
-    return MyPlexAccount(session=session)
-
-
 @pytest.fixture(scope="session")
 def account(sess):
     if SERVER_TOKEN:
-        return get_account(sess)
+        return MyPlexAccount(session=sess)
     assert MYPLEX_USERNAME, "Required MYPLEX_USERNAME not specified."
     assert MYPLEX_PASSWORD, "Required MYPLEX_PASSWORD not specified."
-    return get_account(sess)
+    return MyPlexAccount(session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -159,11 +155,11 @@ def mocked_account(requests_mock):
 
 
 @pytest.fixture(scope="session")
-def plex(request, sess):
+def plex(account, request, sess):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
 
     if request.param == TEST_AUTHENTICATED:
-        token = get_account(sess).authenticationToken
+        token = account.authenticationToken
     else:
         token = None
     return PlexServer(SERVER_BASEURL, token, session=sess)
