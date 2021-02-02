@@ -955,23 +955,30 @@ class MyPlexResource(PlexObject):
                 ssl (optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
+                timeout (int): The timeout in seconds to attempt each connection.
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
-        # Sort connections from (https, local) to (http, remote)
-        # Only check non-local connections unless we own the resource
-        connections = sorted(self.connections, key=lambda c: c.local, reverse=True)
-        owned_or_unowned_non_local = lambda x: self.owned or (not self.owned and not x.local)
-        https = [c.uri for c in connections if owned_or_unowned_non_local(c)]
-        http = [c.httpuri for c in connections if owned_or_unowned_non_local(c)]
-        cls = PlexServer if 'server' in self.provides else PlexClient
-        # Force ssl, no ssl, or any (default)
-        if ssl is True: connections = https
-        elif ssl is False: connections = http
-        else: connections = https + http
+        # Keys in the order we want the connections to be sorted
+        locations = ['local', 'remote', 'relay']
+        schemes = ['https', 'http']
+        connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
+        for c in self.connections:
+            # Only check non-local connections unless we own the resource
+            if self.owned or (not self.owned and not c.local):
+                location = 'relay' if c.relay else ('local' if c.local else 'remote')
+                connections_dict[location]['http'].append(c.httpuri)
+                connections_dict[location]['https'].append(c.uri)
+        if ssl is True: schemes.remove('http')
+        elif ssl is False: schemes.remove('https')
+        connections = []
+        for location in locations:
+            for scheme in schemes:
+                connections.extend(connections_dict[location][scheme])
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
+        cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.accessToken, timeout] for url in connections]
         log.debug('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
