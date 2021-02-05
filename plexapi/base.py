@@ -119,7 +119,7 @@ class PlexObject(object):
                     See all possible `**kwargs*` in :func:`~plexapi.base.PlexObject.fetchItem`.
         """
         obj = self
-        while obj._parent is not None:
+        while obj._parent is not None and obj._parent() is not None:
             obj = obj._parent()
             if obj._checkAttrs(obj._data, **kwargs):
                 return True
