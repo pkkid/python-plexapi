@@ -739,6 +739,16 @@ def test_video_Episode_history(episode):
     episode.markUnwatched()
 
 
+def test_video_Episode_parent_weakref(show):
+    season = show.season(season=1)
+    episode = season.episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() == season
+    episode = show.season(season=1).episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() is None
+
+
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
