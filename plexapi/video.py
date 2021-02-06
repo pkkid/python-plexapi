@@ -382,7 +382,7 @@ class Movie(Playable, Video):
             if filepath:
                 filepaths.append(filepath)
         return filepaths
-     
+    
     def themes(self):
         """ Returns list of available theme objects. :class:`~plexapi.media.Theme`. """
 
@@ -401,6 +401,7 @@ class Movie(Playable, Video):
     def setTheme(self, theme):
         """ Set . :class:`~plexapi.media.Theme` to :class:`~plexapi.video.Video` """
         theme.select()
+
 
 @utils.registerPlexObject
 class Show(Video):
@@ -617,6 +618,7 @@ class Show(Video):
     def setTheme(self, theme):
         """ Set . :class:`~plexapi.media.Theme` to :class:`~plexapi.video.Video` """
         theme.select()
+
 
 @utils.registerPlexObject
 class Season(Video):
