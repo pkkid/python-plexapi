@@ -223,7 +223,25 @@ class Artist(Audio):
             for track in album.tracks():
                 filepaths += track.download(savepath, keep_original_name, **kwargs)
         return filepaths
+    
+    def themes(self):
+        """ Returns list of available theme objects. :class:`~plexapi.media.Theme`. """
 
+        return self.fetchItems('%s/themes' % self.key)
+
+    def uploadTheme(self, url=None, filepath=None):
+        """ Upload theme from url or filepath. :class:`~plexapi.media.Theme` to :class:`~plexapi.video.Video`. """
+        if url:
+            key = '%s/themes?url=%s' % (self.key, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '%s/themes?' % self.key
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setTheme(self, theme):
+        """ Set . :class:`~plexapi.media.Theme` to :class:`~plexapi.video.Video` """
+        theme.select()
 
 @utils.registerPlexObject
 class Album(Audio):
