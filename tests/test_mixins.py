@@ -10,8 +10,7 @@ def _test_mixins_tag(obj, attr, tag_method):
     obj.reload()
     assert TEST_MIXIN_TAG in [tag.tag for tag in getattr(obj, attr)]
     remove_tag_method(TEST_MIXIN_TAG)
-    # obj.reload()
-    obj = obj._server.fetchItem(obj.ratingKey)  # Workaround for issue #660
+    obj.reload()
     assert TEST_MIXIN_TAG not in [tag.tag for tag in getattr(obj, attr)]
 
 
