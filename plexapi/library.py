@@ -168,11 +168,12 @@ class Library(PlexObject):
 
             **Movie Preferences**
 
-                * **agent** (str): com.plexapp.agents.none, com.plexapp.agents.imdb, com.plexapp.agents.themoviedb
+                * **agent** (str): com.plexapp.agents.none, com.plexapp.agents.imdb, tv.plex.agents.movie,
+                  com.plexapp.agents.themoviedb
                 * **enableBIFGeneration** (bool): Enable video preview thumbnails. Default value true.
                 * **enableCinemaTrailers** (bool): Enable Cinema Trailers. Default value true.
                 * **includeInGlobal** (bool): Include in dashboard. Default value true.
-                * **scanner** (str): Plex Movie Scanner, Plex Video Files Scanner
+                * **scanner** (str): Plex Movie, Plex Movie Scanner, Plex Video Files Scanner, Plex Video Files
 
             **IMDB Movie Options** (com.plexapp.agents.imdb)
 
@@ -1595,7 +1596,17 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin):
     @deprecated('use "items" instead')
     def children(self):
         return self.fetchItems(self.key)
-        
+
+    @property
+    def thumbUrl(self):
+        """ Return the thumbnail url for the collection."""
+        return self._server.url(self.thumb, includeToken=True) if self.thumb else None
+
+    @property
+    def artUrl(self):
+        """ Return the art url for the collection."""
+        return self._server.url(self.art, includeToken=True) if self.art else None
+
     def item(self, title):
         """ Returns the item in the collection that matches the specified title.
 

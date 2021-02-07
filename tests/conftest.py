@@ -40,6 +40,8 @@ CONTENTRATINGS = {"TV-14", "TV-MA", "G", "NR", "Not Rated"}
 FRAMERATES = {"24p", "PAL", "NTSC"}
 PROFILES = {"advanced simple", "main", "constrained baseline"}
 RESOLUTIONS = {"sd", "480", "576", "720", "1080"}
+HW_DECODERS = {'dxva2', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvdec'}
+HW_ENCODERS = {'qsv', 'mf', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvenc', 'x264'}
 ENTITLEMENTS = {
     "ios",
     "roku",
@@ -110,17 +112,20 @@ def pytest_runtest_setup(item):
 # ---------------------------------
 
 
-def get_account():
-    return MyPlexAccount()
+@pytest.fixture(scope="session")
+def sess():
+    session = requests.Session()
+    session.request = partial(session.request, timeout=120)
+    return session
 
 
 @pytest.fixture(scope="session")
-def account():
+def account(sess):
     if SERVER_TOKEN:
-        return get_account()
+        return MyPlexAccount(session=sess)
     assert MYPLEX_USERNAME, "Required MYPLEX_USERNAME not specified."
     assert MYPLEX_PASSWORD, "Required MYPLEX_PASSWORD not specified."
-    return get_account()
+    return MyPlexAccount(session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -155,14 +160,14 @@ def mocked_account(requests_mock):
 
 
 @pytest.fixture(scope="session")
-def plex(request):
+def plex(request, sess):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
-    session = requests.Session()
+
     if request.param == TEST_AUTHENTICATED:
-        token = get_account().authenticationToken
+        token = MyPlexAccount(session=sess).authenticationToken
     else:
         token = None
-    return PlexServer(SERVER_BASEURL, token, session=session)
+    return PlexServer(SERVER_BASEURL, token, session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -171,7 +176,7 @@ def sync_device(account_synctarget):
         device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
     except NotFound:
         device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
-    
+
     assert device
     assert "sync-target" in device.provides
     return device

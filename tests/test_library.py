@@ -22,7 +22,7 @@ def test_library_Library_sectionByID_is_equal_section(plex, movies):
 
 
 def test_library_sectionByID_with_attrs(plex, movies):
-    assert movies.agent == "com.plexapp.agents.imdb"
+    assert movies.agent == "tv.plex.agents.movie"
     # This seems to fail for some reason.
     # my account alloew of sync, didnt find any about settings about the library.
     # assert movies.allowSync is ('sync' in plex.ownerFeatures)
@@ -34,11 +34,11 @@ def test_library_sectionByID_with_attrs(plex, movies):
     assert movies.filters == "1"
     assert movies._initpath == "/library/sections"
     assert utils.is_int(movies.key)
-    assert movies.language == "en"
+    assert movies.language == "en-US"
     assert len(movies.locations) == 1
     assert len(movies.locations[0]) >= 10
     assert movies.refreshing is False
-    assert movies.scanner == "Plex Movie Scanner"
+    assert movies.scanner == "Plex Movie"
     assert movies._server._baseurl == utils.SERVER_BASEURL
     assert movies.thumb == "/:/resources/movie.png"
     assert movies.title == "Movies"
@@ -152,8 +152,8 @@ def test_library_MovieSection_refresh(movies, patched_http_call):
 
 
 def test_library_MovieSection_search_genre(movie, movies):
-    animation = [i for i in movie.genres if i.tag == "Animation"]
-    assert len(movies.search(genre=animation[0])) > 1
+    genre = movie.genres[0]
+    assert len(movies.search(genre=genre)) >= 1
 
 
 def test_library_MovieSection_cancelUpdate(movies):
@@ -255,7 +255,7 @@ def test_library_editAdvanced_default(movies):
     movies.reload()
     movies.defaultAdvanced()
     for setting in movies.settings():
-        assert int(setting.value) == int(setting.default)
+        assert str(setting.value) == str(setting.default)
 
 
 def test_library_Collection_modeUpdate(collection):
@@ -313,12 +313,22 @@ def test_library_Collection_items(collection):
     assert len(items) == 1
 
 
+def test_library_Collection_thumbUrl(collection):
+    assert utils.SERVER_BASEURL in collection.thumbUrl
+    assert "/library/collections/" in collection.thumbUrl
+    assert "/composite/" in collection.thumbUrl
+
+
+def test_library_Collection_artUrl(collection):
+    assert collection.artUrl is None  # Collections don't have default art
+
+    
 def test_library_Collection_posters(collection):
     posters = collection.posters()
     assert posters
 
 
-def test_library_Collection_posters(collection):
+def test_library_Collection_art(collection):
     arts = collection.arts()
     assert not arts  # Collection has no default art
 
