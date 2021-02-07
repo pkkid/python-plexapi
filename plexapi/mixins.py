@@ -381,7 +381,7 @@ class TagMixin(object):
         self._edit_tags('tag', tags, remove=True)
 
 
-class EditWriter(object):
+class WriterMixin(object):
     """ Mixin for Plex objects that can have writers. """
 
     def addWriter(self, writers):

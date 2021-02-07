@@ -6,7 +6,7 @@ from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -262,7 +262,7 @@ class Video(PlexPartialObject):
 
 @utils.registerPlexObject
 class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
+        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -714,7 +714,7 @@ class Season(Video, ArtMixin, PosterMixin):
 
 @utils.registerPlexObject
 class Episode(Video, Playable, ArtMixin, PosterMixin,
-        DirectorMixin, EditWriter):
+        DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
