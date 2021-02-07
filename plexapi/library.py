@@ -5,6 +5,7 @@ from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import ArtMixin, PosterMixin
+from plexapi.mixins import LabelMixin
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
@@ -1527,7 +1528,7 @@ class FirstCharacter(PlexObject):
 
 
 @utils.registerPlexObject
-class Collections(PlexPartialObject, ArtMixin, PosterMixin):
+class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:
