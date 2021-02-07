@@ -708,10 +708,10 @@ class Collection(MediaTag):
 
 @utils.registerPlexObject
 class Label(MediaTag):
-    """ Represents a single label media tag.
+    """ Represents a single Label media tag.
 
         Attributes:
-            TAG (str): 'label'
+            TAG (str): 'Label'
             FILTER (str): 'label'
     """
     TAG = 'Label'
@@ -720,10 +720,10 @@ class Label(MediaTag):
 
 @utils.registerPlexObject
 class Tag(MediaTag):
-    """ Represents a single tag media tag.
+    """ Represents a single Tag media tag.
 
         Attributes:
-            TAG (str): 'tag'
+            TAG (str): 'Tag'
             FILTER (str): 'tag'
     """
     TAG = 'Tag'
