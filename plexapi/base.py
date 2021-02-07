@@ -463,10 +463,9 @@ class PlexPartialObject(PlexObject):
         if not isinstance(items, list):
             items = [items]
         value = getattr(self, tag_plural(tag))
-        existing_cols = [t.tag for t in value if t and remove is False]
-        d = tag_helper(tag, existing_cols + items, locked, remove)
-        self.edit(**d)
-        self.refresh()
+        existing_tags = [t.tag for t in value if t and remove is False]
+        tag_edits = tag_helper(tag, existing_tags + items, locked, remove)
+        self.edit(**tag_edits)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
