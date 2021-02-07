@@ -243,6 +243,7 @@ class Artist(Audio):
         """ Set . :class:`~plexapi.media.Theme` to :class:`~plexapi.video.Video` """
         theme.select()
 
+
 @utils.registerPlexObject
 class Album(Audio):
     """ Represents a single Album.
