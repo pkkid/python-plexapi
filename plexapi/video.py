@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import EditCollection, EditCountry, EditDirector, EditGenre, EditLabel, EditProducer, EditWriter
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
 
 
 class Video(PlexPartialObject):
@@ -260,7 +260,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Playable, Video, EditCollection, EditCountry, EditDirector, EditGenre, EditLabel, EditProducer, EditWriter):
+class Movie(Playable, Video, CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
     """ Represents a single Movie.
 
         Attributes:
@@ -384,7 +384,7 @@ class Movie(Playable, Video, EditCollection, EditCountry, EditDirector, EditGenr
 
 
 @utils.registerPlexObject
-class Show(Video, EditCollection, EditGenre, EditLabel):
+class Show(Video, CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -708,7 +708,7 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Playable, Video, EditDirector, EditWriter):
+class Episode(Playable, Video, DirectorMixin, EditWriter):
     """ Represents a single Shows Episode.
 
         Attributes:

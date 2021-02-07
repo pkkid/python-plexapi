@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class EditCollection(object):
+class CollectionMixin(object):
     """ Mixin for Plex objects that can have collections. """
 
     def addCollection(self, collections):
@@ -21,7 +21,7 @@ class EditCollection(object):
         self._edit_tags('collection', collections, remove=True)
 
 
-class EditCountry(object):
+class CountryMixin(object):
     """ Mixin for Plex objects that can have countries. """
 
     def addCountry(self, countries):
@@ -41,7 +41,7 @@ class EditCountry(object):
         self._edit_tags('country', countries, remove=True)
 
 
-class EditDirector(object):
+class DirectorMixin(object):
     """ Mixin for Plex objects that can have directors. """
 
     def addDirector(self, directors):
@@ -61,7 +61,7 @@ class EditDirector(object):
         self._edit_tags('director', directors, remove=True)
 
 
-class EditGenre(object):
+class GenreMixin(object):
     """ Mixin for Plex objects that can have genres. """
 
     def addGenre(self, genres):
@@ -81,7 +81,7 @@ class EditGenre(object):
         self._edit_tags('genre', genres, remove=True)
 
 
-class EditLabel(object):
+class LabelMixin(object):
     """ Mixin for Plex objects that can have labels. """
 
     def addLabel(self, labels):
@@ -101,7 +101,7 @@ class EditLabel(object):
         self._edit_tags('label', labels, remove=True)
 
 
-class EditMood(object):
+class MoodMixin(object):
     """ Mixin for Plex objects that can have moods. """
 
     def addMood(self, moods):
@@ -121,7 +121,7 @@ class EditMood(object):
         self._edit_tags('mood', moods, remove=True)
 
 
-class EditProducer(object):
+class ProducerMixin(object):
     """ Mixin for Plex objects that can have producers. """
 
     def addProducer(self, producers):
@@ -141,7 +141,7 @@ class EditProducer(object):
         self._edit_tags('producer', producers, remove=True)
 
 
-class EditSimilarArtist(object):
+class SimilarArtistMixin(object):
     """ Mixin for Plex objects that can have similar artists. """
 
     def addSimilarArtist(self, artists):
@@ -161,7 +161,7 @@ class EditSimilarArtist(object):
         self._edit_tags('similar', artists, remove=True)
 
 
-class EditStyle(object):
+class StyleMixin(object):
     """ Mixin for Plex objects that can have styles. """
 
     def addStyle(self, styles):
@@ -181,7 +181,7 @@ class EditStyle(object):
         self._edit_tags('style', styles, remove=True)
 
 
-class EditTag(object):
+class TagMixin(object):
     """ Mixin for Plex objects that can have tags. """
 
     def addTag(self, tags):
