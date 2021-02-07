@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import ArtMixin, PosterMixin
+from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
 
 
@@ -261,7 +261,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, ArtMixin, PosterMixin,
+class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
     """ Represents a single Movie.
 
@@ -388,7 +388,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin,
 
 
 @utils.registerPlexObject
-class Show(Video, ArtMixin, PosterMixin,
+class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -743,6 +743,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
             parentThumb (str): URL to season thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the season for the episode.
             rating (float): Episode rating (7.9; 9.8; 8.1).
+            skipParent (bool): True if the show's seasons are set to hidden.
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year episode was released.
@@ -779,9 +780,22 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
         self.parentThumb = data.attrib.get('parentThumb')
         self.parentTitle = data.attrib.get('parentTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
+        self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
+
+        # If seasons are hidden, parentKey and parentRatingKey are missing from the XML response.
+        # https://forums.plex.tv/t/parentratingkey-not-in-episode-xml-when-seasons-are-hidden/300553
+        if self.skipParent and not self.parentRatingKey:
+            # Parse the parentRatingKey from the parentThumb
+            if self.parentThumb.startswith('/library/metadata/'):
+                self.parentRatingKey = utils.cast(int, self.parentThumb.split('/')[3])
+            # Get the parentRatingKey from the season's ratingKey
+            if not self.parentRatingKey and self.grandparentRatingKey:
+                self.parentRatingKey = self.show().season(season=self.parentIndex).ratingKey
+            if self.parentRatingKey:
+                self.parentKey = '/library/metadata/%s' % self.parentRatingKey
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [

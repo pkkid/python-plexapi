@@ -567,10 +567,6 @@ def test_video_Show(show):
     assert show.title == "Game of Thrones"
 
 
-def test_video_Episode_split(episode, patched_http_call):
-    episode.split()
-
-
 def test_video_Episode_unmatch(episode, patched_http_call):
     episode.unmatch()
 
@@ -788,6 +784,21 @@ def test_video_Episode_history(episode):
     episode.markUnwatched()
 
 
+def test_video_Episode_hidden_season(episode):
+    assert episode.skipParent is False
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show = episode.show()
+    show.editAdvanced(flattenSeasons=1)
+    episode.reload()
+    assert episode.skipParent is True
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show.defaultAdvanced()
+
+
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
@@ -814,6 +825,7 @@ def test_video_Episode_attrs(episode):
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
+    assert episode.skipParent is False
     assert utils.is_string(episode.summary, gte=100)
     assert utils.is_metadata(episode.thumb, contains="/thumb/")
     assert episode.title == "Winter Is Coming"
