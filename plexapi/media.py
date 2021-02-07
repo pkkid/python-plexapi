@@ -433,7 +433,14 @@ class LyricStream(MediaPartStream):
 
 @utils.registerPlexObject
 class Session(PlexObject):
-    """ Represents a current session. """
+    """ Represents a current session.
+
+        Attributes:
+            TAG (str): 'Session'
+            id (str): The unique identifier for the session.
+            bandwidth (int): The Plex streaming brain reserved bandwidth for the session.
+            location (str): The location of the session (lan, wan, or cellular)
+    """
     TAG = 'Session'
 
     def _loadData(self, data):
@@ -444,7 +451,41 @@ class Session(PlexObject):
 
 @utils.registerPlexObject
 class TranscodeSession(PlexObject):
-    """ Represents a current transcode session. """
+    """ Represents a current transcode session.
+
+        Attributes:
+            TAG (str): 'TranscodeSession'
+            audioChannels (int): The number of audio channels of the transcoded media.
+            audioCodec (str): The audio codec of the transcoded media.
+            audioDecision (str): The transcode decision for the audio stream.
+            complete (bool): True if the transcode is complete.
+            container (str): The container of the transcoded media.
+            context (str): The context for the transcode sesson.
+            duration (int): The duration of the transcoded media in milliseconds.
+            height (int): The height of the transcoded media in pixels.
+            key (str): API URL (ex: /transcode/sessions/<id>).
+            maxOffsetAvailable (float): Unknown.
+            minOffsetAvailable (float): Unknown.
+            progress (float): The progress percentage of the transcode.
+            protocol (str): The protocol of the transcode.
+            remaining (int): Unknown.
+            size (int): The size of the transcoded media in bytes.
+            sourceAudioCodec (str): The audio codec of the source media.
+            sourceVideoCodec (str): The video codec of the source media.
+            speed (float): The speed of the transcode.
+            subtitleDecision (str): The transcode decision for the subtitle stream
+            throttled (bool): True if the transcode is throttled.
+            timestamp (int): The epoch timestamp when the transcode started.
+            transcodeHwDecoding (str): The hardware transcoding decoder engine.
+            transcodeHwDecodingTitle (str): The title of the hardware transcoding decoder engine.
+            transcodeHwEncoding (str): The hardware transcoding encoder engine.
+            transcodeHwEncodingTitle (str): The title of the hardware transcoding encoder engine.
+            transcodeHwFullPipeline (str): True if hardware decoding and encoding is being used for the transcode.
+            transcodeHwRequested (str): True if hardware transcoding was requested for the transcode.
+            videoCodec (str): The video codec of the transcoded media.
+            videoDecision (str): The transcode decision for the video stream.
+            width (str): The width of the transcoded media in pixels.
+    """
     TAG = 'TranscodeSession'
 
     def _loadData(self, data):
@@ -453,17 +494,30 @@ class TranscodeSession(PlexObject):
         self.audioChannels = cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
         self.audioDecision = data.attrib.get('audioDecision')
+        self.complete = cast(bool, data.attrib.get('complete', '0'))
         self.container = data.attrib.get('container')
         self.context = data.attrib.get('context')
         self.duration = cast(int, data.attrib.get('duration'))
         self.height = cast(int, data.attrib.get('height'))
         self.key = data.attrib.get('key')
+        self.maxOffsetAvailable = cast(float, data.attrib.get('maxOffsetAvailable'))
+        self.minOffsetAvailable = cast(float, data.attrib.get('minOffsetAvailable'))
         self.progress = cast(float, data.attrib.get('progress'))
         self.protocol = data.attrib.get('protocol')
         self.remaining = cast(int, data.attrib.get('remaining'))
-        self.speed = cast(int, data.attrib.get('speed'))
-        self.throttled = cast(int, data.attrib.get('throttled'))
+        self.size = cast(int, data.attrib.get('size'))
+        self.sourceAudioCodec = data.attrib.get('sourceAudioCodec')
         self.sourceVideoCodec = data.attrib.get('sourceVideoCodec')
+        self.speed = cast(float, data.attrib.get('speed'))
+        self.subtitleDecision = data.attrib.get('subtitleDecision')
+        self.throttled = cast(bool, data.attrib.get('throttled', '0'))
+        self.timestamp = cast(float, data.attrib.get('timeStamp'))
+        self.transcodeHwDecoding = data.attrib.get('transcodeHwDecoding')
+        self.transcodeHwDecodingTitle = data.attrib.get('transcodeHwDecodingTitle')
+        self.transcodeHwEncoding = data.attrib.get('transcodeHwEncoding')
+        self.transcodeHwEncodingTitle = data.attrib.get('transcodeHwEncodingTitle')
+        self.transcodeHwFullPipeline = cast(bool, data.attrib.get('transcodeHwFullPipeline', '0'))
+        self.transcodeHwRequested = cast(bool, data.attrib.get('transcodeHwRequested', '0'))
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoDecision = data.attrib.get('videoDecision')
         self.width = cast(int, data.attrib.get('width'))
@@ -627,6 +681,19 @@ class MediaTag(PlexObject):
         return self.fetchItems(self.key)
 
 
+class GuidTag(PlexObject):
+    """ Base class for guid tags used only for Guids, as they contain only a string identifier
+
+        Attributes:
+            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB).
+    """
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = data.attrib.get('id')
+
+
 @utils.registerPlexObject
 class Collection(MediaTag):
     """ Represents a single Collection media tag.
@@ -704,6 +771,16 @@ class Genre(MediaTag):
     """
     TAG = 'Genre'
     FILTER = 'genre'
+
+
+@utils.registerPlexObject
+class Guid(GuidTag):
+    """ Represents a single Guid media tag.
+
+        Attributes:
+            TAG (str): 'Guid'
+    """
+    TAG = "Guid"
 
 
 @utils.registerPlexObject
