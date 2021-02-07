@@ -8,6 +8,7 @@ import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
+from . import test_mixins
 
 
 def test_video_Movie(movies, movie):
@@ -39,16 +40,14 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
-def test_video_Movie_addCollection(movie):
-    labelname = "Random_label"
-    org_collection = [tag.tag for tag in movie.collections if tag]
-    assert labelname not in org_collection
-    movie.addCollection(labelname)
-    movie.reload()
-    assert labelname in [tag.tag for tag in movie.collections if tag]
-    movie.removeCollection(labelname)
-    movie.reload()
-    assert labelname not in [tag.tag for tag in movie.collections if tag]
+def test_video_Movie_mixins_tags(movie):
+    test_mixins.edit_collection(movie)
+    test_mixins.edit_country(movie)
+    test_mixins.edit_director(movie)
+    test_mixins.edit_genre(movie)
+    test_mixins.edit_label(movie)
+    test_mixins.edit_producer(movie)
+    test_mixins.edit_writer(movie)
 
 
 def test_video_Movie_getStreamURL(movie, account):
@@ -723,6 +722,12 @@ def test_video_Show_section(show):
     assert section.title == "TV Shows"
 
 
+def test_video_Show_mixins_tags(show):
+    test_mixins.edit_collection(show)
+    test_mixins.edit_genre(show)
+    test_mixins.edit_label(show)
+
+
 def test_video_Episode(show):
     episode = show.episode("Winter Is Coming")
     assert episode == show.episode(season=1, episode=1)
@@ -811,6 +816,11 @@ def test_video_Episode_attrs(episode):
     assert utils.is_int(part.size, gte=18184197)
     assert part.exists
     assert part.accessible
+
+
+def test_video_Episode_mixins_tags(episode):
+    test_mixins.edit_director(episode)
+    test_mixins.edit_writer(episode)
 
 
 def test_video_Season(show):
