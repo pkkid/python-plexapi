@@ -36,6 +36,10 @@ Documentation_ can be found at Read the Docs.
 
 .. _Documentation: http://python-plexapi.readthedocs.io/en/latest/
 
+Join our Discord_ for support and discussion.
+
+.. _Discord: https://discord.gg/GtAnnZAkuw
+
 
 Getting a PlexServer Instance
 -----------------------------
@@ -108,8 +112,8 @@ Usage Examples
 
     # Example 6: List all movies directed by the same person as Elephants Dream.
     movies = plex.library.section('Movies')
-    die_hard = movies.get('Elephants Dream')
-    director = die_hard.directors[0]
+    elephants_dream = movies.get('Elephants Dream')
+    director = elephants_dream.directors[0]
     for movie in movies.search(None, director=director):
         print(movie.title)
 

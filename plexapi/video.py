@@ -6,6 +6,7 @@ from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
 
 
 class Video(PlexPartialObject):
@@ -260,7 +261,8 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin):
+class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
     """ Represents a single Movie.
 
         Attributes:
@@ -276,6 +278,7 @@ class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin):
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the movie in milliseconds.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
+            guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the movie was released.
@@ -311,6 +314,7 @@ class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin):
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.genres = self.findItems(data, media.Genre)
+        self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
@@ -384,7 +388,8 @@ class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin):
 
 
 @utils.registerPlexObject
-class Show(Video, SplitMergeMixin, UnmatchMatchMixin):
+class Show(Video, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -708,7 +713,7 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Playable, Video):
+class Episode(Playable, Video, DirectorMixin, EditWriter):
     """ Represents a single Shows Episode.
 
         Attributes:

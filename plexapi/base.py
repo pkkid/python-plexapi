@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import tag_helper
+from plexapi.utils import tag_plural, tag_helper
 
 DONT_RELOAD_FOR_KEYS = ['key', 'session']
 OPERATORS = {
@@ -462,39 +462,11 @@ class PlexPartialObject(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        value = getattr(self, tag + 's')
+        value = getattr(self, tag_plural(tag))
         existing_cols = [t.tag for t in value if t and remove is False]
         d = tag_helper(tag, existing_cols + items, locked, remove)
         self.edit(**d)
         self.refresh()
-
-    def addCollection(self, collections):
-        """ Add a collection(s).
-
-           Parameters:
-                collections (list): list of strings
-        """
-        self._edit_tags('collection', collections)
-
-    def removeCollection(self, collections):
-        """ Remove a collection(s). """
-        self._edit_tags('collection', collections, remove=True)
-
-    def addLabel(self, labels):
-        """ Add a label(s). """
-        self._edit_tags('label', labels)
-
-    def removeLabel(self, labels):
-        """ Remove a label(s). """
-        self._edit_tags('label', labels, remove=True)
-
-    def addGenre(self, genres):
-        """ Add a genre(s). """
-        self._edit_tags('genre', genres)
-
-    def removeGenre(self, genres):
-        """ Remove a genre(s). """
-        self._edit_tags('genre', genres, remove=True)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be

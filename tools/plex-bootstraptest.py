@@ -520,8 +520,9 @@ if __name__ == "__main__":
                 name="Movies",
                 type="movie",
                 location="/data/Movies" if opts.no_docker is False else movies_path,
-                agent="com.plexapp.agents.imdb",
-                scanner="Plex Movie Scanner",
+                agent="tv.plex.agents.movie",
+                scanner="Plex Movie",
+                language='en-US',
                 expected_media_count=num_movies,
             )
         )
