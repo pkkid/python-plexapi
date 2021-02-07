@@ -58,8 +58,8 @@ class PlexObject(object):
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):
-        # Don't overwrite an attr with None or [] unless it's a private variable
-        if value not in [None, []] or attr.startswith('_') or attr not in self.__dict__:
+        # Don't overwrite an attr with None unless it's a private variable
+        if value is not None or attr.startswith('_') or attr not in self.__dict__:
             self.__dict__[attr] = value
 
     def _clean(self, value):
@@ -572,6 +572,13 @@ class Playable(object):
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             playQueueItemID (int): PlayQueue item ID (only populated for :class:`~plexapi.playlist.PlayQueue` items).
     """
+
+    def __setattr__(self, attr, value):
+        # Don't overwrite session specific attr with []
+        session_attrs = ('usernames', 'players', 'transcodeSessions', 'session')
+        if attr in session_attrs and value == []:
+            value = getattr(self, attr, [])
+        PlexObject.__setattr__(self, attr, value)
 
     def _loadData(self, data):
         self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session
