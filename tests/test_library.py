@@ -4,6 +4,7 @@ import pytest
 from plexapi.exceptions import NotFound
 
 from . import conftest as utils
+from . import test_mixins
 
 
 def test_library_Library_section(plex):
@@ -323,6 +324,10 @@ def test_library_Collection_artUrl(collection):
     assert collection.artUrl is None  # Collections don't have default art
 
 
+def test_library_Collection_mixins_tags(collection):
+    test_mixins.edit_label(collection)
+
+
 def test_search_with_weird_a(plex):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
@@ -366,6 +371,6 @@ def test_library_section_timeline(plex):
     assert tl.mediaTagVersion > 1
     assert tl.thumb == "/:/resources/movie.png"
     assert tl.title1 == "Movies"
-    assert tl.updateQueueSize == 0
+    assert utils.is_int(tl.updateQueueSize, gte=0)
     assert tl.viewGroup == "secondary"
     assert tl.viewMode == 65592

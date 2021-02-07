@@ -4,6 +4,8 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
+from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 
 
 class Audio(PlexPartialObject):
@@ -123,7 +125,8 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio):
+class Artist(Audio, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
         Attributes:
@@ -226,7 +229,8 @@ class Artist(Audio):
 
 
 @utils.registerPlexObject
-class Album(Audio):
+class Album(Audio, UnmatchMatchMixin,
+        CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
     """ Represents a single Album.
 
         Attributes:
@@ -332,7 +336,7 @@ class Album(Audio):
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable):
+class Track(Audio, Playable, MoodMixin):
     """ Represents a single Track.
 
         Attributes:
