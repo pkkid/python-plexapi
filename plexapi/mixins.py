@@ -5,7 +5,7 @@ from plexapi import utils
 from plexapi.exceptions import NotFound
 
 
-class SplitMerge(object):
+class SplitMergeMixin(object):
     """ Mixin for Plex objects that can be split and merged."""
 
     def split(self):
@@ -26,7 +26,7 @@ class SplitMerge(object):
         return self._server.query(key, method=self._server._session.put)
 
 
-class UnmatchMatch(object):
+class UnmatchMatchMixin(object):
     """ Mixin for Plex objects that can be unmatched and matched."""
 
     def unmatch(self):
