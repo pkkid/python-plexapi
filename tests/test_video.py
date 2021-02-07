@@ -523,10 +523,6 @@ def test_video_Show(show):
     assert show.title == "Game of Thrones"
 
 
-def test_video_Episode_split(episode, patched_http_call):
-    episode.split()
-
-
 def test_video_Episode_unmatch(episode, patched_http_call):
     episode.unmatch()
 
