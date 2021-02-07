@@ -5,13 +5,13 @@ from plexapi import utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import PosterArt
+from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
 
 
 @utils.registerPlexObject
-class Playlist(PlexPartialObject, Playable, PosterArt):
+class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
     """ Represents a single Playlist.
 
         Attributes:

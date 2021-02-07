@@ -4,7 +4,7 @@ from urllib.parse import quote, quote_plus, unquote, urlencode
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import PosterArt
+from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
@@ -1526,7 +1526,7 @@ class FirstCharacter(PlexObject):
 
 
 @utils.registerPlexObject
-class Collections(PlexPartialObject, PosterArt):
+class Collections(PlexPartialObject, ArtMixin, PosterMixin):
     """ Represents a single Collection.
 
         Attributes:

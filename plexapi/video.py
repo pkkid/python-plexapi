@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import PosterArt
+from plexapi.mixins import ArtMixin, PosterMixin
 
 
 class Video(PlexPartialObject):
@@ -260,7 +260,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, PosterArt):
+class Movie(Video, Playable, ArtMixin, PosterMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -384,7 +384,7 @@ class Movie(Video, Playable, PosterArt):
 
 
 @utils.registerPlexObject
-class Show(Video, PosterArt):
+class Show(Video, ArtMixin, PosterMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -582,7 +582,7 @@ class Show(Video, PosterArt):
 
 
 @utils.registerPlexObject
-class Season(Video, PosterArt):
+class Season(Video, ArtMixin, PosterMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -708,7 +708,7 @@ class Season(Video, PosterArt):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, PosterArt):
+class Episode(Video, Playable, ArtMixin, PosterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
