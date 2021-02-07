@@ -47,6 +47,7 @@ class PlexObject(object):
         self._data = data
         self._initpath = initpath or self.key
         self._parent = weakref.ref(parent) if parent else None
+        self._details_key = None
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
