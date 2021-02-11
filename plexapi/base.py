@@ -452,13 +452,13 @@ class PlexPartialObject(PlexObject):
         self._server.query(part, method=self._server._session.put)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
-        """ Helper to edit and refresh a tags.
+        """ Helper to edit tags.
 
             Parameters:
-                tag (str): tag name
-                items (list): list of tags to add
-                locked (bool): lock this field.
-                remove (bool): If this is active remove the tags in items.
+                tag (str): Tag name.
+                items (list): List of tags to add.
+                locked (bool): True to lock the field.
+                remove (bool): True to remove the tags in items.
         """
         if not isinstance(items, list):
             items = [items]
