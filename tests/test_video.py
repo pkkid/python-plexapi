@@ -566,6 +566,7 @@ def test_video_Show_attrs(show):
     assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
     assert utils.is_datetime(show.originallyAvailableAt)
+    assert show.originalTitle == ""
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
     assert sorted([i.tag for i in show.roles])[:4] == [
