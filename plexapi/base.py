@@ -458,21 +458,20 @@ class PlexPartialObject(PlexObject):
         self._server.query(part, method=self._server._session.put)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
-        """ Helper to edit and refresh a tags.
+        """ Helper to edit tags.
 
             Parameters:
-                tag (str): tag name
-                items (list): list of tags to add
-                locked (bool): lock this field.
-                remove (bool): If this is active remove the tags in items.
+                tag (str): Tag name.
+                items (list): List of tags to add.
+                locked (bool): True to lock the field.
+                remove (bool): True to remove the tags in items.
         """
         if not isinstance(items, list):
             items = [items]
         value = getattr(self, tag_plural(tag))
-        existing_cols = [t.tag for t in value if t and remove is False]
-        d = tag_helper(tag, existing_cols + items, locked, remove)
-        self.edit(**d)
-        self.refresh()
+        existing_tags = [t.tag for t in value if t and remove is False]
+        tag_edits = tag_helper(tag, existing_tags + items, locked, remove)
+        self.edit(**tag_edits)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
