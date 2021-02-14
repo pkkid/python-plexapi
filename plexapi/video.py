@@ -407,6 +407,7 @@ class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
             leafCount (int): Number of items in the show view.
             locations (List<str>): List of folder paths where the show is found on disk.
             originallyAvailableAt (datetime): Datetime the show was released.
+            originalTitle (str): The original title of the show.
             rating (float): Show rating (7.9; 9.8; 8.1).
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
@@ -434,6 +435,7 @@ class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.locations = self.listAttrs(data, 'path', etag='Location')
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.originalTitle = data.attrib.get('originalTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.roles = self.findItems(data, media.Role)
         self.similar = self.findItems(data, media.Similar)
