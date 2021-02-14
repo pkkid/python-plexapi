@@ -335,6 +335,15 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     return fullpath
 
 
+def tag_singular(tag):
+    if tag == 'countries':
+        return 'country'
+    elif tag == 'similar':
+        return 'similar'
+    else:
+        return tag[:-1]
+
+
 def tag_plural(tag):
     if tag == 'country':
         return 'countries'
