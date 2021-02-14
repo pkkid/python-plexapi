@@ -567,10 +567,6 @@ def test_video_Show(show):
     assert show.title == "Game of Thrones"
 
 
-def test_video_Episode_unmatch(episode, patched_http_call):
-    episode.unmatch()
-
-
 def test_video_Episode_updateProgress(episode, patched_http_call):
     episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
 
