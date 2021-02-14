@@ -64,6 +64,11 @@ def test_audio_Artist_albums(artist):
     assert len(albums) == 1 and albums[0].title == "Layers"
 
 
+def test_audio_Artist_mixins_images(artist):
+    test_mixins.edit_art(artist)
+    test_mixins.edit_poster(artist)
+
+
 def test_audio_Artist_mixins_tags(artist):
     test_mixins.edit_collection(artist)
     test_mixins.edit_country(artist)
@@ -219,6 +224,11 @@ def test_audio_Album_get(album):
 def test_audio_Album_artist(album):
     artist = album.artist()
     artist.title == "Broke For Free"
+
+
+def test_audio_Album_mixins_images(album):
+    test_mixins.edit_art(album)
+    test_mixins.edit_poster(album)
 
 
 def test_audio_Album_mixins_tags(album):

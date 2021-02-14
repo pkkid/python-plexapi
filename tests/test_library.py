@@ -334,6 +334,11 @@ def test_library_Collection_art(collection):
     assert not arts  # Collection has no default art
 
 
+def test_library_Collection_mixins_images(collection):
+    test_mixins.edit_art(collection)
+    test_mixins.edit_poster(collection)
+
+
 def test_library_Collection_mixins_tags(collection):
     test_mixins.edit_label(collection)
 
