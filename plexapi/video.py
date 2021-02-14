@@ -5,7 +5,8 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
+from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -260,7 +261,8 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Playable, Video, CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
+class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -386,7 +388,8 @@ class Movie(Playable, Video, CollectionMixin, CountryMixin, DirectorMixin, Genre
 
 
 @utils.registerPlexObject
-class Show(Video, CollectionMixin, GenreMixin, LabelMixin):
+class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -404,6 +407,7 @@ class Show(Video, CollectionMixin, GenreMixin, LabelMixin):
             leafCount (int): Number of items in the show view.
             locations (List<str>): List of folder paths where the show is found on disk.
             originallyAvailableAt (datetime): Datetime the show was released.
+            originalTitle (str): The original title of the show.
             rating (float): Show rating (7.9; 9.8; 8.1).
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
@@ -431,6 +435,7 @@ class Show(Video, CollectionMixin, GenreMixin, LabelMixin):
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.locations = self.listAttrs(data, 'path', etag='Location')
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
+        self.originalTitle = data.attrib.get('originalTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.roles = self.findItems(data, media.Role)
         self.similar = self.findItems(data, media.Similar)
@@ -584,7 +589,7 @@ class Show(Video, CollectionMixin, GenreMixin, LabelMixin):
 
 
 @utils.registerPlexObject
-class Season(Video):
+class Season(Video, ArtMixin, PosterMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -710,7 +715,8 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Playable, Video, DirectorMixin, EditWriter):
+class Episode(Video, Playable, ArtMixin, PosterMixin,
+        DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -739,6 +745,7 @@ class Episode(Playable, Video, DirectorMixin, EditWriter):
             parentThumb (str): URL to season thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the season for the episode.
             rating (float): Episode rating (7.9; 9.8; 8.1).
+            skipParent (bool): True if the show's seasons are set to hidden.
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year episode was released.
@@ -775,9 +782,22 @@ class Episode(Playable, Video, DirectorMixin, EditWriter):
         self.parentThumb = data.attrib.get('parentThumb')
         self.parentTitle = data.attrib.get('parentTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
+        self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
+
+        # If seasons are hidden, parentKey and parentRatingKey are missing from the XML response.
+        # https://forums.plex.tv/t/parentratingkey-not-in-episode-xml-when-seasons-are-hidden/300553
+        if self.skipParent and not self.parentRatingKey:
+            # Parse the parentRatingKey from the parentThumb
+            if self.parentThumb.startswith('/library/metadata/'):
+                self.parentRatingKey = utils.cast(int, self.parentThumb.split('/')[3])
+            # Get the parentRatingKey from the season's ratingKey
+            if not self.parentRatingKey and self.grandparentRatingKey:
+                self.parentRatingKey = self.show().season(season=self.parentIndex).ratingKey
+            if self.parentRatingKey:
+                self.parentKey = '/library/metadata/%s' % self.parentRatingKey
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -833,7 +853,7 @@ class Episode(Playable, Video, DirectorMixin, EditWriter):
 
 
 @utils.registerPlexObject
-class Clip(Playable, Video):
+class Clip(Video, Playable):
     """Represents a single Clip.
 
         Attributes:

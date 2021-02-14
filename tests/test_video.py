@@ -495,6 +495,50 @@ def test_video_Movie_match(movies):
         assert len(results) == 0
 
 
+def test_video_Movie_poster(movie):
+    posters = movie.posters()
+    poster = posters[0]
+    assert len(poster.key) >= 10
+    if not poster.ratingKey.startswith("media://"):
+        assert poster.provider
+    assert len(poster.ratingKey) >= 10
+    assert utils.is_bool(poster.selected)
+    assert len(poster.thumb) >= 10
+    # Select a different poster
+    movie.setPoster(posters[1])
+    posters = movie.posters()
+    assert posters[0].selected is False
+    assert posters[1].selected is True
+    # Test upload poster from file
+    movie.uploadPoster(filepath=utils.STUB_IMAGE_PATH)
+    posters = movie.posters()
+    file_poster = next(p for p in posters if p.ratingKey.startswith('upload://'))
+    assert file_poster.selected is True
+    movie.setPoster(posters[0])  # Reset to default poster
+
+
+def test_video_Movie_art(movie):
+    arts = movie.arts()
+    art = arts[0]
+    assert len(art.key) >= 10
+    if not art.ratingKey.startswith("media://"):
+        assert art.provider
+    assert len(art.ratingKey) >= 10
+    assert utils.is_bool(art.selected)
+    assert len(art.thumb) >= 10
+    # Select a different art
+    movie.setArt(arts[1])
+    arts = movie.arts()
+    assert arts[0].selected is False
+    assert arts[1].selected is True
+    # Test upload poster from file
+    movie.uploadArt(filepath=utils.STUB_IMAGE_PATH)
+    arts = movie.arts()
+    file_art = next(a for a in arts if a.ratingKey.startswith('upload://'))
+    assert file_art.selected is True
+    movie.setArt(arts[0])  # Reset to default art
+
+ 
 def test_video_Movie_hubs(movies):
     movie = movies.get('Big Buck Bunny')
     hubs = movie.hubs()
@@ -521,10 +565,6 @@ def test_video_Movie_hubs(movies):
 
 def test_video_Show(show):
     assert show.title == "Game of Thrones"
-
-
-def test_video_Episode_split(episode, patched_http_call):
-    episode.split()
 
 
 def test_video_Episode_unmatch(episode, patched_http_call):
@@ -570,6 +610,7 @@ def test_video_Show_attrs(show):
     assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
     assert utils.is_datetime(show.originallyAvailableAt)
+    assert show.originalTitle is None
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
     assert sorted([i.tag for i in show.roles])[:4] == [
@@ -744,6 +785,31 @@ def test_video_Episode_history(episode):
     episode.markUnwatched()
 
 
+def test_video_Episode_hidden_season(episode):
+    assert episode.skipParent is False
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show = episode.show()
+    show.editAdvanced(flattenSeasons=1)
+    episode.reload()
+    assert episode.skipParent is True
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show.defaultAdvanced()
+
+
+def test_video_Episode_parent_weakref(show):
+    season = show.season(season=1)
+    episode = season.episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() == season
+    episode = show.season(season=1).episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() is None
+
+
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
@@ -770,6 +836,7 @@ def test_video_Episode_attrs(episode):
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
+    assert episode.skipParent is False
     assert utils.is_string(episode.summary, gte=100)
     assert utils.is_metadata(episode.thumb, contains="/thumb/")
     assert episode.title == "Winter Is Coming"

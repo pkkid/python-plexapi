@@ -4,6 +4,7 @@ from urllib.parse import quote, quote_plus, unquote, urlencode
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.mixins import LabelMixin
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
@@ -1527,7 +1528,7 @@ class FirstCharacter(PlexObject):
 
 
 @utils.registerPlexObject
-class Collections(PlexPartialObject, LabelMixin):
+class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:
@@ -1683,44 +1684,6 @@ class Collections(PlexPartialObject, LabelMixin):
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
         part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
-
-    def posters(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey)
-
-    def uploadPoster(self, url=None, filepath=None):
-        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
-        if url:
-            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = '/library/metadata/%s/posters?' % self.ratingKey
-            data = open(filepath, 'rb').read()
-            self._server.query(key, method=self._server._session.post, data=data)
-
-    def setPoster(self, poster):
-        """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
-        poster.select()
-
-    def arts(self):
-        """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey)
-
-    def uploadArt(self, url=None, filepath=None):
-        """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
-        if url:
-            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = '/library/metadata/%s/arts?' % self.ratingKey
-            data = open(filepath, 'rb').read()
-            self._server.query(key, method=self._server._session.post, data=data)
-
-    def setArt(self, art):
-        """ Set :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
-        art.select()
 
     # def edit(self, **kwargs):
     #    TODO
