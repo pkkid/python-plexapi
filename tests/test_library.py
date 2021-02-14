@@ -323,6 +323,16 @@ def test_library_Collection_thumbUrl(collection):
 def test_library_Collection_artUrl(collection):
     assert collection.artUrl is None  # Collections don't have default art
 
+    
+def test_library_Collection_posters(collection):
+    posters = collection.posters()
+    assert posters
+
+
+def test_library_Collection_art(collection):
+    arts = collection.arts()
+    assert not arts  # Collection has no default art
+
 
 def test_library_Collection_mixins_tags(collection):
     test_mixins.edit_label(collection)

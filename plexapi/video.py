@@ -5,8 +5,8 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter
+from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -261,8 +261,8 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, EditWriter):
+class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -388,7 +388,7 @@ class Movie(Playable, Video, SplitMergeMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Show(Video, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -587,7 +587,7 @@ class Show(Video, SplitMergeMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Season(Video):
+class Season(Video, ArtMixin, PosterMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -713,7 +713,8 @@ class Season(Video):
 
 
 @utils.registerPlexObject
-class Episode(Playable, Video, DirectorMixin, EditWriter):
+class Episode(Video, Playable, ArtMixin, PosterMixin,
+        DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -850,7 +851,7 @@ class Episode(Playable, Video, DirectorMixin, EditWriter):
 
 
 @utils.registerPlexObject
-class Clip(Playable, Video):
+class Clip(Video, Playable):
     """Represents a single Clip.
 
         Attributes:
