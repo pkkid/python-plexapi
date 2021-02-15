@@ -130,6 +130,8 @@ def _test_mixins_imageUrl(obj, attr):
         assert url.startswith(utils.SERVER_BASEURL)
         assert "/library/metadata/" in url
         assert attr in url
+        if attr == 'thumb':
+            assert getattr(obj, 'posterUrl') == url
     else:
         assert url is None
 
@@ -143,4 +145,4 @@ def attr_bannerUrl(obj):
 
 
 def attr_posterUrl(obj):
-    _test_mixins_imageUrl(obj, 'poster')
+    _test_mixins_imageUrl(obj, 'thumb')
