@@ -722,6 +722,7 @@ def test_video_Show_section(show):
 
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
+    test_mixins.edit_banner(show)
     test_mixins.edit_poster(show)
 
 

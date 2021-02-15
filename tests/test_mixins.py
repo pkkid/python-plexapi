@@ -111,5 +111,9 @@ def edit_art(obj):
     _test_mixins_art_poster(obj, 'arts')
 
 
+def edit_banner(obj):
+    _test_mixins_art_poster(obj, 'banners')
+
+
 def edit_poster(obj):
     _test_mixins_art_poster(obj, 'posters')
