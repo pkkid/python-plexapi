@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import pytest
+from plexapi.exceptions import BadRequest
+
 from . import conftest as utils
 from . import test_mixins
 
@@ -35,21 +38,21 @@ def test_Collection_attrs(collection):
 def test_Collection_modeUpdate(collection):
     mode_dict = {"default": -1, "hide": 0, "hideItems": 1, "showItems": 2}
     for key, value in mode_dict.items():
-        collection.modeUpdate(key)
+        collection.modeUpdate(mode=key)
         collection.reload()
         assert collection.collectionMode == value
+    with pytest.raises(BadRequest):
+        collection.modeUpdate(mode="bad-mode")
 
 
-def test_Colletion_sortAlpha(collection):
-    collection.sortUpdate(sort="alpha")
-    collection.reload()
-    assert collection.collectionSort == 1
-
-
-def test_Colletion_sortRelease(collection):
-    collection.sortUpdate(sort="release")
-    collection.reload()
-    assert collection.collectionSort == 0
+def test_Colletion_sortUpdate(collection):
+    sort_dict = {'release': 0, 'alpha': 1, 'custom': 2}
+    for key, value in sort_dict.items():
+        collection.sortUpdate(sort="alpha")
+        collection.reload()
+        assert collection.collectionSort == value
+    with pytest.raises(BadRequest):
+        collection.sortUpdate(sort="bad-sort")
 
 
 def test_Colletion_edit(collection):
