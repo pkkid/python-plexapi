@@ -48,7 +48,7 @@ def test_Collection_modeUpdate(collection):
 def test_Colletion_sortUpdate(collection):
     sort_dict = {"release": 0, "alpha": 1, "custom": 2}
     for key, value in sort_dict.items():
-        collection.sortUpdate(sort="alpha")
+        collection.sortUpdate(sort=key)
         collection.reload()
         assert collection.collectionSort == value
     with pytest.raises(BadRequest):
