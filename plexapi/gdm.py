@@ -13,7 +13,11 @@ import struct
 
 
 class GDM:
-    """Base class to discover GDM services."""
+    """Base class to discover GDM services.
+
+       Atrributes:
+           entries (List<dict>): List of server and/or client data discovered.
+    """
 
     def __init__(self):
         self.entries = []
