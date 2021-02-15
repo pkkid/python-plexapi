@@ -66,22 +66,6 @@ class Video(PlexPartialObject):
         """ Returns True if this video is watched. """
         return bool(self.viewCount > 0) if self.viewCount else False
 
-    @property
-    def thumbUrl(self):
-        """ Return the first first thumbnail url starting on
-            the most specific thumbnail for that item.
-        """
-        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
-        return self._server.url(thumb, includeToken=True) if thumb else None
-
-    @property
-    def artUrl(self):
-        """ Return the first first art url starting on
-            the most specific art for that item.
-        """
-        art = self.firstAttr('art', 'grandparentArt')
-        return self._server.url(art, includeToken=True) if art else None
-
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
         return self._server.url(part, includeToken=True) if part else None
@@ -459,11 +443,6 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
     def isWatched(self):
         """ Returns True if the show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
-
-    @property
-    def bannerUrl(self):
-        """ Return the banner url for the show."""
-        return self._server.url(self.banner, includeToken=True) if self.banner else None
 
     def preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """

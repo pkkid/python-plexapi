@@ -210,7 +210,7 @@ class Photo(PlexPartialObject, Playable, TagMixin):
 
     @property
     def thumbUrl(self):
-        """Return URL for the thumbnail image."""
+        """ Return the thumb url for the photo."""
         key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(key, includeToken=True) if key else None
 

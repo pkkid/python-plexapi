@@ -1598,16 +1598,6 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     def children(self):
         return self.fetchItems(self.key)
 
-    @property
-    def thumbUrl(self):
-        """ Return the thumbnail url for the collection."""
-        return self._server.url(self.thumb, includeToken=True) if self.thumb else None
-
-    @property
-    def artUrl(self):
-        """ Return the art url for the collection."""
-        return self._server.url(self.art, includeToken=True) if self.art else None
-
     def item(self, title):
         """ Returns the item in the collection that matches the specified title.
 

@@ -67,22 +67,6 @@ class Audio(PlexPartialObject):
         self.userRating = utils.cast(float, data.attrib.get('userRating', 0))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
-    @property
-    def thumbUrl(self):
-        """ Return the first first thumbnail url starting on
-            the most specific thumbnail for that item.
-        """
-        key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
-        return self._server.url(key, includeToken=True) if key else None
-
-    @property
-    def artUrl(self):
-        """ Return the first first art url starting on
-            the most specific art for that item.
-        """
-        art = self.firstAttr('art', 'grandparentArt')
-        return self._server.url(art, includeToken=True) if art else None
-
     def url(self, part):
         """ Returns the full URL for the audio item. Typically used for getting a specific track. """
         return self._server.url(part, includeToken=True) if part else None
