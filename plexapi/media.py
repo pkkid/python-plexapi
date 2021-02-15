@@ -807,8 +807,8 @@ class Style(MediaTag):
     FILTER = 'style'
 
 
-class BasePosterArt(PlexObject):
-    """ Base class for all Poster and Art objects.
+class BaseImage(PlexObject):
+    """ Base class for all Art, Banner, and Poster objects.
 
         Attributes:
             TAG (str): 'Photo'
@@ -837,12 +837,16 @@ class BasePosterArt(PlexObject):
             pass
 
 
-class Poster(BasePosterArt):
-    """ Represents a single Poster object. """
-
-
-class Art(BasePosterArt):
+class Art(BaseImage):
     """ Represents a single Art object. """
+
+
+class Banner(BaseImage):
+    """ Represents a single Banner object. """
+
+
+class Poster(BaseImage):
+    """ Represents a single Poster object. """
 
 
 @utils.registerPlexObject

@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -388,7 +388,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
 
 
 @utils.registerPlexObject
-class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 

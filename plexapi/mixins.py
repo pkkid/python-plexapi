@@ -6,14 +6,14 @@ from plexapi.exceptions import NotFound
 
 
 class ArtMixin(object):
-    """ Mixin for Plex objects that can have artwork."""
+    """ Mixin for Plex objects that can have background artwork."""
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
         return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=media.Art)
 
     def uploadArt(self, url=None, filepath=None):
-        """ Upload art from url or filepath and set it as the selected art.
+        """ Upload a background artwork from a url or filepath.
         
             Parameters:
                 url (str): The full URL to the image to upload.
@@ -28,12 +28,43 @@ class ArtMixin(object):
             self._server.query(key, method=self._server._session.post, data=data)
 
     def setArt(self, art):
-        """ Set the artwork for a Plex object.
+        """ Set the background artwork for a Plex object.
         
             Parameters:
                 art (:class:`~plexapi.media.Art`): The art object to select.
         """
         art.select()
+
+
+class BannerMixin(object):
+    """ Mixin for Plex objects that can have banners."""
+
+    def banners(self):
+        """ Returns list of available :class:`~plexapi.media.Banner` objects. """
+        return self.fetchItems('/library/metadata/%s/banners' % self.ratingKey, cls=media.Banner)
+
+    def uploadBanner(self, url=None, filepath=None):
+        """ Upload a banner from a url or filepath.
+        
+            Parameters:
+                url (str): The full URL to the image to upload.
+                filepath (str): The full file path the the image to upload.
+        """
+        if url:
+            key = '/library/metadata/%s/banners?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '/library/metadata/%s/banners?' % self.ratingKey
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setBanner(self, banner):
+        """ Set the banner for a Plex object.
+        
+            Parameters:
+                banner (:class:`~plexapi.media.Banner`): The banner object to select.
+        """
+        banner.select()
 
 
 class PosterMixin(object):
@@ -44,7 +75,7 @@ class PosterMixin(object):
         return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=media.Poster)
 
     def uploadPoster(self, url=None, filepath=None):
-        """ Upload poster from url or filepath and set it as the selected poster.
+        """ Upload a poster from a url or filepath.
 
             Parameters:
                 url (str): The full URL to the image to upload.
