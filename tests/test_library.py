@@ -318,6 +318,7 @@ def test_library_Collection_thumbUrl(collection):
     assert utils.SERVER_BASEURL in collection.thumbUrl
     assert "/library/collections/" in collection.thumbUrl
     assert "/composite/" in collection.thumbUrl
+    assert collection.thumbUrl == collection.posterUrl
 
 
 def test_library_Collection_artUrl(collection):
