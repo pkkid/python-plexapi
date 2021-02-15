@@ -5,14 +5,18 @@ from plexapi import media, utils
 from plexapi.exceptions import NotFound
 
 
-class ArtMixin(object):
-    """ Mixin for Plex objects that can have background artwork."""
-
+class ArtUrlMixin(object):
+    """ Mixin for Plex objects that can have a background artwork url."""
+    
     @property
     def artUrl(self):
         """ Return the art url for the Plex object."""
         art = self.firstAttr('art', 'grandparentArt')
         return self._server.url(art, includeToken=True) if art else None
+
+
+class ArtMixin(ArtUrlMixin):
+    """ Mixin for Plex objects that can have background artwork."""
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
@@ -42,14 +46,18 @@ class ArtMixin(object):
         art.select()
 
 
-class BannerMixin(object):
-    """ Mixin for Plex objects that can have banners."""
+class BannerUrlMixin(object):
+    """ Mixin for Plex objects that can have a banner url."""
 
     @property
     def bannerUrl(self):
         """ Return the banner url for the Plex object."""
         banner = self.firstAttr('banner')
         return self._server.url(banner, includeToken=True) if banner else None
+
+
+class BannerMixin(BannerUrlMixin):
+    """ Mixin for Plex objects that can have banners."""
 
     def banners(self):
         """ Returns list of available :class:`~plexapi.media.Banner` objects. """
@@ -79,14 +87,18 @@ class BannerMixin(object):
         banner.select()
 
 
-class PosterMixin(object):
-    """ Mixin for Plex objects that can have posters."""
+class PosterUrlMixin(object):
+    """ Mixin for Plex objects that can have a poster url."""
 
     @property
     def thumbUrl(self):
         """ Return the thumb url for the Plex object."""
         thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(thumb, includeToken=True) if thumb else None
+
+
+class PosterMixin(PosterUrlMixin):
+    """ Mixin for Plex objects that can have posters."""
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
