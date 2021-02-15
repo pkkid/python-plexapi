@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-
 from . import conftest as utils
 from . import test_mixins
 
