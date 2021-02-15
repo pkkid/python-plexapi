@@ -83,6 +83,7 @@ def _test_mixins_image(obj, attr):
     upload_img_method = getattr(obj, "upload" + cap_attr)
     images = get_img_method()
     if images:
+        default_image = images[0]
         image = images[0]
         assert len(image.key) >= 10
         if not image.ratingKey.startswith(("default://", "media://", "upload://")):
@@ -96,6 +97,8 @@ def _test_mixins_image(obj, attr):
             images = get_img_method()
             assert images[0].selected is False
             assert images[1].selected is True
+    else:
+        default_image = None
     # Test upload image from file
     upload_img_method(filepath=utils.STUB_IMAGE_PATH)
     images = get_img_method()
@@ -104,7 +107,9 @@ def _test_mixins_image(obj, attr):
         if i.ratingKey.startswith('upload://') and i.ratingKey.endswith(CUTE_CAT_SHA1)
     ]
     assert file_image
-    set_img_method(images[0])  # Reset to default image
+    # Reset to default image
+    if default_image:
+        set_img_method(default_image)
 
 
 def edit_art(obj):
