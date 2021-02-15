@@ -38,7 +38,7 @@ class GDM:
         """Return a list of entries that match the content_type."""
         self.scan()
         return [entry for entry in self.entries
-                if value in entry['data']['Content_Type']]
+                if value in entry['data']['Content-Type']]
 
     def find_by_data(self, values):
         """Return a list of entries that match the search parameters."""
