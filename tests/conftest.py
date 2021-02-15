@@ -277,6 +277,11 @@ def photoalbum(photos):
 
 
 @pytest.fixture()
+def photo(photoalbum):
+    return photoalbum.photo("photo1")
+
+
+@pytest.fixture()
 def subtitle():
     mopen = mock_open()
     with patch("__main__.open", mopen):
