@@ -15,7 +15,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
-from plexapi.utils import cast
+from plexapi.utils import cast, deprecated
 from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
@@ -374,7 +374,11 @@ class PlexServer(PlexObject):
         filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
         return filepath
 
+    @deprecated('use "checkForUpdate" instead')
     def check_for_update(self, force=True, download=False):
+        return self.checkForUpdate()
+
+    def checkForUpdate(self, force=True, download=False):
         """ Returns a :class:`~plexapi.base.Release` object containing release info.
 
            Parameters:
@@ -390,7 +394,7 @@ class PlexServer(PlexObject):
 
     def isLatest(self):
         """ Check if the installed version of PMS is the latest. """
-        release = self.check_for_update(force=True)
+        release = self.checkForUpdate(force=True)
         return release is None
 
     def installUpdate(self):
@@ -398,7 +402,7 @@ class PlexServer(PlexObject):
         # We can add this but dunno how useful this is since it sometimes
         # requires user action using a gui.
         part = '/updater/apply'
-        release = self.check_for_update(force=True, download=True)
+        release = self.checkForUpdate(force=True, download=True)
         if release and release.version != self.version:
             # figure out what method this is..
             return self.query(part, method=self._session.put)
