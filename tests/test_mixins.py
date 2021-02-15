@@ -86,7 +86,7 @@ def _test_mixins_image(obj, attr):
         default_image = images[0]
         image = images[0]
         assert len(image.key) >= 10
-        if not image.ratingKey.startswith(("default://", "media://", "upload://")):
+        if not image.ratingKey.startswith(("default://", "id://", "media://", "upload://")):
             assert image.provider
         assert len(image.ratingKey) >= 10
         assert utils.is_bool(image.selected)
