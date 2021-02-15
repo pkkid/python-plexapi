@@ -377,8 +377,20 @@ def is_string(value, gte=1):
     return isinstance(value, str) and len(value) >= gte
 
 
+def is_art(key):
+    return is_metadata(key, contains="/art/")
+
+
 def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
+
+
+def is_artUrl(url):
+    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/art/" in url
+
+
+def is_thumbUrl(url):
+    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/thumb/" in url
 
 
 def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):

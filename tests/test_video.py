@@ -157,8 +157,11 @@ def test_video_Movie_attrs(movies):
     assert len(movie.locations) == 1
     assert len(movie.locations[0]) >= 10
     assert utils.is_datetime(movie.addedAt)
-    assert utils.is_metadata(movie.art)
-    assert movie.artUrl
+    if movie.art:
+        assert utils.is_art(movie.art)
+        assert utils.is_artUrl(movie.artUrl)
+    else:
+        assert movie.artUrl is None
     assert float(movie.rating) >= 6.4
     assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.audienceRating >= 8.5
@@ -199,7 +202,11 @@ def test_video_Movie_attrs(movies):
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == "The Greatest Break-Up Story Ever Told"
-    assert utils.is_thumb(movie.thumb)
+    if movie.thumb:
+        assert utils.is_thumb(movie.thumb)
+        assert utils.is_thumbUrl(movie.thumbUrl)
+    else:
+        assert movie.thumbUrl is None
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
     assert not movie.transcodeSessions
@@ -547,7 +554,11 @@ def test_video_Episode_stop(episode, mocker, patched_http_call):
 
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
-    assert utils.is_metadata(show.art, contains="/art/")
+    if show.art:
+        assert utils.is_art(show.art)
+        assert utils.is_artUrl(show.artUrl)
+    else:
+        assert show.artUrl is None
     assert utils.is_metadata(show.banner, contains="/banner/")
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
@@ -586,7 +597,11 @@ def test_video_Show_attrs(show):
     assert show.studio == "HBO"
     assert utils.is_string(show.summary, gte=100)
     assert utils.is_metadata(show.theme, contains="/theme/")
-    assert utils.is_metadata(show.thumb, contains="/thumb/")
+    if show.thumb:
+        assert utils.is_thumb(show.thumb)
+        assert utils.is_thumbUrl(show.thumbUrl)
+    else:
+        assert show.thumbUrl is None
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
@@ -679,12 +694,6 @@ def test_video_Episode_download(monkeydownload, tmpdir, episode):
         savepath=str(tmpdir), **{"videoResolution": "500x300"}
     )
     assert len(with_sceen_size) == 1
-
-
-def test_video_Show_thumbUrl(show):
-    assert utils.SERVER_BASEURL in show.thumbUrl
-    assert "/library/metadata/" in show.thumbUrl
-    assert "/thumb/" in show.thumbUrl
 
 
 # Analyze seems to fail intermittently
@@ -782,6 +791,11 @@ def test_video_Episode_analyze(tvshows):
 
 def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
+    if episode.art:
+        assert utils.is_art(episode.art)
+        assert utils.is_artUrl(episode.artUrl)
+    else:
+        assert episode.artUrl is None
     assert episode.contentRating in utils.CONTENTRATINGS
     if len(episode.directors):
         assert [i.tag for i in episode.directors] == ["Tim Van Patten"]
@@ -801,7 +815,11 @@ def test_video_Episode_attrs(episode):
     assert episode._server._baseurl == utils.SERVER_BASEURL
     assert episode.skipParent is False
     assert utils.is_string(episode.summary, gte=100)
-    assert utils.is_metadata(episode.thumb, contains="/thumb/")
+    if episode.thumb:
+        assert utils.is_thumb(episode.thumb)
+        assert utils.is_thumbUrl(episode.thumbUrl)
+    else:
+        assert episode.thumbUrl is None
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
     assert not episode.transcodeSessions
@@ -876,6 +894,11 @@ def test_video_Season_history(show):
 def test_video_Season_attrs(show):
     season = show.season("Season 1")
     assert utils.is_datetime(season.addedAt)
+    if season.art:
+        assert utils.is_art(season.art)
+        assert utils.is_artUrl(season.artUrl)
+    else:
+        assert season.artUrl is None
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
@@ -888,7 +911,11 @@ def test_video_Season_attrs(show):
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert season.summary == ""
-    assert utils.is_metadata(season.thumb, contains="/thumb/")
+    if season.thumb:
+        assert utils.is_thumb(season.thumb)
+        assert utils.is_thumbUrl(season.thumbUrl)
+    else:
+        assert season.thumbUrl is None
     assert season.title == "Season 1"
     assert season.titleSort == "Season 1"
     assert season.type == "season"
