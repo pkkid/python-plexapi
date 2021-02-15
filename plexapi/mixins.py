@@ -6,17 +6,17 @@ from plexapi.exceptions import NotFound
 
 
 class ArtUrlMixin(object):
-    """ Mixin for Plex objects that can have a background artwork url."""
+    """ Mixin for Plex objects that can have a background artwork url. """
     
     @property
     def artUrl(self):
-        """ Return the art url for the Plex object."""
+        """ Return the art url for the Plex object. """
         art = self.firstAttr('art', 'grandparentArt')
         return self._server.url(art, includeToken=True) if art else None
 
 
 class ArtMixin(ArtUrlMixin):
-    """ Mixin for Plex objects that can have background artwork."""
+    """ Mixin for Plex objects that can have background artwork. """
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
@@ -47,17 +47,17 @@ class ArtMixin(ArtUrlMixin):
 
 
 class BannerUrlMixin(object):
-    """ Mixin for Plex objects that can have a banner url."""
+    """ Mixin for Plex objects that can have a banner url. """
 
     @property
     def bannerUrl(self):
-        """ Return the banner url for the Plex object."""
+        """ Return the banner url for the Plex object. """
         banner = self.firstAttr('banner')
         return self._server.url(banner, includeToken=True) if banner else None
 
 
 class BannerMixin(BannerUrlMixin):
-    """ Mixin for Plex objects that can have banners."""
+    """ Mixin for Plex objects that can have banners. """
 
     def banners(self):
         """ Returns list of available :class:`~plexapi.media.Banner` objects. """
@@ -88,22 +88,22 @@ class BannerMixin(BannerUrlMixin):
 
 
 class PosterUrlMixin(object):
-    """ Mixin for Plex objects that can have a poster url."""
+    """ Mixin for Plex objects that can have a poster url. """
 
     @property
     def thumbUrl(self):
-        """ Return the thumb url for the Plex object."""
+        """ Return the thumb url for the Plex object. """
         thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(thumb, includeToken=True) if thumb else None
 
     @property
     def posterUrl(self):
-        """ Alias to self.thumbUrl."""
+        """ Alias to self.thumbUrl. """
         return self.thumbUrl
 
 
 class PosterMixin(PosterUrlMixin):
-    """ Mixin for Plex objects that can have posters."""
+    """ Mixin for Plex objects that can have posters. """
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
@@ -134,7 +134,7 @@ class PosterMixin(PosterUrlMixin):
 
 
 class SplitMergeMixin(object):
-    """ Mixin for Plex objects that can be split and merged."""
+    """ Mixin for Plex objects that can be split and merged. """
 
     def split(self):
         """ Split duplicated Plex object into separate objects. """
@@ -155,7 +155,7 @@ class SplitMergeMixin(object):
 
 
 class UnmatchMatchMixin(object):
-    """ Mixin for Plex objects that can be unmatched and matched."""
+    """ Mixin for Plex objects that can be unmatched and matched. """
 
     def unmatch(self):
         """ Unmatches metadata match from object. """

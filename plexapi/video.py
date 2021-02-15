@@ -840,7 +840,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
 
 @utils.registerPlexObject
 class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
-    """Represents a single Clip.
+    """ Represents a single Clip.
 
         Attributes:
             TAG (str): 'Video'
@@ -862,7 +862,7 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
     METADATA_TYPE = 'clip'
 
     def _loadData(self, data):
-        """Load attribute values from Plex XML response."""
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self._data = data
