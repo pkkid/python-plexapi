@@ -67,8 +67,9 @@ def test_Colletion_edit(collection):
     collection.edit(**{"titleSort.value": collectionTitleSort, "titleSort.locked": 0})
 
 
-def test_Collection_delete(movies, movie):
+def test_Collection_delete(movies):
     delete_collection = "delete_collection"
+    movie = movies.get("Sita Sings the Blues")
     movie.addCollection(delete_collection)
     collections = movies.collections(title=delete_collection)
     assert len(collections) == 1
