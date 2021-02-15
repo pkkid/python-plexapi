@@ -46,7 +46,7 @@ def test_Collection_modeUpdate(collection):
 
 
 def test_Colletion_sortUpdate(collection):
-    sort_dict = {'release': 0, 'alpha': 1, 'custom': 2}
+    sort_dict = {"release": 0, "alpha": 1, "custom": 2}
     for key, value in sort_dict.items():
         collection.sortUpdate(sort="alpha")
         collection.reload()
@@ -56,19 +56,19 @@ def test_Colletion_sortUpdate(collection):
 
 
 def test_Colletion_edit(collection):
-    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
+    edits = {"titleSort.value": "New Title Sort", "titleSort.locked": 1}
     collectionTitleSort = collection.titleSort
     collection.edit(**edits)
     collection.reload()
     for field in collection.fields:
-        if field.name == 'titleSort':
-            assert collection.titleSort == 'New Title Sort'
+        if field.name == "titleSort":
+            assert collection.titleSort == "New Title Sort"
             assert field.locked is True
-    collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
+    collection.edit(**{"titleSort.value": collectionTitleSort, "titleSort.locked": 0})
 
 
 def test_Collection_delete(movies, movie):
-    delete_collection = 'delete_collection'
+    delete_collection = "delete_collection"
     movie.addCollection(delete_collection)
     collections = movies.collections(title=delete_collection)
     assert len(collections) == 1
