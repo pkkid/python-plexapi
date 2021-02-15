@@ -381,12 +381,20 @@ def is_art(key):
     return is_metadata(key, contains="/art/")
 
 
+def is_banner(key):
+    return is_metadata(key, contains="/banner/")
+
+
 def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
 
 
 def is_artUrl(url):
     return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/art/" in url
+
+
+def is_bannerUrl(url):
+    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/banner/" in url
 
 
 def is_thumbUrl(url):

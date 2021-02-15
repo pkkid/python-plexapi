@@ -179,8 +179,12 @@ def test_audio_Album_track(album, track=None):
     else:
         assert track.artUrl is None
     assert utils.is_int(track.duration)
+    if track.grandparentArt:
+        assert utils.is_art(track.grandparentArt)
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
+    if track.grandparentThumb:
+        assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
     assert int(track.index) == 1
     assert utils.is_metadata(track._initpath)
@@ -273,7 +277,8 @@ def test_audio_Track_attrs(album):
         assert track.artUrl is None
     assert track.chapterSource is None
     assert utils.is_int(track.duration)
-    assert track.grandparentArt is None
+    if track.grandparentArt:
+        assert utils.is_art(track.grandparengrandparentArt)
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
     if track.grandparentThumb:

@@ -76,7 +76,9 @@ class Video(PlexPartialObject):
 
     @property
     def artUrl(self):
-        """ Return the first first art url starting on the most specific for that item."""
+        """ Return the first first art url starting on
+            the most specific art for that item.
+        """
         art = self.firstAttr('art', 'grandparentArt')
         return self._server.url(art, includeToken=True) if art else None
 
@@ -457,6 +459,11 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
     def isWatched(self):
         """ Returns True if the show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
+
+    @property
+    def bannerUrl(self):
+        """ Return the banner url for the show."""
+        return self._server.url(self.banner, includeToken=True) if self.banner else None
 
     def preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """

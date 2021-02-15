@@ -69,13 +69,17 @@ class Audio(PlexPartialObject):
 
     @property
     def thumbUrl(self):
-        """ Return url to for the thumbnail image. """
+        """ Return the first first thumbnail url starting on
+            the most specific thumbnail for that item.
+        """
         key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(key, includeToken=True) if key else None
 
     @property
     def artUrl(self):
-        """ Return the first art url starting on the most specific for that item."""
+        """ Return the first first art url starting on
+            the most specific art for that item.
+        """
         art = self.firstAttr('art', 'grandparentArt')
         return self._server.url(art, includeToken=True) if art else None
 

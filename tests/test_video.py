@@ -559,7 +559,11 @@ def test_video_Show_attrs(show):
         assert utils.is_artUrl(show.artUrl)
     else:
         assert show.artUrl is None
-    assert utils.is_metadata(show.banner, contains="/banner/")
+    if show.banner:
+        assert utils.is_banner(show.banner)
+        assert utils.is_bannerUrl(show.bannerUrl)
+    else:
+        assert show.bannerUrl is None
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
     assert utils.is_int(show.duration, gte=1600000)
@@ -800,6 +804,10 @@ def test_video_Episode_attrs(episode):
     if len(episode.directors):
         assert [i.tag for i in episode.directors] == ["Tim Van Patten"]
     assert utils.is_int(episode.duration, gte=120000)
+    if episode.grandparentArt:
+        assert utils.is_art(episode.grandparentArt)
+    if episode.grandparentThumb:
+        assert utils.is_thumb(episode.grandparentThumb)
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
@@ -809,7 +817,8 @@ def test_video_Episode_attrs(episode):
     assert utils.is_int(episode.parentIndex)
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
-    assert utils.is_metadata(episode.parentThumb, contains="/thumb/")
+    if episode.parentThumb:
+        assert utils.is_thumb(episode.parentThumb)
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
@@ -907,6 +916,8 @@ def test_video_Season_attrs(show):
     assert season.listType == "video"
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
+    if season.parentThumb:
+        assert utils.is_thumb(season.parentThumb)
     assert season.parentTitle == "Game of Thrones"
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
