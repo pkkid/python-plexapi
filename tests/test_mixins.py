@@ -76,7 +76,7 @@ def edit_writer(obj):
     _test_mixins_tag(obj, "writers", "Writer")
 
 
-def _test_mixins_art_poster(obj, attr):
+def _test_mixins_image(obj, attr):
     cap_attr = attr[:-1].capitalize()
     get_img_method = getattr(obj, attr)
     set_img_method = getattr(obj, "set" + cap_attr)
@@ -108,12 +108,12 @@ def _test_mixins_art_poster(obj, attr):
 
 
 def edit_art(obj):
-    _test_mixins_art_poster(obj, 'arts')
+    _test_mixins_image(obj, 'arts')
 
 
 def edit_banner(obj):
-    _test_mixins_art_poster(obj, 'banners')
+    _test_mixins_image(obj, 'banners')
 
 
 def edit_poster(obj):
-    _test_mixins_art_poster(obj, 'posters')
+    _test_mixins_image(obj, 'posters')
