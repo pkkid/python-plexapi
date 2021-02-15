@@ -96,6 +96,11 @@ class PosterUrlMixin(object):
         thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
         return self._server.url(thumb, includeToken=True) if thumb else None
 
+    @property
+    def posterUrl(self):
+        """ Alias to self.thumbUrl."""
+        return self.thumbUrl
+
 
 class PosterMixin(PosterUrlMixin):
     """ Mixin for Plex objects that can have posters."""
