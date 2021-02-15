@@ -128,8 +128,8 @@ def _test_mixins_imageUrl(obj, attr):
     url = getattr(obj, attr + 'Url')
     if getattr(obj, attr):
         assert url.startswith(utils.SERVER_BASEURL)
-        assert "/library/metadata/" in url
-        assert attr in url
+        assert "/library/metadata/" in url or "/library/collections/" in url
+        assert attr in url or "composite" in url
         if attr == 'thumb':
             assert getattr(obj, 'posterUrl') == url
     else:
