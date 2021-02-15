@@ -159,9 +159,6 @@ def test_video_Movie_attrs(movies):
     assert utils.is_datetime(movie.addedAt)
     if movie.art:
         assert utils.is_art(movie.art)
-        assert utils.is_artUrl(movie.artUrl)
-    else:
-        assert movie.artUrl is None
     assert float(movie.rating) >= 6.4
     assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.audienceRating >= 8.5
@@ -204,9 +201,6 @@ def test_video_Movie_attrs(movies):
     assert movie.tagline == "The Greatest Break-Up Story Ever Told"
     if movie.thumb:
         assert utils.is_thumb(movie.thumb)
-        assert utils.is_thumbUrl(movie.thumbUrl)
-    else:
-        assert movie.thumbUrl is None
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
     assert not movie.transcodeSessions
@@ -556,14 +550,8 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     if show.art:
         assert utils.is_art(show.art)
-        assert utils.is_artUrl(show.artUrl)
-    else:
-        assert show.artUrl is None
     if show.banner:
         assert utils.is_banner(show.banner)
-        assert utils.is_bannerUrl(show.bannerUrl)
-    else:
-        assert show.bannerUrl is None
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
     assert utils.is_int(show.duration, gte=1600000)
@@ -603,9 +591,6 @@ def test_video_Show_attrs(show):
     assert utils.is_metadata(show.theme, contains="/theme/")
     if show.thumb:
         assert utils.is_thumb(show.thumb)
-        assert utils.is_thumbUrl(show.thumbUrl)
-    else:
-        assert show.thumbUrl is None
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
@@ -737,6 +722,9 @@ def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
     test_mixins.edit_banner(show)
     test_mixins.edit_poster(show)
+    test_mixins.attr_artUrl(show)
+    test_mixins.attr_bannerUrl(show)
+    test_mixins.attr_posterUrl(show)
 
 
 def test_video_Show_mixins_tags(show):
@@ -797,9 +785,6 @@ def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
     if episode.art:
         assert utils.is_art(episode.art)
-        assert utils.is_artUrl(episode.artUrl)
-    else:
-        assert episode.artUrl is None
     assert episode.contentRating in utils.CONTENTRATINGS
     if len(episode.directors):
         assert [i.tag for i in episode.directors] == ["Tim Van Patten"]
@@ -826,9 +811,6 @@ def test_video_Episode_attrs(episode):
     assert utils.is_string(episode.summary, gte=100)
     if episode.thumb:
         assert utils.is_thumb(episode.thumb)
-        assert utils.is_thumbUrl(episode.thumbUrl)
-    else:
-        assert episode.thumbUrl is None
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
     assert not episode.transcodeSessions
@@ -878,6 +860,8 @@ def test_video_Episode_attrs(episode):
 def test_video_Episode_mixins_images(episode):
     #test_mixins.edit_art(episode)  # Uploading episode artwork is broken in Plex
     test_mixins.edit_poster(episode)
+    test_mixins.attr_artUrl(episode)
+    test_mixins.attr_posterUrl(episode)
 
 
 def test_video_Episode_mixins_tags(episode):
@@ -905,9 +889,6 @@ def test_video_Season_attrs(show):
     assert utils.is_datetime(season.addedAt)
     if season.art:
         assert utils.is_art(season.art)
-        assert utils.is_artUrl(season.artUrl)
-    else:
-        assert season.artUrl is None
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
@@ -924,9 +905,6 @@ def test_video_Season_attrs(show):
     assert season.summary == ""
     if season.thumb:
         assert utils.is_thumb(season.thumb)
-        assert utils.is_thumbUrl(season.thumbUrl)
-    else:
-        assert season.thumbUrl is None
     assert season.title == "Season 1"
     assert season.titleSort == "Season 1"
     assert season.type == "season"
@@ -979,6 +957,8 @@ def test_video_Season_mixins_images(show):
     season = show.season(season=1)
     test_mixins.edit_art(season)
     test_mixins.edit_poster(season)
+    test_mixins.attr_artUrl(season)
+    test_mixins.attr_posterUrl(season)
 
 
 def test_that_reload_return_the_same_object(plex):

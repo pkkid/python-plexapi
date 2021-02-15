@@ -10,9 +10,6 @@ def test_audio_Artist_attr(artist):
     assert utils.is_datetime(artist.addedAt)
     if artist.art:
         assert utils.is_art(artist.art)
-        assert utils.is_artUrl(artist.artUrl)
-    else:
-        assert artist.artUrl is None
     if artist.countries:
         assert "United States of America" in [i.tag for i in artist.countries]
     #assert "Electronic" in [i.tag for i in artist.genres]
@@ -31,9 +28,6 @@ def test_audio_Artist_attr(artist):
         assert "Alias" in artist.summary
     if artist.thumb:
         assert utils.is_thumb(artist.thumb)
-        assert utils.is_thumbUrl(artist.thumbUrl)
-    else:
-        assert artist.thumbUrl is None
     assert artist.title == "Broke For Free"
     assert artist.titleSort == "Broke For Free"
     assert artist.type == "artist"
@@ -77,6 +71,8 @@ def test_audio_Artist_albums(artist):
 def test_audio_Artist_mixins_images(artist):
     test_mixins.edit_art(artist)
     test_mixins.edit_poster(artist)
+    test_mixins.attr_artUrl(artist)
+    test_mixins.attr_posterUrl(artist)
 
 
 def test_audio_Artist_mixins_tags(artist):
@@ -92,9 +88,6 @@ def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     if album.art:
         assert utils.is_art(album.art)
-        assert utils.is_artUrl(album.artUrl)
-    else:
-        assert album.artUrl is None
     assert isinstance(album.genres, list)
     assert album.index == 1
     assert utils.is_metadata(album._initpath)
@@ -113,9 +106,6 @@ def test_audio_Album_attrs(album):
     assert album.summary == ""
     if album.thumb:
         assert utils.is_thumb(album.thumb)
-        assert utils.is_thumbUrl(album.thumbUrl)
-    else:
-        assert album.thumbUrl is None
     assert album.title == "Layers"
     assert album.titleSort == "Layers"
     assert album.type == "album"
@@ -138,8 +128,12 @@ def test_audio_Album_tracks(album):
     tracks = album.tracks()
     track = tracks[0]
     assert len(tracks) == 1
+    if track.grandparentArt:
+        assert utils.is_art(track.grandparentArt)
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
+    if track.grandparentThumb:
+        assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
     assert track.index == 1
     assert utils.is_metadata(track._initpath)
@@ -175,9 +169,6 @@ def test_audio_Album_track(album, track=None):
     assert utils.is_datetime(track.addedAt)
     if track.art:
         assert utils.is_art(track.art)
-        assert utils.is_artUrl(track.artUrl)
-    else:
-        assert track.artUrl is None
     assert utils.is_int(track.duration)
     if track.grandparentArt:
         assert utils.is_art(track.grandparentArt)
@@ -206,9 +197,6 @@ def test_audio_Album_track(album, track=None):
     assert track.summary == ""
     if track.thumb:
         assert utils.is_thumb(track.thumb)
-        assert utils.is_thumbUrl(track.thumbUrl)
-    else:
-        assert track.thumbUrl is None
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
     assert not track.transcodeSessions
@@ -257,6 +245,8 @@ def test_audio_Album_artist(album):
 def test_audio_Album_mixins_images(album):
     test_mixins.edit_art(album)
     test_mixins.edit_poster(album)
+    test_mixins.attr_artUrl(album)
+    test_mixins.attr_posterUrl(album)
 
 
 def test_audio_Album_mixins_tags(album):
@@ -272,9 +262,6 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.addedAt)
     if track.art:
         assert utils.is_art(track.art)
-        assert utils.is_artUrl(track.artUrl)
-    else:
-        assert track.artUrl is None
     assert track.chapterSource is None
     assert utils.is_int(track.duration)
     if track.grandparentArt:
@@ -312,9 +299,6 @@ def test_audio_Track_attrs(album):
     assert track.summary == ""
     if track.thumb:
         assert utils.is_thumb(track.thumb)
-        assert utils.is_thumbUrl(track.thumbUrl)
-    else:
-        assert track.thumbUrl is None
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
     assert not track.transcodeSessions
@@ -390,6 +374,11 @@ def test_audio_Track_album(album):
 def test_audio_Track_artist(album, artist):
     tracks = album.tracks()
     assert tracks[0].artist() == artist
+
+
+def test_audio_Track_mixins_images(track):
+    test_mixins.attr_artUrl(track)
+    test_mixins.attr_posterUrl(track)
 
 
 def test_audio_Track_mixins_tags(track):

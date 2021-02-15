@@ -389,18 +389,6 @@ def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
 
 
-def is_artUrl(url):
-    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/art/" in url
-
-
-def is_bannerUrl(url):
-    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/banner/" in url
-
-
-def is_thumbUrl(url):
-    return url.startswith(SERVER_BASEURL) and "/library/metadata/" in url and "/thumb/" in url
-
-
 def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
     start = time.time()
     ready = condition_function(*args, **kwargs)

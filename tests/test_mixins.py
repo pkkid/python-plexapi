@@ -122,3 +122,25 @@ def edit_banner(obj):
 
 def edit_poster(obj):
     _test_mixins_image(obj, 'posters')
+
+
+def _test_mixins_imageUrl(obj, attr):
+    url = getattr(obj, attr + 'Url')
+    if getattr(obj, attr):
+        assert url.startswith(utils.SERVER_BASEURL)
+        assert "/library/metadata/" in url
+        assert attr in url
+    else:
+        assert url is None
+
+
+def attr_artUrl(obj):
+    _test_mixins_imageUrl(obj, 'art')
+
+
+def attr_bannerUrl(obj):
+    _test_mixins_imageUrl(obj, 'banner')
+
+
+def attr_posterUrl(obj):
+    _test_mixins_imageUrl(obj, 'poster')
