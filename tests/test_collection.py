@@ -71,7 +71,7 @@ def test_Collection_edit(collection):
 
 def test_Collection_delete(movies):
     delete_collection = "delete_collection"
-    movie = movies.get("Sita Sings the Blues")
+    movie = movies.get("Sintel")
     movie.addCollection(delete_collection)
     collections = movies.collections(title=delete_collection)
     assert len(collections) == 1
