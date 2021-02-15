@@ -232,7 +232,7 @@ class PlexObject(object):
     def firstAttr(self, *attrs):
         """ Return the first attribute in attrs that is not None. """
         for attr in attrs:
-            value = self.__dict__.get(attr)
+            value = getattr(self, attr, None)
             if value is not None:
                 return value
 
