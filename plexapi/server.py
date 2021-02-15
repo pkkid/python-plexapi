@@ -787,6 +787,20 @@ class Activity(PlexObject):
         self.uuid = data.attrib.get('uuid')
 
 
+@utils.registerPlexObject
+class Release(PlexObject):
+    TAG = 'Release'
+    key = '/updater/status'
+
+    def _loadData(self, data):
+        self.download_key = data.attrib.get('key')
+        self.version = data.attrib.get('version')
+        self.added = data.attrib.get('added')
+        self.fixed = data.attrib.get('fixed')
+        self.downloadURL = data.attrib.get('downloadURL')
+        self.state = data.attrib.get('state')
+
+
 class SystemAccount(PlexObject):
     """ Represents a single system account.
 
