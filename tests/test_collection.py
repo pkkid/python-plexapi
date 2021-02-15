@@ -19,8 +19,8 @@ def test_Collection_attrs(collection):
     assert utils.is_int(collection.librarySectionID)
     assert collection.librarySectionKey == "/library/sections/%s" % collection.librarySectionID
     assert collection.librarySectionTitle == "Movies"
-    assert collection.maxYear is None
-    assert collection.minYear is None
+    assert utils.is_int(collection.maxYear)
+    assert utils.is_int(collection.minYear)
     assert utils.is_int(collection.ratingKey)
     assert collection.subtype == "movie"
     assert collection.summary == ""
@@ -33,7 +33,7 @@ def test_Collection_attrs(collection):
 
 
 def test_Collection_modeUpdate(collection):
-    mode_dict = {"default": "-1", "hide": "0", "hideItems": "1", "showItems": "2"}
+    mode_dict = {"default": -1, "hide": 0, "hideItems": 1, "showItems": 2}
     for key, value in mode_dict.items():
         collection.modeUpdate(key)
         collection.reload()
@@ -43,13 +43,13 @@ def test_Collection_modeUpdate(collection):
 def test_Colletion_sortAlpha(collection):
     collection.sortUpdate(sort="alpha")
     collection.reload()
-    assert collection.collectionSort == "1"
+    assert collection.collectionSort == 1
 
 
 def test_Colletion_sortRelease(collection):
     collection.sortUpdate(sort="release")
     collection.reload()
-    assert collection.collectionSort == "0"
+    assert collection.collectionSort == 0
 
 
 def test_Colletion_edit(collection):
