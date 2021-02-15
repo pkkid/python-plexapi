@@ -17,7 +17,6 @@ class GDM:
 
     def __init__(self):
         self.entries = []
-        self.last_scan = None
 
     def scan(self, scan_for_clients=False):
         """Scan the network."""
