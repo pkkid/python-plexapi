@@ -43,9 +43,10 @@ def test_Collection_modeUpdate(collection):
         assert collection.collectionMode == value
     with pytest.raises(BadRequest):
         collection.modeUpdate(mode="bad-mode")
+    collection.modeUpdate("default")
 
 
-def test_Colletion_sortUpdate(collection):
+def test_Collection_sortUpdate(collection):
     sort_dict = {"release": 0, "alpha": 1, "custom": 2}
     for key, value in sort_dict.items():
         collection.sortUpdate(sort=key)
@@ -53,9 +54,10 @@ def test_Colletion_sortUpdate(collection):
         assert collection.collectionSort == value
     with pytest.raises(BadRequest):
         collection.sortUpdate(sort="bad-sort")
+    collection.sortUpdate("release")
 
 
-def test_Colletion_edit(collection):
+def test_Collection_edit(collection):
     edits = {"titleSort.value": "New Title Sort", "titleSort.locked": 1}
     collectionTitleSort = collection.titleSort
     collection.edit(**edits)
