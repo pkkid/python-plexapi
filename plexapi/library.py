@@ -838,7 +838,7 @@ class LibrarySection(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
-    @deprecated('use "collections" (plural) instead')
+    @deprecated('use "collections" (plural) instead', stacklevel=2)
     def collection(self, **kwargs):
         return self.collections()
 
@@ -1596,7 +1596,7 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     @property
     @deprecated('use "items" instead')
     def children(self):
-        return self.fetchItems(self.key)
+        return self.items()
 
     @property
     def thumbUrl(self):
