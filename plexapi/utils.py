@@ -466,7 +466,7 @@ def base64str(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 
-def deprecated(message, stacklevel=3):
+def deprecated(message, stacklevel=2):
     def decorator(func):
         """This is a decorator which can be used to mark functions
         as deprecated. It will result in a warning being emitted
