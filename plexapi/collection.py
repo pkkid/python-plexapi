@@ -77,7 +77,7 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     @property
     @deprecated('use "items" instead')
     def children(self):
-        return self.fetchItems(self.key)
+        return self.items()
 
     @property
     def thumbUrl(self):
