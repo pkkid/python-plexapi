@@ -51,7 +51,7 @@ def _iter_items(section):
 
 def backup_watched(plex, opts):
     """ Backup watched status to the specified filepath. """
-    data = defaultdict(lambda: dict())
+    data = defaultdict(lambda: {})
     for section in _iter_sections(plex, opts):
         print('Fetching watched status for %s..' % section.title)
         skey = section.title.lower()
@@ -70,7 +70,7 @@ def restore_watched(plex, opts):
     with open(opts.filepath, 'r') as handle:
         source = json.load(handle)
     # Find the differences
-    differences = defaultdict(lambda: dict())
+    differences = defaultdict(lambda: {})
     for section in _iter_sections(plex, opts):
         print('Finding differences in %s..' % section.title)
         skey = section.title.lower()
