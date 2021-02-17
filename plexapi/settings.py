@@ -44,7 +44,7 @@ class Settings(PlexObject):
 
     def all(self):
         """ Returns a list of all :class:`~plexapi.settings.Setting` objects available. """
-        return list(v for id, v in sorted(self._settings.items()))
+        return [v for id, v in sorted(self._settings.items())]
 
     def get(self, id):
         """ Return the :class:`~plexapi.settings.Setting` object with the specified id. """
