@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from . import conftest as utils
 from . import test_mixins
 
