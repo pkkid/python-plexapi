@@ -234,13 +234,11 @@ def movie(movies):
 @pytest.fixture()
 def collection(movies):
     try:
-        return movies.collections()[0]
+        return movies.collections(title="marvel")[0]
     except IndexError:
         movie = movies.get("Elephants Dream")
-        movie.addCollection(["marvel"])
-
-        n = movies.reload()
-        return n.collections()[0]
+        movie.addCollection("marvel")
+        return movies.collections(title="marvel")[0]
 
 
 @pytest.fixture()
@@ -274,6 +272,11 @@ def photoalbum(photos):
         return photos.get("Cats")
     except Exception:
         return photos.get("photo_album1")
+
+
+@pytest.fixture()
+def photo(photoalbum):
+    return photoalbum.photo("photo1")
 
 
 @pytest.fixture()
@@ -375,6 +378,14 @@ def is_section(key):
 
 def is_string(value, gte=1):
     return isinstance(value, str) and len(value) >= gte
+
+
+def is_art(key):
+    return is_metadata(key, contains="/art/")
+
+
+def is_banner(key):
+    return is_metadata(key, contains="/banner/")
 
 
 def is_thumb(key):

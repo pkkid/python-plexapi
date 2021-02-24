@@ -21,7 +21,6 @@ except ImportError:
     tqdm = None
 
 log = logging.getLogger('plexapi')
-warnings.simplefilter('default', category=DeprecationWarning)
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
@@ -467,7 +466,7 @@ def base64str(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 
-def deprecated(message):
+def deprecated(message, stacklevel=2):
     def decorator(func):
         """This is a decorator which can be used to mark functions
         as deprecated. It will result in a warning being emitted
@@ -475,7 +474,7 @@ def deprecated(message):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
-            warnings.warn(msg, category=DeprecationWarning, stacklevel=3)
+            warnings.warn(msg, category=DeprecationWarning, stacklevel=stacklevel)
             log.warning(msg)
             return func(*args, **kwargs)
         return wrapper

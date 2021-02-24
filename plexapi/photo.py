@@ -4,11 +4,11 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import TagMixin
+from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, TagMixin
 
 
 @utils.registerPlexObject
-class Photoalbum(PlexPartialObject):
+class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin):
     """ Represents a single Photoalbum (collection of photos).
 
         Attributes:
@@ -137,7 +137,7 @@ class Photoalbum(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject, Playable, TagMixin):
+class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, TagMixin):
     """ Represents a single Photo.
 
         Attributes:
@@ -207,12 +207,6 @@ class Photo(PlexPartialObject, Playable, TagMixin):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.year = utils.cast(int, data.attrib.get('year'))
-
-    @property
-    def thumbUrl(self):
-        """Return URL for the thumbnail image."""
-        key = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
-        return self._server.url(key, includeToken=True) if key else None
 
     def photoalbum(self):
         """ Return the photo's :class:`~plexapi.photo.Photoalbum`. """

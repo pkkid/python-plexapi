@@ -5,7 +5,8 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
+from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -65,20 +66,6 @@ class Video(PlexPartialObject):
     def isWatched(self):
         """ Returns True if this video is watched. """
         return bool(self.viewCount > 0) if self.viewCount else False
-
-    @property
-    def thumbUrl(self):
-        """ Return the first first thumbnail url starting on
-            the most specific thumbnail for that item.
-        """
-        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
-        return self._server.url(thumb, includeToken=True) if thumb else None
-
-    @property
-    def artUrl(self):
-        """ Return the first first art url starting on the most specific for that item."""
-        art = self.firstAttr('art', 'grandparentArt')
-        return self._server.url(art, includeToken=True) if art else None
 
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
@@ -388,7 +375,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
 
 
 @utils.registerPlexObject
-class Show(Video, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -853,8 +840,8 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
 
 
 @utils.registerPlexObject
-class Clip(Video, Playable):
-    """Represents a single Clip.
+class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
+    """ Represents a single Clip.
 
         Attributes:
             TAG (str): 'Video'
@@ -876,7 +863,7 @@ class Clip(Video, Playable):
     METADATA_TYPE = 'clip'
 
     def _loadData(self, data):
-        """Load attribute values from Plex XML response."""
+        """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self._data = data
