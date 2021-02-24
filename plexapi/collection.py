@@ -75,7 +75,7 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     @property
-    @deprecated('use "items" instead')
+    @deprecated('use "items" instead', stacklevel=3)
     def children(self):
         return self.items()
 
