@@ -19,7 +19,8 @@ from plexapi.utils import cast
 from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
-from plexapi import audio as _audio  # noqa: F401; noqa: F401
+from plexapi import audio as _audio  # noqa: F401
+from plexapi import collection as _collection  # noqa: F401
 from plexapi import media as _media  # noqa: F401
 from plexapi import photo as _photo  # noqa: F401
 from plexapi import playlist as _playlist  # noqa: F401
