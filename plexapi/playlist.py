@@ -64,6 +64,11 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             yield item
 
     @property
+    def thumb(self):
+        """ Alias to self.composite. """
+        return self.composite
+
+    @property
     def metadataType(self):
         if self.isVideo:
             return 'movie'

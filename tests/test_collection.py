@@ -93,16 +93,6 @@ def test_Collection_items(collection):
     assert len(items) == 1
 
 
-def test_Collection_thumbUrl(collection):
-    assert utils.SERVER_BASEURL in collection.thumbUrl
-    assert "/library/collections/" in collection.thumbUrl
-    assert "/composite/" in collection.thumbUrl
-
-
-def test_Collection_artUrl(collection):
-    assert collection.artUrl is None  # Collections don't have default art
-
-    
 def test_Collection_posters(collection):
     posters = collection.posters()
     assert posters
@@ -111,6 +101,13 @@ def test_Collection_posters(collection):
 def test_Collection_art(collection):
     arts = collection.arts()
     assert not arts  # Collection has no default art
+
+
+def test_Collection_mixins_images(collection):
+    test_mixins.edit_art(collection)
+    test_mixins.edit_poster(collection)
+    test_mixins.attr_artUrl(collection)
+    test_mixins.attr_posterUrl(collection)
 
 
 def test_Collection_mixins_tags(collection):

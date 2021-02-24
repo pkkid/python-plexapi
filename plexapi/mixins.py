@@ -5,15 +5,25 @@ from plexapi import media, utils
 from plexapi.exceptions import NotFound
 
 
-class ArtMixin(object):
-    """ Mixin for Plex objects that can have artwork."""
+class ArtUrlMixin(object):
+    """ Mixin for Plex objects that can have a background artwork url. """
+    
+    @property
+    def artUrl(self):
+        """ Return the art url for the Plex object. """
+        art = self.firstAttr('art', 'grandparentArt')
+        return self._server.url(art, includeToken=True) if art else None
+
+
+class ArtMixin(ArtUrlMixin):
+    """ Mixin for Plex objects that can have background artwork. """
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
         return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=media.Art)
 
     def uploadArt(self, url=None, filepath=None):
-        """ Upload art from url or filepath and set it as the selected art.
+        """ Upload a background artwork from a url or filepath.
         
             Parameters:
                 url (str): The full URL to the image to upload.
@@ -28,7 +38,7 @@ class ArtMixin(object):
             self._server.query(key, method=self._server._session.post, data=data)
 
     def setArt(self, art):
-        """ Set the artwork for a Plex object.
+        """ Set the background artwork for a Plex object.
         
             Parameters:
                 art (:class:`~plexapi.media.Art`): The art object to select.
@@ -36,15 +46,71 @@ class ArtMixin(object):
         art.select()
 
 
-class PosterMixin(object):
-    """ Mixin for Plex objects that can have posters."""
+class BannerUrlMixin(object):
+    """ Mixin for Plex objects that can have a banner url. """
+
+    @property
+    def bannerUrl(self):
+        """ Return the banner url for the Plex object. """
+        banner = self.firstAttr('banner')
+        return self._server.url(banner, includeToken=True) if banner else None
+
+
+class BannerMixin(BannerUrlMixin):
+    """ Mixin for Plex objects that can have banners. """
+
+    def banners(self):
+        """ Returns list of available :class:`~plexapi.media.Banner` objects. """
+        return self.fetchItems('/library/metadata/%s/banners' % self.ratingKey, cls=media.Banner)
+
+    def uploadBanner(self, url=None, filepath=None):
+        """ Upload a banner from a url or filepath.
+        
+            Parameters:
+                url (str): The full URL to the image to upload.
+                filepath (str): The full file path the the image to upload.
+        """
+        if url:
+            key = '/library/metadata/%s/banners?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '/library/metadata/%s/banners?' % self.ratingKey
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setBanner(self, banner):
+        """ Set the banner for a Plex object.
+        
+            Parameters:
+                banner (:class:`~plexapi.media.Banner`): The banner object to select.
+        """
+        banner.select()
+
+
+class PosterUrlMixin(object):
+    """ Mixin for Plex objects that can have a poster url. """
+
+    @property
+    def thumbUrl(self):
+        """ Return the thumb url for the Plex object. """
+        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        return self._server.url(thumb, includeToken=True) if thumb else None
+
+    @property
+    def posterUrl(self):
+        """ Alias to self.thumbUrl. """
+        return self.thumbUrl
+
+
+class PosterMixin(PosterUrlMixin):
+    """ Mixin for Plex objects that can have posters. """
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
         return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=media.Poster)
 
     def uploadPoster(self, url=None, filepath=None):
-        """ Upload poster from url or filepath and set it as the selected poster.
+        """ Upload a poster from a url or filepath.
 
             Parameters:
                 url (str): The full URL to the image to upload.
@@ -68,7 +134,7 @@ class PosterMixin(object):
 
 
 class SplitMergeMixin(object):
-    """ Mixin for Plex objects that can be split and merged."""
+    """ Mixin for Plex objects that can be split and merged. """
 
     def split(self):
         """ Split duplicated Plex object into separate objects. """
@@ -89,7 +155,7 @@ class SplitMergeMixin(object):
 
 
 class UnmatchMatchMixin(object):
-    """ Mixin for Plex objects that can be unmatched and matched."""
+    """ Mixin for Plex objects that can be unmatched and matched. """
 
     def unmatch(self):
         """ Unmatches metadata match from object. """

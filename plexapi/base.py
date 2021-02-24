@@ -232,7 +232,7 @@ class PlexObject(object):
     def firstAttr(self, *attrs):
         """ Return the first attribute in attrs that is not None. """
         for attr in attrs:
-            value = self.__dict__.get(attr)
+            value = getattr(self, attr, None)
             if value is not None:
                 return value
 
@@ -579,11 +579,6 @@ class Playable(object):
         for item in self.media:
             for part in item.parts:
                 yield part
-
-    def unmatch(self):
-        """Unmatch a media file."""
-        key = '%s/unmatch' % self.key
-        return self._server.query(key, method=self._server._session.put)
 
     def play(self, client):
         """ Start playback on the specified client.
