@@ -723,7 +723,7 @@ class LibrarySection(PlexObject):
         result = set()
         choices = self.listChoices(category, libtype)
         lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
-        allowed = set(c.key for c in choices)
+        allowed = {c.key for c in choices}
         for item in value:
             item = str((item.id or item.tag) if isinstance(item, media.MediaTag) else item).lower()
             # find most logical choice(s) to use in url

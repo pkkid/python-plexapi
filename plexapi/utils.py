@@ -176,7 +176,7 @@ def threaded(callback, listargs):
         threads[-1].setDaemon(True)
         threads[-1].start()
     while not job_is_done_event.is_set():
-        if all([not t.is_alive() for t in threads]):
+        if all(not t.is_alive() for t in threads):
             break
         time.sleep(0.05)
 

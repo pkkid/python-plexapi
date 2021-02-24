@@ -397,7 +397,7 @@ class PlexPartialObject(PlexObject):
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
         objname = "%s '%s'" % (clsname, title) if title else clsname
-        log.debug("Reloading %s for attr '%s'" % (objname, attr))
+        log.debug("Reloading %s for attr '%s'", objname, attr)
         # Reload and return the value
         self.reload()
         return super(PlexPartialObject, self).__getattribute__(attr)
@@ -501,7 +501,7 @@ class PlexPartialObject(PlexObject):
             return self._server.query(self.key, method=self._server._session.delete)
         except BadRequest:  # pragma: no cover
             log.error('Failed to delete %s. This could be because you '
-                'havnt allowed items to be deleted' % self.key)
+                'have not allowed items to be deleted', self.key)
             raise
 
     def history(self, maxresults=9999999, mindate=None):
