@@ -4,7 +4,6 @@ import pytest
 from plexapi.exceptions import NotFound
 
 from . import conftest as utils
-from . import test_mixins
 
 
 def test_library_Library_section(plex):
@@ -257,82 +256,6 @@ def test_library_editAdvanced_default(movies):
     movies.defaultAdvanced()
     for setting in movies.settings():
         assert str(setting.value) == str(setting.default)
-
-
-def test_library_Collection_modeUpdate(collection):
-    mode_dict = {"default": "-1", "hide": "0", "hideItems": "1", "showItems": "2"}
-    for key, value in mode_dict.items():
-        collection.modeUpdate(key)
-        collection.reload()
-        assert collection.collectionMode == value
-
-
-def test_library_Colletion_sortAlpha(collection):
-    collection.sortUpdate(sort="alpha")
-    collection.reload()
-    assert collection.collectionSort == "1"
-
-
-def test_library_Colletion_sortRelease(collection):
-    collection.sortUpdate(sort="release")
-    collection.reload()
-    assert collection.collectionSort == "0"
-
-
-def test_library_Colletion_edit(collection):
-    edits = {'titleSort.value': 'New Title Sort', 'titleSort.locked': 1}
-    collectionTitleSort = collection.titleSort
-    collection.edit(**edits)
-    collection.reload()
-    for field in collection.fields:
-        if field.name == 'titleSort':
-            assert collection.titleSort == 'New Title Sort'
-            assert field.locked is True
-    collection.edit(**{'titleSort.value': collectionTitleSort, 'titleSort.locked': 0})
-
-
-def test_library_Collection_delete(movies, movie):
-    delete_collection = 'delete_collection'
-    movie.addCollection(delete_collection)
-    collections = movies.collections(title=delete_collection)
-    assert len(collections) == 1
-    collections[0].delete()
-    collections = movies.collections(title=delete_collection)
-    assert len(collections) == 0
-
-
-def test_library_Collection_item(collection):
-    item1 = collection.item("Elephants Dream")
-    assert item1.title == "Elephants Dream"
-    item2 = collection.get("Elephants Dream")
-    assert item2.title == "Elephants Dream"
-    assert item1 == item2
-
-
-def test_library_Collection_items(collection):
-    items = collection.items()
-    assert len(items) == 1
-
-
-def test_library_Collection_posters(collection):
-    posters = collection.posters()
-    assert posters
-
-
-def test_library_Collection_art(collection):
-    arts = collection.arts()
-    assert not arts  # Collection has no default art
-
-
-def test_library_Collection_mixins_images(collection):
-    test_mixins.edit_art(collection)
-    test_mixins.edit_poster(collection)
-    test_mixins.attr_artUrl(collection)
-    test_mixins.attr_posterUrl(collection)
-
-
-def test_library_Collection_mixins_tags(collection):
-    test_mixins.edit_label(collection)
 
 
 def test_search_with_weird_a(plex):
