@@ -399,6 +399,7 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created show (Di Bonaventura Pictures; 21 Laps Entertainment).
+            tagline (str): Show tag line.
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
             viewedLeafCount (int): Number of items marked as played in the show view.
             year (int): Year the show was released.
@@ -427,6 +428,7 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
         self.roles = self.findItems(data, media.Role)
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
+        self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))

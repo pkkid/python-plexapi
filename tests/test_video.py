@@ -588,6 +588,7 @@ def test_video_Show_attrs(show):
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == "HBO"
     assert utils.is_string(show.summary, gte=100)
+    assert show.tagline is None
     assert utils.is_metadata(show.theme, contains="/theme/")
     if show.thumb:
         assert utils.is_thumb(show.thumb)
