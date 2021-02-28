@@ -20,6 +20,7 @@
    modules/gdm
    modules/library
    modules/media
+   modules/mixins
    modules/myplex
    modules/photo
    modules/playlist

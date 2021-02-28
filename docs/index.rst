@@ -1,7 +1,6 @@
 Table of Contents
 =================
 .. include:: toc.rst
-.. automodule:: myplex
 
 Usage & Contributions
 ---------------------
