@@ -678,11 +678,11 @@ class Season(Video, ArtMixin, PosterMixin):
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(watched=True)
+        return self.episodes(viewCount__gt=0)
 
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(watched=False)
+        return self.episodes(viewCount=0)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
