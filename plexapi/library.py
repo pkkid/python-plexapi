@@ -472,7 +472,7 @@ class LibrarySection(PlexObject):
         """ Returns a list of available :class:`~plexapi.library.FilterField` for this library section.
         """
         items = []
-        key = '/library/sections/%s/filters?includeMeta=1' % self.key
+        key = '/library/sections/%s/all?includeMeta=1' % self.key
         data = self._server.query(key)
         for meta in data.iter('Meta'):
             for metaType in meta.iter('Type'):
