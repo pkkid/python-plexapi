@@ -185,6 +185,7 @@ def test_video_Movie_attrs(movies):
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
+    assert movie.languageOverride is None
     assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == "video"
@@ -206,6 +207,7 @@ def test_video_Movie_attrs(movies):
     assert not movie.transcodeSessions
     assert movie.type == "movie"
     assert movie.updatedAt > datetime(2017, 1, 1)
+    assert movie.useOriginalTitle == -1
     assert movie.userRating is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
