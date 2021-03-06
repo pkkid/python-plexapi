@@ -550,21 +550,21 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     if show.art:
         assert utils.is_art(show.art)
-    assert show.audienceRating is None  # TODO: Change when updating test to the Plex TV agent
-    assert show.audienceRatingImage is None  # TODO: Change when updating test to the Plex TV agent
-    assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
-    assert show.autoDeletionItemPolicyWatchedLibrary == 0
     if show.banner:
         assert utils.is_banner(show.banner)
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
     assert utils.is_int(show.duration, gte=1600000)
-    assert show.episodeSort == -1
-    assert show.flattenSeasons == -1
     assert utils.is_section(show._initpath)
     # Check reloading the show loads the full list of genres
     assert not {"Adventure", "Drama"} - {i.tag for i in show.genres}
     show.reload()
+    assert show.audienceRating is None  # TODO: Change when updating test to the Plex TV agent
+    assert show.audienceRatingImage is None  # TODO: Change when updating test to the Plex TV agent
+    assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
+    assert show.autoDeletionItemPolicyWatchedLibrary == 0
+    assert show.episodeSort == -1
+    assert show.flattenSeasons == -1
     assert sorted([i.tag for i in show.genres]) == ["Adventure", "Drama", "Fantasy"]
     assert show.guids == []  # TODO: Change when updating test to the Plex TV agent
     # So the initkey should have changed because of the reload
@@ -594,7 +594,7 @@ def test_video_Show_attrs(show):
         "Alfie Allen",
     ]  # noqa
     assert show._server._baseurl == utils.SERVER_BASEURL
-    assert show.showOrdering is None
+    assert show.showOrdering in (None, 'aired')
     assert show.studio == "HBO"
     assert utils.is_string(show.summary, gte=100)
     assert show.tagline is None
