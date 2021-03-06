@@ -267,6 +267,8 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
+            languageOverride (str): Setting that indicates if a languge is used to override metadata
+                (eg. en-CA, None = Library default).
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the movie was released.
             originalTitle (str): Original title, often the foreign title (転々; 엽기적인 그녀).
@@ -278,6 +280,8 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
+            useOriginalTitle (int): Setting that indicates if the original title is used for the movie
+                (-1 = Library default, 0 = No, 1 = Yes).
             userRating (float): User rating (2.0; 8.0).
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
@@ -303,6 +307,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
+        self.languageOverride = data.attrib.get('languageOverride')
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.originalTitle = data.attrib.get('originalTitle')
@@ -314,6 +319,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
+        self.useOriginalTitle = utils.cast(int, data.attrib.get('useOriginalTitle', '-1'))
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
