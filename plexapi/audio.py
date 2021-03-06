@@ -137,7 +137,7 @@ class Artist(Audio, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
-        self.albumSort = utils.cast(int, self.data.attrib.get('albumSort', '-1'))
+        self.albumSort = utils.cast(int, data.attrib.get('albumSort', '-1'))
         self.collections = self.findItems(data, media.Collection)
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
