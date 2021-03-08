@@ -409,6 +409,7 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
                 (eg. en-CA, None = Library default).
             leafCount (int): Number of items in the show view.
             locations (List<str>): List of folder paths where the show is found on disk.
+            network (str): The network that distributed the show.
             originallyAvailableAt (datetime): Datetime the show was released.
             originalTitle (str): The original title of the show.
             rating (float): Show rating (7.9; 9.8; 8.1).
@@ -453,6 +454,7 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
         self.languageOverride = data.attrib.get('languageOverride')
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.locations = self.listAttrs(data, 'path', etag='Location')
+        self.network = data.attrib.get('network')
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.originalTitle = data.attrib.get('originalTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
