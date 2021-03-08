@@ -14,5 +14,5 @@ requests==2.25.0
 requests-mock==1.8.0
 sphinx==3.3.1
 sphinx-rtd-theme==0.5.0
-tqdm==4.54.0
+tqdm==4.59.0
 websocket-client==0.57.0
