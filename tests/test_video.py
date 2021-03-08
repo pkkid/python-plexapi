@@ -577,6 +577,7 @@ def test_video_Show_attrs(show):
     assert show.listType == "video"
     assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
+    assert show.network is None
     assert utils.is_datetime(show.originallyAvailableAt)
     assert show.originalTitle is None
     assert show.rating >= 8.0
