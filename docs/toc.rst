@@ -15,11 +15,13 @@
    modules/audio
    modules/base
    modules/client
+   modules/collection
    modules/config
    modules/exceptions
    modules/gdm
    modules/library
    modules/media
+   modules/mixins
    modules/myplex
    modules/photo
    modules/playlist

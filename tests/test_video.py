@@ -8,6 +8,7 @@ import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
+from . import test_mixins
 
 
 def test_video_Movie(movies, movie):
@@ -39,16 +40,19 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
-def test_video_Movie_addCollection(movie):
-    labelname = "Random_label"
-    org_collection = [tag.tag for tag in movie.collections if tag]
-    assert labelname not in org_collection
-    movie.addCollection(labelname)
-    movie.reload()
-    assert labelname in [tag.tag for tag in movie.collections if tag]
-    movie.removeCollection(labelname)
-    movie.reload()
-    assert labelname not in [tag.tag for tag in movie.collections if tag]
+def test_video_Movie_mixins_images(movie):
+    test_mixins.edit_art(movie)
+    test_mixins.edit_poster(movie)
+
+
+def test_video_Movie_mixins_tags(movie):
+    test_mixins.edit_collection(movie)
+    test_mixins.edit_country(movie)
+    test_mixins.edit_director(movie)
+    test_mixins.edit_genre(movie)
+    test_mixins.edit_label(movie)
+    test_mixins.edit_producer(movie)
+    test_mixins.edit_writer(movie)
 
 
 def test_video_Movie_getStreamURL(movie, account):
@@ -130,7 +134,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     assert subname in subtitles
 
     subtitleSelection = movie.subtitleStreams()[0]
-    parts = [part for part in movie.iterParts()]
+    parts = list(movie.iterParts())
     parts[0].setDefaultSubtitleStream(subtitleSelection)
     movie.reload()
 
@@ -153,8 +157,8 @@ def test_video_Movie_attrs(movies):
     assert len(movie.locations) == 1
     assert len(movie.locations[0]) >= 10
     assert utils.is_datetime(movie.addedAt)
-    assert utils.is_metadata(movie.art)
-    assert movie.artUrl
+    if movie.art:
+        assert utils.is_art(movie.art)
     assert float(movie.rating) >= 6.4
     assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert movie.audienceRating >= 8.5
@@ -195,7 +199,8 @@ def test_video_Movie_attrs(movies):
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == "The Greatest Break-Up Story Ever Told"
-    assert utils.is_thumb(movie.thumb)
+    if movie.thumb:
+        assert utils.is_thumb(movie.thumb)
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
     assert not movie.transcodeSessions
@@ -524,14 +529,6 @@ def test_video_Show(show):
     assert show.title == "Game of Thrones"
 
 
-def test_video_Episode_split(episode, patched_http_call):
-    episode.split()
-
-
-def test_video_Episode_unmatch(episode, patched_http_call):
-    episode.unmatch()
-
-
 def test_video_Episode_updateProgress(episode, patched_http_call):
     episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
 
@@ -551,8 +548,10 @@ def test_video_Episode_stop(episode, mocker, patched_http_call):
 
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
-    assert utils.is_metadata(show.art, contains="/art/")
-    assert utils.is_metadata(show.banner, contains="/banner/")
+    if show.art:
+        assert utils.is_art(show.art)
+    if show.banner:
+        assert utils.is_banner(show.banner)
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
     assert utils.is_int(show.duration, gte=1600000)
@@ -571,6 +570,7 @@ def test_video_Show_attrs(show):
     assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
     assert utils.is_datetime(show.originallyAvailableAt)
+    assert show.originalTitle is None
     assert show.rating >= 8.0
     assert utils.is_int(show.ratingKey)
     assert sorted([i.tag for i in show.roles])[:4] == [
@@ -588,8 +588,10 @@ def test_video_Show_attrs(show):
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.studio == "HBO"
     assert utils.is_string(show.summary, gte=100)
+    assert show.tagline is None
     assert utils.is_metadata(show.theme, contains="/theme/")
-    assert utils.is_metadata(show.thumb, contains="/thumb/")
+    if show.thumb:
+        assert utils.is_thumb(show.thumb)
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
@@ -609,17 +611,21 @@ def test_video_Show_history(show):
 
 def test_video_Show_watched(tvshows):
     show = tvshows.get("The 100")
-    show.episodes()[0].markWatched()
+    episode = show.episodes()[0]
+    episode.markWatched()
     watched = show.watched()
     assert len(watched) == 1 and watched[0].title == "Pilot"
+    episode.markUnwatched()
 
 
 def test_video_Show_unwatched(tvshows):
     show = tvshows.get("The 100")
     episodes = show.episodes()
-    episodes[0].markWatched()
+    episode = episodes[0]
+    episode.markWatched()
     unwatched = show.unwatched()
     assert len(unwatched) == len(episodes) - 1
+    episode.markUnwatched()
 
 
 def test_video_Show_settings(show):
@@ -684,12 +690,6 @@ def test_video_Episode_download(monkeydownload, tmpdir, episode):
     assert len(with_sceen_size) == 1
 
 
-def test_video_Show_thumbUrl(show):
-    assert utils.SERVER_BASEURL in show.thumbUrl
-    assert "/library/metadata/" in show.thumbUrl
-    assert "/thumb/" in show.thumbUrl
-
-
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Show_analyze(show):
@@ -723,6 +723,21 @@ def test_video_Show_section(show):
     assert section.title == "TV Shows"
 
 
+def test_video_Show_mixins_images(show):
+    test_mixins.edit_art(show)
+    test_mixins.edit_banner(show)
+    test_mixins.edit_poster(show)
+    test_mixins.attr_artUrl(show)
+    test_mixins.attr_bannerUrl(show)
+    test_mixins.attr_posterUrl(show)
+
+
+def test_video_Show_mixins_tags(show):
+    test_mixins.edit_collection(show)
+    test_mixins.edit_genre(show)
+    test_mixins.edit_label(show)
+
+
 def test_video_Episode(show):
     episode = show.episode("Winter Is Coming")
     assert episode == show.episode(season=1, episode=1)
@@ -739,6 +754,31 @@ def test_video_Episode_history(episode):
     episode.markUnwatched()
 
 
+def test_video_Episode_hidden_season(episode):
+    assert episode.skipParent is False
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show = episode.show()
+    show.editAdvanced(flattenSeasons=1)
+    episode.reload()
+    assert episode.skipParent is True
+    assert episode.parentRatingKey
+    assert episode.parentKey
+    assert episode.seasonNumber
+    show.defaultAdvanced()
+
+
+def test_video_Episode_parent_weakref(show):
+    season = show.season(season=1)
+    episode = season.episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() == season
+    episode = show.season(season=1).episode(episode=1)
+    assert episode._parent is not None
+    assert episode._parent() is None
+
+
 # Analyze seems to fail intermittently
 @pytest.mark.xfail
 def test_video_Episode_analyze(tvshows):
@@ -748,10 +788,16 @@ def test_video_Episode_analyze(tvshows):
 
 def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
+    if episode.art:
+        assert utils.is_art(episode.art)
     assert episode.contentRating in utils.CONTENTRATINGS
     if len(episode.directors):
         assert [i.tag for i in episode.directors] == ["Tim Van Patten"]
     assert utils.is_int(episode.duration, gte=120000)
+    if episode.grandparentArt:
+        assert utils.is_art(episode.grandparentArt)
+    if episode.grandparentThumb:
+        assert utils.is_thumb(episode.grandparentThumb)
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
@@ -761,12 +807,15 @@ def test_video_Episode_attrs(episode):
     assert utils.is_int(episode.parentIndex)
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
-    assert utils.is_metadata(episode.parentThumb, contains="/thumb/")
+    if episode.parentThumb:
+        assert utils.is_thumb(episode.parentThumb)
     assert episode.rating >= 7.7
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
+    assert episode.skipParent is False
     assert utils.is_string(episode.summary, gte=100)
-    assert utils.is_metadata(episode.thumb, contains="/thumb/")
+    if episode.thumb:
+        assert utils.is_thumb(episode.thumb)
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
     assert not episode.transcodeSessions
@@ -813,6 +862,18 @@ def test_video_Episode_attrs(episode):
     assert part.accessible
 
 
+def test_video_Episode_mixins_images(episode):
+    #test_mixins.edit_art(episode)  # Uploading episode artwork is broken in Plex
+    test_mixins.edit_poster(episode)
+    test_mixins.attr_artUrl(episode)
+    test_mixins.attr_posterUrl(episode)
+
+
+def test_video_Episode_mixins_tags(episode):
+    test_mixins.edit_director(episode)
+    test_mixins.edit_writer(episode)
+
+
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) == 2
@@ -828,9 +889,30 @@ def test_video_Season_history(show):
     season.markUnwatched()
 
 
+def test_video_Season_watched(tvshows):
+    season = tvshows.get("The 100").season(1)
+    episode = season.episode(1)
+    episode.markWatched()
+    watched = season.watched()
+    assert len(watched) == 1 and watched[0].title == "Pilot"
+    episode.markUnwatched()
+
+
+def test_video_Season_unwatched(tvshows):
+    season = tvshows.get("The 100").season(1)
+    episodes = season.episodes()
+    episode = episodes[0]
+    episode.markWatched()
+    unwatched = season.unwatched()
+    assert len(unwatched) == len(episodes) - 1
+    episode.markUnwatched()
+
+
 def test_video_Season_attrs(show):
     season = show.season("Season 1")
     assert utils.is_datetime(season.addedAt)
+    if season.art:
+        assert utils.is_art(season.art)
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
@@ -839,11 +921,14 @@ def test_video_Season_attrs(show):
     assert season.listType == "video"
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
+    if season.parentThumb:
+        assert utils.is_thumb(season.parentThumb)
     assert season.parentTitle == "Game of Thrones"
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert season.summary == ""
-    assert utils.is_metadata(season.thumb, contains="/thumb/")
+    if season.thumb:
+        assert utils.is_thumb(season.thumb)
     assert season.title == "Season 1"
     assert season.titleSort == "Season 1"
     assert season.type == "season"
@@ -890,6 +975,14 @@ def test_video_Season_episode_by_index(show):
 def test_video_Season_episodes(show):
     episodes = show.season("Season 2").episodes()
     assert len(episodes) >= 1
+
+
+def test_video_Season_mixins_images(show):
+    season = show.season(season=1)
+    test_mixins.edit_art(season)
+    test_mixins.edit_poster(season)
+    test_mixins.attr_artUrl(season)
+    test_mixins.attr_posterUrl(season)
 
 
 def test_that_reload_return_the_same_object(plex):

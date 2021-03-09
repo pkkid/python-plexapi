@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-
-import pytest
-from plexapi.exceptions import BadRequest, NotFound
-
-from . import conftest as utils
 
 
 def test_history_Movie(movie):

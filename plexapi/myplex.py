@@ -238,19 +238,21 @@ class MyPlexAccount(PlexObject):
         """ Share library content with the specified user.
 
             Parameters:
-                user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections ([Section]): Library sections, names or ids to be shared (default None).
-                    [Section] must be defined in order to update shared sections.
+                user (:class:`~plexapi.myplex.MyPlexUser`): `MyPlexUser` object, username, or email
+                    of the user to be added.
+                server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
+                    containing the library sections to share.
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                    to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
                 filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
-                    ex: {'label':['foo']}
+                    ex: `{'label':['foo']}`
         """
         username = user.username if isinstance(user, MyPlexUser) else user
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
@@ -276,18 +278,21 @@ class MyPlexAccount(PlexObject):
         """ Share library content with the specified user.
 
             Parameters:
-                user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                user (:class:`~plexapi.myplex.MyPlexUser`): `MyPlexUser` object, username, or email
+                    of the user to be added.
+                server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
+                    containing the library sections to share.
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                    to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
                 filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
-                    ex: {'label':['foo']}
+                    ex: `{'label':['foo']}`
         """
         machineId = server.machineIdentifier if isinstance(server, PlexServer) else server
         sectionIds = self._getSectionIds(server, sections)
@@ -322,18 +327,21 @@ class MyPlexAccount(PlexObject):
         """ Share library content with the specified user.
 
             Parameters:
-                user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections ([Section]): Library sections, names or ids to be shared (default None shares all sections).
+                user (:class:`~plexapi.myplex.MyPlexUser`): `MyPlexUser` object, username, or email
+                    of the user to be added.
+                server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
+                    containing the library sections to share.
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                    to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
                 filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
-                    ex: {'label':['foo']}
+                    ex: `{'label':['foo']}`
         """
         headers = {'Content-Type': 'application/json'}
         # If user already exists, carry over sections and settings.
@@ -393,20 +401,22 @@ class MyPlexAccount(PlexObject):
         """ Update the specified user's share settings.
 
             Parameters:
-                user (str): MyPlexUser, username, email of the user to be added.
-                server (PlexServer): PlexServer object or machineIdentifier containing the library sections to share.
-                sections: ([Section]): Library sections, names or ids to be shared (default None).
-                    [Section] must be defined in order to update shared sections.
+                user (:class:`~plexapi.myplex.MyPlexUser`): `MyPlexUser` object, username, or email
+                    of the user to be updated.
+                server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
+                    containing the library sections to share.
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                    to be shared (default None). `sections` must be defined in order to update shared libraries.
                 removeSections (Bool): Set True to remove all shares. Supersedes sections.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
                 allowChannels (Bool): Set True to allow user to utilize installed channels.
                 filterMovies (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterTelevision (Dict): Dict containing key 'contentRating' and/or 'label' each set to a list of
-                    values to be filtered. ex: {'contentRating':['G'], 'label':['foo']}
+                    values to be filtered. ex: `{'contentRating':['G'], 'label':['foo']}`
                 filterMusic (Dict): Dict containing key 'label' set to a list of values to be filtered.
-                    ex: {'label':['foo']}
+                    ex: `{'label':['foo']}`
         """
         # Update friend servers
         response_filters = ''
@@ -974,31 +984,38 @@ class MyPlexResource(PlexObject):
     def connect(self, ssl=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` or :class:`~plexapi.client.PlexClient` object.
             Often times there is more than one address specified for a server or client.
-            This function will prioritize local connections before remote and HTTPS before HTTP.
+            This function will prioritize local connections before remote or relay and HTTPS before HTTP.
             After trying to connect to all available addresses for this resource and
             assuming at least one connection was successful, the PlexServer object is built and returned.
 
             Parameters:
-                ssl (optional): Set True to only connect to HTTPS connections. Set False to
+                ssl (bool, optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
+                timeout (int, optional): The timeout in seconds to attempt each connection.
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
-        # Sort connections from (https, local) to (http, remote)
-        # Only check non-local connections unless we own the resource
-        connections = sorted(self.connections, key=lambda c: c.local, reverse=True)
-        owned_or_unowned_non_local = lambda x: self.owned or (not self.owned and not x.local)
-        https = [c.uri for c in connections if owned_or_unowned_non_local(c)]
-        http = [c.httpuri for c in connections if owned_or_unowned_non_local(c)]
-        cls = PlexServer if 'server' in self.provides else PlexClient
-        # Force ssl, no ssl, or any (default)
-        if ssl is True: connections = https
-        elif ssl is False: connections = http
-        else: connections = https + http
+        # Keys in the order we want the connections to be sorted
+        locations = ['local', 'remote', 'relay']
+        schemes = ['https', 'http']
+        connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
+        for connection in self.connections:
+            # Only check non-local connections unless we own the resource
+            if self.owned or (not self.owned and not connection.local):
+                location = 'relay' if connection.relay else ('local' if connection.local else 'remote')
+                connections_dict[location]['http'].append(connection.httpuri)
+                connections_dict[location]['https'].append(connection.uri)
+        if ssl is True: schemes.remove('http')
+        elif ssl is False: schemes.remove('https')
+        connections = []
+        for location in locations:
+            for scheme in schemes:
+                connections.extend(connections_dict[location][scheme])
         # Try connecting to all known resource connections in parellel, but
         # only return the first server (in order) that provides a response.
+        cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.accessToken, timeout] for url in connections]
         log.debug('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
