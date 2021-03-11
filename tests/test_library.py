@@ -31,7 +31,7 @@ def test_library_sectionByID_with_attrs(plex, movies):
         movies.composite, prefix="/library/sections/", contains="/composite/"
     )
     assert utils.is_datetime(movies.createdAt)
-    assert movies.filters == "1"
+    assert movies.filters is True
     assert movies._initpath == "/library/sections"
     assert utils.is_int(movies.key)
     assert movies.language == "en-US"
@@ -47,8 +47,8 @@ def test_library_sectionByID_with_attrs(plex, movies):
     assert len(movies.uuid) == 36
 
 
-def test_library_section_get_movie(plex):
-    assert plex.library.section("Movies").get("Sita Sings the Blues")
+def test_library_section_get_movie(movies):
+    assert movies.get("Sita Sings the Blues")
 
 
 def test_library_section_movies_all(movies):
@@ -229,10 +229,10 @@ def test_library_PhotoSection_searchPhotos(photos, photoalbum):
     assert len(photos.searchPhotos(title))
 
 
-def test_library_and_section_search_for_movie(plex):
-    find = "16 blocks"
+def test_library_and_section_search_for_movie(plex, movies):
+    find = "Elephants Dream"
     l_search = plex.library.search(find)
-    s_search = plex.library.section("Movies").search(find)
+    s_search = movies.search(find)
     assert l_search == s_search
 
 
@@ -258,17 +258,16 @@ def test_library_editAdvanced_default(movies):
         assert str(setting.value) == str(setting.default)
 
 
-def test_search_with_weird_a(plex):
+def test_search_with_weird_a(plex, tvshows):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
-    result_shows = plex.library.section("TV Shows").searchEpisodes(title=ep_title)
+    result_shows = tvshows.searchEpisodes(title=ep_title)
     assert result_root
     assert result_shows
     assert result_root == result_shows
 
 
-def test_crazy_search(plex, movie):
-    movies = plex.library.section("Movies")
+def test_crazy_search(plex, movies, movie):
     assert movie in movies.search(
         actor=movie.actors[0], sort="titleSort"
     ), "Unable to search movie by actor."
@@ -287,8 +286,7 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_start=2, container_size=1)) == 2
 
 
-def test_library_section_timeline(plex):
-    movies = plex.library.section("Movies")
+def test_library_section_timeline(plex, movies):
     tl = movies.timeline()
     assert tl.TAG == "LibraryTimeline"
     assert tl.size > 0
