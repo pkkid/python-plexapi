@@ -603,6 +603,27 @@ class LibrarySection(PlexObject):
         except StopIteration:
             raise BadRequest('Invalid libtype for this library: %s' % libtype) from None
 
+    def fieldTypes(self):
+        """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
+        if self._fieldTypes is None:
+            self._loadFilters()
+        return self._fieldTypes
+
+    def getFieldType(self, fieldType):
+        """ Returns a :class:`~plexapi.library.FilteringFieldType` for a specified fieldType.
+        
+            Parameters:
+                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
+                    subtitleLanguage, audioLanguage, resolution).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
+        """
+        try:
+            return next(f for f in self.fieldTypes() if f.type == fieldType)
+        except StopIteration:
+            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
+
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
 
@@ -630,6 +651,15 @@ class LibrarySection(PlexObject):
         """
         return self.getFilterType(libtype).fields
 
+    def listOperators(self, fieldType):
+        """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
+        
+            Parameters:
+                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
+                    subtitleLanguage, audioLanguage, resolution).
+        """
+        return self.getFieldType(fieldType).operators
+
     def listFilterChoices(self, field, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilterChoice` for a specified
             :class:`~plexapi.library.FilteringFilter` or filter field.
@@ -652,52 +682,35 @@ class LibrarySection(PlexObject):
         data = self._server.query(field.key)
         return self.findItems(data, FilterChoice)
 
-    def fieldTypes(self):
-        """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
-        if self._fieldTypes is None:
-            self._loadFilters()
-        return self._fieldTypes
-
-    def getFieldType(self, fieldType):
-        """ Returns a :class:`~plexapi.library.FilteringFieldType` for a specified fieldType.
-        
-            Parameters:
-                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
-                    subtitleLanguage, audioLanguage, resolution).
-
-            Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
-        """
-        try:
-            return next(f for f in self.fieldTypes() if f.type == fieldType)
-        except StopIteration:
-            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
-
-    def listOperators(self, fieldType):
-        """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
-        
-            Parameters:
-                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
-                    subtitleLanguage, audioLanguage, resolution).
-        """
-        return self.getFieldType(fieldType).operators
-
-    def _validateFieldValue(self, field, values, libtype=None):
-        """ Validates a filter field and value is available as a custom filter for the library.
-            Returns the validated field and value as a URL param.
+    def _validateFilterField(self, field, values, libtype=None):
+        """ Validates a filter field and values are available as a custom filter for the library.
+            Returns the validated field and values as a URL param.
         """
         match = re.match(r'([a-zA-Z\.]+)([!<>=&]*)', field)
         if not match:
             raise BadRequest('Invalid filter field: %s' % field)
         field, operator = match.groups()
 
-        # Validate field
         try:
             filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
         except StopIteration:
             raise BadRequest('Unknown filter field "%s" for libtype "%s"' % (field, libtype)) from None
 
         field = filterField.key
+        operator = self._validateFieldOperator(filterField, operator)
+        result = self._validateFieldValue(filterField, values, libtype)
+
+        if operator.startswith('&'):
+            args = {field + operator[:-1]: result}
+            return urlencode(args, doseq=True)
+        else:
+            args = {field + operator[:-1]: ','.join(result)}
+            return urlencode(args)
+
+    def _validateFieldOperator(self, filterField, operator):
+        """ Validates filter operator is in the available operators.
+            Returns the validated operator.
+        """
         fieldType = self.getFieldType(filterField.type)
 
         and_operator = False
@@ -708,23 +721,32 @@ class LibrarySection(PlexObject):
             operator += '='
         operator = (operator[:-1] if operator[-1:] == '=' else operator) + '='
 
-        # Validate operator
         try:
             next(o for o in fieldType.operators if o.key == operator)
         except StopIteration:
-            raise BadRequest('Invalid operator "%s" for filter field "%s"' % (operator, field)) from None
+            raise BadRequest('Invalid operator "%s" for filter field "%s"'
+                             % (operator, filterField.key)) from None
 
-        # Validate values
+        return '&=' if and_operator else operator
+
+    def _validateFieldValue(self, filterField, values, libtype=None):
+        """ Validates filter values are the correct datatype and in the available filter choices.
+            Returns the validated list of values.
+        """
         if not isinstance(values, (list, tuple)):
             values = [values]
 
+        fieldType = self.getFieldType(filterField.type)
         choiceTypes = {'tag', 'subtitleLanguage', 'audioLanguage', 'resolution'}
-        filterChoices = self.listFilterChoices(field, libtype) if filterField.type in choiceTypes else []
+        if fieldType.type in choiceTypes:
+            filterChoices = self.listFilterChoices(filterField.key, libtype)
+        else:
+            filterChoices = []
 
-        result = []
+        results = []
 
-        for value in values:
-            try:
+        try:
+            for value in values:
                 if fieldType.type == 'boolean':
                     value = int(utils.cast(bool, value))
                 elif fieldType.type == 'date':
@@ -735,22 +757,15 @@ class LibrarySection(PlexObject):
                     value = str(value)
                 elif fieldType.type in choiceTypes:
                     value = str((value.id or value.tag) if isinstance(value, media.MediaTag) else value)
-                    matchValue = str(value).lower()
-                    for filterChoice in filterChoices:
-                        if matchValue in {filterChoice.key.lower(), filterChoice.title.lower()}:
-                            value = filterChoice.key
-                            break
-                result.append(str(value))
-            except ValueError:
-                raise BadRequest('Invalid filter value: %s, value should be type %s'
-                                 % (value, fieldType.type)) from None
-        
-        if and_operator:
-            args = {field + operator[:-1]: result}
-            return urlencode(args, doseq=True)
-        else:
-            args = {field + operator[:-1]: ','.join(result)}
-            return urlencode(args)
+                    matchValue = value.lower()
+                    value = next((f.key for f in filterChoices
+                                  if matchValue in {f.key.lower(), f.title.lower()}), value)
+                results.append(str(value))
+        except ValueError:
+            raise BadRequest('Invalid filter value "%s" for filter field "%s", value should be type %s'
+                             % (value, filterField.key, fieldType.type)) from None
+    
+        return results
 
     def _validateSortValue(self, sort, libtype=None):
         """ Validates a filter sort value is available for the library. Returns the validated sort value.
@@ -760,13 +775,11 @@ class LibrarySection(PlexObject):
             raise BadRequest('Invalid filter sort: %s' % sort)
         sortField, sortDir = match.groups()
 
-        # Validate sort field
         try:
             filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
         except StopIteration:
             raise BadRequest('Unknown sort field "%s" for libtype "%s"' % (sortField, libtype)) from None
 
-        # Validate sort direction
         if not sortDir:
             sortDir = filterSort.defaultDirection
 
@@ -823,7 +836,7 @@ class LibrarySection(PlexObject):
         filter_args = []
         for field, values in list(kwargs.items()):
             if field.split('__')[-1] not in OPERATORS:
-                filter_args.append(self._validateFieldValue(field, values, libtype))
+                filter_args.append(self._validateFilterField(field, values, libtype))
                 del kwargs[field]
         if title is not None:
             args['title'] = title
@@ -928,7 +941,7 @@ class LibrarySection(PlexObject):
         args = {}
         filter_args = []
         for field, values in kwargs.items():
-            filter_args.append(self._validateFieldValue(field, values, libtype))
+            filter_args.append(self._validateFilterField(field, values, libtype))
         if sort is not None:
             args['sort'] = self._validateSortValue(sort, libtype)
         if libtype is not None:
