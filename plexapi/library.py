@@ -684,9 +684,9 @@ class LibrarySection(PlexObject):
 
     def _validateFieldValue(self, field, values, libtype=None):
         """ Validates a filter field and value is available as a custom filter for the library.
-            Returns the validated field and value.
+            Returns the validated field and value as a URL param.
         """
-        match = re.match(r'([a-zA-Z\.]+)([!<>=]*)', field)
+        match = re.match(r'([a-zA-Z\.]+)([!<>=&]*)', field)
         if not match:
             raise BadRequest('Invalid filter field: %s' % field)
         field, operator = match.groups()
@@ -695,9 +695,15 @@ class LibrarySection(PlexObject):
         try:
             filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
         except StopIteration:
-            raise BadRequest('Unknown filter field: %s' % field) from None
+            raise BadRequest('Unknown filter field "%s" for libtype "%s"' % (field, libtype)) from None
 
+        field = filterField.key
         fieldType = self.getFieldType(filterField.type)
+        
+        and_operator = False
+        if operator == '&':
+            and_operator = True
+            operator = ''
         if fieldType.type == 'string' and operator in {'=', '!='}:
             operator += '='
         operator = (operator[:-1] if operator[-1:] == '=' else operator) + '='
@@ -706,7 +712,7 @@ class LibrarySection(PlexObject):
         try:
             next(o for o in fieldType.operators if o.key == operator)
         except StopIteration:
-            raise BadRequest('Invalid filter field operator: %s' % operator) from None
+            raise BadRequest('Invalid operator "%s" for filter field "%s"' % (operator, field)) from None
 
         # Validate values
         if not isinstance(values, (list, tuple)):
@@ -738,7 +744,12 @@ class LibrarySection(PlexObject):
                 raise BadRequest('Invalid filter value: %s, value should be type %s'
                                  % (value, fieldType.type)) from None
         
-        return field + operator[:-1], value
+        if and_operator:
+            args = {field + operator[:-1]: result}
+            return urlencode(args, doseq=True)
+        else:
+            args = {field + operator[:-1]: ','.join(result)}
+            return urlencode(args)
 
     def _validateSortValue(self, sort, libtype=None):
         """ Validates a filter sort value is available for the library. Returns the validated sort value.
@@ -752,14 +763,14 @@ class LibrarySection(PlexObject):
         try:
             filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
         except StopIteration:
-            raise BadRequest('Unknown sort field: %s' % sortField) from None
+            raise BadRequest('Unknown sort field "%s" for libtype "%s"' % (sortField, libtype)) from None
 
         # Validate sort direction
         if not sortDir:
             sortDir = filterSort.defaultDirection
 
         if sortDir not in {'asc', 'desc'}:
-            raise BadRequest('Invalid sort direction: %s' % sortDir)
+            raise BadRequest('Invalid sort direction: %s, must be "asc" or "desc"' % sortDir)
 
         return '%s:%s' % (sortField, sortDir)
 
@@ -805,12 +816,13 @@ class LibrarySection(PlexObject):
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown sort or filter.
         """
+        libtype = libtype or self.TYPE
         # cleanup the core arguments
         args = {}
+        filter_args = []
         for field, values in list(kwargs.items()):
             if field.split('__')[-1] not in OPERATORS:
-                _field, _values = self._validateFieldValue(field, values, libtype)
-                args[_field] = _values
+                filter_args.append(self._validateFieldValue(field, values, libtype))
                 del kwargs[field]
         if title is not None:
             args['title'] = title
@@ -825,8 +837,12 @@ class LibrarySection(PlexObject):
 
         if maxresults is not None:
             container_size = min(container_size, maxresults)
+
+        key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        if filter_args:
+            key += '&%s' % '&'.join(filter_args)
+
         while True:
-            key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
             subresults = self.fetchItems(key, container_start=container_start,
                                          container_size=container_size, **kwargs)
             if not len(subresults):
@@ -909,9 +925,9 @@ class LibrarySection(PlexObject):
             raise BadRequest('The requested library is not allowed to sync')
 
         args = {}
+        filter_args = []
         for field, values in kwargs.items():
-            _field, _values = self._validateFieldValue(field, values, libtype)
-            args[_field] = _values
+            filter_args.append(self._validateFieldValue(field, values, libtype))
         if sort is not None:
             args['sort'] = self._validateSortValue(sort, libtype)
         if libtype is not None:
@@ -925,9 +941,11 @@ class LibrarySection(PlexObject):
         sync_item.metadataType = self.METADATA_TYPE
         sync_item.machineIdentifier = self._server.machineIdentifier
 
-        key = '/library/sections/%s/all' % self.key
+        key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        if filter_args:
+            key += '&%s' % '&'.join(filter_args)
 
-        sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key + utils.joinArgs(args)))
+        sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key))
         sync_item.policy = policy
         sync_item.mediaSettings = mediaSettings
 
