@@ -686,10 +686,11 @@ class LibrarySection(PlexObject):
         """ Validates a filter field and values are available as a custom filter for the library.
             Returns the validated field and values as a URL param.
         """
-        match = re.match(r'([a-zA-Z\.]+)([!<>=&]*)', field)
+        match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)([!<>=&]*)', field)
         if not match:
             raise BadRequest('Invalid filter field: %s' % field)
-        field, operator = match.groups()
+        _libtype, field, operator = match.groups()
+        libtype = _libtype or libtype
 
         try:
             filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
@@ -777,9 +778,11 @@ class LibrarySection(PlexObject):
         sortField, sortDir = match.groups()
 
         try:
-            filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
+            filterSort = next(f for f in self.listSorts(libtype) if f.key.endswith(sortField))
         except StopIteration:
             raise BadRequest('Unknown sort field "%s" for libtype "%s"' % (sortField, libtype)) from None
+
+        sortField = filterSort.key
 
         if not sortDir:
             sortDir = filterSort.defaultDirection
