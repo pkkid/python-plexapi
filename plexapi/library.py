@@ -699,7 +699,7 @@ class LibrarySection(PlexObject):
 
         field = filterField.key
         fieldType = self.getFieldType(filterField.type)
-        
+
         and_operator = False
         if operator == '&':
             and_operator = True
@@ -739,7 +739,7 @@ class LibrarySection(PlexObject):
                         if matchValue in {filterChoice.key.lower(), filterChoice.title.lower()}:
                             value = filterChoice.key
                             break
-                result.append(value)
+                result.append(str(value))
             except ValueError:
                 raise BadRequest('Invalid filter value: %s, value should be type %s'
                                  % (value, fieldType.type)) from None
