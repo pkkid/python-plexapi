@@ -488,23 +488,16 @@ class PlexClient(PlexObject):
         if mediatype == "audio":
             mediatype = "music"
 
-        if isinstance(media, PlayQueue):
-            playQueueID = media.playQueueID
-            key = media.selectedItem.key
-        else:
-            playqueue = self._server.createPlayQueue(media)
-            playQueueID = playqueue.playQueueID
-            key = media.key
-
+        playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
         self.sendCommand('playback/playMedia', **dict({
             'machineIdentifier': self._server.machineIdentifier,
             'address': server_url[1].strip('/'),
             'port': server_port,
             'offset': offset,
-            'key': key,
+            'key': media.key or playqueue.selectedItem.key,
             'token': media._server.createToken(),
             'type': mediatype,
-            'containerKey': '/playQueues/%s?window=100&own=1' % playQueueID,
+            'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
         }, **params))
 
     def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=DEFAULT_MTYPE):
