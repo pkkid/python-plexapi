@@ -969,6 +969,10 @@ class MovieSection(LibrarySection):
     METADATA_TYPE = 'movie'
     CONTENT_TYPE = 'video'
 
+    def searchMovies(self, **kwargs):
+        """ Search for a movie. See :func:`~plexapi.library.LibrarySection.search` for usage. """
+        return self.search(libtype='movie', **kwargs)
+
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Movie library section as sync item for specified device.
             See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
