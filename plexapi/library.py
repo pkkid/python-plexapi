@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from urllib.parse import quote, quote_plus, unquote, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
@@ -351,6 +352,8 @@ class LibrarySection(PlexObject):
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
         # Private attrs as we dont want a reload.
+        self._filterTypes = None
+        self._fieldTypes = None
         self._total_size = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
@@ -453,40 +456,6 @@ class LibrarySection(PlexObject):
         """
         key = '/hubs/sections/%s' % self.key
         return self.fetchItems(key)
-
-    def _filters(self):
-        """ Returns a list of :class:`~plexapi.library.Filter` from this library section. """
-        key = '/library/sections/%s/filters' % self.key
-        return self.fetchItems(key, cls=Filter)
-
-    def _sorts(self, mediaType=None):
-        """ Returns a list of available :class:`~plexapi.library.Sort` for this library section.
-        """
-        items = []
-        for data in self.listChoices('sorts', mediaType):
-            sort = Sort(server=self._server, data=data._data)
-            sort._initpath = data._initpath
-            items.append(sort)
-        return items
-
-    def filterFields(self, mediaType=None):
-        """ Returns a list of available :class:`~plexapi.library.FilterField` for this library section.
-        """
-        items = []
-        key = '/library/sections/%s/filters?includeMeta=1' % self.key
-        data = self._server.query(key)
-        for meta in data.iter('Meta'):
-            for metaType in meta.iter('Type'):
-                if not mediaType or metaType.attrib.get('type') == mediaType:
-                    fields = self.findItems(metaType, FilterField)
-                    for field in fields:
-                        field._initpath = metaType.attrib.get('key')
-                        fieldType = [_ for _ in self.findItems(meta, FieldType) if _.type == field.type]
-                        field.operators = fieldType[0].operators
-                    items += fields
-        if not items and mediaType:
-            raise BadRequest('mediaType (%s) not found.' % mediaType)
-        return items
 
     def agents(self):
         """ Returns a list of available :class:`~plexapi.media.Agent` for this library section.
@@ -601,30 +570,198 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/indexes' % self.key
         self._server.query(key, method=self._server._session.delete)
 
-    def listChoices(self, category, libtype=None, **kwargs):
-        """ Returns a list of :class:`~plexapi.library.FilterChoice` objects for the
-            specified category and libtype. kwargs can be any of the same kwargs in
-            :func:`~plexapi.library.LibraySection.search` to help narrow down the choices
-            to only those that matter in your current context.
+    def _loadFilters(self):
+        """ Retrieves and caches the :class:`~plexapi.library.FilteringType` and
+            :class:`~plexapi.library.FilteringFieldType` for this library section.
+        """
+        key = '/library/sections/%s/all?includeMeta=1&X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
+        data = self._server.query(key)
+        meta = data.find('Meta')
+        if meta:
+            self._filterTypes = self.findItems(meta, FilteringType)
+            self._fieldTypes = self.findItems(meta, FilteringFieldType)
+
+    def filterTypes(self):
+        """ Returns a list of available :class:`~plexapi.library.FilteringType` for this library section. """
+        if self._filterTypes is None:
+            self._loadFilters()
+        return self._filterTypes
+
+    def getFilterType(self, libtype=None):
+        """ Returns a :class:`~plexapi.library.FilteringType` for a specified libtype.
 
             Parameters:
-                category (str): Category to list choices for (genre, contentRating, etc).
-                libtype (int): Library type of item filter.
-                **kwargs (dict): Additional kwargs to narrow down the choices.
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo).
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: Cannot include kwarg equal to specified category.
+                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
         """
-        # TODO: Should this be moved to base?
-        if category in kwargs:
-            raise BadRequest('Cannot include kwarg equal to specified category: %s' % category)
-        args = {}
-        for subcategory, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(subcategory, value)
-        if libtype is not None:
-            args['type'] = utils.searchType(libtype)
-        key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
-        return self.fetchItems(key, cls=FilterChoice)
+        libtype = libtype or self.TYPE
+        try:
+            return next(f for f in self.filterTypes() if f.type == libtype)
+        except StopIteration:
+            raise BadRequest('Invalid libtype for this library: %s' % libtype) from None
+
+    def listFilters(self, libtype=None):
+        """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
+
+            Parameters:
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo).
+        """
+        return self.getFilterType(libtype).filters
+        
+    def listSorts(self, libtype=None):
+        """ Returns a list of available :class:`~plexapi.library.FilteringSort` for a specified libtype.
+
+            Parameters:
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo).
+        """
+        return self.getFilterType(libtype).sorts
+
+    def listFields(self, libtype=None):
+        """ Returns a list of available :class:`~plexapi.library.FilteringFields` for a specified libtype.
+
+            Parameters:
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo).
+        """
+        return self.getFilterType(libtype).fields
+
+    def listFilterChoices(self, field, libtype=None):
+        """ Returns a list of available :class:`~plexapi.library.FilterChoice` for a specified
+            :class:`~plexapi.library.FilteringFilter` or filter field.
+            
+            Parameters:
+                field (str): :class:`~plexapi.library.FilteringFilter` object,
+                    or the name of the field (genre, year, contentRating, etc.).
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: Unknown filter field.
+        """
+        if isinstance(field, str):
+            try:
+                field = next(f for f in self.listFilters(libtype) if f.filter == field)
+            except StopIteration:
+                raise BadRequest('Unknown filter field: %s' % field) from None
+                
+        data = self._server.query(field.key)
+        return self.findItems(data, FilterChoice)
+
+    def fieldTypes(self):
+        """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
+        if self._fieldTypes is None:
+            self._loadFilters()
+        return self._fieldTypes
+
+    def getFieldType(self, fieldType):
+        """ Returns a :class:`~plexapi.library.FilteringFieldType` for a specified fieldType.
+        
+            Parameters:
+                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
+                    subtitleLanguage, audioLanguage, resolution).
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
+        """
+        try:
+            return next(f for f in self.fieldTypes() if f.type == fieldType)
+        except StopIteration:
+            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
+
+    def listOperators(self, fieldType):
+        """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
+        
+            Parameters:
+                fieldType (str): The data type for the field (tag, integer, string, boolean, date,
+                    subtitleLanguage, audioLanguage, resolution).
+        """
+        return self.getFieldType(fieldType).operators
+
+    def _validateFieldValue(self, field, values, libtype=None):
+        """ Validates a filter field and value is available as a custom filter for the library.
+            Returns the validated field and value.
+        """
+        match = re.match(r'([a-zA-Z\.]+)([!<>=]*)', field)
+        if not match:
+            raise BadRequest('Invalid filter field: %s' % field)
+        field, operator = match.groups()
+
+        # Validate field
+        try:
+            filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
+        except StopIteration:
+            raise BadRequest('Unknown filter field: %s' % field) from None
+
+        fieldType = self.getFieldType(filterField.type)
+        if fieldType.type == 'string' and operator in {'=', '!='}:
+            operator += '='
+        operator = (operator[:-1] if operator[-1:] == '=' else operator) + '='
+
+        # Validate operator
+        try:
+            next(o for o in fieldType.operators if o.key == operator)
+        except StopIteration:
+            raise BadRequest('Invalid filter field operator: %s' % operator) from None
+
+        # Validate values
+        if not isinstance(values, (list, tuple)):
+            values = [values]
+
+        choiceTypes = {'tag', 'subtitleLanguage', 'audioLanguage', 'resolution'}
+        filterChoices = self.listFilterChoices(field, libtype) if filterField.type in choiceTypes else []
+
+        result = []
+
+        for value in values:
+            try:
+                if fieldType.type == 'boolean':
+                    value = int(utils.cast(bool, value))
+                elif fieldType.type == 'date':
+                    value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
+                elif fieldType.type == 'integer':
+                    value = utils.cast(int, value)
+                elif fieldType.type == 'string':
+                    value = str(value)
+                elif fieldType.type in choiceTypes:
+                    matchValue = str(value).lower()
+                    for filterChoice in filterChoices:
+                        if matchValue in {filterChoice.key.lower(), filterChoice.title.lower()}:
+                            value = filterChoice.key
+                            break
+                result.append(value)
+            except ValueError:
+                raise BadRequest('Invalid filter value: %s, value should be type %s'
+                                 % (value, fieldType.type)) from None
+        
+        return field + operator[:-1], value
+
+    def _validateSortValue(self, sort, libtype=None):
+        """ Validates a filter sort value is available for the library. Returns the validated sort value.
+        """
+        match = re.match(r'([a-zA-Z]+):?([a-zA-Z]*)', sort)
+        if not match:
+            raise BadRequest('Invalid filter sort: %s' % sort)
+        sortField, sortDir = match.groups()
+
+        # Validate sort field
+        try:
+            filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
+        except StopIteration:
+            raise BadRequest('Unknown sort field: %s' % sortField) from None
+
+        # Validate sort direction
+        if not sortDir:
+            sortDir = filterSort.defaultDirection
+
+        if sortDir not in {'asc', 'desc'}:
+            raise BadRequest('Invalid sort direction: %s' % sortDir)
+
+        return '%s:%s' % (sortField, sortDir)
 
     def hubSearch(self, query, mediatype=None, limit=None):
         """ Returns the hub search results for this library. See :func:`~plexapi.server.PlexServer.search`
@@ -647,7 +784,7 @@ class LibrarySection(PlexObject):
                     album, track; optional).
                 container_start (int): default 0
                 container_size (int): default X_PLEX_CONTAINER_SIZE in your config file.
-                **kwargs (dict): Any of the available filters for the current library section. Partial string
+                **kwargs (dict): Any of the available custom filters for the current library section. Partial string
                         matches allowed. Multiple matches OR together. Negative filtering also possible, just add an
                         exclamation mark to the end of filter name, e.g. `resolution!=1x1`.
 
@@ -666,18 +803,19 @@ class LibrarySection(PlexObject):
                         * year: List of years to search within ([yyyy, ...]). [all]
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown filter.
+                :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown sort or filter.
         """
         # cleanup the core arguments
         args = {}
-        for category, value in list(kwargs.items()):
-            if category.split('__')[-1] not in OPERATORS:
-                args[category] = self._cleanSearchFilter(category, value, libtype)
-                del kwargs[category]
+        for field, values in list(kwargs.items()):
+            if field.split('__')[-1] not in OPERATORS:
+                _field, _values = self._validateFieldValue(field, values, libtype)
+                args[_field] = _values
+                del kwargs[field]
         if title is not None:
             args['title'] = title
         if sort is not None:
-            args['sort'] = self._cleanSearchSort(sort)
+            args['sort'] = self._validateSortValue(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
@@ -712,47 +850,6 @@ class LibrarySection(PlexObject):
             container_start += container_size
 
         return results
-
-    def _cleanSearchFilter(self, category, value, libtype=None):
-        # check a few things before we begin
-        categories = [x.key for x in self.filterFields()]
-        booleanFilters = [x.key for x in self.filterFields() if x.type == 'boolean']
-        if category.endswith('!'):
-            if category[:-1] not in categories:
-                raise BadRequest('Unknown filter category: %s' % category[:-1])
-        elif category not in categories:
-            raise BadRequest('Unknown filter category: %s' % category)
-        if category in booleanFilters:
-            return '1' if value else '0'
-        if not isinstance(value, (list, tuple)):
-            value = [value]
-        # convert list of values to list of keys or ids
-        result = set()
-        choices = self.listChoices(category, libtype)
-        lookup = {c.title.lower(): unquote(unquote(c.key)) for c in choices}
-        allowed = {c.key for c in choices}
-        for item in value:
-            item = str((item.id or item.tag) if isinstance(item, media.MediaTag) else item).lower()
-            # find most logical choice(s) to use in url
-            if item in allowed: result.add(item); continue
-            if item in lookup: result.add(lookup[item]); continue
-            matches = [k for t, k in lookup.items() if item in t]
-            if matches: map(result.add, matches); continue
-            # nothing matched; use raw item value
-            log.debug('Filter value not listed, using raw item value: %s' % item)
-            result.add(item)
-        return ','.join(result)
-
-    def _cleanSearchSort(self, sort):
-        sort = '%s:asc' % sort if ':' not in sort else sort
-        scol, sdir = sort.lower().split(':')
-        allowedSort = [sort.key for sort in self._sorts()]
-        lookup = {s.lower(): s for s in allowedSort}
-        if scol not in lookup:
-            raise BadRequest('Unknown sort column: %s' % scol)
-        if sdir not in ('asc', 'desc'):
-            raise BadRequest('Unknown sort dir: %s' % sdir)
-        return '%s:%s' % (lookup[scol], sdir)
 
     def _locations(self):
         """ Returns a list of :class:`~plexapi.library.Location` objects
@@ -812,10 +909,11 @@ class LibrarySection(PlexObject):
             raise BadRequest('The requested library is not allowed to sync')
 
         args = {}
-        for category, value in kwargs.items():
-            args[category] = self._cleanSearchFilter(category, value, libtype)
+        for field, values in kwargs.items():
+            _field, _values = self._validateFieldValue(field, values, libtype)
+            args[_field] = _values
         if sort is not None:
-            args['sort'] = self._cleanSearchSort(sort)
+            args['sort'] = self._validateSortValue(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
