@@ -1107,34 +1107,6 @@ class PhotoSection(LibrarySection):
         return super(PhotoSection, self).sync(**kwargs)
 
 
-class FilterChoice(PlexObject):
-    """ Represents a single filter choice. These objects are gathered when using filters
-        while searching for library items and is the object returned in the result set of
-        :func:`~plexapi.library.LibrarySection.listChoices`.
-
-        Attributes:
-            TAG (str): 'Directory'
-            server (:class:`~plexapi.server.PlexServer`): PlexServer this client is connected to.
-            initpath (str): Relative path requested when retrieving specified `data` (optional).
-            fastKey (str): API path to quickly list all items in this filter
-                (/library/sections/<section>/all?genre=<key>)
-            key (str): Short key (id) of this filter option (used ad <key> in fastKey above).
-            thumb (str): Thumbnail used to represent this filter option.
-            title (str): Human readable name for this filter option.
-            type (str): Filter type (genre, contentRating, etc).
-    """
-    TAG = 'Directory'
-
-    def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.fastKey = data.attrib.get('fastKey')
-        self.key = data.attrib.get('key')
-        self.thumb = data.attrib.get('thumb')
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-
-
 @utils.registerPlexObject
 class LibraryTimeline(PlexObject):
     """Represents a LibrarySection timeline.
@@ -1191,25 +1163,6 @@ class Location(PlexObject):
         self._data = data
         self.id = utils.cast(int, data.attrib.get('id'))
         self.path = data.attrib.get('path')
-
-
-class Filter(PlexObject):
-    """ Represents a single Filter.
-
-        Attributes:
-            TAG (str): 'Directory'
-            TYPE (str): 'filter'
-    """
-    TAG = 'Directory'
-    TYPE = 'filter'
-
-    def _loadData(self, data):
-        self._data = data
-        self.filter = data.attrib.get('filter')
-        self.filterType = data.attrib.get('filterType')
-        self.key = data.attrib.get('key')
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
 
 
 @utils.registerPlexObject
@@ -1392,16 +1345,68 @@ class Station(PlexObject):
         return self.size
 
 
-class Sort(PlexObject):
-    """ Represents a Sort element found in library.
+class FilteringType(PlexObject):
+    """ Represents a single filtering Type object for a library.
+
+        Attributes:
+            TAG (str): 'Type'
+            active (bool): True if this filter type is currently active.
+            fields (List<:class:`~plexapi.library.FilteringField`>): List of field objects.
+            filters (List<:class:`~plexapi.library.FilteringFilter`>): List of filter objects.
+            key (str): The API URL path for the libtype filter.
+            sorts (List<:class:`~plexapi.library.FilteringSort`>): List of sort objects.
+            title (str): The title for the libtype filter.
+            type (str): The libtype for the filter.
+    """
+    TAG = 'Type'
+
+    def __repr__(self):
+        _type = self._clean(self.firstAttr('type'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, _type] if p])
+
+    def _loadData(self, data):
+        self._data = data
+        self.active = utils.cast(bool, data.attrib.get('active', '0'))
+        self.fields = self.findItems(data, FilteringField)
+        self.filters = self.findItems(data, FilteringFilter)
+        self.key = data.attrib.get('key')
+        self.sorts = self.findItems(data, FilteringSort)
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+
+
+class FilteringFilter(PlexObject):
+    """ Represents a single Filter object for a :class:`~plexapi.library.FilteringType`.
+
+        Attributes:
+            TAG (str): 'Filter'
+            filter (str): The key for the filter.
+            filterType (str): The :class:`~plexapi.library.FilteringFieldType` type (string, boolean, integer, date, etc).
+            key (str): The API URL path for the filter.
+            title (str): The title of the filter.
+            type (str): 'filter'
+    """
+    TAG = 'Filter'
+
+    def _loadData(self, data):
+        self._data = data
+        self.filter = data.attrib.get('filter')
+        self.filterType = data.attrib.get('filterType')
+        self.key = data.attrib.get('key')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+
+
+class FilteringSort(PlexObject):
+    """ Represents a single Sort object for a :class:`~plexapi.library.FilteringType`.
 
         Attributes:
             TAG (str): 'Sort'
-            defaultDirection (str): Default sorting direction.
-            descKey (str): Url key for sorting with desc.
-            key (str): Url key for sorting,
-            title (str): Title of sorting,
-            firstCharacterKey (str): Url path for first character endpoint.
+            defaultDirection (str): The default sorting direction.
+            descKey (str): The URL key for sorting with desc.
+            firstCharacterKey (str): API URL path for first character endpoint.
+            key (str): The URL key for the sorting.
+            title (str): The title of the sorting.
     """
     TAG = 'Sort'
 
@@ -1410,21 +1415,20 @@ class Sort(PlexObject):
         self._data = data
         self.defaultDirection = data.attrib.get('defaultDirection')
         self.descKey = data.attrib.get('descKey')
+        self.firstCharacterKey = data.attrib.get('firstCharacterKey')
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
-        self.firstCharacterKey = data.attrib.get('firstCharacterKey')
 
 
-class FilterField(PlexObject):
-    """ Represents a Filters Field element found in library.
+class FilteringField(PlexObject):
+    """ Represents a single Field object for a :class:`~plexapi.library.FilteringType`.
 
         Attributes:
             TAG (str): 'Field'
-            key (str): Url key for filter,
-            title (str): Title of filter.
-            type (str): Type of filter (string, boolean, integer, date, etc).
-            subType (str): Subtype of filter (decade, rating, etc).
-            operators (str): Operators available for this filter.
+            key (str): The URL key for the filter field.
+            title (str): The title of the filter field.
+            type (str): The :class:`~plexapi.library.FilteringFieldType` type (string, boolean, integer, date, etc).
+            subType (str): The subtype of the filter (decade, rating, etc).
     """
     TAG = 'Field'
 
@@ -1435,17 +1439,36 @@ class FilterField(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.subType = data.attrib.get('subType')
-        self.operators = []
 
 
-@utils.registerPlexObject
-class Operator(PlexObject):
-    """ Represents an Operator available for filter.
+class FilteringFieldType(PlexObject):
+    """ Represents a single FieldType for library filtering.
+
+        Attributes:
+            TAG (str): 'FieldType'
+            type (str): The filtering data type (string, boolean, integer, date, etc).
+            operators (List<:class:`~plexapi.library.FilteringOperator`>): List of operator objects.
+    """
+    TAG = 'FieldType'
+
+    def __repr__(self):
+        _type = self._clean(self.firstAttr('type'))
+        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, _type] if p])
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.type = data.attrib.get('type')
+        self.operators = self.findItems(data, FilteringOperator)
+
+
+class FilteringOperator(PlexObject):
+    """ Represents an single Operator for a :class:`~plexapi.library.FilteringFieldType`.
 
         Attributes:
             TAG (str): 'Operator'
-            key (str): Url key for operator.
-            title (str): Title of operator.
+            key (str): The URL key for the operator.
+            title (str): The title of the operator.
     """
     TAG = 'Operator'
 
@@ -1453,6 +1476,32 @@ class Operator(PlexObject):
         """ Load attribute values from Plex XML response. """
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
+
+
+class FilterChoice(PlexObject):
+    """ Represents a single FilterChoice object.
+        These objects are gathered when using filters while searching for library items and is the
+        object returned in the result set of :func:`~plexapi.library.LibrarySection.listFilterChoices`.
+
+        Attributes:
+            TAG (str): 'Directory'
+            fastKey (str): API URL path to quickly list all items with this filter choice.
+                (/library/sections/<section>/all?genre=<key>)
+            key (str): The id value of this filter choice.
+            thumb (str): Thumbnail URL for the filter choice.
+            title (str): The title of the filter choice.
+            type (str): The filter type (genre, contentRating, etc).
+    """
+    TAG = 'Directory'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.fastKey = data.attrib.get('fastKey')
+        self.key = data.attrib.get('key')
+        self.thumb = data.attrib.get('thumb')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
 
 
 class Folder(PlexObject):
@@ -1492,28 +1541,6 @@ class Folder(PlexObject):
                             continue
                     break
         return folders
-
-
-@utils.registerPlexObject
-class FieldType(PlexObject):
-    """ Represents a FieldType for filter.
-
-        Attributes:
-            TAG (str): 'Operator'
-            type (str): Type of filter (string, boolean, integer, date, etc),
-            operators (str): Operators available for this filter.
-    """
-    TAG = 'FieldType'
-
-    def __repr__(self):
-        _type = self._clean(self.firstAttr('type'))
-        return '<%s>' % ':'.join([p for p in [self.__class__.__name__, _type] if p])
-
-    def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.type = data.attrib.get('type')
-        self.operators = self.findItems(data, Operator)
 
 
 class FirstCharacter(PlexObject):
