@@ -762,7 +762,7 @@ class LibrarySection(PlexObject):
                                   if matchValue in {f.key.lower(), f.title.lower()}), value)
                 results.append(str(value))
         except ValueError:
-            raise BadRequest('Invalid filter value "%s" for filter field "%s", value should be type %s'
+            raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
                              % (value, filterField.key, fieldType.type)) from None
     
         return results
