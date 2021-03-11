@@ -626,43 +626,87 @@ class LibrarySection(PlexObject):
 
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
+            This is the list of options in the filter dropdown menu
+            (`screenshot <https://i.imgur.com/Ycm8jIC.png>`_).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
                     artist, album, track, photoalbum, photo).
+
+            Example:
+
+                .. code-block:: python
+
+                    availableFilters = [f.filter for f in library.listFilters()]
+                    print("Available filter fields:", availableFilters)
+
         """
         return self.getFilterType(libtype).filters
         
     def listSorts(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringSort` for a specified libtype.
+            This is the list of options in the sorting dropdown menu
+            (`screenshot <https://i.imgur.com/E0HMVQq.png>`_).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
                     artist, album, track, photoalbum, photo).
+
+            Example:
+
+                .. code-block:: python
+
+                    availableSorts = [f.key for f in library.listSorts()]
+                    print("Available sort fields:", availableSorts)
+
         """
         return self.getFilterType(libtype).sorts
 
     def listFields(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFields` for a specified libtype.
+            This is the list of options in the custom filter dropdown menu
+            (`screenshot <https://i.imgur.com/slrJWXn.png>`_).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
                     artist, album, track, photoalbum, photo).
+
+            Example:
+
+                .. code-block:: python
+
+                    availableFields = [f.key.split('.')[-1] for f in library.listFields()]
+                    print("Available fields:", availableFields)
+
         """
         return self.getFilterType(libtype).fields
 
     def listOperators(self, fieldType):
         """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
+            This is the list of options in the custom filter operator dropdown menu
+            (`screenshot <https://i.imgur.com/aVYqnJS.png>`_).
         
             Parameters:
                 fieldType (str): The data type for the field (tag, integer, string, boolean, date,
                     subtitleLanguage, audioLanguage, resolution).
+
+            Example:
+
+                .. code-block:: python
+
+                    field = 'genre'  # Available filter field from listFields()
+                    filterField = next(f for f in library.listFields() if f.key.endswith(field))
+                    availableOperators = [o.key for o in library.listOperators(filterField.type)]
+                    print("Available operators for %s:" % field, availableOperators)
+
         """
         return self.getFieldType(fieldType).operators
 
     def listFilterChoices(self, field, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilterChoice` for a specified
             :class:`~plexapi.library.FilteringFilter` or filter field.
+            This is the list of available values for a custom filter
+            (`screenshot <https://i.imgur.com/mCQChv0.png>`_).
             
             Parameters:
                 field (str): :class:`~plexapi.library.FilteringFilter` object,
@@ -672,6 +716,15 @@ class LibrarySection(PlexObject):
 
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: Unknown filter field.
+
+            Example:
+
+                .. code-block:: python
+
+                    field = 'genre'  # Available filter field from listFilters()
+                    availableChoices = [f.title for f in library.listFilterChoices(field)]
+                    print("Available choices for %s:" % field, availableChoices)
+
         """
         if isinstance(field, str):
             try:
