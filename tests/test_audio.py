@@ -6,6 +6,7 @@ from . import test_mixins
 def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
+    assert artist.albumSort == -1
     if artist.art:
         assert utils.is_art(artist.art)
     if artist.countries:
