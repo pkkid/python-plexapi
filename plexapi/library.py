@@ -319,8 +319,8 @@ class LibrarySection(PlexObject):
             art (str): Background artwork used to respresent the library section.
             composite (str): Composite image used to represent the library section.
             createdAt (datetime): Datetime the library section was created.
-            filters (str): Unknown
-            key (str): Key (or ID) of this library section.
+            filters (bool): True if filters are available for the library section.
+            key (int): Key (or ID) of this library section.
             language (str): Language represented in this section (en, xn, etc).
             locations (List<str>): List of folder paths added to the library section.
             refreshing (bool): True if this section is currently being refreshed.
@@ -339,8 +339,8 @@ class LibrarySection(PlexObject):
         self.art = data.attrib.get('art')
         self.composite = data.attrib.get('composite')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
-        self.filters = data.attrib.get('filters')
-        self.key = data.attrib.get('key')  # invalid key from plex
+        self.filters = utils.cast(bool, data.attrib.get('filters'))
+        self.key = utils.cast(int, data.attrib.get('key'))
         self.language = data.attrib.get('language')
         self.locations = self.listAttrs(data, 'path', etag='Location')
         self.refreshing = utils.cast(bool, data.attrib.get('refreshing'))
@@ -625,6 +625,12 @@ class LibrarySection(PlexObject):
             args['type'] = utils.searchType(libtype)
         key = '/library/sections/%s/%s%s' % (self.key, category, utils.joinArgs(args))
         return self.fetchItems(key, cls=FilterChoice)
+
+    def hubSearch(self, query, mediatype=None, limit=None):
+        """ Returns the hub search results for this library. See :func:`~plexapi.server.PlexServer.search`
+            for details and parameters.
+        """
+        return self._server.search(query, mediatype, limit, sectionId=self.key)
 
     def search(self, title=None, sort=None, maxresults=None,
                libtype=None, container_start=0, container_size=X_PLEX_CONTAINER_SIZE, **kwargs):
