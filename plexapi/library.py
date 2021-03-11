@@ -755,7 +755,7 @@ class LibrarySection(PlexObject):
     def _validateSortValue(self, sort, libtype=None):
         """ Validates a filter sort value is available for the library. Returns the validated sort value.
         """
-        match = re.match(r'([a-zA-Z]+):?([a-zA-Z]*)', sort)
+        match = re.match(r'([a-zA-Z\.]+):?([a-zA-Z]*)', sort)
         if not match:
             raise BadRequest('Invalid filter sort: %s' % sort)
         sortField, sortDir = match.groups()
@@ -1053,13 +1053,13 @@ class ShowSection(LibrarySection):
         """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='episode', **kwargs)
 
-    def recentlyAdded(self, libtype='episode', maxresults=50):
+    def recentlyAdded(self, maxresults=50):
         """ Returns a list of recently added episodes from this library section.
 
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
         """
-        return self.search(sort='episode.addedAt:desc', libtype=libtype, maxresults=maxresults)
+        return self.search(sort='episode.addedAt:desc', maxresults=maxresults)
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Show library section as sync item for specified device.
