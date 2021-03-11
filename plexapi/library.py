@@ -767,8 +767,9 @@ class LibrarySection(PlexObject):
     
         return results
 
-    def _validateSortValue(self, sort, libtype=None):
-        """ Validates a filter sort value is available for the library. Returns the validated sort value.
+    def _validateSortField(self, sort, libtype=None):
+        """ Validates a filter sort field is available for the library.
+            Returns the validated sort field.
         """
         match = re.match(r'([a-zA-Z\.]+):?([a-zA-Z]*)', sort)
         if not match:
@@ -841,7 +842,7 @@ class LibrarySection(PlexObject):
         if title is not None:
             args['title'] = title
         if sort is not None:
-            args['sort'] = self._validateSortValue(sort, libtype)
+            args['sort'] = self._validateSortField(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
@@ -943,7 +944,7 @@ class LibrarySection(PlexObject):
         for field, values in kwargs.items():
             filter_args.append(self._validateFilterField(field, values, libtype))
         if sort is not None:
-            args['sort'] = self._validateSortValue(sort, libtype)
+            args['sort'] = self._validateSortField(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
