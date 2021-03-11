@@ -734,6 +734,7 @@ class LibrarySection(PlexObject):
                 elif fieldType.type == 'string':
                     value = str(value)
                 elif fieldType.type in choiceTypes:
+                    value = str((value.id or value.tag) if isinstance(value, media.MediaTag) else value)
                     matchValue = str(value).lower()
                     for filterChoice in filterChoices:
                         if matchValue in {filterChoice.key.lower(), filterChoice.title.lower()}:
