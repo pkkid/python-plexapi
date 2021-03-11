@@ -1026,6 +1026,10 @@ class ShowSection(LibrarySection):
         """ Search for a show. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='show', **kwargs)
 
+    def searchSeasons(self, **kwargs):
+        """ Search for a season. See :func:`~plexapi.library.LibrarySection.search` for usage. """
+        return self.search(libtype='season', **kwargs)
+
     def searchEpisodes(self, **kwargs):
         """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='episode', **kwargs)
