@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-from urllib.parse import quote, quote_plus, unquote, urlencode
+from urllib.parse import quote, quote_plus, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject
