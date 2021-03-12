@@ -144,34 +144,39 @@ class PlexObject(object):
                     it only returns those items. By default we convert the xml elements
                     with the best guess PlexObjects based on tag and type attrs.
                 etag (str): Only fetch items with the specified tag.
-                **kwargs (dict): Optionally add attribute filters on the items to fetch. For
-                    example, passing in viewCount=0 will only return matching items. Filtering
-                    is done before the Python objects are built to help keep things speedy.
-                    Note: Because some attribute names are already used as arguments to this
-                    function, such as 'tag', you may still reference the attr tag byappending
-                    an underscore. For example, passing in _tag='foobar' will return all items
-                    where tag='foobar'. Also Note: Case very much matters when specifying kwargs
-                    -- Optionally, operators can be specified by append it
-                    to the end of the attribute name for more complex lookups. For example,
-                    passing in viewCount__gte=0 will return all items where viewCount >= 0.
-                    Available operations include:
+                **kwargs (dict): Optionally add attribute filters on the items to fetch.
+                    For example, passing in ``viewCount=0`` will only return matching items.
+                    See the examples below for more details.
 
-                    * __contains: Value contains specified arg.
-                    * __endswith: Value ends with specified arg.
-                    * __exact: Value matches specified arg.
-                    * __exists (bool): Value is or is not present in the attrs.
-                    * __gt: Value is greater than specified arg.
-                    * __gte: Value is greater than or equal to specified arg.
-                    * __icontains: Case insensative value contains specified arg.
-                    * __iendswith: Case insensative value ends with specified arg.
-                    * __iexact: Case insensative value matches specified arg.
-                    * __in: Value is in a specified list or tuple.
-                    * __iregex: Case insensative value matches the specified regular expression.
-                    * __istartswith: Case insensative value starts with specified arg.
-                    * __lt: Value is less than specified arg.
-                    * __lte: Value is less than or equal to specified arg.
-                    * __regex: Value matches the specified regular expression.
-                    * __startswith: Value starts with specified arg.
+            Examples:
+                Filtering is done before the Python objects are built to help keep things speedy.
+                Note that because some attribute names are already used as arguments to this
+                function, such as ``tag``, you may still reference the attr tag by prepending an
+                underscore. For example, passing in ``_tag='foobar'`` will return all items where
+                ``tag='foobar'``. Also note That case matters when specifying ``**kwargs``.
+
+                Optionally, operators can be specified by append it  to the end of the attribute
+                name for more complex lookups. For example, passing in ``viewCount__gte=0`` will
+                return all items where ``viewCount >= 0``.
+
+                Available operations include:
+
+                * ``__contains``: Value contains specified arg.
+                * ``__endswith``: Value ends with specified arg.
+                * ``__exact``: Value matches specified arg.
+                * ``__exists`` (*bool*): Value is or is not present in the attrs.
+                * ``__gt``: Value is greater than specified arg.
+                * ``__gte``: Value is greater than or equal to specified arg.
+                * ``__icontains``: Case insensative value contains specified arg.
+                * ``__iendswith``: Case insensative value ends with specified arg.
+                * ``__iexact``: Case insensative value matches specified arg.
+                * ``__in``: Value is in a specified list or tuple.
+                * ``__iregex``: Case insensative value matches the specified regular expression.
+                * ``__istartswith``: Case insensative value starts with specified arg.
+                * ``__lt``: Value is less than specified arg.
+                * ``__lte``: Value is less than or equal to specified arg.
+                * ``__regex``: Value matches the specified regular expression.
+                * ``__startswith``: Value starts with specified arg.
         """
         if ekey is None:
             raise BadRequest('ekey was not provided')
