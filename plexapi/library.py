@@ -748,7 +748,13 @@ class LibrarySection(PlexObject):
         try:
             filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
         except StopIteration:
-            raise BadRequest('Unknown filter field "%s" for libtype "%s"' % (field, libtype)) from None
+            for filterType in reversed(self.filterTypes()):
+                if filterType.type != libtype:
+                    filterField = next((f for f in filterType.fields if f.key.endswith(field)), None)
+                    break
+            else:
+                raise NotFound('Unknown filter field "%s" for libtype "%s"'
+                               % (field, libtype)) from None
 
         field = filterField.key
         operator = self._validateFieldOperator(filterField, operator)
