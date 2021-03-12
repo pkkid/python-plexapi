@@ -1016,13 +1016,17 @@ class LibrarySection(PlexObject):
                     library.search(**{"collection": "James Bond", "userRating>>": 8})
 
                 For even more advanced filtering which cannot be achieved in Plex, the PlexAPI operators can be applied.
-                See :func:`plexapi.base.PlexObject.fetchItem` for more details.
+                See :func:`plexapi.base.PlexObject.fetchItem` for more details. Note that using the Plex filters above will
+                be faster since the filters are applied by the Plex server before the results are returned to PlexAPI.
+                Using the PlexAPI operators requires the Plex server to return *all* results to allow PlexAPI to do the
+                filtering. The Plex filters and the PlexAPI operators can be used in conjunction with each other.
 
                 .. code-block:: python
 
                     library.search(summary__icontains="Christmas")
                     library.search(duration__gt=7200000)
                     library.search(audienceRating__lte=6.0, audienceRatingImage__startswith="rottentomatoes://")
+                    library.search(genre="holiday", viewCount__gte=3)
 
         """
         # cleanup the core arguments
