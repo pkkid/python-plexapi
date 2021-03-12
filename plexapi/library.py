@@ -601,7 +601,7 @@ class LibrarySection(PlexObject):
         try:
             return next(f for f in self.filterTypes() if f.type == libtype)
         except StopIteration:
-            raise BadRequest('Invalid libtype for this library: %s' % libtype) from None
+            raise NotFound('Invalid libtype for this library: %s' % libtype) from None
 
     def fieldTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
@@ -622,7 +622,7 @@ class LibrarySection(PlexObject):
         try:
             return next(f for f in self.fieldTypes() if f.type == fieldType)
         except StopIteration:
-            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
+            raise NotFound('Invalid fieldType for this library: %s' % fieldType) from None
 
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
@@ -730,7 +730,7 @@ class LibrarySection(PlexObject):
             try:
                 field = next(f for f in self.listFilters(libtype) if f.filter == field)
             except StopIteration:
-                raise BadRequest('Unknown filter field: %s' % field) from None
+                raise NotFound('Unknown filter field: %s' % field) from None
                 
         data = self._server.query(field.key)
         return self.findItems(data, FilterChoice)
@@ -784,8 +784,8 @@ class LibrarySection(PlexObject):
         try:
             next(o for o in fieldType.operators if o.key == operator)
         except StopIteration:
-            raise BadRequest('Invalid operator "%s" for filter field "%s"'
-                             % (operator, filterField.key)) from None
+            raise NotFound('Unknown operator "%s" for filter field "%s"'
+                           % (operator, filterField.key)) from None
 
         return '&=' if and_operator else operator
 
@@ -839,7 +839,8 @@ class LibrarySection(PlexObject):
         try:
             filterSort = next(f for f in self.listSorts(libtype) if f.key.endswith(sortField))
         except StopIteration:
-            raise BadRequest('Unknown sort field "%s" for libtype "%s"' % (sortField, libtype)) from None
+            raise NotFound('Unknown sort field "%s" for libtype "%s"'
+                           % (sortField, libtype)) from None
 
         sortField = filterSort.key
 
@@ -847,7 +848,7 @@ class LibrarySection(PlexObject):
             sortDir = filterSort.defaultDirection
 
         if sortDir not in {'asc', 'desc'}:
-            raise BadRequest('Invalid sort direction: %s, must be "asc" or "desc"' % sortDir)
+            raise NotFound('unknown sort direction: %s, must be "asc" or "desc"' % sortDir)
 
         return '%s:%s' % (sortField, sortDir)
 
@@ -891,7 +892,8 @@ class LibrarySection(PlexObject):
                         * year: List of years to search within ([yyyy, ...]). [all]
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When applying an unknown sort or filter.
+                :exc:`~plexapi.exceptions.BadRequest`: When the sort or filter is invalid.
+                :exc:`~plexapi.exceptions.NotFound`: When applying an unknown sort or filter.
         """
         libtype = libtype or self.TYPE
         # cleanup the core arguments
