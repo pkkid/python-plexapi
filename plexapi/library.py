@@ -602,7 +602,7 @@ class LibrarySection(PlexObject):
         try:
             return next(f for f in self.filterTypes() if f.type == libtype)
         except StopIteration:
-            raise NotFound('Invalid libtype for this library: %s' % libtype) from None
+            raise BadRequest('Invalid libtype for this library: %s' % libtype) from None
 
     def fieldTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
@@ -623,7 +623,7 @@ class LibrarySection(PlexObject):
         try:
             return next(f for f in self.fieldTypes() if f.type == fieldType)
         except StopIteration:
-            raise NotFound('Invalid fieldType for this library: %s' % fieldType) from None
+            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
 
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
@@ -716,7 +716,7 @@ class LibrarySection(PlexObject):
                     artist, album, track, photoalbum, photo).
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: Unknown filter field.
+                :exc:`~plexapi.exceptions.NotFound`: Unknown filter.
 
             Example:
 
@@ -731,7 +731,10 @@ class LibrarySection(PlexObject):
             try:
                 field = next(f for f in self.listFilters(libtype) if f.filter == field)
             except StopIteration:
-                raise NotFound('Unknown filter field: %s' % field) from None
+                availableFilters = [f.filter for f in self.listFilters()]
+                raise NotFound('Unknown filter: %s. '
+                               'Available filters: %s'
+                               % (field, availableFilters)) from None
                 
         data = self._server.query(field.key)
         return self.findItems(data, FilterChoice)
@@ -755,8 +758,10 @@ class LibrarySection(PlexObject):
                     if filterField:
                         break
             else:
-                raise NotFound('Unknown filter field "%s" for libtype "%s"'
-                               % (field, libtype)) from None
+                availableFields = [f.key for f in self.listFields(libtype)]
+                raise NotFound('Unknown filter field "%s" for libtype "%s". '
+                               'Available filter fields: %s'
+                               % (field, libtype, availableFields)) from None
 
         field = filterField.key
         operator = self._validateFieldOperator(filterField, operator)
@@ -786,8 +791,10 @@ class LibrarySection(PlexObject):
         try:
             next(o for o in fieldType.operators if o.key == operator)
         except StopIteration:
-            raise NotFound('Unknown operator "%s" for filter field "%s"'
-                           % (operator, filterField.key)) from None
+            availableOperators = [o.key for o in self.listOperators(filterField.type)]
+            raise NotFound('Unknown operator "%s" for filter field "%s". '
+                           'Available operators: %s'
+                           % (operator, filterField.key, availableOperators)) from None
 
         return '&=' if and_operator else operator
 
@@ -845,16 +852,21 @@ class LibrarySection(PlexObject):
         try:
             filterSort = next(f for f in self.listSorts(libtype) if f.key.endswith(sortField))
         except StopIteration:
-            raise NotFound('Unknown sort field "%s" for libtype "%s"'
-                           % (sortField, libtype)) from None
+            availableSorts = [f.key for f in self.listSorts(libtype)]
+            raise NotFound('Unknown sort field "%s" for libtype "%s". '
+                           'Available sort fields: %s'
+                           % (sortField, libtype, availableSorts)) from None
 
         sortField = filterSort.key
 
         if not sortDir:
             sortDir = filterSort.defaultDirection
 
-        if sortDir not in {'asc', 'desc'}:
-            raise NotFound('unknown sort direction: %s, must be "asc" or "desc"' % sortDir)
+        availableDirections = ['asc', 'desc']
+        if sortDir not in availableDirections:
+            raise NotFound('Unknown sort direction: %s. '
+                           'Available sort directions: %s'
+                           % (sortDir, availableDirections))
 
         return '%s:%s' % (sortField, sortDir)
 
@@ -1129,6 +1141,8 @@ class LibrarySection(PlexObject):
 
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When the library is not allowed to sync.
+                :exc:`~plexapi.exceptions.BadRequest`: When the sort or filter is invalid.
+                :exc:`~plexapi.exceptions.NotFound`: When applying an unknown sort or filter.
 
             Example:
 
