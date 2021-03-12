@@ -743,7 +743,7 @@ class LibrarySection(PlexObject):
         if not match:
             raise BadRequest('Invalid filter field: %s' % field)
         _libtype, field, operator = match.groups()
-        libtype = _libtype or libtype
+        libtype = _libtype or libtype or self.TYPE
 
         try:
             filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
@@ -831,10 +831,11 @@ class LibrarySection(PlexObject):
         """ Validates a filter sort field is available for the library.
             Returns the validated sort field.
         """
-        match = re.match(r'([a-zA-Z\.]+):?([a-zA-Z]*)', sort)
+        match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+):?([a-zA-Z]*)', sort)
         if not match:
             raise BadRequest('Invalid filter sort: %s' % sort)
-        sortField, sortDir = match.groups()
+        _libtype, sortField, sortDir = match.groups()
+        libtype = _libtype or libtype or self.TYPE
 
         try:
             filterSort = next(f for f in self.listSorts(libtype) if f.key.endswith(sortField))
@@ -895,7 +896,6 @@ class LibrarySection(PlexObject):
                 :exc:`~plexapi.exceptions.BadRequest`: When the sort or filter is invalid.
                 :exc:`~plexapi.exceptions.NotFound`: When applying an unknown sort or filter.
         """
-        libtype = libtype or self.TYPE
         # cleanup the core arguments
         args = {}
         filter_args = []
