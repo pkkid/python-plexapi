@@ -1217,6 +1217,14 @@ class LibrarySection(PlexObject):
         key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
         return self.fetchItems(key, **kwargs)
 
+    @deprecated('use "listFields" instead')
+    def filterFields(self, mediaType=None):
+        return self.listFields(libtype=mediaType)
+
+    @deprecated('use "listFilterChoices" instead')
+    def listChoices(self, category, libtype=None, **kwargs):
+        return self.listFilterChoices(field=category, libtype=libtype)
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
