@@ -441,7 +441,7 @@ class LibrarySection(PlexObject):
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
-            See description of :func:`plexapi.library.LibrarySection.search()` for details about filtering / sorting.
+            See description of :func:`~plexapi.library.LibrarySection.search()` for details about filtering / sorting.
         """
         libtype = libtype or self.TYPE
         return self.search(libtype=libtype, **kwargs)
@@ -628,7 +628,7 @@ class LibrarySection(PlexObject):
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
             This is the list of options in the filter dropdown menu
-            (`screenshot <https://i.imgur.com/Ycm8jIC.png>`__).
+            (`screenshot <../_static/images/LibrarySection.listFilters.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -647,7 +647,7 @@ class LibrarySection(PlexObject):
     def listSorts(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringSort` for a specified libtype.
             This is the list of options in the sorting dropdown menu
-            (`screenshot <https://i.imgur.com/E0HMVQq.png>`__).
+            (`screenshot <../_static/images/LibrarySection.listSorts.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -666,7 +666,7 @@ class LibrarySection(PlexObject):
     def listFields(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFields` for a specified libtype.
             This is the list of options in the custom filter dropdown menu
-            (`screenshot <https://i.imgur.com/slrJWXn.png>`__).
+            (`screenshot <../_static/images/LibrarySection.search.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -685,7 +685,7 @@ class LibrarySection(PlexObject):
     def listOperators(self, fieldType):
         """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
             This is the list of options in the custom filter operator dropdown menu
-            (`screenshot <https://i.imgur.com/aVYqnJS.png>`__).
+            (`screenshot <../_static/images/LibrarySection.search.png>`__).
         
             Parameters:
                 fieldType (str): The data type for the field (tag, integer, string, boolean, date,
@@ -707,7 +707,7 @@ class LibrarySection(PlexObject):
         """ Returns a list of available :class:`~plexapi.library.FilterChoice` for a specified
             :class:`~plexapi.library.FilteringFilter` or filter field.
             This is the list of available values for a custom filter
-            (`screenshot <https://i.imgur.com/mCQChv0.png>`__).
+            (`screenshot <../_static/images/LibrarySection.search.png>`__).
             
             Parameters:
                 field (str): :class:`~plexapi.library.FilteringFilter` object,
@@ -859,47 +859,162 @@ class LibrarySection(PlexObject):
         return '%s:%s' % (sortField, sortDir)
 
     def hubSearch(self, query, mediatype=None, limit=None):
-        """ Returns the hub search results for this library. See :func:`~plexapi.server.PlexServer.search`
+        """ Returns the hub search results for this library. See :func:`plexapi.server.PlexServer.search`
             for details and parameters.
         """
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
     def search(self, title=None, sort=None, maxresults=None,
                libtype=None, container_start=0, container_size=X_PLEX_CONTAINER_SIZE, **kwargs):
-        """ Search the library. The http requests will be batched in container_size. If you're only looking for the first <num>
-            results, it would be wise to set the maxresults option to that amount so this functions
-            doesn't iterate over all results on the server.
+        """ Search the library. The http requests will be batched in container_size. If you are only looking for the
+            first <num> results, it would be wise to set the maxresults option to that amount so the search doesn't iterate
+            over all results on the server.
 
             Parameters:
-                title (str): General string query to search for (optional).
-                sort (str): column:dir; column can be any of {addedAt, originallyAvailableAt, lastViewedAt,
-                      titleSort, rating, mediaHeight, duration}. dir can be asc or desc (optional).
-                maxresults (int): Only return the specified number of results (optional).
-                libtype (str): Filter results to a spcifiec libtype (movie, show, episode, artist,
-                    album, track; optional).
-                container_start (int): default 0
-                container_size (int): default X_PLEX_CONTAINER_SIZE in your config file.
-                **kwargs (dict): Any of the available custom filters for the current library section. Partial string
-                        matches allowed. Multiple matches OR together. Negative filtering also possible, just add an
-                        exclamation mark to the end of filter name, e.g. `resolution!=1x1`.
-
-                        * unwatched: Display or hide unwatched content (True, False). [all]
-                        * duplicate: Display or hide duplicate items (True, False). [movie]
-                        * actor: List of actors to search ([actor_or_id, ...]). [movie]
-                        * collection: List of collections to search within ([collection_or_id, ...]). [all]
-                        * contentRating: List of content ratings to search within ([rating_or_key, ...]). [movie,tv]
-                        * country: List of countries to search within ([country_or_key, ...]). [movie,music]
-                        * decade: List of decades to search within ([yyy0, ...]). [movie]
-                        * director: List of directors to search ([director_or_id, ...]). [movie]
-                        * genre: List Genres to search within ([genere_or_id, ...]). [all]
-                        * network: List of TV networks to search within ([resolution_or_key, ...]). [tv]
-                        * resolution: List of video resolutions to search within ([resolution_or_key, ...]). [movie]
-                        * studio: List of studios to search within ([studio_or_key, ...]). [music]
-                        * year: List of years to search within ([yyyy, ...]). [all]
+                title (str, optional): General string query to search for. Partial string matches are allowed.
+                sort (str, optional): The sort field in the format ``column:dir``.
+                    See :func:`~plexapi.library.LibrarySection.listSorts` to get a list of available sort fields.
+                maxresults (int, optional): Only return the specified number of results.
+                libtype (str, optional): Return results of a specific type (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo) (e.g. ``libtype='episode'`` will only return
+                    :class:`~plexapi.video.Episode` objects)
+                container_start (int, optional): Default 0.
+                container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
+                **kwargs (dict): Additional custom filters to apply to the search results.
+                    See the examples below for more details.
 
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When the sort or filter is invalid.
                 :exc:`~plexapi.exceptions.NotFound`: When applying an unknown sort or filter.
+
+            Examples:
+                Any of the available custom filters can be applied to the search results
+                (`screenshot <../_static/images/LibrarySection.search.png>`__).
+
+                * See :func:`~plexapi.library.LibrarySection.listFields` to get a list of all available fields.
+                * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
+                * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
+
+                The following filter fields are just some examples of the possible filters. The list is not exaustive,
+                and not all filters apply to all library types. For tag type filters, a :class:`~plexapi.media.MediaTag`
+                object, the exact name :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*) can be
+                provided. For date type filters, either a ``datetime`` object or a date in ``YYYY-MM-DD`` (*str*) format
+                can be provided. Multiple values can be ``OR`` together by providing a list of values.
+
+                * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
+                * **addedAt** (*datetime*): Search for items added before or after a date. See operators below.
+                * **audioLanguage** (*str*): Search for a specific audio language (3 character code, e.g. jpn).
+                * **collection** (:class:`~plexapi.media.MediaTag`): Search for the name of a collection.
+                * **contentRating** (:class:`~plexapi.media.MediaTag`): Search for a specific content rating.
+                * **country** (:class:`~plexapi.media.MediaTag`): Search for the name of a country.
+                * **decade** (*int*): Search for a specific decade (e.g. 2000).
+                * **director** (:class:`~plexapi.media.MediaTag`): Search for the name of a director.
+                * **duplicate** (*bool*) Search for duplicate items.
+                * **genre** (:class:`~plexapi.media.MediaTag`): Search for a specific genre.
+                * **hdr** (*bool*): Search for HDR items.
+                * **inProgress** (*bool*): Search for in progress items.
+                * **label** (:class:`~plexapi.media.MediaTag`): Search for a specific label.
+                * **lastViewedAt** (*datetime*): Search for items watched before or after a date. See operators below.
+                * **mood** (:class:`~plexapi.media.MediaTag`): Search for a specific mood.
+                * **producer** (:class:`~plexapi.media.MediaTag`): Search for the name of a producer.
+                * **resolution** (*str*): Search for a specific resolution (e.g. 1080).
+                * **studio** (*str*): Search for the name of a studio.
+                * **style** (:class:`~plexapi.media.MediaTag`): Search for a specific style.
+                * **subtitleLanguage** (*str*): Search for a specific subtitle language (3 character code, e.g. eng)
+                * **unmatched** (*bool*): Search for unmatched items.
+                * **unwatched** (*bool*): Search for unwatched items.
+                * **userRating** (*int*): Search for items with a specific user rating.
+                * **writer** (:class:`~plexapi.media.MediaTag`): Search for the name of a writer.
+                * **year** (*int*): Search for a specific year.
+
+                .. code-block:: python
+
+                    library.search(unwatched=True, year=2020, resolution="4k")
+                    library.search(actor="Arnold Schwarzenegger", decade=1990)
+                    library.search(contentRating="TV-G", genre="animation")
+                    library.search(genre=["animation", "comedy"])  # Genre is animation OR comedy
+                    library.search(studio=["Disney", "Pixar"])  # Studio contains Disney OR Pixar
+
+                Some filters may be prefixed by the ``libtype`` (e.g. ``show.collection``, ``episode.title``,
+                ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not to be confused with the
+                ``libtype`` parameter. If no ``libtype`` prefix is provided, then the main library type is assumed.
+                For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+                If you want to search for episode view count then you must specify ``episode.viewCount`` explicitly.
+                The ``libtype`` prefix cannot be included directly in the function parameters so the ``**kwargs``
+                must be provided as a dictionary.
+
+                .. code-block:: python
+
+                    library.search(**{"show.collection": "Documentary", "episode.inProgress": True})
+                    library.search(**{"artist.genre": "pop", "album.decade": 2000})
+
+                    # The following three options are identical and will return Episode objects
+                    showLibrary.search(title="Winter is Coming", libtype='episode')
+                    showLibrary.search(libtype='episode', **{"episode.title": "Winter is Coming"})
+                    showLibrary.searchEpisodes(title="Winter is Coming")
+
+                    # The following will search for the episode title but return Show objects
+                    showLibrary.search(**{"episode.title": "Winter is Coming"})
+
+                **Using operators**
+
+                Operators can be included to filter the results with more granularity. If no operator is specified,
+                the default operator is assumed to be ``=``. The following is a list of possible operators depending
+                on the data type of the filter being applied. A special ``&`` operator can also be used to ``AND``
+                together a list of values.
+
+                Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
+
+                * ``=``: ``is``
+                * ``!=``: ``is not``
+
+                Type: *int*
+
+                * ``=``: ``is``
+                * ``!=``: ``is not``
+                * ``>>=``: ``is greater than``
+                * ``<<=``: ``is less than``
+
+                Type: *str*
+
+                * ``=``: ``contains``
+                * ``!=``: ``does not contain``
+                * ``==``: ``is``
+                * ``!==``: ``is not``
+                * ``<=``: ``begins with``
+                * ``>=``: ``ends with``
+
+                Type: *bool*
+
+                * ``=``: ``is true``
+                * ``!=``: ``is false``
+
+                Type: *datetime*
+
+                * ``<<=``: ``is before``
+                * ``>>=``: ``is after``
+
+                Type: *resolution*
+
+                * ``=``: ``is``
+
+                Operators cannot be included directly in the function parameters so the ``**kwargs``
+                must be provided as a dictionary.
+
+                .. code-block:: python
+
+                    # Genre is horror AND thriller
+                    library.search(**{"genre&": ["horror", "thriller"]})
+
+                    # Director is not Steven Spielberg
+                    library.search(**{"director!": "Steven Spielberg"})
+
+                    # Title starts with Marvel and added before 2021-01-01
+                    library.search(**{"title<": "Marvel", "addedAt<<": "2021-01-01"})
+
+                    # Collection is James Bond and user rating is greater than 8
+                    library.search(**{"collection": "James Bond", "userRating>>": 8})
+
         """
         # cleanup the core arguments
         args = {}
