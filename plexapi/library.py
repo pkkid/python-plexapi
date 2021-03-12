@@ -881,51 +881,54 @@ class LibrarySection(PlexObject):
                 container_start (int, optional): Default 0.
                 container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
                 **kwargs (dict): Additional custom filters to apply to the search results.
-                    See the examples below for more details.
+                    See the details below for more info.
 
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When the sort or filter is invalid.
                 :exc:`~plexapi.exceptions.NotFound`: When applying an unknown sort or filter.
 
+            **Using Plex Filters**
+
+            Any of the available custom filters can be applied to the search results
+            (`screenshot <../_static/images/LibrarySection.search.png>`__).
+
+            * See :func:`~plexapi.library.LibrarySection.listFields` to get a list of all available fields.
+            * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
+            * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
+
+            The following filter fields are just some examples of the possible filters. The list is not exaustive,
+            and not all filters apply to all library types. For tag type filters, a :class:`~plexapi.media.MediaTag`
+            object, the exact name :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*) can be
+            provided. For date type filters, either a ``datetime`` object or a date in ``YYYY-MM-DD`` (*str*) format
+            can be provided. Multiple values can be ``OR`` together by providing a list of values.
+
+            * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
+            * **addedAt** (*datetime*): Search for items added before or after a date. See operators below.
+            * **audioLanguage** (*str*): Search for a specific audio language (3 character code, e.g. jpn).
+            * **collection** (:class:`~plexapi.media.MediaTag`): Search for the name of a collection.
+            * **contentRating** (:class:`~plexapi.media.MediaTag`): Search for a specific content rating.
+            * **country** (:class:`~plexapi.media.MediaTag`): Search for the name of a country.
+            * **decade** (*int*): Search for a specific decade (e.g. 2000).
+            * **director** (:class:`~plexapi.media.MediaTag`): Search for the name of a director.
+            * **duplicate** (*bool*) Search for duplicate items.
+            * **genre** (:class:`~plexapi.media.MediaTag`): Search for a specific genre.
+            * **hdr** (*bool*): Search for HDR items.
+            * **inProgress** (*bool*): Search for in progress items.
+            * **label** (:class:`~plexapi.media.MediaTag`): Search for a specific label.
+            * **lastViewedAt** (*datetime*): Search for items watched before or after a date. See operators below.
+            * **mood** (:class:`~plexapi.media.MediaTag`): Search for a specific mood.
+            * **producer** (:class:`~plexapi.media.MediaTag`): Search for the name of a producer.
+            * **resolution** (*str*): Search for a specific resolution (e.g. 1080).
+            * **studio** (*str*): Search for the name of a studio.
+            * **style** (:class:`~plexapi.media.MediaTag`): Search for a specific style.
+            * **subtitleLanguage** (*str*): Search for a specific subtitle language (3 character code, e.g. eng)
+            * **unmatched** (*bool*): Search for unmatched items.
+            * **unwatched** (*bool*): Search for unwatched items.
+            * **userRating** (*int*): Search for items with a specific user rating.
+            * **writer** (:class:`~plexapi.media.MediaTag`): Search for the name of a writer.
+            * **year** (*int*): Search for a specific year.
+
             Examples:
-                Any of the available custom filters can be applied to the search results
-                (`screenshot <../_static/images/LibrarySection.search.png>`__).
-
-                * See :func:`~plexapi.library.LibrarySection.listFields` to get a list of all available fields.
-                * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
-                * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
-
-                The following filter fields are just some examples of the possible filters. The list is not exaustive,
-                and not all filters apply to all library types. For tag type filters, a :class:`~plexapi.media.MediaTag`
-                object, the exact name :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*) can be
-                provided. For date type filters, either a ``datetime`` object or a date in ``YYYY-MM-DD`` (*str*) format
-                can be provided. Multiple values can be ``OR`` together by providing a list of values.
-
-                * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
-                * **addedAt** (*datetime*): Search for items added before or after a date. See operators below.
-                * **audioLanguage** (*str*): Search for a specific audio language (3 character code, e.g. jpn).
-                * **collection** (:class:`~plexapi.media.MediaTag`): Search for the name of a collection.
-                * **contentRating** (:class:`~plexapi.media.MediaTag`): Search for a specific content rating.
-                * **country** (:class:`~plexapi.media.MediaTag`): Search for the name of a country.
-                * **decade** (*int*): Search for a specific decade (e.g. 2000).
-                * **director** (:class:`~plexapi.media.MediaTag`): Search for the name of a director.
-                * **duplicate** (*bool*) Search for duplicate items.
-                * **genre** (:class:`~plexapi.media.MediaTag`): Search for a specific genre.
-                * **hdr** (*bool*): Search for HDR items.
-                * **inProgress** (*bool*): Search for in progress items.
-                * **label** (:class:`~plexapi.media.MediaTag`): Search for a specific label.
-                * **lastViewedAt** (*datetime*): Search for items watched before or after a date. See operators below.
-                * **mood** (:class:`~plexapi.media.MediaTag`): Search for a specific mood.
-                * **producer** (:class:`~plexapi.media.MediaTag`): Search for the name of a producer.
-                * **resolution** (*str*): Search for a specific resolution (e.g. 1080).
-                * **studio** (*str*): Search for the name of a studio.
-                * **style** (:class:`~plexapi.media.MediaTag`): Search for a specific style.
-                * **subtitleLanguage** (*str*): Search for a specific subtitle language (3 character code, e.g. eng)
-                * **unmatched** (*bool*): Search for unmatched items.
-                * **unwatched** (*bool*): Search for unwatched items.
-                * **userRating** (*int*): Search for items with a specific user rating.
-                * **writer** (:class:`~plexapi.media.MediaTag`): Search for the name of a writer.
-                * **year** (*int*): Search for a specific year.
 
                 .. code-block:: python
 
@@ -935,13 +938,17 @@ class LibrarySection(PlexObject):
                     library.search(genre=["animation", "comedy"])  # Genre is animation OR comedy
                     library.search(studio=["Disney", "Pixar"])  # Studio contains Disney OR Pixar
 
-                Some filters may be prefixed by the ``libtype`` (e.g. ``show.collection``, ``episode.title``,
-                ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not to be confused with the
-                ``libtype`` parameter. If no ``libtype`` prefix is provided, then the main library type is assumed.
-                For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
-                If you want to search for episode view count then you must specify ``episode.viewCount`` explicitly.
-                The ``libtype`` prefix cannot be included directly in the function parameters so the ``**kwargs``
-                must be provided as a dictionary.
+            **Using a** ``libtype`` **Prefix**
+
+            Some filters may be prefixed by the ``libtype`` (e.g. ``show.collection``, ``episode.title``,
+            ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not to be confused with the
+            ``libtype`` parameter. If no ``libtype`` prefix is provided, then the main library type is assumed.
+            For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+            If you want to search for episode view count then you must specify ``episode.viewCount`` explicitly.
+            The ``libtype`` prefix cannot be included directly in the function parameters so the ``**kwargs``
+            must be provided as a dictionary.
+
+            Examples:
 
                 .. code-block:: python
 
@@ -956,50 +963,52 @@ class LibrarySection(PlexObject):
                     # The following will search for the episode title but return Show objects
                     showLibrary.search(**{"episode.title": "Winter is Coming"})
 
-                **Using operators**
+            **Using Plex Operators**
 
-                Operators can be included to filter the results with more granularity. If no operator is specified,
-                the default operator is assumed to be ``=``. The following is a list of possible operators depending
-                on the data type of the filter being applied. A special ``&`` operator can also be used to ``AND``
-                together a list of values.
+            Operators can be included to filter the results with more granularity. If no operator is specified,
+            the default operator is assumed to be ``=``. The following is a list of possible operators depending
+            on the data type of the filter being applied. A special ``&`` operator can also be used to ``AND``
+            together a list of values.
 
-                Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
+            Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
 
-                * ``=``: ``is``
-                * ``!=``: ``is not``
+            * ``=``: ``is``
+            * ``!=``: ``is not``
 
-                Type: *int*
+            Type: *int*
 
-                * ``=``: ``is``
-                * ``!=``: ``is not``
-                * ``>>=``: ``is greater than``
-                * ``<<=``: ``is less than``
+            * ``=``: ``is``
+            * ``!=``: ``is not``
+            * ``>>=``: ``is greater than``
+            * ``<<=``: ``is less than``
 
-                Type: *str*
+            Type: *str*
 
-                * ``=``: ``contains``
-                * ``!=``: ``does not contain``
-                * ``==``: ``is``
-                * ``!==``: ``is not``
-                * ``<=``: ``begins with``
-                * ``>=``: ``ends with``
+            * ``=``: ``contains``
+            * ``!=``: ``does not contain``
+            * ``==``: ``is``
+            * ``!==``: ``is not``
+            * ``<=``: ``begins with``
+            * ``>=``: ``ends with``
 
-                Type: *bool*
+            Type: *bool*
 
-                * ``=``: ``is true``
-                * ``!=``: ``is false``
+            * ``=``: ``is true``
+            * ``!=``: ``is false``
 
-                Type: *datetime*
+            Type: *datetime*
 
-                * ``<<=``: ``is before``
-                * ``>>=``: ``is after``
+            * ``<<=``: ``is before``
+            * ``>>=``: ``is after``
 
-                Type: *resolution*
+            Type: *resolution*
 
-                * ``=``: ``is``
+            * ``=``: ``is``
 
-                Operators cannot be included directly in the function parameters so the ``**kwargs``
-                must be provided as a dictionary.
+            Operators cannot be included directly in the function parameters so the ``**kwargs``
+            must be provided as a dictionary.
+
+            Examples:
 
                 .. code-block:: python
 
@@ -1015,17 +1024,23 @@ class LibrarySection(PlexObject):
                     # Collection is James Bond and user rating is greater than 8
                     library.search(**{"collection": "James Bond", "userRating>>": 8})
 
-                For even more advanced filtering which cannot be achieved in Plex, the PlexAPI operators can be applied.
-                See :func:`plexapi.base.PlexObject.fetchItem` for more details. Note that using the Plex filters above will
-                be faster since the filters are applied by the Plex server before the results are returned to PlexAPI.
-                Using the PlexAPI operators requires the Plex server to return *all* results to allow PlexAPI to do the
-                filtering. The Plex filters and the PlexAPI operators can be used in conjunction with each other.
+            **Using PlexAPI Operators**
+
+            For even more advanced filtering which cannot be achieved in Plex, the PlexAPI operators can be applied
+            to any XML attribute. See :func:`plexapi.base.PlexObject.fetchItems` for a list of operators and how they
+            are used. Note that using the Plex filters above will be faster since the filters are applied by the Plex
+            server before the results are returned to PlexAPI. Using the PlexAPI operators requires the Plex server
+            to return *all* results to allow PlexAPI to do the filtering. The Plex filters and the PlexAPI operators
+            can be used in conjunction with each other.
+
+            Examples:
 
                 .. code-block:: python
 
                     library.search(summary__icontains="Christmas")
                     library.search(duration__gt=7200000)
                     library.search(audienceRating__lte=6.0, audienceRatingImage__startswith="rottentomatoes://")
+                    library.search(media__videoCodec__exact="h265")
                     library.search(genre="holiday", viewCount__gte=3)
 
         """
