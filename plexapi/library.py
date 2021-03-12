@@ -752,7 +752,8 @@ class LibrarySection(PlexObject):
             for filterType in reversed(self.filterTypes()):
                 if filterType.type != libtype:
                     filterField = next((f for f in filterType.fields if f.key.endswith(field)), None)
-                    break
+                    if filterField:
+                        break
             else:
                 raise NotFound('Unknown filter field "%s" for libtype "%s"'
                                % (field, libtype)) from None
