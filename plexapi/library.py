@@ -917,9 +917,11 @@ class LibrarySection(PlexObject):
         if maxresults is not None:
             container_size = min(container_size, maxresults)
 
-        joined_filter_args = '&' + '&'.join(filter_args) if filter_args else ''
-        key = '/library/sections/%s/all%s%s' % (self.key, utils.joinArgs(args), joined_filter_args)
-        
+        joined_args = utils.joinArgs(args).lstrip('?')
+        joined_filter_args = '&'.join(filter_args) if filter_args else ''
+        params = '&'.join([joined_args, joined_filter_args]).strip('&')
+        key = '/library/sections/%s/all?%s' % (self.key, params)
+
         while True:
             subresults = self.fetchItems(key, container_start=container_start,
                                          container_size=container_size, **kwargs)
@@ -1019,8 +1021,10 @@ class LibrarySection(PlexObject):
         sync_item.metadataType = self.METADATA_TYPE
         sync_item.machineIdentifier = self._server.machineIdentifier
 
-        joined_filter_args = '&' + '&'.join(filter_args) if filter_args else ''
-        key = '/library/sections/%s/all%s%s' % (self.key, utils.joinArgs(args), joined_filter_args)
+        joined_args = utils.joinArgs(args).lstrip('?')
+        joined_filter_args = '&'.join(filter_args) if filter_args else ''
+        params = '&'.join([joined_args, joined_filter_args]).strip('&')
+        key = '/library/sections/%s/all?%s' % (self.key, params)
 
         sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key))
         sync_item.policy = policy
