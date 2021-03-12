@@ -627,7 +627,7 @@ class LibrarySection(PlexObject):
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
             This is the list of options in the filter dropdown menu
-            (`screenshot <https://i.imgur.com/Ycm8jIC.png>`_).
+            (`screenshot <https://i.imgur.com/Ycm8jIC.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -646,7 +646,7 @@ class LibrarySection(PlexObject):
     def listSorts(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringSort` for a specified libtype.
             This is the list of options in the sorting dropdown menu
-            (`screenshot <https://i.imgur.com/E0HMVQq.png>`_).
+            (`screenshot <https://i.imgur.com/E0HMVQq.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -665,7 +665,7 @@ class LibrarySection(PlexObject):
     def listFields(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFields` for a specified libtype.
             This is the list of options in the custom filter dropdown menu
-            (`screenshot <https://i.imgur.com/slrJWXn.png>`_).
+            (`screenshot <https://i.imgur.com/slrJWXn.png>`__).
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
@@ -684,7 +684,7 @@ class LibrarySection(PlexObject):
     def listOperators(self, fieldType):
         """ Returns a list of available :class:`~plexapi.library.FilteringOperator` for a specified fieldType.
             This is the list of options in the custom filter operator dropdown menu
-            (`screenshot <https://i.imgur.com/aVYqnJS.png>`_).
+            (`screenshot <https://i.imgur.com/aVYqnJS.png>`__).
         
             Parameters:
                 fieldType (str): The data type for the field (tag, integer, string, boolean, date,
@@ -706,7 +706,7 @@ class LibrarySection(PlexObject):
         """ Returns a list of available :class:`~plexapi.library.FilterChoice` for a specified
             :class:`~plexapi.library.FilteringFilter` or filter field.
             This is the list of available values for a custom filter
-            (`screenshot <https://i.imgur.com/mCQChv0.png>`_).
+            (`screenshot <https://i.imgur.com/mCQChv0.png>`__).
             
             Parameters:
                 field (str): :class:`~plexapi.library.FilteringFilter` object,
