@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+from datetime import datetime
 from urllib.parse import quote, quote_plus, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
@@ -810,7 +811,10 @@ class LibrarySection(PlexObject):
                 if fieldType.type == 'boolean':
                     value = int(utils.cast(bool, value))
                 elif fieldType.type == 'date':
-                    value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
+                    if isinstance(value, datetime):
+                        value = int(value.timestamp())
+                    else:
+                        value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
                 elif fieldType.type == 'integer':
                     value = utils.cast(int, value)
                 elif fieldType.type == 'string':
