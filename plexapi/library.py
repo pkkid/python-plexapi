@@ -572,8 +572,8 @@ class LibrarySection(PlexObject):
         self._server.query(key, method=self._server._session.delete)
 
     def _loadFilters(self):
-        """ Retrieves and caches the :class:`~plexapi.library.FilteringType` and
-            :class:`~plexapi.library.FilteringFieldType` for this library section.
+        """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and
+            list of :class:`~plexapi.library.FilteringFieldType` for this library section.
         """
         key = '/library/sections/%s/all?includeMeta=1&X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
         data = self._server.query(key)
@@ -738,7 +738,7 @@ class LibrarySection(PlexObject):
 
     def _validateFilterField(self, field, values, libtype=None):
         """ Validates a filter field and values are available as a custom filter for the library.
-            Returns the validated field and values as a URL param.
+            Returns the validated field and values as a URL encoded parameter string.
         """
         match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)([!<>=&]*)', field)
         if not match:
@@ -771,7 +771,7 @@ class LibrarySection(PlexObject):
 
     def _validateFieldOperator(self, filterField, operator):
         """ Validates filter operator is in the available operators.
-            Returns the validated operator.
+            Returns the validated operator string.
         """
         fieldType = self.getFieldType(filterField.type)
 
@@ -834,7 +834,7 @@ class LibrarySection(PlexObject):
 
     def _validateSortField(self, sort, libtype=None):
         """ Validates a filter sort field is available for the library.
-            Returns the validated sort field.
+            Returns the validated sort field string.
         """
         match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+):?([a-zA-Z]*)', sort)
         if not match:
@@ -1014,6 +1014,15 @@ class LibrarySection(PlexObject):
 
                     # Collection is James Bond and user rating is greater than 8
                     library.search(**{"collection": "James Bond", "userRating>>": 8})
+
+                For even more advanced filtering which cannot be achieved in Plex, the PlexAPI operators can be applied.
+                See :func:`plexapi.base.PlexObject.fetchItem` for more details.
+
+                .. code-block:: python
+
+                    library.search(summary__icontains="Christmas")
+                    library.search(duration__gt=7200000)
+                    library.search(audienceRating__lte=6.0, audienceRatingImage__startswith="rottentomatoes://")
 
         """
         # cleanup the core arguments
