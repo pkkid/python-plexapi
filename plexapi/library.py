@@ -952,13 +952,15 @@ class LibrarySection(PlexObject):
 
             **Using a** ``libtype`` **Prefix**
 
-            Some filters may be prefixed by the ``libtype`` (e.g. ``show.collection``, ``episode.title``,
-            ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not to be confused with the
-            ``libtype`` parameter. If no ``libtype`` prefix is provided, then the main library type is assumed.
-            For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
-            If you want to search for episode view count then you must specify ``episode.viewCount`` explicitly.
-            The ``libtype`` prefix cannot be included directly in the function parameters so the ``**kwargs``
-            must be provided as a dictionary.
+            Some filters may be prefixed by the ``libtype`` separated by a ``.`` (e.g. ``show.collection``,
+            ``episode.title``, ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not be
+            confused with the ``libtype`` parameter. If no ``libtype`` prefix is provided, then the default library
+            type is assumed. For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+            If you want to filter using episode view count then you must specify ``episode.viewCount`` explicitly.
+            In addition, if the filter does not exist for the default library type it will fallback to the most
+            specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
+            ``episode.unwatched.`` The ``libtype`` prefix cannot be included directly in the function parameters so
+            the ``**kwargs`` must be provided as a dictionary.
 
             Examples:
 
@@ -975,12 +977,15 @@ class LibrarySection(PlexObject):
                     # The following will search for the episode title but return Show objects
                     showLibrary.search(**{"episode.title": "Winter is Coming"})
 
+                    # The following will fallback to episode.unwatched
+                    showLibrary.search(unwatched=True)
+
             **Using Plex Operators**
 
-            Operators can be included to filter the results with more granularity. If no operator is specified,
-            the default operator is assumed to be ``=``. The following is a list of possible operators depending
-            on the data type of the filter being applied. A special ``&`` operator can also be used to ``AND``
-            together a list of values.
+            Operators can be appended to the filter field to narrow down results with more granularity. If no
+            operator is specified, the default operator is assumed to be ``=``. The following is a list of
+            possible operators depending on the data type of the filter being applied. A special ``&`` operator
+            can also be used to ``AND`` together a list of values.
 
             Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
 
@@ -1018,7 +1023,7 @@ class LibrarySection(PlexObject):
             * ``=``: ``is``
 
             Operators cannot be included directly in the function parameters so the ``**kwargs``
-            must be provided as a dictionary.
+            must be provided as a dictionary. The trailing ``=`` on the operator may be excluded.
 
             Examples:
 
