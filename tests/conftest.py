@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 import time
 from datetime import datetime
 from functools import partial
-from os import environ
 
 import plexapi
 import pytest
@@ -40,6 +40,8 @@ CONTENTRATINGS = {"TV-14", "TV-MA", "G", "NR", "Not Rated"}
 FRAMERATES = {"24p", "PAL", "NTSC"}
 PROFILES = {"advanced simple", "main", "constrained baseline"}
 RESOLUTIONS = {"sd", "480", "576", "720", "1080"}
+HW_DECODERS = {'dxva2', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvdec'}
+HW_ENCODERS = {'qsv', 'mf', 'videotoolbox', 'mediacodecndk', 'vaapi', 'nvenc', 'x264'}
 ENTITLEMENTS = {
     "ios",
     "roku",
@@ -63,6 +65,11 @@ TEST_AUTHENTICATED = "authenticated"
 TEST_ANONYMOUSLY = "anonymously"
 ANON_PARAM = pytest.param(TEST_ANONYMOUSLY, marks=pytest.mark.anonymous)
 AUTH_PARAM = pytest.param(TEST_AUTHENTICATED, marks=pytest.mark.authenticated)
+
+BASE_DIR_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STUB_MOVIE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "video_stub.mp4")
+STUB_MP3_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "audio_stub.mp3")
+STUB_IMAGE_PATH = os.path.join(BASE_DIR_PATH, "tests", "data", "cute_cat.jpg")
 
 
 def pytest_addoption(parser):
@@ -105,22 +112,25 @@ def pytest_runtest_setup(item):
 # ---------------------------------
 
 
-def get_account():
-    return MyPlexAccount()
+@pytest.fixture(scope="session")
+def sess():
+    session = requests.Session()
+    session.request = partial(session.request, timeout=120)
+    return session
 
 
 @pytest.fixture(scope="session")
-def account():
+def account(sess):
     if SERVER_TOKEN:
-        return get_account()
+        return MyPlexAccount(session=sess)
     assert MYPLEX_USERNAME, "Required MYPLEX_USERNAME not specified."
     assert MYPLEX_PASSWORD, "Required MYPLEX_PASSWORD not specified."
-    return get_account()
+    return MyPlexAccount(session=sess)
 
 
 @pytest.fixture(scope="session")
 def account_once(account):
-    if environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and environ.get("CI") == "true":
+    if os.environ.get("TEST_ACCOUNT_ONCE") not in ("1", "true") and os.environ.get("CI") == "true":
         pytest.skip("Do not forget to test this by providing TEST_ACCOUNT_ONCE=1")
     return account
 
@@ -150,14 +160,14 @@ def mocked_account(requests_mock):
 
 
 @pytest.fixture(scope="session")
-def plex(request):
+def plex(request, sess):
     assert SERVER_BASEURL, "Required SERVER_BASEURL not specified."
-    session = requests.Session()
+
     if request.param == TEST_AUTHENTICATED:
-        token = get_account().authenticationToken
+        token = MyPlexAccount(session=sess).authenticationToken
     else:
         token = None
-    return PlexServer(SERVER_BASEURL, token, session=session)
+    return PlexServer(SERVER_BASEURL, token, session=sess)
 
 
 @pytest.fixture(scope="session")
@@ -166,7 +176,7 @@ def sync_device(account_synctarget):
         device = account_synctarget.device(clientId=SYNC_DEVICE_IDENTIFIER)
     except NotFound:
         device = createMyPlexDevice(SYNC_DEVICE_HEADERS, account_synctarget)
-    
+
     assert device
     assert "sync-target" in device.provides
     return device
@@ -222,15 +232,13 @@ def movie(movies):
 
 
 @pytest.fixture()
-def collection(plex):
+def collection(movies):
     try:
-        return plex.library.section("Movies").collections()[0]
+        return movies.collections(title="marvel")[0]
     except IndexError:
-        movie = plex.library.section("Movies").get("Elephants Dream")
-        movie.addCollection(["marvel"])
-
-        n = plex.library.section("Movies").reload()
-        return n.collections()[0]
+        movie = movies.get("Elephants Dream")
+        movie.addCollection("marvel")
+        return movies.collections(title="marvel")[0]
 
 
 @pytest.fixture()
@@ -267,6 +275,11 @@ def photoalbum(photos):
 
 
 @pytest.fixture()
+def photo(photoalbum):
+    return photoalbum.photo("photo1")
+
+
+@pytest.fixture()
 def subtitle():
     mopen = mock_open()
     with patch("__main__.open", mopen):
@@ -277,7 +290,7 @@ def subtitle():
 
 @pytest.fixture()
 def shared_username(account):
-    username = environ.get("SHARED_USERNAME", "PKKid")
+    username = os.environ.get("SHARED_USERNAME", "PKKid")
     for user in account.users():
         if user.title.lower() == username.lower():
             return username
@@ -341,6 +354,10 @@ def is_float(value, gte=1.0):
     return float(value) >= gte
 
 
+def is_bool(value):
+    return value is True or value is False
+
+
 def is_metadata(key, prefix="/library/metadata/", contains="", suffix=""):
     try:
         assert key.startswith(prefix)
@@ -361,6 +378,14 @@ def is_section(key):
 
 def is_string(value, gte=1):
     return isinstance(value, str) and len(value) >= gte
+
+
+def is_art(key):
+    return is_metadata(key, contains="/art/")
+
+
+def is_banner(key):
+    return is_metadata(key, contains="/banner/")
 
 
 def is_thumb(key):

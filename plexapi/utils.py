@@ -21,13 +21,12 @@ except ImportError:
     tqdm = None
 
 log = logging.getLogger('plexapi')
-warnings.simplefilter('default', category=DeprecationWarning)
 
 # Search Types - Plex uses these to filter specific media types when searching.
 # Library Types - Populated at runtime
 SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4, 'trailer': 5, 'comic': 6, 'person': 7,
                'artist': 8, 'album': 9, 'track': 10, 'picture': 11, 'clip': 12, 'photo': 13, 'photoalbum': 14,
-               'playlist': 15, 'playlistFolder': 16, 'collection': 18, 'userPlaylistItem': 1001}
+               'playlist': 15, 'playlistFolder': 16, 'collection': 18, 'optimizedVersion': 42, 'userPlaylistItem': 1001}
 PLEXOBJECTS = {}
 
 
@@ -57,7 +56,7 @@ def registerPlexObject(cls):
         define a few helper functions to dynamically convery the XML into objects. See
         buildItem() below for an example.
     """
-    etype = getattr(cls, 'STREAMTYPE', cls.TYPE)
+    etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
     ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
     if ehash in PLEXOBJECTS:
         raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
@@ -177,7 +176,7 @@ def threaded(callback, listargs):
         threads[-1].setDaemon(True)
         threads[-1].start()
     while not job_is_done_event.is_set():
-        if all([not t.is_alive() for t in threads]):
+        if all(not t.is_alive() for t in threads):
             break
         time.sleep(0.05)
 
@@ -344,6 +343,24 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     return fullpath
 
 
+def tag_singular(tag):
+    if tag == 'countries':
+        return 'country'
+    elif tag == 'similar':
+        return 'similar'
+    else:
+        return tag[:-1]
+
+
+def tag_plural(tag):
+    if tag == 'country':
+        return 'countries'
+    elif tag == 'similar':
+        return 'similar'
+    else:
+        return tag + 's'
+
+
 def tag_helper(tag, items, locked=True, remove=False):
     """ Simple tag helper for editing a object. """
     if not isinstance(items, list):
@@ -458,7 +475,7 @@ def base64str(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 
-def deprecated(message):
+def deprecated(message, stacklevel=2):
     def decorator(func):
         """This is a decorator which can be used to mark functions
         as deprecated. It will result in a warning being emitted
@@ -466,7 +483,7 @@ def deprecated(message):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
-            warnings.warn(msg, category=DeprecationWarning, stacklevel=3)
+            warnings.warn(msg, category=DeprecationWarning, stacklevel=stacklevel)
             log.warning(msg)
             return func(*args, **kwargs)
         return wrapper

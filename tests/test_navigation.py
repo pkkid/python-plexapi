@@ -9,6 +9,7 @@ def test_navigate_around_show(account, plex):
     episode = show.episode("Pilot")
     assert "Season 1" in [s.title for s in seasons], "Unable to list season:"
     assert "Pilot" in [e.title for e in episodes], "Unable to list episode:"
+    assert show.season(season=1) == season
     assert show.season(1) == season
     assert show.episode("Pilot") == episode, "Unable to get show episode:"
     assert season.episode("Pilot") == episode, "Unable to get season episode:"

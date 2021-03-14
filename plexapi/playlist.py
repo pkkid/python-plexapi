@@ -3,16 +3,35 @@ from urllib.parse import quote_plus
 
 from plexapi import utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
+from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import cast, toDatetime
 
 
 @utils.registerPlexObject
-class Playlist(PlexPartialObject, Playable):
-    """ Represents a single Playlist object.
-        # TODO: Document attributes
+class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
+    """ Represents a single Playlist.
+
+        Attributes:
+            TAG (str): 'Playlist'
+            TYPE (str): 'playlist'
+            addedAt (datetime): Datetime the playlist was added to the server.
+            allowSync (bool): True if you allow syncing playlists.
+            composite (str): URL to composite image (/playlist/<ratingKey>/composite/<compositeid>)
+            duration (int): Duration of the playlist in milliseconds.
+            durationInSeconds (int): Duration of the playlist in seconds.
+            guid (str): Plex GUID for the playlist (com.plexapp.agents.none://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
+            key (str): API URL (/playlist/<ratingkey>).
+            leafCount (int): Number of items in the playlist view.
+            playlistType (str): 'audio', 'video', or 'photo'
+            ratingKey (int): Unique key identifying the playlist.
+            smart (bool): True if the playlist is a smart playlist.
+            summary (str): Summary of the playlist.
+            title (str): Name of the playlist.
+            type (str): 'playlist'
+            updatedAt (datatime): Datetime the playlist was updated.
     """
     TAG = 'Playlist'
     TYPE = 'playlist'
@@ -21,12 +40,12 @@ class Playlist(PlexPartialObject, Playable):
         """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
         self.addedAt = toDatetime(data.attrib.get('addedAt'))
+        self.allowSync = cast(bool, data.attrib.get('allowSync'))
         self.composite = data.attrib.get('composite')  # url to thumbnail
         self.duration = cast(int, data.attrib.get('duration'))
         self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds'))
         self.guid = data.attrib.get('guid')
-        self.key = data.attrib.get('key')
-        self.key = self.key.replace('/items', '') if self.key else self.key  # FIX_BUG_50
+        self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
         self.leafCount = cast(int, data.attrib.get('leafCount'))
         self.playlistType = data.attrib.get('playlistType')
         self.ratingKey = cast(int, data.attrib.get('ratingKey'))
@@ -35,7 +54,6 @@ class Playlist(PlexPartialObject, Playable):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
-        self.allowSync = cast(bool, data.attrib.get('allowSync'))
         self._items = None  # cache for self.items
 
     def __len__(self):  # pragma: no cover
@@ -44,6 +62,11 @@ class Playlist(PlexPartialObject, Playable):
     def __iter__(self):  # pragma: no cover
         for item in self.items():
             yield item
+
+    @property
+    def thumb(self):
+        """ Alias to self.composite. """
+        return self.composite
 
     @property
     def metadataType(self):
@@ -74,13 +97,28 @@ class Playlist(PlexPartialObject, Playable):
     def __getitem__(self, key):  # pragma: no cover
         return self.items()[key]
 
+    def item(self, title):
+        """ Returns the item in the playlist that matches the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        for item in self.items():
+            if item.title.lower() == title.lower():
+                return item
+        raise NotFound('Item with title "%s" not found in the playlist' % title)
+
     def items(self):
         """ Returns a list of all items in the playlist. """
         if self._items is None:
-            key = '%s/items' % self.key
+            key = '/playlists/%s/items' % self.ratingKey
             items = self.fetchItems(key)
             self._items = items
         return self._items
+
+    def get(self, title):
+        """ Alias to :func:`~plexapi.playlist.Playlist.item`. """
+        return self.item(title)
 
     def addItems(self, items):
         """ Add items to a playlist. """
@@ -135,6 +173,9 @@ class Playlist(PlexPartialObject, Playable):
     @classmethod
     def _create(cls, server, title, items):
         """ Create a playlist. """
+        if not items:
+            raise BadRequest('Must include items to add when creating new playlist')
+            
         if items and not isinstance(items, (list, tuple)):
             items = [items]
         ratingKeys = []
@@ -166,6 +207,9 @@ class Playlist(PlexPartialObject, Playable):
             smart (bool): default False.
 
             **kwargs (dict): is passed to the filters. For a example see the search method.
+            
+        Raises:
+            :class:`plexapi.exceptions.BadRequest`: when no items are included in create request.
 
         Returns:
             :class:`~plexapi.playlist.Playlist`: an instance of created Playlist.
@@ -240,8 +284,8 @@ class Playlist(PlexPartialObject, Playable):
                              generated from metadata of current photo.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when playlist is not allowed to sync.
-                :exc:`~plexapi.exceptions.Unsupported`: when playlist content is unsupported.
+                :exc:`~plexapi.exceptions.BadRequest`: When playlist is not allowed to sync.
+                :exc:`~plexapi.exceptions.Unsupported`: When playlist content is unsupported.
 
             Returns:
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
@@ -273,41 +317,3 @@ class Playlist(PlexPartialObject, Playable):
             raise Unsupported('Unsupported playlist content')
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
-
-    def posters(self):
-        """ Returns list of available poster objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey)
-
-    def uploadPoster(self, url=None, filepath=None):
-        """ Upload poster from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
-        if url:
-            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = '/library/metadata/%s/posters?' % self.ratingKey
-            data = open(filepath, 'rb').read()
-            self._server.query(key, method=self._server._session.post, data=data)
-
-    def setPoster(self, poster):
-        """ Set . :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
-        poster.select()
-
-    def arts(self):
-        """ Returns list of available art objects. :class:`~plexapi.media.Poster`. """
-
-        return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey)
-
-    def uploadArt(self, url=None, filepath=None):
-        """ Upload art from url or filepath. :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video`. """
-        if url:
-            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = '/library/metadata/%s/arts?' % self.ratingKey
-            data = open(filepath, 'rb').read()
-            self._server.query(key, method=self._server._session.post, data=data)
-
-    def setArt(self, art):
-        """ Set :class:`~plexapi.media.Poster` to :class:`~plexapi.video.Video` """
-        art.select()
