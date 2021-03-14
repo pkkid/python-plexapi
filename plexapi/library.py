@@ -596,13 +596,16 @@ class LibrarySection(PlexObject):
                     artist, album, track, photoalbum, photo).
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
+                :exc:`~plexapi.exceptions.NotFound`: Unknown libtype for this library.
         """
         libtype = libtype or self.TYPE
         try:
             return next(f for f in self.filterTypes() if f.type == libtype)
         except StopIteration:
-            raise BadRequest('Invalid libtype for this library: %s' % libtype) from None
+            availableLibtypes = [f.type for f in self.filterTypes()]
+            raise NotFound('Unknown libtype "%s" for this library. '
+                           'Available libtypes: %s'
+                           % (libtype, availableLibtypes)) from None
 
     def fieldTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
@@ -618,12 +621,15 @@ class LibrarySection(PlexObject):
                     subtitleLanguage, audioLanguage, resolution).
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: Invalid libtype for this library.
+                :exc:`~plexapi.exceptions.NotFound`: Unknown fieldType for this library.
         """
         try:
             return next(f for f in self.fieldTypes() if f.type == fieldType)
         except StopIteration:
-            raise BadRequest('Invalid fieldType for this library: %s' % fieldType) from None
+            availableFieldTypes = [f.type for f in self.fieldTypes()]
+            raise NotFound('Unknown field type "%s" for this library. '
+                           'Available field types: %s'
+                           % (fieldType, availableFieldTypes)) from None
 
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
@@ -870,7 +876,7 @@ class LibrarySection(PlexObject):
 
         availableDirections = ['asc', 'desc']
         if sortDir not in availableDirections:
-            raise NotFound('Unknown sort direction: %s. '
+            raise NotFound('Unknown sort direction "%s". '
                            'Available sort directions: %s'
                            % (sortDir, availableDirections))
 
