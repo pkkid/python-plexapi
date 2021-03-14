@@ -716,7 +716,8 @@ class LibrarySection(PlexObject):
                     artist, album, track, photoalbum, photo).
 
             Raises:
-                :exc:`~plexapi.exceptions.NotFound`: Unknown filter.
+                :exc:`~plexapi.exceptions.BadRequest`: Invalid filter field.
+                :exc:`~plexapi.exceptions.NotFound`: Unknown filter field.
 
             Example:
 
@@ -728,13 +729,18 @@ class LibrarySection(PlexObject):
 
         """
         if isinstance(field, str):
+            match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', field)
+            if not match:
+                raise BadRequest('Invalid filter field: %s' % field)
+            _libtype, field = match.groups()
+            libtype = _libtype or libtype or self.TYPE
             try:
                 field = next(f for f in self.listFilters(libtype) if f.filter == field)
             except StopIteration:
-                availableFilters = [f.filter for f in self.listFilters()]
-                raise NotFound('Unknown filter: %s. '
+                availableFilters = [f.filter for f in self.listFilters(libtype)]
+                raise NotFound('Unknown filter field "%s" for libtype "%s". '
                                'Available filters: %s'
-                               % (field, availableFilters)) from None
+                               % (field, libtype, availableFilters)) from None
                 
         data = self._server.query(field.key)
         return self.findItems(data, FilterChoice)
