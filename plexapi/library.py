@@ -1088,17 +1088,21 @@ class LibrarySection(PlexObject):
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
+        joined_args = utils.joinArgs(args).lstrip('?')
+        joined_filter_args = '&'.join(filter_args) if filter_args else ''
+        params = '&'.join([joined_args, joined_filter_args]).strip('&')
+        key = '/library/sections/%s/all?%s' % (self.key, params)
+
+        return self._search(key, maxresults, container_start, container_size, **kwargs)
+
+    def _search(self, key, maxresults, container_start, container_size, **kwargs):
+        """ Perform the actual library search and return the results. """
         results = []
         subresults = []
         offset = container_start
 
         if maxresults is not None:
             container_size = min(container_size, maxresults)
-
-        joined_args = utils.joinArgs(args).lstrip('?')
-        joined_filter_args = '&'.join(filter_args) if filter_args else ''
-        params = '&'.join([joined_args, joined_filter_args]).strip('&')
-        key = '/library/sections/%s/all?%s' % (self.key, params)
 
         while True:
             subresults = self.fetchItems(key, container_start=container_start,
