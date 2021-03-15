@@ -779,8 +779,8 @@ class LibrarySection(PlexObject):
         operator = self._validateFieldOperator(filterField, operator)
         result = self._validateFieldValue(filterField, values, libtype)
 
-        if operator.startswith('&'):
-            args = {field + operator[:-1]: result}
+        if operator == '&=':
+            args = {field: result}
             return urlencode(args, doseq=True)
         else:
             args = {field + operator[:-1]: ','.join(result)}
@@ -793,7 +793,7 @@ class LibrarySection(PlexObject):
         fieldType = self.getFieldType(filterField.type)
 
         and_operator = False
-        if operator == '&':
+        if operator in {'&', '&='}:
             and_operator = True
             operator = ''
         if fieldType.type == 'string' and operator in {'=', '!='}:
