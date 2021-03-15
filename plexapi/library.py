@@ -355,7 +355,8 @@ class LibrarySection(PlexObject):
         # Private attrs as we dont want a reload.
         self._filterTypes = None
         self._fieldTypes = None
-        self._total_size = None
+        self._totalSize = None
+        self._totalViewSize = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
@@ -381,7 +382,7 @@ class LibrarySection(PlexObject):
             # totalSize is only included in the xml response
             # if container size is used.
             total_size = data.attrib.get("totalSize") or data.attrib.get("size")
-            self._total_size = utils.cast(int, total_size)
+            self._totalViewSize = utils.cast(int, total_size)
 
         items = self.findItems(data, cls, ekey, **kwargs)
 
@@ -394,12 +395,12 @@ class LibrarySection(PlexObject):
     @property
     def totalSize(self):
         """ Returns the total number of items in the library. """
-        if self._total_size is None:
-            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=1' % self.key
+        if self._totalSize is None:
+            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
             data = self._server.query(part)
-            self._total_size = int(data.attrib.get("totalSize"))
+            self._totalSize = int(data.attrib.get("totalSize"))
 
-        return self._total_size
+        return self._totalSize
 
     def delete(self):
         """ Delete a library section. """
@@ -1103,15 +1104,15 @@ class LibrarySection(PlexObject):
             subresults = self.fetchItems(key, container_start=container_start,
                                          container_size=container_size, **kwargs)
             if not len(subresults):
-                if offset > self.totalSize:
+                if offset > self._totalViewSize:
                     log.info("container_start is higher then the number of items in the library")
 
             results.extend(subresults)
 
-            # self.totalSize is not used as a condition in the while loop as
+            # self._totalViewSize is not used as a condition in the while loop as
             # this require a additional http request.
-            # self.totalSize is updated from .fetchItems
-            wanted_number_of_items = self.totalSize - offset
+            # self._totalViewSize is updated from self.fetchItems
+            wanted_number_of_items = self._totalViewSize - offset
             if maxresults is not None:
                 wanted_number_of_items = min(maxresults, wanted_number_of_items)
                 container_size = min(container_size, maxresults - len(results))
@@ -1121,7 +1122,7 @@ class LibrarySection(PlexObject):
 
             container_start += container_size
 
-            if container_start > self.totalSize:
+            if container_start > self._totalViewSize:
                 break
 
         return results
