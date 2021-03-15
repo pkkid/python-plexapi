@@ -1105,7 +1105,6 @@ class LibrarySection(PlexObject):
             if not len(subresults):
                 if offset > self.totalSize:
                     log.info("container_start is higher then the number of items in the library")
-                break
 
             results.extend(subresults)
 
@@ -1121,6 +1120,9 @@ class LibrarySection(PlexObject):
                 break
 
             container_start += container_size
+
+            if container_start > self.totalSize:
+                break
 
         return results
 
