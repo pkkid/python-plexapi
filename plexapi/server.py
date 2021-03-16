@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 import requests
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
-                     logfilter)
+                     logfilter, livetv)
 from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
@@ -15,6 +15,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
+from plexapi.livetv import LiveTV
 from plexapi.utils import cast, deprecated
 from requests.status_codes import _codes as codes
 
@@ -258,12 +259,12 @@ class PlexServer(PlexObject):
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
 
-    def livetv(self):
+    @property
+    def livetv(self) -> LiveTV:
         """ Returns a :class:`~plexapi.livetv.LiveTV` object using the same
             token to access this server.
         """
         if self._liveTV is None:
-            from plexapi.livetv import LiveTV
             self._liveTV = LiveTV(token=self._token, data=None, server=self)
         return self._liveTV
 
