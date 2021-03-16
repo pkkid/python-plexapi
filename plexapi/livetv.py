@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import List
 from urllib.parse import quote_plus, urlencode
 from datetime import datetime
 import requests
@@ -7,6 +8,7 @@ import requests
 from plexapi import media, utils, settings, library
 from plexapi.base import PlexObject, Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import Session
 from plexapi.video import Video
 from requests.status_codes import _codes as codes
 
@@ -170,18 +172,21 @@ class LiveTV(PlexObject):
             return self.cloud_key
         return None
 
-    def dvrs(self):
+    @property
+    def dvrs(self) -> List[DVR]:
         """ Returns a list of :class:`~plexapi.livetv.DVR` objects available to your server.
         """
         if not self._dvrs:
             self._dvrs = self.fetchItems('/livetv/dvrs')
         return self._dvrs
 
-    def sessions(self):
+    @property
+    def sessions(self) -> List[Session]:
         """ Returns a list of all active live tv session (currently playing) media objects.
         """
         return self.fetchItems('/livetv/sessions')
 
+    @property
     def directories(self):
         """ Returns a list of all :class:`~plexapi.livetv.Directory` objects available to your server.
         """
@@ -228,8 +233,10 @@ class LiveTV(PlexObject):
         # all_shows = self.shows(beginsAt, endsAt)
         # return all_movies + all_shows
 
+    @property
     def recordings(self):
         return self.fetchItems('/media/subscriptions/scheduled')
 
+    @property
     def scheduled(self):
         return self.fetchItems('/media/subscriptions')
