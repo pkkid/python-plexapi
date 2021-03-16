@@ -2,6 +2,7 @@
 import copy
 import threading
 import time
+from typing import List
 from xml.etree import ElementTree
 
 import requests
@@ -10,7 +11,7 @@ from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import LibrarySection
+from plexapi.library import LibrarySection, Hub
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
@@ -661,6 +662,7 @@ class MyPlexAccount(PlexObject):
             hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
 
+    @property
     def videoOnDemand(self):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
@@ -668,6 +670,7 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    @property
     def webShows(self):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
         """
@@ -675,6 +678,7 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    @property
     def news(self):
         """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
         """
@@ -682,6 +686,7 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    @property
     def podcasts(self):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
         """
@@ -689,6 +694,7 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
+    @property
     def tidal(self):
         """ Returns a list of Tidal Hub items :class:`~plexapi.library.Hub`
         """
@@ -696,7 +702,8 @@ class MyPlexAccount(PlexObject):
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
-    def iptv(self):
+    @property
+    def iptv(self) -> List[Hub]:
         """ Returns a list of IPTV Hub items :class:`~plexapi.library.Hub`
         """
         req = requests.get(self.IPTV + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
