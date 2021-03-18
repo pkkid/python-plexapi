@@ -504,6 +504,14 @@ class PlexServer(PlexObject):
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
+        response = self._queryReturnResponse(key=key, method=method, headers=headers, timeout=timeout, **kwargs)
+        data = response.text.encode('utf8')
+        return ElementTree.fromstring(data) if data.strip() else None
+
+    def _queryReturnResponse(self, key, method=None, headers=None, timeout=None, **kwargs):
+        """ Fork of query() function to return the entire requests.Response object for parsing
+            elsewhere.
+        """
         url = self.url(key)
         method = method or self._session.get
         timeout = timeout or TIMEOUT
@@ -520,8 +528,7 @@ class PlexServer(PlexObject):
                 raise NotFound(message)
             else:
                 raise BadRequest(message)
-        data = response.text.encode('utf8')
-        return ElementTree.fromstring(data) if data.strip() else None
+        return response
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting
