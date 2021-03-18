@@ -346,6 +346,16 @@ class PlexObject(object):
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
 
+    def fetchXML(self, ekey):
+        """ Fetch raw XML for manual parsing. This method helps
+        by encoding the response to utf-8 and parsing the returned XML into and
+        ElementTree object.
+        """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
+        return self._server.query(ekey)
+
+
 
 class PlexPartialObject(PlexObject):
     """ Not all objects in the Plex listings return the complete list of elements

@@ -11,8 +11,11 @@ from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
+from xml.etree import ElementTree
 
 import requests
+import xmltodict
+
 from plexapi.exceptions import BadRequest, NotFound
 
 try:
@@ -480,11 +483,24 @@ def deprecated(message, stacklevel=2):
         """This is a decorator which can be used to mark functions
         as deprecated. It will result in a warning being emitted
         when the function is used."""
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
             warnings.warn(msg, category=DeprecationWarning, stacklevel=stacklevel)
             log.warning(msg)
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
+
+
+def parseXml(xml_data_string):
+    xml_data_string = xml_data_string.replace('\n', '').encode('utf8')
+    return ElementTree.XML(xml_data_string)
+
+
+def parseXmlToDict(xml_data_string):
+    xml_data_string = xml_data_string.encode('utf8')
+    return xmltodict.parse(xml_data_string)
