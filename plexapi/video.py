@@ -832,7 +832,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
         # https://forums.plex.tv/t/parentratingkey-not-in-episode-xml-when-seasons-are-hidden/300553
         if self.skipParent and not self.parentRatingKey:
             # Parse the parentRatingKey from the parentThumb
-            if self.parentThumb.startswith('/library/metadata/'):
+            if self.parentThumb and self.parentThumb.startswith('/library/metadata/'):
                 self.parentRatingKey = utils.cast(int, self.parentThumb.split('/')[3])
             # Get the parentRatingKey from the season's ratingKey
             if not self.parentRatingKey and self.grandparentRatingKey:
