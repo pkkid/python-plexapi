@@ -24,6 +24,8 @@ class PlexClient(PlexObject):
             data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Path used to generate data.
             baseurl (str): HTTP URL to connect dirrectly to this client.
+            identifier (str): The resource/machine identifier for the desired client.
+                May be necessary when connecting to a specific proxied client (optional).
             token (str): X-Plex-Token used for authenication (optional).
             session (:class:`~requests.Session`): requests.Session object if you want more control (optional).
             timeout (int): timeout in seconds on initial connect to client (default config.TIMEOUT).
