@@ -2,6 +2,7 @@
 import copy
 import threading
 import time
+from typing import List
 from xml.etree import ElementTree
 
 import requests
@@ -14,6 +15,7 @@ from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
+from plexapi.together import Together
 from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
 
@@ -690,11 +692,15 @@ class MyPlexAccount(PlexObject):
         return self.findItems(elem)
 
     def tidal(self):
-        """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
+        """ Returns a list of Tidal Hub items :class:`~plexapi.library.Hub`
         """
         req = requests.get(self.MUSIC + 'hubs/', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
+
+    @property
+    def watch_together(self) -> Together:
+        return Together(endpoint=self.TOGETHER, token=self._token)  # returns JSON, not XML
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
