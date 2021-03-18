@@ -505,6 +505,16 @@ class PlexServer(PlexObject):
             ElementTree object. Returns None if no data exists in the response.
         """
         response = self._queryReturnResponse(key=key, method=method, headers=headers, timeout=timeout, **kwargs)
+        if response.status_code not in (200, 201, 204):
+            codename = codes.get(response.status_code)[0]
+            errtext = response.text.replace('\n', ' ')
+            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
+            if response.status_code == 401:
+                raise Unauthorized(message)
+            elif response.status_code == 404:
+                raise NotFound(message)
+            else:
+                raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -518,16 +528,6 @@ class PlexServer(PlexObject):
         log.debug('%s %s', method.__name__.upper(), url)
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=timeout, **kwargs)
-        if response.status_code not in (200, 201, 204):
-            codename = codes.get(response.status_code)[0]
-            errtext = response.text.replace('\n', ' ')
-            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
-            if response.status_code == 401:
-                raise Unauthorized(message)
-            elif response.status_code == 404:
-                raise NotFound(message)
-            else:
-                raise BadRequest(message)
         return response
 
     def search(self, query, mediatype=None, limit=None):
