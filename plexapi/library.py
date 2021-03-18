@@ -1230,10 +1230,9 @@ class Hub(PlexObject):
         self.context = data.attrib.get('context')
         self.hubKey = data.attrib.get('hubKey')
         self.hubIdentifier = data.attrib.get('hubIdentifier')
-        self.items = self.findItems(data)
         self.key = data.attrib.get('key')
+        self._items = []
         self.more = utils.cast(bool, data.attrib.get('more'))
-        self.size = utils.cast(int, data.attrib.get('size'))
         self.style = data.attrib.get('style')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
@@ -1241,12 +1240,21 @@ class Hub(PlexObject):
     def __len__(self):
         return self.size
 
+    @property
+    def items(self):
+        if not self._items:
+            self._items = self.fetchItems(self.key)
+        return self._item
+
+    @property
+    def size(self):
+        return len(self._items)
+
     def reload(self):
-        """ Reloads the hub to fetch all items in the hub. """
-        if self.more and self.key:
-            self.items = self.fetchItems(self.key)
-            self.more = False
-            self.size = len(self.items)
+        """ Reloads the hub to fetch new items in the hub. """
+        if self.key:
+            self._items = self.fetchItems(self.key)
+
 
 
 class HubMediaTag(PlexObject):
