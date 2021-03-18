@@ -83,6 +83,7 @@ class MyPlexAccount(PlexObject):
     NEWS = 'https://news.provider.plex.tv/'                                                     # get
     PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
     MUSIC = 'https://music.provider.plex.tv/'                                                   # get
+    TOGETHER = 'https://together.plex.tv/'                                                      # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
