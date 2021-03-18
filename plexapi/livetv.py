@@ -156,24 +156,42 @@ class LiveTV(PlexObject):
         self._session = session or requests.Session()
         self._server = server
         self._dvrs = []  # cached DVR objects
-        self._livetv_key = None
+        self._cloud_key = None  # used if cloud XML (zip code)
+        self._xmltv_key = None  # used if local XML (XML path)
         super().__init__(server, data)
 
     def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
         self._data = data
-        # self.cloud_key = data.attrib.get('machineIdentifier')
+
+    def _parseXmlToDict(self, key: str):
+        response = self._server._queryReturnResponse(key=key)
+        if not response:
+            return None
+        return utils.parseXmlToDict(xml_data_string=response.text)
 
     @property
-    def livetv_key(self):
-        if not self._livetv_key:
-            response = self._server._queryReturnResponse(key='/tv.plex.providers.epg.xmltv')
-            data = utils.parseXmlToDict(xml_data_string=response.text)
+    def cloud_key(self):
+        if not self._cloud_key:
+            data = self._parseXmlToDict(key='/tv.plex.providers.epg.cloud')
+            if not data:
+                return None
             try:
-                self._livetv_key = data['MediaContainer']['Directory'][1]['@title']
+                self._cloud_key = data['MediaContainer']['Directory'][1]['@title']
             except:
                 pass
-        return self._livetv_key
+        return self._cloud_key
+
+    @property
+    def xmltv_key(self):
+        if not self._xmltv_key:
+            data = self._parseXmlToDict(key='/tv.plex.providers.epg.xmltv')
+            if not data:
+                return None
+            try:
+                self._xmltv_key = data['MediaContainer']['Directory'][1]['@title']
+            except:
+                pass
+        return self._xmltv_key
 
     @property
     def dvrs(self) -> List[DVR]:
@@ -190,13 +208,34 @@ class LiveTV(PlexObject):
         return self.fetchItems('/livetv/sessions')
 
     @property
-    def directories(self):
-        """ Returns a list of all :class:`~plexapi.livetv.Directory` objects available to your server.
+    def hubs(self):
+        """ Returns a list of all :class:`~plexapi.livetv.Hub` objects available to your server.
         """
-        return self._server.fetchItems("/" + self.livetv_key + '/hubs/discover')
+        hubs = []
+        if self.cloud_key:
+            hubs.extend(self._server.fetchItems("/" + self.cloud_key + '/hubs/discover'))
+        if self.xmltv_key:
+            hubs.extend(self._server.fetchItems("/" + self.xmltv_key + '/hubs/discover'))
+        return hubs
 
-    def _guide_items(self, grid_type: int, beginsAt: datetime = None, endsAt: datetime = None):
-        key = '%s/grid?type=%s' % (self.livetv_key, grid_type)
+    @property
+    def recordings(self):
+        return self.fetchItems('/media/subscriptions/scheduled')
+
+    @property
+    def scheduled(self):
+        return self.fetchItems('/media/subscriptions')
+
+    def _guide_items(self, key, grid_type: int, beginsAt: datetime = None, endsAt: datetime = None):
+        """ Returns a list of all guide items
+
+            Parameters:
+                key (str): cloud_key or xmltv_key
+                grid_type (int): 1 for movies, 4 for shows
+                beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
+                endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
+        """
+        key = '%s/grid?type=%s' % (key, grid_type)
         if beginsAt:
             key += '&beginsAt%3C=%s' % utils.datetimeToEpoch(beginsAt)  # %3C is <, so <=
         if endsAt:
@@ -207,11 +246,15 @@ class LiveTV(PlexObject):
         """ Returns a list of all :class:`~plexapi.video.Movie` items on the guide.
 
             Parameters:
-                grid_type (int): 1 for movies, 4 for shows
                 beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
                 endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
-        return self._guide_items(grid_type=1, beginsAt=beginsAt, endsAt=endsAt)
+        movies = []
+        if self.cloud_key:
+            movies.extend(self._guide_items(key=self.cloud_key, grid_type=1, beginsAt=beginsAt, endsAt=endsAt))
+        if self.xmltv_key:
+            movies.extend(self._guide_items(key=self.xmltv_key, grid_type=1, beginsAt=beginsAt, endsAt=endsAt))
+        return movies
 
     def shows(self, beginsAt: datetime = None, endsAt: datetime = None):
         """ Returns a list of all :class:`~plexapi.video.Show` items on the guide.
@@ -220,7 +263,12 @@ class LiveTV(PlexObject):
                 beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
                 endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
-        return self._guide_items(grid_type=4, beginsAt=beginsAt, endsAt=endsAt)
+        shows = []
+        if self.cloud_key:
+            shows.extend(self._guide_items(key=self.cloud_key, grid_type=4, beginsAt=beginsAt, endsAt=endsAt))
+        if self.xmltv_key:
+            shows.extend(self._guide_items(key=self.xmltv_key, grid_type=4, beginsAt=beginsAt, endsAt=endsAt))
+        return shows
 
     def guide(self, beginsAt: datetime = None, endsAt: datetime = None):
         """ Returns a list of all media items on the guide. Items may be any of
@@ -235,11 +283,3 @@ class LiveTV(PlexObject):
         # Potential show endpoint currently hanging, do not use
         # all_shows = self.shows(beginsAt, endsAt)
         # return all_movies + all_shows
-
-    @property
-    def recordings(self):
-        return self.fetchItems('/media/subscriptions/scheduled')
-
-    @property
-    def scheduled(self):
-        return self.fetchItems('/media/subscriptions')

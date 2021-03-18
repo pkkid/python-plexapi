@@ -1256,7 +1256,6 @@ class Hub(PlexObject):
             self._items = self.fetchItems(self.key)
 
 
-
 class HubMediaTag(PlexObject):
     """ Base class of hub media tag search results.
 
@@ -1526,6 +1525,7 @@ class FirstCharacter(PlexObject):
             size (str): Total amount of library items starting with this character.
             title (str): Character (#, !, A, B, C, ...).
     """
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
