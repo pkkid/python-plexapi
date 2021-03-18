@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 import requests
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
-                     logfilter)
+                     logfilter, livetv)
 from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
@@ -15,6 +15,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
+from plexapi.livetv import LiveTV
 from plexapi.utils import cast, deprecated
 from requests.status_codes import _codes as codes
 
@@ -108,6 +109,7 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
+        self._liveTV = None # cached liveTV
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
         data = self.query(self.key, timeout=timeout)
@@ -256,6 +258,15 @@ class PlexServer(PlexObject):
         except Exception as err:
             log.warning('Unable to fetch client ports from myPlex: %s', err)
             return ports
+
+    @property
+    def livetv(self) -> LiveTV:
+        """ Returns a :class:`~plexapi.livetv.LiveTV` object using the same
+            token to access this server.
+        """
+        if self._liveTV is None:
+            self._liveTV = LiveTV(token=self._token, data=None, server=self)
+        return self._liveTV
 
     def browse(self, path=None, includeFiles=True):
         """ Browse the system file path using the Plex API.
@@ -493,12 +504,7 @@ class PlexServer(PlexObject):
             by encoding the response to utf-8 and parsing the returned XML into and
             ElementTree object. Returns None if no data exists in the response.
         """
-        url = self.url(key)
-        method = method or self._session.get
-        timeout = timeout or TIMEOUT
-        log.debug('%s %s', method.__name__.upper(), url)
-        headers = self._headers(**headers or {})
-        response = method(url, headers=headers, timeout=timeout, **kwargs)
+        response = self._queryReturnResponse(key=key, method=method, headers=headers, timeout=timeout, **kwargs)
         if response.status_code not in (200, 201, 204):
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
@@ -511,6 +517,18 @@ class PlexServer(PlexObject):
                 raise BadRequest(message)
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
+
+    def _queryReturnResponse(self, key, method=None, headers=None, timeout=None, **kwargs):
+        """ Fork of query() function to return the entire requests.Response object for parsing
+            elsewhere.
+        """
+        url = self.url(key)
+        method = method or self._session.get
+        timeout = timeout or TIMEOUT
+        log.debug('%s %s', method.__name__.upper(), url)
+        headers = self._headers(**headers or {})
+        response = method(url, headers=headers, timeout=timeout, **kwargs)
+        return response
 
     def search(self, query, mediatype=None, limit=None):
         """ Returns a list of media items or filter categories from the resulting

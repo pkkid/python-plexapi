@@ -5,6 +5,7 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, settings, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.media import Media
 from plexapi.mixins import ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
@@ -52,6 +53,7 @@ class Video(PlexPartialObject):
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.listType = 'video'
+        self.year = data.attrib.get('year')
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
@@ -67,6 +69,19 @@ class Video(PlexPartialObject):
         """ Returns True if this video is watched. """
         return bool(self.viewCount > 0) if self.viewCount else False
 
+    def thumbUrl(self):
+        """ Return the first first thumbnail url starting on
+            the most specific thumbnail for that item.
+        """
+        thumb = self.firstAttr('thumb', 'parentThumb', 'grandparentThumb')
+        return self._server.url(thumb, includeToken=True) if thumb else None
+
+    @property
+    def artUrl(self):
+        """ Return the first first art url starting on the most specific for that item."""
+        art = self.firstAttr('art', 'grandparentArt')
+        return self._server.url(art, includeToken=True) if art else None
+      
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
         return self._server.url(part, includeToken=True) if part else None
@@ -311,6 +326,8 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.originalTitle = data.attrib.get('originalTitle')
+        self.originallyAvailableAt = utils.toDatetime(
+            data.attrib.get('originallyAvailableAt'), format='%Y-%m-%d %H:%M%S')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.producers = self.findItems(data, media.Producer)
         self.rating = utils.cast(float, data.attrib.get('rating'))
@@ -825,6 +842,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
         self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.live = utils.cast(int, data.attrib.get('live', '0'))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
 
@@ -891,6 +909,12 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+
+    def record(self):
+        # TODO
+        if self.live:
+            return False
+        return False
 
 
 @utils.registerPlexObject

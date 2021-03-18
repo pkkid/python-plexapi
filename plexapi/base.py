@@ -346,6 +346,16 @@ class PlexObject(object):
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
 
+    def fetchXML(self, ekey):
+        """ Fetch raw XML for manual parsing. This method helps
+        by encoding the response to utf-8 and parsing the returned XML into and
+        ElementTree object.
+        """
+        if ekey is None:
+            raise BadRequest('ekey was not provided')
+        return self._server.query(ekey)
+
+
 
 class PlexPartialObject(PlexObject):
     """ Not all objects in the Plex listings return the complete list of elements
@@ -502,7 +512,7 @@ class PlexPartialObject(PlexObject):
         except BadRequest:  # pragma: no cover
             log.error('Failed to delete %s. This could be because you '
                 'have not allowed items to be deleted', self.key)
-            raise
+            raise BadRequest("Failed to delete %s", self.key)
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get Play History for a media item.
