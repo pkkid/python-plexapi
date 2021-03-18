@@ -156,21 +156,24 @@ class LiveTV(PlexObject):
         self._session = session or requests.Session()
         self._server = server
         self._dvrs = []  # cached DVR objects
+        self._livetv_key = None
         super().__init__(server, data)
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.cloud_key = data.attrib.get('machineIdentifier')
+        # self.cloud_key = data.attrib.get('machineIdentifier')
 
-    def _get_cloud_key(self):
-        url = self._server.url(key='/tv.plex.providers.epg.cloud', includeToken=True)
-        data = self._session.get(url=url).json()
-        if data and data.get('MediaContainer') and data['MediaContainer'].get('Directory')\
-                and len(data['MediaContainer']['Directory']) > 1:
-            self.cloud_key = data.get('MediaContainer').get('Directory')[1].get('title')
-            return self.cloud_key
-        return None
+    @property
+    def livetv_key(self):
+        if not self._livetv_key:
+            response = self._server._queryReturnResponse(key='/tv.plex.providers.epg.xmltv')
+            data = utils.parseXmlToDict(xml_data_string=response.text)
+            try:
+                self._livetv_key = data['MediaContainer']['Directory'][1]['@title']
+            except:
+                pass
+        return self._livetv_key
 
     @property
     def dvrs(self) -> List[DVR]:
@@ -190,10 +193,10 @@ class LiveTV(PlexObject):
     def directories(self):
         """ Returns a list of all :class:`~plexapi.livetv.Directory` objects available to your server.
         """
-        return self._server.fetchItems(self.cloud_key + '/hubs/discover')
+        return self._server.fetchItems("/" + self.livetv_key + '/hubs/discover')
 
     def _guide_items(self, grid_type: int, beginsAt: datetime = None, endsAt: datetime = None):
-        key = '%s/grid?type=%s' % (self.cloud_key, grid_type)
+        key = '%s/grid?type=%s' % (self.livetv_key, grid_type)
         if beginsAt:
             key += '&beginsAt%3C=%s' % utils.datetimeToEpoch(beginsAt)  # %3C is <, so <=
         if endsAt:
