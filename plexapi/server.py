@@ -109,7 +109,7 @@ class PlexServer(PlexObject):
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
-        self._liveTV = None # cached liveTV
+        self._liveTV = None  # cached liveTV
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
         data = self.query(self.key, timeout=timeout)

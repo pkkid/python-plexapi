@@ -15,6 +15,7 @@ from plexapi.library import LibrarySection, Hub
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
+from plexapi.together import Together
 from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
 
@@ -85,6 +86,7 @@ class MyPlexAccount(PlexObject):
     PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
     MUSIC = 'https://music.provider.plex.tv/'                                                   # get
     IPTV = 'https://epg.provider.plex.tv/'                                                      # get
+    TOGETHER = 'https://together.plex.tv/'                                                      # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -709,6 +711,10 @@ class MyPlexAccount(PlexObject):
         req = requests.get(self.IPTV + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
+
+    @property
+    def watch_together(self) -> Together:
+        return Together(endpoint=self.TOGETHER, token=self._token)  # returns JSON, not XML
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
