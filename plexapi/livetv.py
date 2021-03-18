@@ -235,7 +235,7 @@ class LiveTV(PlexObject):
                 beginsAt (datetime): Limit results to beginning after UNIX timestamp (epoch).
                 endsAt (datetime): Limit results to ending before UNIX timestamp (epoch).
         """
-        key = '%s/grid?type=%s' % (key, grid_type)
+        key = '/%s/grid?type=%s' % (key, grid_type)
         if beginsAt:
             key += '&beginsAt%3C=%s' % utils.datetimeToEpoch(beginsAt)  # %3C is <, so <=
         if endsAt:
