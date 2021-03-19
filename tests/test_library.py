@@ -195,7 +195,7 @@ def test_library_ShowSection_searchShows(tvshows):
 
 
 def test_library_ShowSection_searchSseasons(tvshows):
-    assert tvshows.searchSeasons(title="The 100")
+    assert tvshows.searchSeasons(**{"show.title": "The 100"})
 
 
 def test_library_ShowSection_searchEpisodes(tvshows):
