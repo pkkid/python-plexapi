@@ -830,14 +830,14 @@ class LibrarySection(PlexObject):
         try:
             for value in values:
                 if fieldType.type == 'boolean':
-                    value = int(utils.cast(bool, value))
+                    value = int(bool(value))
                 elif fieldType.type == 'date':
                     if isinstance(value, datetime):
                         value = int(value.timestamp())
                     else:
                         value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
                 elif fieldType.type == 'integer':
-                    value = utils.cast(int, value)
+                    value = int(value)
                 elif fieldType.type == 'string':
                     value = str(value)
                 elif fieldType.type in choiceTypes:
