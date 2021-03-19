@@ -144,10 +144,6 @@ def test_library_MovieSection_update_path(movies):
     movies.update(path=movies.locations[0])
 
 
-def test_library_ShowSection_all(tvshows):
-    assert len(tvshows.all(title__iexact="The 100"))
-
-
 def test_library_MovieSection_refresh(movies, patched_http_call):
     movies.refresh()
 
@@ -174,6 +170,10 @@ def test_library_MovieSection_onDeck(movie, movies, tvshows, episode):
     episode.markUnwatched()
 
 
+def test_library_MovieSection_searchMovies(movies):
+    assert movies.searchMovies(title="Elephants Dream")
+
+
 def test_library_MovieSection_recentlyAdded(movies):
     assert len(movies.recentlyAdded())
 
@@ -186,8 +186,16 @@ def test_library_MovieSection_collections(movies, collection):
     assert len(movies.collections())
 
 
+def test_library_ShowSection_all(tvshows):
+    assert len(tvshows.all(title__iexact="The 100"))
+
+
 def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
+
+
+def test_library_ShowSection_searchSseasons(tvshows):
+    assert tvshows.searchSeasons(title="The 100")
 
 
 def test_library_ShowSection_searchEpisodes(tvshows):
@@ -305,6 +313,10 @@ def test_library_section_timeline(plex, movies):
     assert tl.viewMode == 65592
 
 
+def test_library_MovieSection_hubSearch(movies):
+    assert movies.hubSearch("Elephants Dream")
+
+
 def test_library_MovieSection_search(movies, movie):
     movie.addLabel("test_search")
     movie.addCollection("test_search")
@@ -392,7 +404,7 @@ def test_library_search_exceptions(movies):
     with pytest.raises(NotFound):
         movies.listFilterChoices(field="unknown")
     with pytest.raises(NotFound):
-        movies.search(**{"episode.title": "unknown"})
+        movies.search(unknown="unknown")
     with pytest.raises(NotFound):
         movies.search(**{"title<>!=": "unknown"})
     with pytest.raises(NotFound):
