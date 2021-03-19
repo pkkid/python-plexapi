@@ -842,6 +842,7 @@ class SystemDevice(PlexObject):
 
         Attributes:
             TAG (str): 'Device'
+            clientIdentifier (str): The unique identifier for the device.
             createdAt (datatime): Datetime the device was created.
             id (int): The ID of the device (not the same as :class:`~plexapi.myplex.MyPlexDevice` ID).
             key (str): API URL (/devices/<id>)
@@ -852,6 +853,7 @@ class SystemDevice(PlexObject):
 
     def _loadData(self, data):
         self._data = data
+        self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
         self.id = cast(int, data.attrib.get('id'))
         self.key = '/devices/%s' % self.id
