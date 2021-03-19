@@ -338,6 +338,9 @@ def test_library_ShowSection_search(tvshows, show):
     episode = season.episode(episode=1)
     _test_library_search(tvshows, episode)
 
+    # Additional test for mapping field to the correct libtype
+    assert tvshows.search(unwatched=True)  # equal to episode.unwatched=True
+
 
 def test_library_MusicSection_search(music, artist):
     artist.addGenre("test_search")
