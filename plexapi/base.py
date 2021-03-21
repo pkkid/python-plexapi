@@ -538,6 +538,7 @@ class Playable(object):
         self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
+        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))                # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
         self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
 
