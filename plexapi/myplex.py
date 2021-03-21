@@ -8,7 +8,8 @@ from xml.etree import ElementTree
 
 import requests
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE,
-                     X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER, log, logfilter, utils)
+                     X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER, log,
+                     logfilter, reset_base_headers, utils)
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -94,6 +95,7 @@ class MyPlexAccount(PlexObject):
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
+        self._base_headers = reset_base_headers()
         data, initpath = self._signin(username, password, code, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
@@ -168,7 +170,7 @@ class MyPlexAccount(PlexObject):
 
     def _headers(self, **kwargs):
         """ Returns dict containing base headers for all requests to the server. """
-        headers = BASE_HEADERS.copy()
+        headers = self._base_headers.copy()
         if self._token:
             headers['X-Plex-Token'] = self._token
         headers.update(kwargs)
@@ -1539,6 +1541,7 @@ class MyPlexPinLogin:
         super(MyPlexPinLogin, self).__init__()
         self._session = session or requests.Session()
         self._requestTimeout = requestTimeout or TIMEOUT
+        self._base_headers = reset_base_headers()
         self.headers = headers
 
         self._oauth = oauth
@@ -1706,7 +1709,7 @@ class MyPlexPinLogin:
 
     def _headers(self, **kwargs):
         """ Returns dict containing base headers for all requests for pin login. """
-        headers = BASE_HEADERS.copy()
+        headers = self._base_headers.copy()
         if self.headers:
             headers.update(self.headers)
         headers.update(kwargs)
