@@ -388,18 +388,20 @@ def test_server_system_accounts(plex):
     assert account.thumb == ""
     assert account.accountID == account.id
     assert account.accountKey == account.key
+    assert plex.systemAccount(account.id) == account
 
 
 def test_server_system_devices(plex):
     devices = plex.systemDevices()
     assert len(devices)
     device = devices[-1]
-    assert len(device.clientIdentifier) or device.clientIdentifier is None
+    assert device.clientIdentifier or device.clientIdentifier is None
     assert utils.is_datetime(device.createdAt)
     assert utils.is_int(device.id)
     assert len(device.key)
     assert len(device.name) or device.name == ""
     assert len(device.platform) or device.platform == ""
+    assert plex.systemDevice(device.id) == device
     
 
 @pytest.mark.authenticated
