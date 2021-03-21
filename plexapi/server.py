@@ -512,7 +512,7 @@ class PlexServer(PlexObject):
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
-    def search(self, query, mediatype=None, limit=None):
+    def search(self, query, mediatype=None, limit=None, sectionId=None):
         """ Returns a list of media items or filter categories from the resulting
             `Hub Search <https://www.plex.tv/blog/seek-plex-shall-find-leveling-web-app/>`_
             against all items in your Plex library. This searches genres, actors, directors,
@@ -526,10 +526,11 @@ class PlexServer(PlexObject):
 
             Parameters:
                 query (str): Query to use when searching your library.
-                mediatype (str): Optionally limit your search to the specified media type.
+                mediatype (str, optional): Limit your search to the specified media type.
                     actor, album, artist, autotag, collection, director, episode, game, genre,
                     movie, photo, photoalbum, place, playlist, shared, show, tag, track
-                limit (int): Optionally limit to the specified number of results per Hub.
+                limit (int, optional): Limit to the specified number of results per Hub.
+                sectionId (int, optional): The section ID (key) of the library to search within.
         """
         results = []
         params = {
@@ -538,6 +539,8 @@ class PlexServer(PlexObject):
             'includeExternalMedia': 1}
         if limit:
             params['limit'] = limit
+        if sectionId:
+            params['sectionId'] = sectionId
         key = '/hubs/search?%s' % urlencode(params)
         for hub in self.fetchItems(key, Hub):
             if mediatype:
