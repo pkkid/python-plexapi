@@ -375,7 +375,7 @@ def test_sync_entire_library_photos(clear_sync_device, photos):
         sync_item=new_item,
     )
     # It's not that easy, to just get all the photos within the library, so let`s query for photos with device!=0x0
-    section_content = photos.search(libtype="photo", **{"device!": "0x0"})
+    section_content = photos.search(libtype="photo", **{"addedAt>>": "2000-01-01"})
     media_list = utils.wait_until(
         get_media, delay=0.25, timeout=3, item=item, server=photos._server
     )
