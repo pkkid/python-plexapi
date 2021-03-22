@@ -499,15 +499,18 @@ class MyPlexAccount(PlexObject):
         url = self.PLEXSERVERS.replace('{machineId}', machineIdentifier)
         data = self.query(url, self._session.get)
         for elem in data[0]:
-            allSectionIds[elem.attrib.get('id', '').lower()] = elem.attrib.get('id')
-            allSectionIds[elem.attrib.get('title', '').lower()] = elem.attrib.get('id')
-            allSectionIds[elem.attrib.get('key', '').lower()] = elem.attrib.get('id')
+            _id = utils.cast(int, elem.attrib.get('id'))
+            _key = utils.cast(int, elem.attrib.get('key'))
+            _title = elem.attrib.get('title', '').lower()
+            allSectionIds[_id] = _id
+            allSectionIds[_key] = _id
+            allSectionIds[_title] = _id
         log.debug(allSectionIds)
         # Convert passed in section items to section ids from above lookup
         sectionIds = []
         for section in sections:
-            sectionKey = section.key if isinstance(section, LibrarySection) else section
-            sectionIds.append(allSectionIds[sectionKey.lower()])
+            sectionKey = section.key if isinstance(section, LibrarySection) else section.lower()
+            sectionIds.append(allSectionIds[sectionKey])
         return sectionIds
 
     def _filterDictToStr(self, filterDict):
