@@ -565,6 +565,8 @@ class Playable(object):
             transcodeSessions (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
                 if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
+            accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
+            deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             playQueueItemID (int): PlayQueue item ID (only populated for :class:`~plexapi.playlist.PlayQueue` items).
     """
@@ -577,6 +579,7 @@ class Playable(object):
         self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
+        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))                # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
         self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
 
