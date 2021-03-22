@@ -972,7 +972,7 @@ class LibrarySection(PlexObject):
             If you want to filter using episode view count then you must specify ``episode.viewCount`` explicitly.
             In addition, if the filter does not exist for the default library type it will fallback to the most
             specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
-            ``episode.unwatched.`` The ``libtype`` prefix cannot be included directly in the function parameters so
+            ``episode.unwatched``. The ``libtype`` prefix cannot be included directly in the function parameters so
             the ``**kwargs`` must be provided as a dictionary.
 
             Examples:
