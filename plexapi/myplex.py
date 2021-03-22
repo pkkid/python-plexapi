@@ -709,7 +709,7 @@ class MyPlexAccount(PlexObject):
         if client:
             clientId = client.clientIdentifier
         elif clientId is None:
-            clientId = X_PLEX_IDENTIFIER
+            clientId = CONFIG.get('header.identifier')
 
         data = self.query(SyncList.key.format(clientId=clientId))
 
@@ -735,7 +735,7 @@ class MyPlexAccount(PlexObject):
                 :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn't provides `sync-target`.
         """
         if not client and not clientId:
-            clientId = X_PLEX_IDENTIFIER
+            clientId = CONFIG.get('header.identifier')
 
         if not client:
             for device in self.devices():
