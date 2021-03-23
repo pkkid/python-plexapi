@@ -62,7 +62,7 @@ def test_library_section_totalViewSize(tvshows):
     assert tvshows.totalViewSize() == 2
     assert tvshows.totalViewSize(libtype="show") == 2
     assert tvshows.totalViewSize(libtype="season") == 4
-    assert tvshows.totalViewSize(libtype="episode") == 51
+    assert tvshows.totalViewSize(libtype="episode") == 49
     show = tvshows.get("The 100")
     show.addCollection("test_view_size")
     assert tvshows.totalViewSize() == 3
