@@ -58,6 +58,18 @@ def test_library_section_movies_all(movies):
     assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
 
 
+def test_library_section_totalViewSize(tvshows):
+    assert tvshows.totalViewSize() == 2
+    assert tvshows.totalViewSize(libtype="show") == 2
+    assert tvshows.totalViewSize(libtype="season") == 4
+    assert tvshows.totalViewSize(libtype="episode") == 51
+    show = tvshows.get("The 100")
+    show.addCollection("test_view_size")
+    assert tvshows.totalViewSize() == 3
+    assert tvshows.totalViewSize(includeCollections=False) == 2
+    show.removeCollection("test_view_size", locked=False)
+
+
 def test_library_section_delete(movies, patched_http_call):
     movies.delete()
 
