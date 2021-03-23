@@ -62,7 +62,7 @@ class Library(PlexObject):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
 
             Parameters:
-                sectionID (str): ID of the section to return.
+                sectionID (int): ID of the section to return.
         """
         if not self._sectionsByID or sectionID not in self._sectionsByID:
             self.sections()

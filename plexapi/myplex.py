@@ -802,28 +802,28 @@ class MyPlexUser(PlexObject):
 
 class Section(PlexObject):
     """ This refers to a shared section. The raw xml for the data presented here
-        can be found at: https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}
+        can be found at: https://plex.tv/api/servers/{machineId}/shared_servers
 
         Attributes:
             TAG (str): section
-            id (int): shared section id
-            sectionKey (str): what key we use for this section
-            title (str): Title of the section
-            sectionId (str): shared section id
-            type (str): movie, tvshow, artist
+            id (int): The shared section ID
+            key (int): The shared library section key
             shared (bool): If this section is shared with the user
+            title (str): Title of the section
+            type (str): movie, tvshow, artist
 
     """
     TAG = 'Section'
 
     def _loadData(self, data):
         self._data = data
-        # self.id = utils.cast(int, data.attrib.get('id'))  # Havnt decided if this should be changed.
-        self.sectionKey = data.attrib.get('key')
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.key = utils.cast(int, data.attrib.get('key'))
+        self.shared = utils.cast(bool, data.attrib.get('shared', '0'))
         self.title = data.attrib.get('title')
-        self.sectionId = data.attrib.get('id')
         self.type = data.attrib.get('type')
-        self.shared = utils.cast(bool, data.attrib.get('shared'))
+        self.sectionId = self.id  # For backwards compatibility
+        self.sectionKey = self.key  # For backwards compatibility
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get all Play History for a user for this section in this shared server.
