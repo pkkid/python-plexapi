@@ -394,13 +394,34 @@ class LibrarySection(PlexObject):
 
     @property
     def totalSize(self):
-        """ Returns the total number of items in the library. """
+        """ Returns the total number of items in the library for the default library type. """
         if self._totalSize is None:
             part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
             data = self._server.query(part)
             self._totalSize = int(data.attrib.get("totalSize"))
 
         return self._totalSize
+
+    def totalViewSize(self, libtype=None, includeCollections=True):
+        """ Returns the total number of items in the library for a specified libtype.
+            (e.g. The total number of episodes or albums.)
+
+            Parameters:
+                libtype (str, optional): The type of items to return the total number for (movie, show, season, episode,
+                    artist, album, track, photoalbum). Default is the main library type.
+                includeCollections (bool, optional): True or False to include collections in the total number.
+                    Default is True.
+        """
+        args = {
+            'includeCollections': int(includeCollections),
+            'X-Plex-Container-Start': 0,
+            'X-Plex-Container-Size': 0
+        }
+        if libtype is not None:
+            args['type'] = utils.searchType(libtype)
+        part = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        data = self._server.query(part)
+        return int(data.attrib.get("totalSize"))
 
     def delete(self):
         """ Delete a library section. """
