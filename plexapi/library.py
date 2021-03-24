@@ -355,7 +355,6 @@ class LibrarySection(PlexObject):
         # Private attrs as we dont want a reload.
         self._filterTypes = None
         self._fieldTypes = None
-        self._totalSize = None
         self._totalViewSize = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
@@ -395,12 +394,7 @@ class LibrarySection(PlexObject):
     @property
     def totalSize(self):
         """ Returns the total number of items in the library for the default library type. """
-        if self._totalSize is None:
-            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
-            data = self._server.query(part)
-            self._totalSize = int(data.attrib.get("totalSize"))
-
-        return self._totalSize
+        return self.totalViewSize(libtype=self.TYPE, includeCollections=False)
 
     def totalViewSize(self, libtype=None, includeCollections=True):
         """ Returns the total number of items in the library for a specified libtype.
