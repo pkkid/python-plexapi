@@ -1097,7 +1097,7 @@ class LibrarySection(PlexObject):
                 filter_args.append(self._validateFilterField(field, values, libtype))
                 del kwargs[field]
         if title is not None:
-            args['title'] = title
+            filter_args.append(self._validateFilterField('title', title, libtype))
         if sort is not None:
             args['sort'] = self._validateSortField(sort, libtype)
         if libtype is not None:
