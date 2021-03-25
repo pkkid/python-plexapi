@@ -62,7 +62,7 @@ class Library(PlexObject):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
 
             Parameters:
-                sectionID (str): ID of the section to return.
+                sectionID (int): ID of the section to return.
         """
         if not self._sectionsByID or sectionID not in self._sectionsByID:
             self.sections()
@@ -355,7 +355,6 @@ class LibrarySection(PlexObject):
         # Private attrs as we dont want a reload.
         self._filterTypes = None
         self._fieldTypes = None
-        self._totalSize = None
         self._totalViewSize = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
@@ -394,13 +393,31 @@ class LibrarySection(PlexObject):
 
     @property
     def totalSize(self):
-        """ Returns the total number of items in the library. """
-        if self._totalSize is None:
-            part = '/library/sections/%s/all?X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
-            data = self._server.query(part)
-            self._totalSize = int(data.attrib.get("totalSize"))
+        """ Returns the total number of items in the library for the default library type. """
+        return self.totalViewSize(libtype=self.TYPE, includeCollections=False)
 
-        return self._totalSize
+    def totalViewSize(self, libtype=None, includeCollections=True):
+        """ Returns the total number of items in the library for a specified libtype.
+            The number of items for the default library type will be returned if no libtype is specified.
+            (e.g. Specify ``libtype='episode'`` for the total number of episodes
+            or ``libtype='albums'`` for the total number of albums.)
+
+            Parameters:
+                libtype (str, optional): The type of items to return the total number for (movie, show, season, episode,
+                    artist, album, track, photoalbum). Default is the main library type.
+                includeCollections (bool, optional): True or False to include collections in the total number.
+                    Default is True.
+        """
+        args = {
+            'includeCollections': int(bool(includeCollections)),
+            'X-Plex-Container-Start': 0,
+            'X-Plex-Container-Size': 0
+        }
+        if libtype is not None:
+            args['type'] = utils.searchType(libtype)
+        part = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        data = self._server.query(part)
+        return utils.cast(int, data.attrib.get("totalSize"))
 
     def delete(self):
         """ Delete a library section. """
@@ -1082,7 +1099,10 @@ class LibrarySection(PlexObject):
                 filter_args.append(self._validateFilterField(field, values, libtype))
                 del kwargs[field]
         if title is not None:
-            args['title'] = title
+            if isinstance(title, (list, tuple)):
+                filter_args.append(self._validateFilterField('title', title, libtype))
+            else:
+                args['title'] = title
         if sort is not None:
             args['sort'] = self._validateSortField(sort, libtype)
         if libtype is not None:
