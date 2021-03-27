@@ -2,7 +2,7 @@
 import os
 from urllib.parse import quote_plus, urlencode
 
-from plexapi import library, media, settings, utils
+from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
@@ -249,7 +249,7 @@ class Video(PlexPartialObject):
 
 @utils.registerPlexObject
 class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
+        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin, AdvancedSettingsMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -382,7 +382,7 @@ class Movie(Video, Playable, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatc
 
 @utils.registerPlexObject
 class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, GenreMixin, LabelMixin):
+        CollectionMixin, GenreMixin, LabelMixin, AdvancedSettingsMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -488,41 +488,6 @@ class Show(Video, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMa
     def isWatched(self):
         """ Returns True if the show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
-
-    def preferences(self):
-        """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
-        items = []
-        data = self._server.query(self._details_key)
-        for item in data.iter('Preferences'):
-            for elem in item:
-                setting = settings.Preferences(data=elem, server=self._server)
-                setting._initpath = self.key
-                items.append(setting)
-
-        return items
-
-    def editAdvanced(self, **kwargs):
-        """ Edit a show's advanced settings. """
-        data = {}
-        key = '%s/prefs?' % self.key
-        preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
-        for settingID, value in kwargs.items():
-            enumValues = preferences.get(settingID)
-            if value in enumValues:
-                data[settingID] = value
-            else:
-                raise NotFound('%s not found in %s' % (value, enumValues))
-        url = key + urlencode(data)
-        self._server.query(url, method=self._server._session.put)
-
-    def defaultAdvanced(self):
-        """ Edit all of show's advanced settings to default. """
-        data = {}
-        key = '%s/prefs?' % self.key
-        for preference in self.preferences():
-            data[preference.id] = preference.default
-        url = key + urlencode(data)
-        self._server.query(url, method=self._server._session.put)
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """

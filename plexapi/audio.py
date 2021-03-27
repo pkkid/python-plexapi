@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 
@@ -115,7 +115,7 @@ class Audio(PlexPartialObject):
 
 @utils.registerPlexObject
 class Artist(Audio, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
+        CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin, AdvancedSettingsMixin):
     """ Represents a single Artist.
 
         Attributes:
