@@ -4,7 +4,7 @@ from urllib.parse import quote_plus, urlencode
 
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
