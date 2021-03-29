@@ -394,7 +394,7 @@ class LibrarySection(PlexObject):
     @property
     def totalSize(self):
         """ Returns the total number of items in the library for the default library type. """
-        return self.totalViewSize(libtype=self.TYPE, includeCollections=False)
+        return self.totalViewSize(includeCollections=False)
 
     def totalViewSize(self, libtype=None, includeCollections=True):
         """ Returns the total number of items in the library for a specified libtype.
@@ -414,7 +414,10 @@ class LibrarySection(PlexObject):
             'X-Plex-Container-Size': 0
         }
         if libtype is not None:
-            args['type'] = utils.searchType(libtype)
+            if libtype == 'photo':
+                args['clusterZoomLevel'] = 1
+            else:
+                args['type'] = utils.searchType(libtype)
         part = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
         data = self._server.query(part)
         return utils.cast(int, data.attrib.get("totalSize"))
