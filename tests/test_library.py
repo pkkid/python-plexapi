@@ -469,28 +469,28 @@ def _test_library_search(library, obj):
                 searchValue = value - timedelta(days=1)
             else:
                 searchValue = value
-            
-            searchFilter = {field.key + operator.key[:-1]: searchValue}
-            results = library.search(libtype=obj.type, **searchFilter)
 
-            if operator.key.startswith("!") or operator.key.startswith(">>") and searchValue == 0:
-                assert obj not in results
-            else:
-                assert obj in results
+            _do_test_library_search(library, obj, field, operator, searchValue)
 
             # Test search again using string tag and date
-            if field.type in {"tag", "date"}:
-                if field.type == "tag" and fieldAttr != 'contentRating':
-                    if not isinstance(searchValue, list):
-                        searchValue = [searchValue]
-                    searchValue = [v.tag for v in searchValue]
-                elif field.type == "date":
-                    searchValue = searchValue.strftime("%Y-%m-%d")
+            if field.type == "tag" and fieldAttr != "contentRating":
+                if not isinstance(searchValue, list):
+                    searchValue = [searchValue]
+                searchValue = [v.tag for v in searchValue]
+                _do_test_library_search(library, obj, field, operator, searchValue)
 
-                searchFilter = {field.key + operator.key[:-1]: searchValue}
-                results = library.search(libtype=obj.type, **searchFilter)
+            elif field.type == "date":
+                searchValue = searchValue.strftime("%Y-%m-%d")
+                _do_test_library_search(library, obj, field, operator, searchValue)
+                searchValue = "-1s"
+                _do_test_library_search(library, obj, field, operator, searchValue)
 
-                if operator.key.startswith("!") or operator.key.startswith(">>") and searchValue == 0:
-                    assert obj not in results
-                else:
-                    assert obj in results
+
+def _do_test_library_search(library, obj, field, operator, searchValue):
+    searchFilter = {field.key + operator.key[:-1]: searchValue}
+    results = library.search(libtype=obj.type, **searchFilter)
+
+    if operator.key.startswith("!") or operator.key.startswith(">>") and searchValue == 0:
+        assert obj not in results
+    else:
+        assert obj in results
