@@ -849,10 +849,7 @@ class LibrarySection(PlexObject):
                 if fieldType.type == 'boolean':
                     value = int(bool(value))
                 elif fieldType.type == 'date':
-                    if isinstance(value, datetime):
-                        value = int(value.timestamp())
-                    else:
-                        value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
+                    value = self._validateFieldValueDate(value)
                 elif fieldType.type == 'integer':
                     value = int(value)
                 elif fieldType.type == 'string':
@@ -863,11 +860,22 @@ class LibrarySection(PlexObject):
                     value = next((f.key for f in filterChoices
                                   if matchValue in {f.key.lower(), f.title.lower()}), value)
                 results.append(str(value))
-        except ValueError:
+        except (ValueError, AttributeError):
             raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
                              % (value, filterField.key, fieldType.type)) from None
     
         return results
+
+    def _validateFieldValueDate(self, value):
+        """ Validates a filter date value. A filter date value can be a datetime object,
+            a relative date (e.g. -30d), or a date in YYYY-MM-DD format.
+        """
+        if isinstance(value, datetime):
+            return int(value.timestamp())
+        elif re.match(r'^-\d+(mon|[smhdwy])$', value):
+            return value
+        else:
+            return int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
 
     def _validateSortField(self, sort, libtype=None):
         """ Validates a filter sort field is available for the library.
