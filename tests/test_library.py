@@ -490,7 +490,7 @@ def _do_test_library_search(library, obj, field, operator, searchValue):
     searchFilter = {field.key + operator.key[:-1]: searchValue}
     results = library.search(libtype=obj.type, **searchFilter)
 
-    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 0 or searchValue == '-1s'):
+    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 0 or searchValue == '1s'):
         assert obj not in results
     else:
         assert obj in results
