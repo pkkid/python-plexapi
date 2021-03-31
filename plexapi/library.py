@@ -872,8 +872,8 @@ class LibrarySection(PlexObject):
         """
         if isinstance(value, datetime):
             return int(value.timestamp())
-        elif re.match(r'^-\d+(mon|[smhdwy])$', value):
-            return value
+        elif re.match(r'^-?\d+(mon|[smhdwy])$', value):
+            return '-' + value.lstrip('-')
         else:
             return int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
 
@@ -975,11 +975,11 @@ class LibrarySection(PlexObject):
             * **writer** (:class:`~plexapi.media.MediaTag`): Search for the name of a writer.
             * **year** (*int*): Search for a specific year.
 
-            Tag type filter values can be a :class:`~plexapi.media.MediaTag` object, the exact name :attr:`MediaTag.tag`
-            (*str*), or the exact id :attr:`MediaTag.id` (*int*).
+            Tag type filter values can be a :class:`~plexapi.media.MediaTag` object, the exact name
+            :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*).
             
-            Date type filter values can be a ``datetime`` object, a relative date using a ``-`` prefix and one of the
-            available date suffixes (e.g. ``-30d``) (*str*), or a date in ``YYYY-MM-DD`` (*str*) format.
+            Date type filter values can be a ``datetime`` object, a relative date using a one of the
+            available date suffixes (e.g. ``30d``) (*str*), or a date in ``YYYY-MM-DD`` (*str*) format.
 
             Relative date suffixes:
 
@@ -1092,7 +1092,7 @@ class LibrarySection(PlexObject):
                     library.search(**{"title<": "Marvel", "addedAt<<": "2021-01-01"})
 
                     # Added in the last 30 days using relative dates
-                    library.search(**{"addedAt>>": "-30d"})
+                    library.search(**{"addedAt>>": "30d"})
 
                     # Collection is James Bond and user rating is greater than 8
                     library.search(**{"collection": "James Bond", "userRating>>": 8})

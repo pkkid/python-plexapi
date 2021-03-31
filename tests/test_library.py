@@ -482,7 +482,7 @@ def _test_library_search(library, obj):
             elif field.type == "date":
                 searchValue = searchValue.strftime("%Y-%m-%d")
                 _do_test_library_search(library, obj, field, operator, searchValue)
-                searchValue = "-1s"
+                searchValue = "1s"
                 _do_test_library_search(library, obj, field, operator, searchValue)
 
 
