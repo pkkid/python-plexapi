@@ -852,10 +852,7 @@ class LibrarySection(PlexObject):
                 if fieldType.type == 'boolean':
                     value = int(bool(value))
                 elif fieldType.type == 'date':
-                    if isinstance(value, datetime):
-                        value = int(value.timestamp())
-                    else:
-                        value = int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
+                    value = self._validateFieldValueDate(value)
                 elif fieldType.type == 'integer':
                     value = int(value)
                 elif fieldType.type == 'string':
@@ -866,11 +863,22 @@ class LibrarySection(PlexObject):
                     value = next((f.key for f in filterChoices
                                   if matchValue in {f.key.lower(), f.title.lower()}), value)
                 results.append(str(value))
-        except ValueError:
+        except (ValueError, AttributeError):
             raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
                              % (value, filterField.key, fieldType.type)) from None
     
         return results
+
+    def _validateFieldValueDate(self, value):
+        """ Validates a filter date value. A filter date value can be a datetime object,
+            a relative date (e.g. -30d), or a date in YYYY-MM-DD format.
+        """
+        if isinstance(value, datetime):
+            return int(value.timestamp())
+        elif re.match(r'^-?\d+(mon|[smhdwy])$', value):
+            return '-' + value.lstrip('-')
+        else:
+            return int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
 
     def _validateSortField(self, sort, libtype=None):
         """ Validates a filter sort field is available for the library.
@@ -942,10 +950,7 @@ class LibrarySection(PlexObject):
             * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
 
             The following filter fields are just some examples of the possible filters. The list is not exaustive,
-            and not all filters apply to all library types. For tag type filters, a :class:`~plexapi.media.MediaTag`
-            object, the exact name :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*) can be
-            provided. For date type filters, either a ``datetime`` object or a date in ``YYYY-MM-DD`` (*str*) format
-            can be provided. Multiple values can be ``OR`` together by providing a list of values.
+            and not all filters apply to all library types.
 
             * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
             * **addedAt** (*datetime*): Search for items added before or after a date. See operators below.
@@ -972,6 +977,24 @@ class LibrarySection(PlexObject):
             * **userRating** (*int*): Search for items with a specific user rating.
             * **writer** (:class:`~plexapi.media.MediaTag`): Search for the name of a writer.
             * **year** (*int*): Search for a specific year.
+
+            Tag type filter values can be a :class:`~plexapi.media.MediaTag` object, the exact name
+            :attr:`MediaTag.tag` (*str*), or the exact id :attr:`MediaTag.id` (*int*).
+            
+            Date type filter values can be a ``datetime`` object, a relative date using a one of the
+            available date suffixes (e.g. ``30d``) (*str*), or a date in ``YYYY-MM-DD`` (*str*) format.
+
+            Relative date suffixes:
+
+            * ``s``: ``seconds``
+            * ``m``: ``minutes``
+            * ``h``: ``hours``
+            * ``d``: ``days``
+            * ``w``: ``weeks``
+            * ``mon``: ``months``
+            * ``y``: ``years``
+            
+            Multiple values can be ``OR`` together by providing a list of values.
 
             Examples:
 
@@ -1070,6 +1093,9 @@ class LibrarySection(PlexObject):
 
                     # Title starts with Marvel and added before 2021-01-01
                     library.search(**{"title<": "Marvel", "addedAt<<": "2021-01-01"})
+
+                    # Added in the last 30 days using relative dates
+                    library.search(**{"addedAt>>": "30d"})
 
                     # Collection is James Bond and user rating is greater than 8
                     library.search(**{"collection": "James Bond", "userRating>>": 8})
