@@ -20,6 +20,21 @@ class AdvancedSettingsMixin(object):
 
         return items
 
+    def preference(self, pref):
+        """ Returns a :class:`~plexapi.settings.Preferences` object for the specified pref.
+
+            Parameters:
+                pref (str): The id of the preference to return.
+        """
+        prefs = self.preferences()
+        try:
+            return next(p for p in prefs if p.id == pref)
+        except StopIteration:
+            availablePrefs = [p.id for p in prefs]
+            raise NotFound('Unknown preference "%s" for %s. '
+                           'Available preferences: %s'
+                           % (pref, self.TYPE, availablePrefs)) from None
+
     def editAdvanced(self, **kwargs):
         """ Edit a Plex object's advanced settings. """
         data = {}
