@@ -67,6 +67,10 @@ def test_audio_Artist_albums(artist):
     assert len(albums) == 1 and albums[0].title == "Layers"
 
 
+def test_audio_Artist_mixins_edit_advanced_settings(artist):
+    test_mixins.edit_advanced_settings(artist)
+
+
 def test_audio_Artist_mixins_images(artist):
     test_mixins.edit_art(artist)
     test_mixins.edit_poster(artist)
