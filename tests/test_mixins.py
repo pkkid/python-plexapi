@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from plexapi.exceptions import NotFound
 from plexapi.utils import tag_singular
+import pytest
 
 from . import conftest as utils
 
@@ -146,3 +148,32 @@ def attr_bannerUrl(obj):
 
 def attr_posterUrl(obj):
     _test_mixins_imageUrl(obj, 'thumb')
+
+
+def _test_mixins_editAdvanced(obj):
+    for pref in obj.preferences():
+        currentPref = obj.preference(pref.id)
+        currentValue = currentPref.value
+        newValue = next(v for v in pref.enumValues if v != currentValue)
+        obj.editAdvanced(**{pref.id: newValue})
+        obj.reload()
+        newPref = obj.preference(pref.id)
+        assert newPref.value == newValue
+
+
+def _test_mixins_editAdvanced_bad_pref(obj):
+    with pytest.raises(NotFound):
+        assert obj.preference('bad-pref')
+
+
+def _test_mixins_defaultAdvanced(obj):
+    obj.defaultAdvanced()
+    obj.reload()
+    for pref in obj.preferences():
+        assert pref.value == pref.default
+
+
+def edit_advanced_settings(obj):
+    _test_mixins_editAdvanced(obj)
+    _test_mixins_editAdvanced_bad_pref(obj)
+    _test_mixins_defaultAdvanced(obj)

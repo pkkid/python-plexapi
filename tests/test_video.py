@@ -40,6 +40,10 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
+def test_video_Movie_mixins_edit_advanced_settings(movie):
+    test_mixins.edit_advanced_settings(movie)
+
+
 def test_video_Movie_mixins_images(movie):
     test_mixins.edit_art(movie)
     test_mixins.edit_poster(movie)
@@ -647,25 +651,6 @@ def test_video_Show_settings(show):
     assert len(preferences) >= 1
 
 
-def test_video_Show_editAdvanced_default(show):
-    show.editAdvanced(showOrdering='absolute')
-    show.reload()
-    for pref in show.preferences():
-        if pref.id == 'showOrdering':
-            assert pref.value == 'absolute'
-
-    show.editAdvanced(flattenSeasons=1)
-    show.reload()
-    for pref in show.preferences():
-        if pref.id == 'flattenSeasons':
-            assert pref.value == 1
-
-    show.defaultAdvanced()
-    show.reload()
-    for pref in show.preferences():
-        assert pref.value == pref.default
-
-
 def test_video_Show_reload(plex):
     show = plex.library.section("TV Shows").get("Game of Thrones")
     assert utils.is_metadata(show._initpath, prefix="/library/sections/")
@@ -735,6 +720,10 @@ def test_video_Show_isWatched(show):
 def test_video_Show_section(show):
     section = show.section()
     assert section.title == "TV Shows"
+
+
+def test_video_Show_mixins_edit_advanced_settings(show):
+    test_mixins.edit_advanced_settings(show)
 
 
 def test_video_Show_mixins_images(show):
