@@ -505,7 +505,10 @@ class LibrarySection(PlexObject):
         for settingID, value in kwargs.items():
             try:
                 enums = idEnums.get(settingID)
-                enumValues = [int(x) for x in enums]
+                try:
+                    enumValues = [int(x) for x in enums]
+                except ValueError:
+                    enumValues = [x for x in enums]
             except TypeError:
                 raise NotFound('%s not found in %s' % (value, list(idEnums.keys())))
             if value in enumValues:
