@@ -41,11 +41,14 @@ class AdvancedSettingsMixin(object):
         key = '%s/prefs?' % self.key
         preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
         for settingID, value in kwargs.items():
-            enumValues = preferences.get(settingID)
-            if value in enumValues:
+            try:
+                enums = preferences[settingID]
+            except KeyError:
+                raise NotFound('%s not found in %s' % (value, list(preferences.keys())))
+            if value in enums:
                 data[settingID] = value
             else:
-                raise NotFound('%s not found in %s' % (value, enumValues))
+                raise NotFound('%s not found in %s' % (value, enums))
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
 
