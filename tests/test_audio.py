@@ -6,6 +6,7 @@ from . import test_mixins
 def test_audio_Artist_attr(artist):
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
+    assert artist.albumSort == -1
     if artist.art:
         assert utils.is_art(artist.art)
     if artist.countries:
@@ -64,6 +65,10 @@ def test_audio_Artist_album(artist):
 def test_audio_Artist_albums(artist):
     albums = artist.albums()
     assert len(albums) == 1 and albums[0].title == "Layers"
+
+
+def test_audio_Artist_mixins_edit_advanced_settings(artist):
+    test_mixins.edit_advanced_settings(artist)
 
 
 def test_audio_Artist_mixins_images(artist):

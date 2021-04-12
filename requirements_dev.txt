@@ -2,17 +2,17 @@
 # PlexAPI requirements to run py.test.
 # pip install -r requirements_dev.txt
 #---------------------------------------------------------
-coveralls==2.2.0
-flake8==3.8.4
-pillow==8.0.1
-pytest==6.1.2
+coveralls==3.0.1
+flake8==3.9.0
+pillow==8.1.2
+pytest==6.2.2
 pytest-cache==1.0
-pytest-cov==2.10.1
-pytest-mock<=1.11.1
-recommonmark==0.6.0
-requests==2.25.0
+pytest-cov==2.11.1
+pytest-mock<3.5.2
+recommonmark==0.7.1
+requests==2.25.1
 requests-mock==1.8.0
-sphinx==3.3.1
-sphinx-rtd-theme==0.5.0
-tqdm==4.54.0
-websocket-client==0.57.0
+sphinx==3.5.3
+sphinx-rtd-theme==0.5.1
+tqdm==4.59.0
+websocket-client==0.58.0

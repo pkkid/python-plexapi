@@ -40,6 +40,10 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
+def test_video_Movie_mixins_edit_advanced_settings(movie):
+    test_mixins.edit_advanced_settings(movie)
+
+
 def test_video_Movie_mixins_images(movie):
     test_mixins.edit_art(movie)
     test_mixins.edit_poster(movie)
@@ -185,6 +189,7 @@ def test_video_Movie_attrs(movies):
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
+    assert movie.languageOverride is None
     assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == "video"
@@ -206,6 +211,7 @@ def test_video_Movie_attrs(movies):
     assert not movie.transcodeSessions
     assert movie.type == "movie"
     assert movie.updatedAt > datetime(2017, 1, 1)
+    assert movie.useOriginalTitle == -1
     assert movie.userRating is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
@@ -559,16 +565,25 @@ def test_video_Show_attrs(show):
     # Check reloading the show loads the full list of genres
     assert not {"Adventure", "Drama"} - {i.tag for i in show.genres}
     show.reload()
+    assert show.audienceRating is None  # TODO: Change when updating test to the Plex TV agent
+    assert show.audienceRatingImage is None  # TODO: Change when updating test to the Plex TV agent
+    assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
+    assert show.autoDeletionItemPolicyWatchedLibrary == 0
+    assert show.episodeSort == -1
+    assert show.flattenSeasons == -1
     assert sorted([i.tag for i in show.genres]) == ["Adventure", "Drama", "Fantasy"]
+    assert show.guids == []  # TODO: Change when updating test to the Plex TV agent
     # So the initkey should have changed because of the reload
     assert utils.is_metadata(show._initpath)
     assert utils.is_int(show.index)
     assert utils.is_metadata(show.key)
+    assert show.languageOverride is None
     assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == "video"
     assert len(show.locations) == 1
     assert len(show.locations[0]) >= 10
+    assert show.network is None
     assert utils.is_datetime(show.originallyAvailableAt)
     assert show.originalTitle is None
     assert show.rating >= 8.0
@@ -586,6 +601,7 @@ def test_video_Show_attrs(show):
         "Alfie Allen",
     ]  # noqa
     assert show._server._baseurl == utils.SERVER_BASEURL
+    assert show.showOrdering in (None, 'aired')
     assert show.studio == "HBO"
     assert utils.is_string(show.summary, gte=100)
     assert show.tagline is None
@@ -595,6 +611,8 @@ def test_video_Show_attrs(show):
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
+    assert show.useOriginalTitle == -1
+    assert show.userRating is None
     assert utils.is_datetime(show.updatedAt)
     assert utils.is_int(show.viewCount, gte=0)
     assert utils.is_int(show.viewedLeafCount, gte=0)
@@ -631,25 +649,6 @@ def test_video_Show_unwatched(tvshows):
 def test_video_Show_settings(show):
     preferences = show.preferences()
     assert len(preferences) >= 1
-
-
-def test_video_Show_editAdvanced_default(show):
-    show.editAdvanced(showOrdering='absolute')
-    show.reload()
-    for pref in show.preferences():
-        if pref.id == 'showOrdering':
-            assert pref.value == 'absolute'
-
-    show.editAdvanced(flattenSeasons=1)
-    show.reload()
-    for pref in show.preferences():
-        if pref.id == 'flattenSeasons':
-            assert pref.value == 1
-
-    show.defaultAdvanced()
-    show.reload()
-    for pref in show.preferences():
-        assert pref.value == pref.default
 
 
 def test_video_Show_reload(plex):
@@ -723,6 +722,10 @@ def test_video_Show_section(show):
     assert section.title == "TV Shows"
 
 
+def test_video_Show_mixins_edit_advanced_settings(show):
+    test_mixins.edit_advanced_settings(show)
+
+
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
     test_mixins.edit_banner(show)
@@ -790,6 +793,8 @@ def test_video_Episode_attrs(episode):
     assert utils.is_datetime(episode.addedAt)
     if episode.art:
         assert utils.is_art(episode.art)
+    assert episode.audienceRating is None  # TODO: Change when updating test to the Plex TV agent
+    assert episode.audienceRatingImage is None  # TODO: Change when updating test to the Plex TV agent
     assert episode.contentRating in utils.CONTENTRATINGS
     if len(episode.directors):
         assert [i.tag for i in episode.directors] == ["Tim Van Patten"]
@@ -799,6 +804,7 @@ def test_video_Episode_attrs(episode):
     if episode.grandparentThumb:
         assert utils.is_thumb(episode.grandparentThumb)
     assert episode.grandparentTitle == "Game of Thrones"
+    assert episode.guids == []  # TODO: Change when updating test to the Plex TV agent
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
@@ -913,6 +919,7 @@ def test_video_Season_attrs(show):
     assert utils.is_datetime(season.addedAt)
     if season.art:
         assert utils.is_art(season.art)
+    assert season.guids == []  # TODO: Change when updating test to the Plex TV agent
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)

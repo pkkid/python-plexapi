@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 
@@ -52,7 +52,7 @@ class Audio(PlexPartialObject):
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '')
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
-        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.listType = 'audio'
@@ -114,13 +114,15 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'artist'
+            albumSort (int): Setting that indicates how albums are sorted for the artist
+                (-1 = Library default, 0 = Newest first, 1 = Oldest first, 2 = By name).
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             countries (List<:class:`~plexapi.media.Country`>): List country objects.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
@@ -135,6 +137,7 @@ class Artist(Audio, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
+        self.albumSort = utils.cast(int, data.attrib.get('albumSort', '-1'))
         self.collections = self.findItems(data, media.Collection)
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)

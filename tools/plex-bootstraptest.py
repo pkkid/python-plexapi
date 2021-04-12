@@ -295,7 +295,7 @@ def create_section(server, section, opts):
                             cnt = 1
                             if entry["type"] == SEARCHTYPES["show"]:
                                 show = server.library.sectionByID(
-                                    str(entry["sectionID"])
+                                    entry["sectionID"]
                                 ).get(entry["title"])
                                 cnt = show.leafCount
                             bar.update(cnt)

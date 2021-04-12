@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from collections import namedtuple
+from datetime import datetime, timedelta
 import pytest
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
 
@@ -25,13 +26,13 @@ def test_library_sectionByID_with_attrs(plex, movies):
     assert movies.agent == "tv.plex.agents.movie"
     # This seems to fail for some reason.
     # my account alloew of sync, didnt find any about settings about the library.
-    # assert movies.allowSync is ('sync' in plex.ownerFeatures)
+    # assert movies.allowSync is ("sync" in plex.ownerFeatures)
     assert movies.art == "/:/resources/movie-fanart.jpg"
     assert utils.is_metadata(
         movies.composite, prefix="/library/sections/", contains="/composite/"
     )
     assert utils.is_datetime(movies.createdAt)
-    assert movies.filters == "1"
+    assert movies.filters is True
     assert movies._initpath == "/library/sections"
     assert utils.is_int(movies.key)
     assert movies.language == "en-US"
@@ -47,14 +48,26 @@ def test_library_sectionByID_with_attrs(plex, movies):
     assert len(movies.uuid) == 36
 
 
-def test_library_section_get_movie(plex):
-    assert plex.library.section("Movies").get("Sita Sings the Blues")
+def test_library_section_get_movie(movies):
+    assert movies.get("Sita Sings the Blues")
 
 
 def test_library_section_movies_all(movies):
     # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
     assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
+
+
+def test_library_section_totalViewSize(tvshows):
+    assert tvshows.totalViewSize() == 2
+    assert tvshows.totalViewSize(libtype="show") == 2
+    assert tvshows.totalViewSize(libtype="season") == 4
+    assert tvshows.totalViewSize(libtype="episode") == 49
+    show = tvshows.get("The 100")
+    show.addCollection("test_view_size")
+    assert tvshows.totalViewSize() == 3
+    assert tvshows.totalViewSize(includeCollections=False) == 2
+    show.removeCollection("test_view_size", locked=False)
 
 
 def test_library_section_delete(movies, patched_http_call):
@@ -143,10 +156,6 @@ def test_library_MovieSection_update_path(movies):
     movies.update(path=movies.locations[0])
 
 
-def test_library_ShowSection_all(tvshows):
-    assert len(tvshows.all(title__iexact="The 100"))
-
-
 def test_library_MovieSection_refresh(movies, patched_http_call):
     movies.refresh()
 
@@ -173,6 +182,10 @@ def test_library_MovieSection_onDeck(movie, movies, tvshows, episode):
     episode.markUnwatched()
 
 
+def test_library_MovieSection_searchMovies(movies):
+    assert movies.searchMovies(title="Elephants Dream")
+
+
 def test_library_MovieSection_recentlyAdded(movies):
     assert len(movies.recentlyAdded())
 
@@ -185,8 +198,16 @@ def test_library_MovieSection_collections(movies, collection):
     assert len(movies.collections())
 
 
+def test_library_ShowSection_all(tvshows):
+    assert len(tvshows.all(title__iexact="The 100"))
+
+
 def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
+
+
+def test_library_ShowSection_searchSseasons(tvshows):
+    assert tvshows.searchSeasons(**{"show.title": "The 100"})
 
 
 def test_library_ShowSection_searchEpisodes(tvshows):
@@ -229,10 +250,10 @@ def test_library_PhotoSection_searchPhotos(photos, photoalbum):
     assert len(photos.searchPhotos(title))
 
 
-def test_library_and_section_search_for_movie(plex):
-    find = "16 blocks"
+def test_library_and_section_search_for_movie(plex, movies):
+    find = "Elephants Dream"
     l_search = plex.library.search(find)
-    s_search = plex.library.section("Movies").search(find)
+    s_search = movies.search(find)
     assert l_search == s_search
 
 
@@ -244,12 +265,12 @@ def test_library_settings(movies):
 def test_library_editAdvanced_default(movies):
     movies.editAdvanced(hidden=2)
     for setting in movies.settings():
-        if setting.id == 'hidden':
+        if setting.id == "hidden":
             assert int(setting.value) == 2
 
     movies.editAdvanced(collectionMode=0)
     for setting in movies.settings():
-        if setting.id == 'collectionMode':
+        if setting.id == "collectionMode":
             assert int(setting.value) == 0
 
     movies.reload()
@@ -258,17 +279,16 @@ def test_library_editAdvanced_default(movies):
         assert str(setting.value) == str(setting.default)
 
 
-def test_search_with_weird_a(plex):
+def test_search_with_weird_a(plex, tvshows):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)
-    result_shows = plex.library.section("TV Shows").searchEpisodes(title=ep_title)
+    result_shows = tvshows.searchEpisodes(title=ep_title)
     assert result_root
     assert result_shows
     assert result_root == result_shows
 
 
-def test_crazy_search(plex, movie):
-    movies = plex.library.section("Movies")
+def test_crazy_search(plex, movies, movie):
     assert movie in movies.search(
         actor=movie.actors[0], sort="titleSort"
     ), "Unable to search movie by actor."
@@ -287,8 +307,7 @@ def test_crazy_search(plex, movie):
     assert len(movies.search(container_start=2, container_size=1)) == 2
 
 
-def test_library_section_timeline(plex):
-    movies = plex.library.section("Movies")
+def test_library_section_timeline(plex, movies):
     tl = movies.timeline()
     assert tl.TAG == "LibraryTimeline"
     assert tl.size > 0
@@ -304,3 +323,174 @@ def test_library_section_timeline(plex):
     assert utils.is_int(tl.updateQueueSize, gte=0)
     assert tl.viewGroup == "secondary"
     assert tl.viewMode == 65592
+
+
+def test_library_MovieSection_hubSearch(movies):
+    assert movies.hubSearch("Elephants Dream")
+
+
+def test_library_MovieSection_search(movies, movie):
+    movie.addLabel("test_search")
+    movie.addCollection("test_search")
+    _test_library_search(movies, movie)
+    movie.removeLabel("test_search", locked=False)
+    movie.removeCollection("test_search", locked=False)
+
+
+def test_library_ShowSection_search(tvshows, show):
+    show.addLabel("test_search")
+    show.addCollection("test_search")
+    _test_library_search(tvshows, show)
+    show.removeLabel("test_search", locked=False)
+    show.removeCollection("test_search", locked=False)
+
+    season = show.season(season=1)
+    _test_library_search(tvshows, season)
+
+    episode = season.episode(episode=1)
+    _test_library_search(tvshows, episode)
+
+    # Additional test for mapping field to the correct libtype
+    assert tvshows.search(unwatched=True)  # equal to episode.unwatched=True
+
+
+def test_library_MusicSection_search(music, artist):
+    artist.addGenre("test_search")
+    artist.addStyle("test_search")
+    artist.addMood("test_search")
+    artist.addCollection("test_search")
+    _test_library_search(music, artist)
+    artist.removeGenre("test_search", locked=False)
+    artist.removeStyle("test_search", locked=False)
+    artist.removeMood("test_search", locked=False)
+    artist.removeCollection("test_search", locked=False)
+
+    album = artist.album("Layers")
+    album.addGenre("test_search")
+    album.addStyle("test_search")
+    album.addMood("test_search")
+    album.addCollection("test_search")
+    album.addLabel("test_search")
+    _test_library_search(music, album)
+    album.removeGenre("test_search", locked=False)
+    album.removeStyle("test_search", locked=False)
+    album.removeMood("test_search", locked=False)
+    album.removeCollection("test_search", locked=False)
+    album.removeLabel("test_search", locked=False)
+    
+    track = album.track(track=1)
+    track.addMood("test_search")
+    _test_library_search(music, track)
+    track.removeMood("test_search", locked=False)
+
+
+def test_library_PhotoSection_search(photos, photoalbum):
+    photo = photoalbum.photo("photo1")
+    photo.addTag("test_search")
+    _test_library_search(photos, photo)
+    photo.removeTag("test_search")
+
+
+def test_library_MovieSection_search_sort(movies):
+    results = movies.search(sort="titleSort")
+    titleSort = [r.titleSort for r in results]
+    assert titleSort == sorted(titleSort)
+    results_asc = movies.search(sort="titleSort:asc")
+    titleSort_asc = [r.titleSort for r in results_asc]
+    assert titleSort == titleSort_asc
+    results_desc = movies.search(sort="titleSort:desc")
+    titleSort_desc = [r.titleSort for r in results_desc]
+    assert titleSort_desc == sorted(titleSort_desc, reverse=True)
+
+
+def test_library_search_exceptions(movies):
+    with pytest.raises(BadRequest):
+        movies.listFilterChoices(field="123abc.title")
+    with pytest.raises(BadRequest):
+        movies.search(**{"123abc": True})
+    with pytest.raises(BadRequest):
+        movies.search(year="123abc")
+    with pytest.raises(BadRequest):
+        movies.search(sort="123abc")
+    with pytest.raises(NotFound):
+        movies.getFilterType(libtype='show')
+    with pytest.raises(NotFound):
+        movies.getFieldType(fieldType="unknown")
+    with pytest.raises(NotFound):
+        movies.listFilterChoices(field="unknown")
+    with pytest.raises(NotFound):
+        movies.search(unknown="unknown")
+    with pytest.raises(NotFound):
+        movies.search(**{"title<>!=": "unknown"})
+    with pytest.raises(NotFound):
+        movies.search(sort="unknown")
+    with pytest.raises(NotFound):
+        movies.search(sort="titleSort:bad")
+
+
+def _test_library_search(library, obj):
+    # Create & operator
+    AndOperator = namedtuple('AndOperator', ['key', 'title'])
+    andOp = AndOperator('&=', 'and')
+
+    fields = library.listFields(obj.type)
+    for field in fields:
+        fieldAttr = field.key.split(".")[-1]
+        operators = library.listOperators(field.type)
+        if field.type in {'tag', 'string'}:
+            operators += [andOp]
+
+        for operator in operators:
+            if fieldAttr == "unmatched" and operator.key == "!=" or fieldAttr == 'userRating':
+                continue
+
+            value = getattr(obj, fieldAttr, None)
+
+            if field.type == "boolean" and value is None:
+                value = fieldAttr.startswith("unwatched")
+            if field.type == "tag" and isinstance(value, list) and value and operator.title != 'and':
+                value = value[0]
+            elif value is None:
+                continue
+
+            if operator.title == "begins with":
+                searchValue = value[:3]
+            elif operator.title == "ends with":
+                searchValue = value[-3:]
+            elif "contain" in operator.title:
+                searchValue = value.split(" ")[0]
+            elif operator.title == "is less than":
+                searchValue = value + 1
+            elif operator.title == "is greater than":
+                searchValue = max(value - 1, 0)
+            elif operator.title == "is before":
+                searchValue = value + timedelta(days=1)
+            elif operator.title == "is after":
+                searchValue = value - timedelta(days=1)
+            else:
+                searchValue = value
+
+            _do_test_library_search(library, obj, field, operator, searchValue)
+
+            # Test search again using string tag and date
+            if field.type == "tag" and fieldAttr != "contentRating":
+                if not isinstance(searchValue, list):
+                    searchValue = [searchValue]
+                searchValue = [v.tag for v in searchValue]
+                _do_test_library_search(library, obj, field, operator, searchValue)
+
+            elif field.type == "date":
+                searchValue = searchValue.strftime("%Y-%m-%d")
+                _do_test_library_search(library, obj, field, operator, searchValue)
+                searchValue = "1s"
+                _do_test_library_search(library, obj, field, operator, searchValue)
+
+
+def _do_test_library_search(library, obj, field, operator, searchValue):
+    searchFilter = {field.key + operator.key[:-1]: searchValue}
+    results = library.search(libtype=obj.type, **searchFilter)
+
+    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 0 or searchValue == '1s'):
+        assert obj not in results
+    else:
+        assert obj in results
