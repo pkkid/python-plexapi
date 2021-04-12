@@ -7,7 +7,7 @@ from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin 
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
