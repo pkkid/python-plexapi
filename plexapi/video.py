@@ -353,7 +353,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the movie.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the movie is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -858,7 +858,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the episode.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the episode is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -938,7 +938,8 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the clip.
-            Retruns:
+
+            Returns:
                 List<str> of file paths where the clip is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
