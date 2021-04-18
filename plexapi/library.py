@@ -1158,7 +1158,7 @@ class LibrarySection(PlexObject):
                                          container_size=container_size, **kwargs)
             if not len(subresults):
                 if offset > self._totalViewSize:
-                    log.info("container_start is higher then the number of items in the library")
+                    log.info("container_start is higher than the number of items in the library")
 
             results.extend(subresults)
 
