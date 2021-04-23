@@ -395,7 +395,7 @@ def test_server_system_devices(plex):
     devices = plex.systemDevices()
     assert len(devices)
     device = devices[-1]
-    assert device.clientIdentifier or device.clientIdentifier is None
+    assert device.clientIdentifier or device.clientIdentifier == ""
     assert utils.is_datetime(device.createdAt)
     assert utils.is_int(device.id)
     assert len(device.key)
