@@ -2062,6 +2062,7 @@ class File(PlexObject):
         self.path = data.attrib.get('path')
         self.title = data.attrib.get('title')
 
+
 class Label(PlexObject):
     """ Represents a single Label object for a :class:`~plexapi.library.Label`.
 
