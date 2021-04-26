@@ -467,6 +467,11 @@ class LibrarySection(PlexObject):
         libtype = libtype or self.TYPE
         return self.search(libtype=libtype, **kwargs)
 
+    def labels(self):
+        """ Returns a list of available :class:`~plexapi.library.Label` for this library section.
+        """
+        return self.fetchItems('/library/sections/%s/label' % self.key, Label)
+
     def folders(self):
         """ Returns a list of available :class:`~plexapi.library.Folder` for this library section.
         """
@@ -2055,4 +2060,22 @@ class File(PlexObject):
     def _loadData(self, data):
         self.key = data.attrib.get('key')
         self.path = data.attrib.get('path')
+        self.title = data.attrib.get('title')
+
+class Label(PlexObject):
+    """ Represents a single Label object for a :class:`~plexapi.library.Label`.
+
+        Attributes:
+            TAG (str): 'Directory'
+            fastKey (str): The URL key for the label field.
+            key (str): The key for the label field.
+            title (str): The title of the label field.
+    """
+    TAG = 'Directory'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.fastKey = data.attrib.get('fastKey')
+        self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
