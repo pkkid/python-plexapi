@@ -496,7 +496,7 @@ class PlexServer(PlexObject):
         """
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
-        return self.fetchItems('%s/items/%s/items' % (backgroundProcessing.key, optimizedID))
+        return self.fetchItem('%s/items/%s/items' % (backgroundProcessing.key, optimizedID))
 
     def conversions(self, pause=None):
         """ Returns list of all :class:`~plexapi.media.Conversion` objects connected to server. """
