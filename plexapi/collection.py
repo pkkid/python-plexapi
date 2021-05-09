@@ -9,7 +9,7 @@ from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
+class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:
@@ -127,7 +127,7 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
                       showItems   (Show this Collection and its Items)
             Example:
 
-                collection = 'plexapi.library.Collections'
+                collection = 'plexapi.collection.Collection'
                 collection.updateMode(mode="hide")
         """
         mode_dict = {'default': -1,
@@ -150,7 +150,7 @@ class Collections(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
 
             Example:
 
-                colleciton = 'plexapi.library.Collections'
+                colleciton = 'plexapi.collection.Collection'
                 collection.updateSort(mode="alpha")
         """
         sort_dict = {'release': 0,
