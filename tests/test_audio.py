@@ -290,6 +290,7 @@ def test_audio_Track_mixins_images(track):
 
 
 def test_audio_Track_mixins_tags(track):
+    test_mixins.edit_collection(track)
     test_mixins.edit_mood(track)
 
 
