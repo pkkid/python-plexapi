@@ -641,57 +641,41 @@ class MediaTag(PlexObject):
         the construct used for things such as Country, Director, Genre, etc.
 
         Attributes:
-            server (:class:`~plexapi.server.PlexServer`): Server this client is connected to.
+            filter (str): The library filter for the tag.
             id (id): Tag ID (This seems meaningless except to use it as a unique id).
-            role (str): Unknown
+            key (str): API URL (/library/section/<librarySectionID>/all?<filter>).
+            role (str): The name of the character role for :class:`~plexapi.media.Role` only.
             tag (str): Name of the tag. This will be Animation, SciFi etc for Genres. The name of
                 person for Directors and Roles (ex: Animation, Stephen Graham, etc).
-            <Hub_Search_Attributes>: Attributes only applicable in search results from
-                PlexServer :func:`~plexapi.server.PlexServer.search`. They provide details of which
-                library section the tag was found as well as the url to dig deeper into the results.
-
-                * key (str): API URL to dig deeper into this tag (ex: /library/sections/1/all?actor=9081).
-                * librarySectionID (int): Section ID this tag was generated from.
-                * librarySectionTitle (str): Library section title this tag was found.
-                * librarySectionType (str): Media type of the library section this tag was found.
-                * tagType (int): Tag type ID.
-                * thumb (str): URL to thumbnail image.
+            thumb (str): URL to thumbnail image for :class:`~plexapi.media.Role` only.
     """
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.filter = data.attrib.get('filter')
         self.id = cast(int, data.attrib.get('id'))
+        self.key = data.attrib.get('key')
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
-        # additional attributes only from hub search
-        self.key = data.attrib.get('key')
-        self.librarySectionID = cast(int, data.attrib.get('librarySectionID'))
-        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
-        self.librarySectionType = data.attrib.get('librarySectionType')
-        self.tagType = cast(int, data.attrib.get('tagType'))
         self.thumb = data.attrib.get('thumb')
 
-    def items(self, *args, **kwargs):
-        """ Return the list of items within this tag. This function is only applicable
-            in search results from PlexServer :func:`~plexapi.server.PlexServer.search`.
-        """
+        parent = self._parent()
+        self._librarySectionID = utils.cast(int, parent._data.attrib.get('librarySectionID'))
+        self._librarySectionKey = parent._data.attrib.get('librarySectionKey')
+        self._librarySectionTitle = parent._data.attrib.get('librarySectionTitle')
+        self._parentType = parent.TYPE
+
+        if self._librarySectionKey and self.filter:
+            self.key = '%s/all?%s&type=%s' % (
+                self._librarySectionKey, self.filter, utils.searchType(self._parentType))
+
+    def items(self):
+        """ Return the list of items within this tag. """
         if not self.key:
-            raise BadRequest('Key is not defined for this tag: %s' % self.tag)
+            raise BadRequest('Key is not defined for this tag: %s. '
+                             'Reload the parent object.' % self.tag)
         return self.fetchItems(self.key)
-
-
-class GuidTag(PlexObject):
-    """ Base class for guid tags used only for Guids, as they contain only a string identifier
-
-        Attributes:
-            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB).
-    """
-
-    def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.id = data.attrib.get('id')
 
 
 @utils.registerPlexObject
@@ -705,36 +689,11 @@ class Collection(MediaTag):
     TAG = 'Collection'
     FILTER = 'collection'
 
-
-@utils.registerPlexObject
-class Label(MediaTag):
-    """ Represents a single Label media tag.
-
-        Attributes:
-            TAG (str): 'Label'
-            FILTER (str): 'label'
-    """
-    TAG = 'Label'
-    FILTER = 'label'
-
-
-@utils.registerPlexObject
-class Tag(MediaTag):
-    """ Represents a single Tag media tag.
-
-        Attributes:
-            TAG (str): 'Tag'
-            FILTER (str): 'tag'
-    """
-    TAG = 'Tag'
-    FILTER = 'tag'
-
-    def _loadData(self, data):
-        self._data = data
-        self.id = cast(int, data.attrib.get('id', 0))
-        self.filter = data.attrib.get('filter')
-        self.tag = data.attrib.get('tag')
-        self.title = self.tag
+    def collection(self):
+        """ Return the :class:`~plexapi.collection.Collection` object for this collection tag.
+        """
+        key = '%s/collections' % self._librarySectionKey
+        return self.fetchItem(key, etag='Directory', index=self.id)
 
 
 @utils.registerPlexObject
@@ -774,13 +733,15 @@ class Genre(MediaTag):
 
 
 @utils.registerPlexObject
-class Guid(GuidTag):
-    """ Represents a single Guid media tag.
+class Label(MediaTag):
+    """ Represents a single Label media tag.
 
         Attributes:
-            TAG (str): 'Guid'
+            TAG (str): 'Label'
+            FILTER (str): 'label'
     """
-    TAG = "Guid"
+    TAG = 'Label'
+    FILTER = 'label'
 
 
 @utils.registerPlexObject
@@ -796,6 +757,42 @@ class Mood(MediaTag):
 
 
 @utils.registerPlexObject
+class Producer(MediaTag):
+    """ Represents a single Producer media tag.
+
+        Attributes:
+            TAG (str): 'Producer'
+            FILTER (str): 'producer'
+    """
+    TAG = 'Producer'
+    FILTER = 'producer'
+
+
+@utils.registerPlexObject
+class Role(MediaTag):
+    """ Represents a single Role (actor/actress) media tag.
+
+        Attributes:
+            TAG (str): 'Role'
+            FILTER (str): 'role'
+    """
+    TAG = 'Role'
+    FILTER = 'role'
+
+
+@utils.registerPlexObject
+class Similar(MediaTag):
+    """ Represents a single Similar media tag.
+
+        Attributes:
+            TAG (str): 'Similar'
+            FILTER (str): 'similar'
+    """
+    TAG = 'Similar'
+    FILTER = 'similar'
+
+
+@utils.registerPlexObject
 class Style(MediaTag):
     """ Represents a single Style media tag.
 
@@ -805,6 +802,53 @@ class Style(MediaTag):
     """
     TAG = 'Style'
     FILTER = 'style'
+
+
+@utils.registerPlexObject
+class Tag(MediaTag):
+    """ Represents a single Tag media tag.
+
+        Attributes:
+            TAG (str): 'Tag'
+            FILTER (str): 'tag'
+    """
+    TAG = 'Tag'
+    FILTER = 'tag'
+
+
+@utils.registerPlexObject
+class Writer(MediaTag):
+    """ Represents a single Writer media tag.
+
+        Attributes:
+            TAG (str): 'Writer'
+            FILTER (str): 'writer'
+    """
+    TAG = 'Writer'
+    FILTER = 'writer'
+
+
+class GuidTag(PlexObject):
+    """ Base class for guid tags used only for Guids, as they contain only a string identifier
+
+        Attributes:
+            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB).
+    """
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.id = data.attrib.get('id')
+
+
+@utils.registerPlexObject
+class Guid(GuidTag):
+    """ Represents a single Guid media tag.
+
+        Attributes:
+            TAG (str): 'Guid'
+    """
+    TAG = 'Guid'
 
 
 class BaseImage(PlexObject):
@@ -847,54 +891,6 @@ class Banner(BaseImage):
 
 class Poster(BaseImage):
     """ Represents a single Poster object. """
-
-
-@utils.registerPlexObject
-class Producer(MediaTag):
-    """ Represents a single Producer media tag.
-
-        Attributes:
-            TAG (str): 'Producer'
-            FILTER (str): 'producer'
-    """
-    TAG = 'Producer'
-    FILTER = 'producer'
-
-
-@utils.registerPlexObject
-class Role(MediaTag):
-    """ Represents a single Role (actor/actress) media tag.
-
-        Attributes:
-            TAG (str): 'Role'
-            FILTER (str): 'role'
-    """
-    TAG = 'Role'
-    FILTER = 'role'
-
-
-@utils.registerPlexObject
-class Similar(MediaTag):
-    """ Represents a single Similar media tag.
-
-        Attributes:
-            TAG (str): 'Similar'
-            FILTER (str): 'similar'
-    """
-    TAG = 'Similar'
-    FILTER = 'similar'
-
-
-@utils.registerPlexObject
-class Writer(MediaTag):
-    """ Represents a single Writer media tag.
-
-        Attributes:
-            TAG (str): 'Writer'
-            FILTER (str): 'writer'
-    """
-    TAG = 'Writer'
-    FILTER = 'writer'
 
 
 @utils.registerPlexObject
