@@ -518,7 +518,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Season, title__iexact=title)
         elif season is not None or isinstance(title, int):
