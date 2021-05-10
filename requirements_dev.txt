@@ -3,7 +3,7 @@
 # pip install -r requirements_dev.txt
 #---------------------------------------------------------
 coveralls==3.0.1
-flake8==3.9.1
+flake8==3.9.2
 pillow==8.1.2
 pytest==6.2.3
 pytest-cache==1.0
