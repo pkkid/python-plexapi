@@ -135,6 +135,7 @@ def test_server_search(plex, movie):
     assert hub_tag.tagType == 1
     assert hub_tag.tagValue is None
     assert hub_tag.thumb is None
+    assert movie in hub_tag.items()
     # Test director search
     director = movie.directors[0]
     assert plex.search(director.tag, mediatype="director")
