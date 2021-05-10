@@ -868,6 +868,25 @@ def test_video_Episode_attrs(episode):
     assert part.accessible
 
 
+def test_video_Episode_watched(tvshows):
+    season = tvshows.get("The 100").season(1)
+    episode = season.episode(1)
+    episode.markWatched()
+    watched = season.watched()
+    assert len(watched) == 1 and watched[0].title == "Pilot"
+    episode.markUnwatched()
+
+
+def test_video_Episode_unwatched(tvshows):
+    season = tvshows.get("The 100").season(1)
+    episodes = season.episodes()
+    episode = episodes[0]
+    episode.markWatched()
+    unwatched = season.unwatched()
+    assert len(unwatched) == len(episodes) - 1
+    episode.markUnwatched()
+
+
 def test_video_Episode_mixins_images(episode):
     #test_mixins.edit_art(episode)  # Uploading episode artwork is broken in Plex
     test_mixins.edit_poster(episode)
@@ -894,25 +913,6 @@ def test_video_Season_history(show):
     history = season.history()
     assert len(history)
     season.markUnwatched()
-
-
-def test_video_Season_watched(tvshows):
-    season = tvshows.get("The 100").season(1)
-    episode = season.episode(1)
-    episode.markWatched()
-    watched = season.watched()
-    assert len(watched) == 1 and watched[0].title == "Pilot"
-    episode.markUnwatched()
-
-
-def test_video_Season_unwatched(tvshows):
-    season = tvshows.get("The 100").season(1)
-    episodes = season.episodes()
-    episode = episodes[0]
-    episode.markWatched()
-    unwatched = season.unwatched()
-    assert len(unwatched) == len(episodes) - 1
-    episode.markUnwatched()
 
 
 def test_video_Season_attrs(show):

@@ -663,10 +663,14 @@ class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
                 :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title is not None:
+        if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Episode, title__iexact=title)
-        elif episode is not None:
-            return self.fetchItem(key, Episode, parentIndex=self.index, index=episode)
+        elif episode is not None or isinstance(title, int):
+            if isinstance(title, int):
+                index = title
+            else:
+                index = episode
+            return self.fetchItem(key, Episode, parentIndex=self.index, index=index)
         raise BadRequest('Missing argument: title or episode is required')
 
     def get(self, title=None, episode=None):
