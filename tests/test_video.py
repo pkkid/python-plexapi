@@ -544,7 +544,7 @@ def test_video_Show_attrs(show):
     # Check reloading the show loads the full list of genres
     show.reload()
     assert utils.is_float(show.audienceRating)
-    assert show.audienceRatingImage == "thetvdb://image.rating"
+    assert show.audienceRatingImage == "themoviedb://image.rating"
     assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
     assert show.autoDeletionItemPolicyWatchedLibrary == 0
     assert show.episodeSort == -1
@@ -698,7 +698,7 @@ def test_video_Show_mixins_edit_advanced_settings(show):
 
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
-    test_mixins.edit_banner(show)
+    #test_mixins.edit_banner(show)  # Uploading show banner is broken in Plex
     test_mixins.edit_poster(show)
     test_mixins.attr_artUrl(show)
     test_mixins.attr_bannerUrl(show)
@@ -731,7 +731,7 @@ def test_video_Season_attrs(show):
     assert utils.is_datetime(season.addedAt)
     if season.art:
         assert utils.is_art(season.art)
-    assert season.guid == "plex://season/602e67e41d3358002c4120eb"
+    assert season.guid == "plex://season/602e67d31d3358002c411c39"
     assert "tvdb://364731" in [i.id for i in season.guids]
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
@@ -749,7 +749,7 @@ def test_video_Season_attrs(show):
     assert season.parentTitle == "Game of Thrones"
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
-    assert season.summary == ""
+    assert utils.is_string(season.summary, gte=100)
     if season.thumb:
         assert utils.is_thumb(season.thumb)
     assert season.title == "Season 1"
@@ -759,7 +759,7 @@ def test_video_Season_attrs(show):
     assert utils.is_int(season.viewCount, gte=0)
     assert utils.is_int(season.viewedLeafCount, gte=0)
     assert utils.is_int(season.seasonNumber)
-    assert season.year == 2011
+    assert season.year is None
 
 
 def test_video_Season_show(show):
@@ -884,7 +884,7 @@ def test_video_Episode_attrs(episode):
     if episode.art:
         assert utils.is_art(episode.art)
     assert utils.is_float(episode.audienceRating)
-    assert episode.audienceRatingImage == "thetvdb://image.rating"
+    assert episode.audienceRatingImage == "themoviedb://image.rating"
     assert episode.contentRating in utils.CONTENTRATINGS
     if episode.directors:
         assert "Timothy Van Patten" in [i.tag for i in episode.directors]
@@ -898,19 +898,21 @@ def test_video_Episode_attrs(episode):
     if episode.grandparentThumb:
         assert utils.is_thumb(episode.grandparentThumb)
     assert episode.grandparentTitle == "Game of Thrones"
+    assert episode.guid == "plex://episode/5d9c1275e98e47001eb84029"
     assert "tvdb://3254641" in [i.id for i in episode.guids]
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == "video"
     assert utils.is_datetime(episode.originallyAvailableAt)
+    assert episode.parentGuid == "plex://season/602e67d31d3358002c411c39"
     assert utils.is_int(episode.parentIndex)
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     if episode.parentThumb:
         assert utils.is_thumb(episode.parentThumb)
     assert episode.parentTitle == "Season 1"
-    assert episode.parentYear == 2011
+    assert episode.parentYear is None
     assert episode.rating is None
     assert utils.is_int(episode.ratingKey)
     assert episode._server._baseurl == utils.SERVER_BASEURL
