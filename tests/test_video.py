@@ -876,6 +876,7 @@ def test_video_Episode_mixins_images(episode):
 
 
 def test_video_Episode_mixins_tags(episode):
+    test_mixins.edit_collection(episode)
     test_mixins.edit_director(episode)
     test_mixins.edit_writer(episode)
 
@@ -990,6 +991,11 @@ def test_video_Season_mixins_images(show):
     test_mixins.edit_poster(season)
     test_mixins.attr_artUrl(season)
     test_mixins.attr_posterUrl(season)
+
+
+def test_video_Season_mixins_tags(show):
+    season = show.season(season=1)
+    test_mixins.edit_collection(season)
 
 
 def test_that_reload_return_the_same_object(plex):

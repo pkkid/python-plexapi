@@ -585,12 +585,13 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin):
+class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'season'
+            collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             index (int): Season number.
             key (str): API URL (/library/metadata/<ratingkey>).
@@ -611,6 +612,7 @@ class Season(Video, ArtMixin, PosterMixin):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
+        self.collections = self.findItems(data, media.Collection)
         self.guids = self.findItems(data, media.Guid)
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
@@ -713,8 +715,7 @@ class Season(Video, ArtMixin, PosterMixin):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin,
-        DirectorMixin, WriterMixin):
+class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -724,6 +725,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
             audienceRatingImage (str): Key to audience rating image (tmdb://image.rating).
             chapters (List<:class:`~plexapi.media.Chapter`>): List of Chapter objects.
             chapterSource (str): Chapter source (agent; media; mixed).
+            collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             contentRating (str) Content rating (PG-13; NR; TV-G).
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the episode in milliseconds.
@@ -765,6 +767,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin,
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
         self.chapters = self.findItems(data, media.Chapter)
         self.chapterSource = data.attrib.get('chapterSource')
+        self.collections = self.findItems(data, media.Collection)
         self.contentRating = data.attrib.get('contentRating')
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))

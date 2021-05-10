@@ -328,13 +328,14 @@ class Album(Audio, ArtMixin, PosterMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
+class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, CollectionMixin, MoodMixin):
     """ Represents a single Track.
 
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'track'
             chapterSource (str): Unknown
+            collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             duration (int): Length of the track in milliseconds.
             grandparentArt (str): URL to album artist artwork (/library/metadata/<grandparentRatingKey>/art/<artid>).
             grandparentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
@@ -364,6 +365,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
         Audio._loadData(self, data)
         Playable._loadData(self, data)
         self.chapterSource = data.attrib.get('chapterSource')
+        self.collections = self.findItems(data, media.Collection)
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.grandparentArt = data.attrib.get('grandparentArt')
         self.grandparentGuid = data.attrib.get('grandparentGuid')
