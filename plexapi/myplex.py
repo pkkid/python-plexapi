@@ -470,6 +470,7 @@ class MyPlexAccount(PlexObject):
             Parameters:
                 username (str): Username, email or id of the user to return.
         """
+        username = str(username)
         for user in self.users():
             # Home users don't have email, username etc.
             if username.lower() == user.title.lower():
