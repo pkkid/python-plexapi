@@ -536,8 +536,6 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     if show.art:
         assert utils.is_art(show.art)
-    if show.banner:
-        assert utils.is_banner(show.banner)
     assert utils.is_int(show.childCount)
     assert show.contentRating in utils.CONTENTRATINGS
     assert utils.is_int(show.duration, gte=1600000)
@@ -698,10 +696,8 @@ def test_video_Show_mixins_edit_advanced_settings(show):
 
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
-    #test_mixins.edit_banner(show)  # Uploading show banner is broken in Plex
     test_mixins.edit_poster(show)
     test_mixins.attr_artUrl(show)
-    test_mixins.attr_bannerUrl(show)
     test_mixins.attr_posterUrl(show)
 
 
