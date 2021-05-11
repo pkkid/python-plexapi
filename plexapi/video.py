@@ -340,6 +340,11 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
         """
         return [part.file for part in self.iterParts() if part]
 
+    @property
+    def hasPreviewThumbnails(self):
+        """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
+        return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
+
     def _prettyfilename(self):
         # This is just for compat.
         return self.title
@@ -856,6 +861,11 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
         if not self.isFullObject():
             self.reload()
         return any(marker.type == 'intro' for marker in self.markers)
+
+    @property
+    def hasPreviewThumbnails(self):
+        """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
+        return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
 
     def season(self):
         """" Return the episode's :class:`~plexapi.video.Season`. """

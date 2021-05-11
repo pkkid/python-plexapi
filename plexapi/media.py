@@ -112,7 +112,7 @@ class MediaPart(PlexObject):
             has64bitOffsets (bool): True if the file has 64 bit offsets.
             hasThumbnail (bool): True if the file (track) has an embedded thumbnail.
             id (int): The unique ID for this media part on the server.
-            indexes (str, None): sd if the file has generated BIF thumbnails.
+            indexes (str, None): sd if the file has generated preview (BIF) thumbnails.
             key (str): API URL (ex: /library/parts/46618/1389985872/file.mkv).
             optimizedForStreaming (bool): True if the file is optimized for streaming.
             packetLength (int): The packet length of the file.
@@ -156,6 +156,11 @@ class MediaPart(PlexObject):
             items = self.findItems(data, cls, streamType=cls.STREAMTYPE)
             streams.extend(items)
         return streams
+
+    @property
+    def hasPreviewThumbnails(self):
+        """ Returns True if the media part has generated preview (BIF) thumbnails. """
+        return self.indexes == 'sd'
 
     def videoStreams(self):
         """ Returns a list of :class:`~plexapi.media.VideoStream` objects in this MediaPart. """
