@@ -806,11 +806,13 @@ def test_video_Episode_attrs(episode):
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.guids == []  # TODO: Change when updating test to the Plex TV agent
     assert episode.index == 1
+    assert episode.episodeNumber == episode.index
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == "video"
     assert utils.is_datetime(episode.originallyAvailableAt)
-    assert utils.is_int(episode.parentIndex)
+    assert episode.parentIndex == 1
+    assert episode.seasonNumber == episode.parentIndex
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     if episode.parentThumb:
@@ -836,6 +838,7 @@ def test_video_Episode_attrs(episode):
     assert episode.isWatched in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
+    assert episode.seasonEpisode == "s01e01"
     # Media
     media = episode.media[0]
     assert media.aspectRatio == 1.78
