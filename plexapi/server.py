@@ -237,7 +237,7 @@ class PlexServer(PlexObject):
         """
         user = self.myPlexAccount().user(username)
         userToken = user.get_token(self.machineIdentifier)
-        return PlexServer(self._baseurl, userToken, self._timeout)
+        return PlexServer(self._baseurl, token=userToken, timeout=self._timeout)
 
     def systemAccounts(self):
         """ Returns a list of :class:`~plexapi.server.SystemAccount` objects this server contains. """
