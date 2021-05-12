@@ -38,8 +38,9 @@ class PlexServer(PlexObject):
             baseurl (str): Base url for to access the Plex Media Server (default: 'http://localhost:32400').
             token (str): Required Plex authentication token to access the server.
             session (requests.Session, optional): Use your own session object if you want to
-                cache the http responses from PMS
-            timeout (int): timeout in seconds on initial connect to server (default config.TIMEOUT).
+                cache the http responses from the server.
+            timeout (int, optional): Timeout in seconds on initial connection to the server
+                (default config.TIMEOUT).
 
         Attributes:
             allowCameraUpload (bool): True if server allows camera upload.
@@ -217,12 +218,18 @@ class PlexServer(PlexObject):
         q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
         return q.attrib.get('token')
 
-    def switchUser(self, username):
+    def switchUser(self, username, session=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` object logged in as the given username.
             Note: Only the admin account can switch to other users.
         
             Parameters:
                 username (str): Username, email or user id of the user to log in to the server.
+                session (requests.Session, optional): Use your own session object if you want to
+                    cache the http responses from the server. This will default to the same
+                    session as the admin account if no new session is provided.
+                timeout (int, optional): Timeout in seconds on initial connection to the server.
+                    This will default to the same timeout as the admin account if no new timeout
+                    is provided.
 
             Example:
 
@@ -237,7 +244,11 @@ class PlexServer(PlexObject):
         """
         user = self.myPlexAccount().user(username)
         userToken = user.get_token(self.machineIdentifier)
-        return PlexServer(self._baseurl, token=userToken, timeout=self._timeout)
+        if session is None:
+            session = self._session
+        if timeout is None:
+            timeout = self._timeout
+        return PlexServer(self._baseurl, token=userToken, session=session, timeout=timeout)
 
     def systemAccounts(self):
         """ Returns a list of :class:`~plexapi.server.SystemAccount` objects this server contains. """
