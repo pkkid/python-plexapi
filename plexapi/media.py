@@ -558,6 +558,13 @@ class Optimized(PlexObject):
         self.target = data.attrib.get('target')
         self.targetTagID = data.attrib.get('targetTagID')
 
+    def items(self):
+        """ Returns a list of all :class:`~plexapi.media.Video` objects
+            in this optimized item.
+        """
+        key = '%s/%s/items' % (self._initpath, self.id)
+        return self.fetchItems(key)
+        
     def remove(self):
         """ Remove an Optimized item"""
         key = '%s/%s' % (self._initpath, self.id)
