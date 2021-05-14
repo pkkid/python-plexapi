@@ -1102,7 +1102,7 @@ def test_video_optimize(movie, plex):
     assert len(plex.conversions()) == 0
     assert len(plex.optimizedItems()) == 1
     optimized = plex.optimizedItems()[0]
-    video = plex.optimizedItem(optimizedID=optimized.id)
-    assert movie.key == video.key
+    videos = optimized.items()
+    assert movie in videos
     plex.optimizedItems(removeAll=True)
     assert len(plex.optimizedItems()) == 0
