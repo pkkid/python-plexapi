@@ -1838,7 +1838,7 @@ class FilteringType(PlexObject):
 
         # Random is a valid sorting that is not exposed on the Plex server.
         # Manually add the random sort XML.
-        _randomSortXML = '<Sort defaultDirection="desc" descKey="random" key="random" title="Random" />'
+        _randomSortXML = '<Sort defaultDirection="desc" descKey="random:desc" key="random" title="Random" />'
         self.sorts.append(self._manuallyLoadXML(_randomSortXML, FilteringSort))
 
 
