@@ -411,6 +411,31 @@ def test_library_MovieSection_search_sort(movies):
     assert titleSort_multi_list == sorted(titleSort_multi_str, reverse=True)
 
 
+def test_library_ShowSection_search_sort(tvshows):
+    sortAsc = ('show.titleSort,season.index:nullsLast,episode.index:nullsLast,'
+               'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id')
+    results = tvshows.search(sort=sortAsc, libtype='episode')
+    sortedResults = sorted(
+        results,
+        key=lambda e: (
+            e.show().titleSort, e.season().index, e.index, e.originallyAvailableAt, e.titleSort)
+    )
+    assert results == sortedResults
+    sortDesc = ('show.titleSort:desc,season.index:nullsLast,episode.index:nullsLast,'
+                'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id')
+    results = tvshows.search(sort=sortDesc, libtype='episode')
+    sortedResults = sorted(
+        sorted(
+            results,
+            key=lambda e: (
+                e.season().index, e.index, e.originallyAvailableAt, e.titleSort)
+        ),
+        key=lambda e: e.show().titleSort,
+        reverse=True
+    )
+    assert results == sortedResults
+
+
 def test_library_search_exceptions(movies):
     with pytest.raises(BadRequest):
         movies.listFilterChoices(field="123abc.title")
