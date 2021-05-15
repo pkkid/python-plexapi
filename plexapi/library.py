@@ -1836,6 +1836,11 @@ class FilteringType(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
+        # Random is a valid sorting that is not exposed on the Plex server.
+        # Manually add the random sort XML.
+        _randomSortXML = '<Sort defaultDirection="desc" descKey="random" key="random" title="Random" />'
+        self.sorts.append(self._manuallyLoadXML(_randomSortXML, FilteringSort))
+
 
 class FilteringFilter(PlexObject):
     """ Represents a single Filter object for a :class:`~plexapi.library.FilteringType`.
@@ -1864,6 +1869,9 @@ class FilteringSort(PlexObject):
 
         Attributes:
             TAG (str): 'Sort'
+            active (bool): True if the sort is currently active.
+            activeDirection (str): The currently active sorting direction.
+            default (str): The currently active default sorting direction.
             defaultDirection (str): The default sorting direction.
             descKey (str): The URL key for sorting with desc.
             firstCharacterKey (str): API URL path for first character endpoint.
@@ -1875,6 +1883,9 @@ class FilteringSort(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
+        self.active = utils.cast(bool, data.attrib.get('active', '0'))
+        self.activeDirection = data.attrib.get('activeDirection')
+        self.default = data.attrib.get('default')
         self.defaultDirection = data.attrib.get('defaultDirection')
         self.descKey = data.attrib.get('descKey')
         self.firstCharacterKey = data.attrib.get('firstCharacterKey')

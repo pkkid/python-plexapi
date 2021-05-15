@@ -2,6 +2,7 @@
 import re
 import weakref
 from urllib.parse import quote_plus, urlencode
+from xml.etree import ElementTree
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
@@ -129,6 +130,19 @@ class PlexObject(object):
             if obj and obj._checkAttrs(obj._data, **kwargs):
                 return True
         return False
+
+    def _manuallyLoadXML(self, xml, cls=None):
+        """ Manually load an XML string as a :class:`~plexapi.base.PlexObject`.
+
+            Parameters:
+                xml (str): The XML string to load.
+                cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
+                    items to be fetched, passing this in will help the parser ensure
+                    it only returns those items. By default we convert the xml elements
+                    with the best guess PlexObjects based on tag and type attrs.
+        """
+        elem = ElementTree.fromstring(xml)
+        return self._buildItemOrNone(elem, cls)
 
     def fetchItem(self, ekey, cls=None, **kwargs):
         """ Load the specified key to find and build the first item with the
