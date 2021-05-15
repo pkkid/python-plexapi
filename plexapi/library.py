@@ -595,7 +595,8 @@ class LibrarySection(PlexObject):
         """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and
             list of :class:`~plexapi.library.FilteringFieldType` for this library section.
         """
-        key = '/library/sections/%s/all?includeMeta=1&X-Plex-Container-Start=0&X-Plex-Container-Size=0' % self.key
+        key = ('/library/sections/%s/all?includeMeta=1&includeAdvanced=1'
+               '&X-Plex-Container-Start=0&X-Plex-Container-Size=0') % self.key
         data = self._server.query(key)
         meta = data.find('Meta')
         if meta:
@@ -879,6 +880,19 @@ class LibrarySection(PlexObject):
         else:
             return int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
 
+    def _validateSortFields(self, sort, libtype=None):
+        """ Validates a list of filter sort fields is available for the library.
+            Returns the validated comma separated sort fields string.
+        """
+        if isinstance(sort, str):
+            sort = sort.split(',')
+
+        validatedSorts = []
+        for _sort in sort:
+            validatedSorts.append(self._validateSortField(_sort.strip(), libtype))
+
+        return ','.join(validatedSorts)
+
     def _validateSortField(self, sort, libtype=None):
         """ Validates a filter sort field is available for the library.
             Returns the validated sort field string.
@@ -924,7 +938,8 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 title (str, optional): General string query to search for. Partial string matches are allowed.
-                sort (str, optional): The sort field in the format ``column:dir``.
+                sort (str or list, optional): A string of comma separated sort fields or a list of sort fields
+                    in the format ``column:dir``.
                     See :func:`~plexapi.library.LibrarySection.listSorts` to get a list of available sort fields.
                 maxresults (int, optional): Only return the specified number of results.
                 libtype (str, optional): Return results of a specific type (movie, show, season, episode,
@@ -1132,7 +1147,7 @@ class LibrarySection(PlexObject):
             else:
                 args['title'] = title
         if sort is not None:
-            args['sort'] = self._validateSortField(sort, libtype)
+            args['sort'] = self._validateSortFields(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
@@ -1243,7 +1258,7 @@ class LibrarySection(PlexObject):
         for field, values in kwargs.items():
             filter_args.append(self._validateFilterField(field, values, libtype))
         if sort is not None:
-            args['sort'] = self._validateSortField(sort, libtype)
+            args['sort'] = self._validateSortFields(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
 
