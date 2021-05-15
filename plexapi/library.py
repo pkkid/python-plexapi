@@ -885,6 +885,10 @@ class LibrarySection(PlexObject):
             Returns the validated comma separated sort fields string.
         """
         if isinstance(sort, str):
+            # Plex has some predefined multi-sorts. Allow these if it is an exact match.
+            availableMultisorts = [x for f in self.listSorts(libtype) for x in (f.key, f.descKey) if ',' in x]
+            if sort in availableMultisorts:
+                return sort
             sort = sort.split(',')
 
         validatedSorts = []
@@ -916,7 +920,7 @@ class LibrarySection(PlexObject):
         if not sortDir:
             sortDir = filterSort.defaultDirection
 
-        availableDirections = ['asc', 'desc']
+        availableDirections = ['asc', 'desc', 'nullsLast']
         if sortDir not in availableDirections:
             raise NotFound('Unknown sort direction "%s". '
                            'Available sort directions: %s'
