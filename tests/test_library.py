@@ -401,6 +401,14 @@ def test_library_MovieSection_search_sort(movies):
     results_desc = movies.search(sort="titleSort:desc")
     titleSort_desc = [r.titleSort for r in results_desc]
     assert titleSort_desc == sorted(titleSort_desc, reverse=True)
+    results_random = movies.search(sort="random")
+    assert len(results_random) == len(results)
+    results_multi_str = movies.search(sort="year:asc,titleSort:asc")
+    titleSort_multi_str = [(r.year, r.titleSort) for r in results_multi_str]
+    assert titleSort_multi_str == sorted(titleSort_multi_str)
+    results_multi_list = movies.search(sort=["year:desc", "titleSort:desc"])
+    titleSort_multi_list = [(r.year, r.titleSort) for r in results_multi_list]
+    assert titleSort_multi_list == sorted(titleSort_multi_str, reverse=True)
 
 
 def test_library_search_exceptions(movies):
