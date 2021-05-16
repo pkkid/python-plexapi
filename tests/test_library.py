@@ -186,8 +186,9 @@ def test_library_MovieSection_searchMovies(movies):
     assert movies.searchMovies(title="Elephants Dream")
 
 
-def test_library_MovieSection_recentlyAdded(movies):
-    assert len(movies.recentlyAdded())
+def test_library_MovieSection_recentlyAdded(movies, movie):
+    assert movie in movies.recentlyAdded()
+    assert movie in movies.recentlyAddedMovies()
 
 
 def test_library_MovieSection_analyze(movies):
@@ -214,8 +215,13 @@ def test_library_ShowSection_searchEpisodes(tvshows):
     assert tvshows.searchEpisodes(title="Winter Is Coming")
 
 
-def test_library_ShowSection_recentlyAdded(tvshows):
-    assert len(tvshows.recentlyAdded())
+def test_library_ShowSection_recentlyAdded(tvshows, show):
+    season = show.season(1)
+    episode = season.episode(1)
+    assert show in tvshows.recentlyAdded()
+    assert show in tvshows.recentlyAddedShows()
+    assert season in tvshows.recentlyAddedSeasons()
+    assert episode in tvshows.recentlyAddedEpisodes()
 
 
 def test_library_ShowSection_playlists(plex, tvshows, show):
@@ -239,6 +245,15 @@ def test_library_MusicSection_searchAlbums(music):
     assert len(music.searchAlbums(title="Layers"))
 
 
+def test_library_MusicSection_recentlyAdded(music, artist):
+    album = artist.albums()[0]
+    track = album.tracks()[0]
+    assert artist in music.recentlyAdded()
+    assert artist in music.recentlyAddedArtists()
+    assert album in music.recentlyAddedAlbums()
+    assert track in music.recentlyAddedTracks()
+
+
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
     title = photoalbum.title
     albums = photos.searchAlbums(title)
@@ -248,6 +263,10 @@ def test_library_PhotoSection_searchAlbums(photos, photoalbum):
 def test_library_PhotoSection_searchPhotos(photos, photoalbum):
     title = photoalbum.photos()[0].title
     assert len(photos.searchPhotos(title))
+
+
+def test_library_PhotoSection_recentlyAdded(photos, photoalbum):
+    assert photoalbum in photos.recentlyAddedAlbums()
 
 
 def test_library_and_section_search_for_movie(plex, movies):
