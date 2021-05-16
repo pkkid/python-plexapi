@@ -977,6 +977,7 @@ class LibrarySection(PlexObject):
                     :class:`~plexapi.video.Episode` objects)
                 container_start (int, optional): Default 0.
                 container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
+                filters (dict): A dictionary of advanced filters. See the details below for more info.
                 **kwargs (dict): Additional custom filters to apply to the search results.
                     See the details below for more info.
 
@@ -1060,22 +1061,22 @@ class LibrarySection(PlexObject):
             In addition, if the filter does not exist for the default library type it will fallback to the most
             specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
             ``episode.unwatched``. The ``libtype`` prefix cannot be included directly in the function parameters so
-            the ``**kwargs`` must be provided as a dictionary.
+            the filters must be provided as a filters dictionary.
 
             Examples:
 
                 .. code-block:: python
 
-                    library.search(**{"show.collection": "Documentary", "episode.inProgress": True})
-                    library.search(**{"artist.genre": "pop", "album.decade": 2000})
+                    library.search(filters={"show.collection": "Documentary", "episode.inProgress": True})
+                    library.search(filters={"artist.genre": "pop", "album.decade": 2000})
 
                     # The following three options are identical and will return Episode objects
                     showLibrary.search(title="Winter is Coming", libtype='episode')
-                    showLibrary.search(libtype='episode', **{"episode.title": "Winter is Coming"})
+                    showLibrary.search(libtype='episode', filters={"episode.title": "Winter is Coming"})
                     showLibrary.searchEpisodes(title="Winter is Coming")
 
                     # The following will search for the episode title but return Show objects
-                    showLibrary.search(**{"episode.title": "Winter is Coming"})
+                    showLibrary.search(filters={"episode.title": "Winter is Coming"})
 
                     # The following will fallback to episode.unwatched
                     showLibrary.search(unwatched=True)
@@ -1122,27 +1123,55 @@ class LibrarySection(PlexObject):
 
             * ``=``: ``is``
 
-            Operators cannot be included directly in the function parameters so the ``**kwargs``
-            must be provided as a dictionary. The trailing ``=`` on the operator may be excluded.
+            Operators cannot be included directly in the function parameters so the filters
+            must be provided as a filters dictionary. The trailing ``=`` on the operator may be excluded.
 
             Examples:
 
                 .. code-block:: python
 
                     # Genre is horror AND thriller
-                    library.search(**{"genre&": ["horror", "thriller"]})
+                    library.search(filters={"genre&": ["horror", "thriller"]})
 
                     # Director is not Steven Spielberg
-                    library.search(**{"director!": "Steven Spielberg"})
+                    library.search(filters={"director!": "Steven Spielberg"})
 
                     # Title starts with Marvel and added before 2021-01-01
-                    library.search(**{"title<": "Marvel", "addedAt<<": "2021-01-01"})
+                    library.search(filters={"title<": "Marvel", "addedAt<<": "2021-01-01"})
 
                     # Added in the last 30 days using relative dates
-                    library.search(**{"addedAt>>": "30d"})
+                    library.search(filters={"addedAt>>": "30d"})
 
                     # Collection is James Bond and user rating is greater than 8
-                    library.search(**{"collection": "James Bond", "userRating>>": 8})
+                    library.search(filters={"collection": "James Bond", "userRating>>": 8})
+
+            **Using Advanced Filters**
+
+            Any of the Plex filters described above can be combined into a single ``filters`` dictionary that mimics
+            the advanced filters used in Plex Web with a tree of ``and``/``or`` branches. Each level of the tree must
+            start with ``and`` (Match all of the following) or ``or`` (Match any of the following) as the dictionary
+            key, and a list of dictionaries with the desired filters as the dictionary value.
+
+            The following example matches `this <../_static/images/LibrarySection.search_filters.png>`__ advanced filter
+            in Plex Web.
+
+            Examples:
+
+                .. code-block:: python
+
+                    advancedFilters = {
+                        'and': [                            # Match all of the following in this list
+                            {
+                                'or': [                     # Match any of the following in this list
+                                    {'title': 'elephant'},
+                                    {'title': 'bunny'}
+                                ]
+                            },
+                            {'year>>': 1990},
+                            {'unwatched': True}
+                        ]
+                    }
+                    library.search(filters=advancedFilters)
 
             **Using PlexAPI Operators**
 
