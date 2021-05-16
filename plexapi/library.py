@@ -854,7 +854,7 @@ class LibrarySection(PlexObject):
                 elif fieldType.type == 'date':
                     value = self._validateFieldValueDate(value)
                 elif fieldType.type == 'integer':
-                    value = int(value)
+                    value = float(value) if '.' in str(value) else int(value)
                 elif fieldType.type == 'string':
                     value = str(value)
                 elif fieldType.type in choiceTypes:
@@ -1856,18 +1856,21 @@ class FilteringType(PlexObject):
             ('tagline', 'asc', 'Tagline'),
             ('updatedAt', 'asc', 'Date Updated')
         ]
-        if self.type == 'season':
-            additionalSorts.append(('titleSort', 'asc', 'Title'))
-        if self.type == 'track':
-            # Don't know what this is but it is valid
-            additionalSorts.append(('absoluteIndex', 'asc', 'Absolute Index'))
 
-        prefix = '' if self.type == 'movie' else self.type + '.'
+        if self.type == 'season':
+            additionalSorts.extend([
+                ('titleSort', 'asc', 'Title')
+            ])
+        elif self.type == 'track':
+            # Don't know what this is but it is valid
+            additionalSorts.extend([
+                ('absoluteIndex', 'asc', 'Absolute Index')
+            ])
 
         manualSorts = []
         for sortField, sortDir, sortTitle in additionalSorts:
-            sortXML = ('<Sort defaultDirection="%s" descKey="%s%s:desc" key="%s" title="%s" />'
-                       % (sortDir, prefix, sortField, sortField, sortTitle))
+            sortXML = ('<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
+                       % (sortDir, sortField, sortField, sortTitle))
             manualSorts.append(self._manuallyLoadXML(sortXML, FilteringSort))
 
         return manualSorts
@@ -1881,8 +1884,45 @@ class FilteringType(PlexObject):
             ('guid', 'string', 'Guid'),
             ('id', 'integer', 'Rating Key'),
             ('index', 'integer', '%s Number' % self.type.capitalize()),
+            ('lastRatedAt', 'date', '%s Last Rated' % self.type.capitalize()),
             ('updatedAt', 'date', 'Date Updated')
         ]
+
+        if self.type == 'movie':
+            additionalFields.extend([
+                ('audienceRating', 'integer', 'Audience Rating'),
+                ('rating', 'integer', 'Critic Rating'),
+                ('viewOffset', 'integer', 'View Offset')
+            ])
+        elif self.type == 'show':
+            additionalFields.extend([
+                ('audienceRating', 'integer', 'Audience Rating'),
+                ('originallyAvailableAt', 'date', 'Show Release Date'),
+                ('rating', 'integer', 'Critic Rating'),
+                ('unviewedLeafCount', 'integer', 'Episode Unplayed Count')
+            ])
+        elif self.type == 'season':
+            additionalFields.extend([
+                ('addedAt', 'date', 'Date Season Added'),
+                ('unviewedLeafCount', 'integer', 'Episode Unplayed Count'),
+                ('year', 'integer', 'Season Year')
+            ])
+        elif self.type == 'episode':
+            additionalFields.extend([
+                ('audienceRating', 'integer', 'Audience Rating'),
+                ('duration', 'integer', 'Duration'),
+                ('rating', 'integer', 'Critic Rating'),
+                ('viewOffset', 'integer', 'View Offset')
+            ])
+        elif self.type == 'artist':
+            additionalFields.extend([
+                ('lastViewedAt', 'date', 'Artist Last Played')
+            ])
+        elif self.type == 'track':
+            additionalFields.extend([
+                ('duration', 'integer', 'Duration'),
+                ('viewOffset', 'integer', 'View Offset')
+            ])
 
         prefix = '' if self.type == 'movie' else self.type + '.'
 
