@@ -47,6 +47,7 @@ class Video(PlexPartialObject):
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.key = data.attrib.get('key', '')
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')

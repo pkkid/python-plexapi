@@ -51,6 +51,7 @@ class Audio(PlexPartialObject):
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '')
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
