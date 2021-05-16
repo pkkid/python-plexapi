@@ -924,14 +924,44 @@ class LibrarySection(PlexObject):
 
         return '%s:%s' % (sortField, sortDir)
 
+    def _validateAdvancedSearch(self, filters, libtype):
+        """ Validates an advanced search filter dictionary.
+            Returns the list of validated URL encoded parameter strings for the advanced search.
+        """
+        if not isinstance(filters, dict):
+            raise BadRequest('Filters must be a dictionary.')
+
+        validatedFilters = []
+
+        for field, values in filters.items():
+            if field.lower() in {'and', 'or'}:
+                if len(filters.items()) > 1:
+                    raise BadRequest('Multiple keys in the same dictionary with and/or is not allowed.')
+                if not isinstance(values, list):
+                    raise BadRequest('Value for and/or keys must be a list of dictionaries.')
+
+                validatedFilters.append('push=1')
+
+                for value in values:
+                    validatedFilters.extend(self._validateAdvancedSearch(value, libtype))
+                    validatedFilters.append('%s=1' % field.lower())
+
+                del validatedFilters[-1]
+                validatedFilters.append('pop=1')
+
+            else:
+                validatedFilters.append(self._validateFilterField(field, values, libtype))
+
+        return validatedFilters
+
     def hubSearch(self, query, mediatype=None, limit=None):
         """ Returns the hub search results for this library. See :func:`plexapi.server.PlexServer.search`
             for details and parameters.
         """
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
-    def search(self, title=None, sort=None, maxresults=None,
-               libtype=None, container_start=0, container_size=X_PLEX_CONTAINER_SIZE, **kwargs):
+    def search(self, title=None, sort=None, maxresults=None, libtype=None,
+               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, filters=None, **kwargs):
         """ Search the library. The http requests will be batched in container_size. If you are only looking for the
             first <num> results, it would be wise to set the maxresults option to that amount so the search doesn't iterate
             over all results on the server.
@@ -1146,6 +1176,8 @@ class LibrarySection(PlexObject):
                 filter_args.append(self._validateFilterField('title', title, libtype))
             else:
                 args['title'] = title
+        if filters is not None:
+            filter_args.extend(self._validateAdvancedSearch(filters, libtype))
         if sort is not None:
             args['sort'] = self._validateSortFields(sort, libtype)
         if libtype is not None:
