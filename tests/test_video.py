@@ -190,6 +190,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
     assert movie.languageOverride is None
+    assert utils.is_datetime(movie.lastRatedAt)
     assert utils.is_datetime(movie.lastViewedAt)
     assert int(movie.librarySectionID) >= 1
     assert movie.listType == "video"
@@ -578,6 +579,7 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.index)
     assert utils.is_metadata(show.key)
     assert show.languageOverride is None
+    assert utils.is_datetime(show.lastRatedAt)
     assert utils.is_datetime(show.lastViewedAt)
     assert utils.is_int(show.leafCount)
     assert show.listType == "video"
@@ -808,6 +810,8 @@ def test_video_Episode_attrs(episode):
     assert episode.index == 1
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
+    assert utils.is_datetime(episode.lastRatedAt)
+    assert utils.is_datetime(episode.lastViewedAt)
     assert episode.listType == "video"
     assert utils.is_datetime(episode.originallyAvailableAt)
     assert utils.is_int(episode.parentIndex)
@@ -924,6 +928,7 @@ def test_video_Season_attrs(show):
     assert season.index == 1
     assert utils.is_metadata(season._initpath)
     assert utils.is_metadata(season.key)
+    assert utils.is_datetime(season.lastRatedAt)
     assert utils.is_datetime(season.lastViewedAt)
     assert utils.is_int(season.leafCount, gte=3)
     assert season.listType == "video"
