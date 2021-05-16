@@ -436,21 +436,21 @@ def test_library_MovieSection_search_sort(movies):
 
 def test_library_ShowSection_search_sort(tvshows):
     # Test predefined Plex mult-sort
-    seasonAsc = 'season.index,season.titleSort'
-    results = tvshows.search(sort=seasonAsc, libtype='season')
+    seasonAsc = "season.index,season.titleSort"
+    results = tvshows.search(sort=seasonAsc, libtype="season")
     sortedResults = sorted(results, key=lambda s: (s.index, s.titleSort))
     assert results == sortedResults
 
-    seasonShowAsc = 'show.titleSort,index'
-    results = tvshows.search(sort=seasonShowAsc, libtype='season')
+    seasonShowAsc = "show.titleSort,index"
+    results = tvshows.search(sort=seasonShowAsc, libtype="season")
     sortedResults = sorted(results, key=lambda s: (s.show().titleSort, s.index))
     assert results == sortedResults
 
     episodeShowAsc = (
-        'show.titleSort,season.index:nullsLast,episode.index:nullsLast,'
-        'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id'
+        "show.titleSort,season.index:nullsLast,episode.index:nullsLast,"
+        "episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id"
     )
-    results = tvshows.search(sort=episodeShowAsc, libtype='episode')
+    results = tvshows.search(sort=episodeShowAsc, libtype="episode")
     sortedResults = sorted(
         results,
         key=lambda e: (
@@ -460,10 +460,10 @@ def test_library_ShowSection_search_sort(tvshows):
     assert results == sortedResults
 
     episodeShowDesc = (
-        'show.titleSort:desc,season.index:nullsLast,episode.index:nullsLast,'
-        'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id'
+        "show.titleSort:desc,season.index:nullsLast,episode.index:nullsLast,"
+        "episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id"
     )
-    results = tvshows.search(sort=episodeShowDesc, libtype='episode')
+    results = tvshows.search(sort=episodeShowDesc, libtype="episode")
     sortedResults = sorted(
         sorted(
             results,
@@ -477,15 +477,15 @@ def test_library_ShowSection_search_sort(tvshows):
     assert results == sortedResults
 
     # Test manually added sorts
-    results_index = tvshows.search(sort="show.index,season.index,episode.index", libtype='episode')
+    results_index = tvshows.search(sort="show.index,season.index,episode.index", libtype="episode")
     index_asc = [(r.show().index, r.season().index, r.index) for r in results_index]
     assert index_asc == sorted(index_asc)
 
 
 def test_library_MusicSection_search_sort(music):
     # Test predefined Plex mult-sort
-    albumArtistAsc = 'artist.titleSort,album.titleSort,album.index,album.id,album.originallyAvailableAt'
-    results = music.search(sort=albumArtistAsc, libtype='album')
+    albumArtistAsc = "artist.titleSort,album.titleSort,album.index,album.id,album.originallyAvailableAt"
+    results = music.search(sort=albumArtistAsc, libtype="album")
     sortedResults = sorted(
         results,
         key=lambda a: (
@@ -495,10 +495,10 @@ def test_library_MusicSection_search_sort(music):
     assert results == sortedResults
 
     trackAlbumArtistAsc = (
-        'artist.titleSort,album.titleSort,album.year,'
-        'track.absoluteIndex,track.index,track.titleSort,track.id'
+        "artist.titleSort,album.titleSort,album.year,"
+        "track.absoluteIndex,track.index,track.titleSort,track.id"
     )
-    results = music.search(sort=trackAlbumArtistAsc, libtype='track')
+    results = music.search(sort=trackAlbumArtistAsc, libtype="track")
     sortedResults = sorted(
         results,
         key=lambda t: (
@@ -519,7 +519,7 @@ def test_library_search_exceptions(movies):
     with pytest.raises(BadRequest):
         movies.search(sort="123abc")
     with pytest.raises(NotFound):
-        movies.getFilterType(libtype='show')
+        movies.getFilterType(libtype="show")
     with pytest.raises(NotFound):
         movies.getFieldType(fieldType="unknown")
     with pytest.raises(NotFound):
@@ -536,25 +536,25 @@ def test_library_search_exceptions(movies):
 
 def _test_library_search(library, obj):
     # Create & operator
-    AndOperator = namedtuple('AndOperator', ['key', 'title'])
-    andOp = AndOperator('&=', 'and')
+    AndOperator = namedtuple("AndOperator", ["key", "title"])
+    andOp = AndOperator("&=", "and")
 
     fields = library.listFields(obj.type)
     for field in fields:
         fieldAttr = field.key.split(".")[-1]
         operators = library.listOperators(field.type)
-        if field.type in {'tag', 'string'}:
+        if field.type in {"tag", "string"}:
             operators += [andOp]
 
         for operator in operators:
-            if fieldAttr == "unmatched" and operator.key == "!=" or fieldAttr == 'userRating':
+            if fieldAttr == "unmatched" and operator.key == "!=" or fieldAttr == "userRating":
                 continue
 
             value = getattr(obj, fieldAttr, None)
 
             if field.type == "boolean" and value is None:
                 value = fieldAttr.startswith("unwatched")
-            if field.type == "tag" and isinstance(value, list) and value and operator.title != 'and':
+            if field.type == "tag" and isinstance(value, list) and value and operator.title != "and":
                 value = value[0]
             elif value is None:
                 continue
@@ -596,7 +596,7 @@ def _do_test_library_search(library, obj, field, operator, searchValue):
     searchFilter = {field.key + operator.key[:-1]: searchValue}
     results = library.search(libtype=obj.type, **searchFilter)
 
-    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 1 or searchValue == '1s'):
+    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 1 or searchValue == "1s"):
         assert obj not in results
     else:
         assert obj in results
