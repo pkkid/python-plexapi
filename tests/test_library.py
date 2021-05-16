@@ -206,7 +206,7 @@ def test_library_ShowSection_searchShows(tvshows):
     assert tvshows.searchShows(title="The 100")
 
 
-def test_library_ShowSection_searchSseasons(tvshows):
+def test_library_ShowSection_searchSeasons(tvshows):
     assert tvshows.searchSeasons(**{"show.title": "The 100"})
 
 
@@ -335,6 +335,23 @@ def test_library_MovieSection_search(movies, movie):
     _test_library_search(movies, movie)
     movie.removeLabel("test_search", locked=False)
     movie.removeCollection("test_search", locked=False)
+
+
+def test_library_MovieSection_advancedSearch(movies, movie):
+    advancedFilters = {
+        'and': [
+            {
+                'or': [
+                    {'title': 'elephant'},
+                    {'title': 'bunny'}
+                ]
+            },
+            {'year>>': 1990},
+            {'unwatched': True}
+        ]
+    }
+    results = movies.search(filters=advancedFilters)
+    assert movie in results
 
 
 def test_library_ShowSection_search(tvshows, show):
@@ -518,6 +535,12 @@ def test_library_search_exceptions(movies):
         movies.search(year="123abc")
     with pytest.raises(BadRequest):
         movies.search(sort="123abc")
+    with pytest.raises(BadRequest):
+        movies.search(filters=[])
+    with pytest.raises(BadRequest):
+        movies.search(filters={'and': {'title': 'test'}})
+    with pytest.raises(BadRequest):
+        movies.search(filters={'and': [], 'title': 'test'})
     with pytest.raises(NotFound):
         movies.getFilterType(libtype="show")
     with pytest.raises(NotFound):
@@ -594,7 +617,7 @@ def _test_library_search(library, obj):
 
 def _do_test_library_search(library, obj, field, operator, searchValue):
     searchFilter = {field.key + operator.key[:-1]: searchValue}
-    results = library.search(libtype=obj.type, **searchFilter)
+    results = library.search(libtype=obj.type, filters=searchFilter)
 
     if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 1 or searchValue == "1s"):
         assert obj not in results
