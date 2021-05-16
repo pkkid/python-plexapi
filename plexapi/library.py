@@ -904,8 +904,7 @@ class LibrarySection(PlexObject):
         libtype = _libtype or libtype or self.TYPE
 
         try:
-            filterSort = next(f for f in self.listSorts(libtype)
-                              if ',' not in f.key and f.key.split('.')[-1] == sortField)
+            filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
         except StopIteration:
             availableSorts = [f.key for f in self.listSorts(libtype)]
             raise NotFound('Unknown sort field "%s" for libtype "%s". '
