@@ -783,11 +783,11 @@ class LibrarySection(PlexObject):
         libtype = _libtype or libtype or self.TYPE
 
         try:
-            filterField = next(f for f in self.listFields(libtype) if f.key.endswith(field))
+            filterField = next(f for f in self.listFields(libtype) if f.key.split('.')[-1] == field)
         except StopIteration:
             for filterType in reversed(self.filterTypes()):
                 if filterType.type != libtype:
-                    filterField = next((f for f in filterType.fields if f.key.endswith(field)), None)
+                    filterField = next((f for f in filterType.fields if f.key.split('.')[-1] == field), None)
                     if filterField:
                         break
             else:
