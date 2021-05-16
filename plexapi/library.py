@@ -885,10 +885,6 @@ class LibrarySection(PlexObject):
             Returns the validated comma separated sort fields string.
         """
         if isinstance(sort, str):
-            # Plex has some predefined multi-sorts. Allow these if it is an exact match.
-            availableMultisorts = [x for f in self.listSorts(libtype) for x in (f.key, f.descKey) if ',' in x]
-            if sort in availableMultisorts:
-                return sort
             sort = sort.split(',')
 
         validatedSorts = []
@@ -908,14 +904,15 @@ class LibrarySection(PlexObject):
         libtype = _libtype or libtype or self.TYPE
 
         try:
-            filterSort = next(f for f in self.listSorts(libtype) if f.key.endswith(sortField))
+            filterSort = next(f for f in self.listSorts(libtype)
+                              if ',' not in f.key and f.key.split('.')[-1] == sortField)
         except StopIteration:
             availableSorts = [f.key for f in self.listSorts(libtype)]
             raise NotFound('Unknown sort field "%s" for libtype "%s". '
                            'Available sort fields: %s'
                            % (sortField, libtype, availableSorts)) from None
 
-        sortField = filterSort.key
+        sortField = libtype + '.' + filterSort.key
 
         if not sortDir:
             sortDir = filterSort.defaultDirection
@@ -1840,10 +1837,62 @@ class FilteringType(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
-        # Random is a valid sorting that is not exposed on the Plex server.
-        # Manually add the random sort XML.
-        _randomSortXML = '<Sort defaultDirection="desc" descKey="random:desc" key="random" title="Random" />'
-        self.sorts.append(self._manuallyLoadXML(_randomSortXML, FilteringSort))
+        # Add additional manual sorts and fields which are available
+        # but not exposed on the Plex server
+        self.sorts += self._manualSorts()
+        self.fields += self._manualFields()
+
+    def _manualSorts(self):
+        """ Manually add additional sorts which are available
+            but not exposed on the Plex server.
+        """
+        # Sorts: key, dir, title
+        additionalSorts = [
+            ('guid', 'asc', 'Guid'),
+            ('id', 'asc', 'Rating Key'),
+            ('index', 'asc', '%s Number' % self.type.capitalize()),
+            ('random', 'asc', 'Random'),
+            ('summary', 'asc', 'Summary'),
+            ('tagline', 'asc', 'Tagline'),
+            ('updatedAt', 'asc', 'Date Updated')
+        ]
+        if self.type == 'season':
+            additionalSorts.append(('titleSort', 'asc', 'Title'))
+        if self.type == 'track':
+            # Don't know what this is but it is valid
+            additionalSorts.append(('absoluteIndex', 'asc', 'Absolute Index'))
+
+        prefix = '' if self.type == 'movie' else self.type + '.'
+
+        manualSorts = []
+        for sortField, sortDir, sortTitle in additionalSorts:
+            sortXML = ('<Sort defaultDirection="%s" descKey="%s%s:desc" key="%s" title="%s" />'
+                       % (sortDir, prefix, sortField, sortField, sortTitle))
+            manualSorts.append(self._manuallyLoadXML(sortXML, FilteringSort))
+
+        return manualSorts
+
+    def _manualFields(self):
+        """ Manually add additional fields which are available
+            but not exposed on the Plex server.
+        """
+        # Fields: key, type, title
+        additionalFields = [
+            ('guid', 'string', 'Guid'),
+            ('id', 'integer', 'Rating Key'),
+            ('index', 'integer', '%s Number' % self.type.capitalize()),
+            ('updatedAt', 'date', 'Date Updated')
+        ]
+
+        prefix = '' if self.type == 'movie' else self.type + '.'
+
+        manualFields = []
+        for field, fieldType, fieldTitle in additionalFields:
+            fieldXML = ('<Field key="%s%s" title="%s" type="%s"/>'
+                       % (prefix, field, fieldTitle, fieldType))
+            manualFields.append(self._manuallyLoadXML(fieldXML, FilteringField))
+
+        return manualFields
 
 
 class FilteringFilter(PlexObject):
