@@ -395,43 +395,116 @@ def test_library_MovieSection_search_sort(movies):
     results = movies.search(sort="titleSort")
     titleSort = [r.titleSort for r in results]
     assert titleSort == sorted(titleSort)
+
     results_asc = movies.search(sort="titleSort:asc")
     titleSort_asc = [r.titleSort for r in results_asc]
     assert titleSort == titleSort_asc
+
     results_desc = movies.search(sort="titleSort:desc")
     titleSort_desc = [r.titleSort for r in results_desc]
     assert titleSort_desc == sorted(titleSort_desc, reverse=True)
+
+    # Test manually added sorts
+    results_guid = movies.search(sort="guid")
+    guid_asc = [r.guid for r in results_guid]
+    assert guid_asc == sorted(guid_asc)
+
     results_random = movies.search(sort="random")
     assert len(results_random) == len(results)
+
+    results_summary = movies.search(sort="summary")
+    summary_asc = [r.summary for r in results_summary]
+    assert summary_asc == sorted(summary_asc)
+
+    results_tagline = movies.search(sort="tagline")
+    tagline_asc = [r.tagline for r in results_tagline if r.tagline]
+    assert tagline_asc == sorted(tagline_asc)
+
+    results_updatedAt = movies.search(sort="updatedAt")
+    updatedAt_asc = [r.updatedAt for r in results_updatedAt]
+    assert updatedAt_asc == sorted(updatedAt_asc)
+
+    # Test multi-sort
     results_multi_str = movies.search(sort="year:asc,titleSort:asc")
     titleSort_multi_str = [(r.year, r.titleSort) for r in results_multi_str]
     assert titleSort_multi_str == sorted(titleSort_multi_str)
+
     results_multi_list = movies.search(sort=["year:desc", "titleSort:desc"])
     titleSort_multi_list = [(r.year, r.titleSort) for r in results_multi_list]
     assert titleSort_multi_list == sorted(titleSort_multi_str, reverse=True)
 
 
 def test_library_ShowSection_search_sort(tvshows):
-    sortAsc = ('show.titleSort,season.index:nullsLast,episode.index:nullsLast,'
-               'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id')
-    results = tvshows.search(sort=sortAsc, libtype='episode')
+    # Test predefined Plex mult-sort
+    seasonAsc = 'season.index,season.titleSort'
+    results = tvshows.search(sort=seasonAsc, libtype='season')
+    sortedResults = sorted(results, key=lambda s: (s.index, s.titleSort))
+    assert results == sortedResults
+
+    seasonShowAsc = 'show.titleSort,index'
+    results = tvshows.search(sort=seasonShowAsc, libtype='season')
+    sortedResults = sorted(results, key=lambda s: (s.show().titleSort, s.index))
+    assert results == sortedResults
+
+    episodeShowAsc = (
+        'show.titleSort,season.index:nullsLast,episode.index:nullsLast,'
+        'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id'
+    )
+    results = tvshows.search(sort=episodeShowAsc, libtype='episode')
     sortedResults = sorted(
         results,
         key=lambda e: (
-            e.show().titleSort, e.season().index, e.index, e.originallyAvailableAt, e.titleSort)
+            e.show().titleSort, e.season().index, e.index,
+            e.originallyAvailableAt, e.titleSort, e.ratingKey)
     )
     assert results == sortedResults
-    sortDesc = ('show.titleSort:desc,season.index:nullsLast,episode.index:nullsLast,'
-                'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id')
-    results = tvshows.search(sort=sortDesc, libtype='episode')
+
+    episodeShowDesc = (
+        'show.titleSort:desc,season.index:nullsLast,episode.index:nullsLast,'
+        'episode.originallyAvailableAt:nullsLast,episode.titleSort,episode.id'
+    )
+    results = tvshows.search(sort=episodeShowDesc, libtype='episode')
     sortedResults = sorted(
         sorted(
             results,
             key=lambda e: (
-                e.season().index, e.index, e.originallyAvailableAt, e.titleSort)
+                e.season().index, e.index,
+                e.originallyAvailableAt, e.titleSort, e.ratingKey)
         ),
         key=lambda e: e.show().titleSort,
         reverse=True
+    )
+    assert results == sortedResults
+
+    # Test manually added sorts
+    results_index = tvshows.search(sort="show.index,season.index,episode.index", libtype='episode')
+    index_asc = [(r.show().index, r.season().index, r.index) for r in results_index]
+    assert index_asc == sorted(index_asc)
+
+
+def test_library_MusicSection_search_sort(music):
+    # Test predefined Plex mult-sort
+    albumArtistAsc = 'artist.titleSort,album.titleSort,album.index,album.id,album.originallyAvailableAt'
+    results = music.search(sort=albumArtistAsc, libtype='album')
+    sortedResults = sorted(
+        results,
+        key=lambda a: (
+            a.artist().titleSort, a.titleSort, a.index, a.ratingKey, a.originallyAvailableAt
+        )
+    )
+    assert results == sortedResults
+
+    trackAlbumArtistAsc = (
+        'artist.titleSort,album.titleSort,album.year,'
+        'track.absoluteIndex,track.index,track.titleSort,track.id'
+    )
+    results = music.search(sort=trackAlbumArtistAsc, libtype='track')
+    sortedResults = sorted(
+        results,
+        key=lambda t: (
+            t.artist().titleSort, t.album().titleSort, t.album().year,
+            t.index, t.titleSort, t.ratingKey  # Skip unknown absoluteIndex
+        )
     )
     assert results == sortedResults
 
@@ -495,7 +568,7 @@ def _test_library_search(library, obj):
             elif operator.title == "is less than":
                 searchValue = value + 1
             elif operator.title == "is greater than":
-                searchValue = max(value - 1, 0)
+                searchValue = max(value - 1, 1)
             elif operator.title == "is before":
                 searchValue = value + timedelta(days=1)
             elif operator.title == "is after":
@@ -523,7 +596,7 @@ def _do_test_library_search(library, obj, field, operator, searchValue):
     searchFilter = {field.key + operator.key[:-1]: searchValue}
     results = library.search(libtype=obj.type, **searchFilter)
 
-    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 0 or searchValue == '1s'):
+    if operator.key.startswith("!") or operator.key.startswith(">>") and (searchValue == 1 or searchValue == '1s'):
         assert obj not in results
     else:
         assert obj in results
