@@ -537,13 +537,16 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/onDeck' % self.key
         return self.fetchItems(key)
 
-    def recentlyAdded(self, maxresults=50):
+    def recentlyAdded(self, maxresults=50, libtype=None):
         """ Returns a list of media items recently added from this library section.
 
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
+                libtype (str, optional): The library type to filter (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo). Default is the main library type.
         """
-        return self.search(sort='addedAt:desc', maxresults=maxresults)
+        libtype = libtype or self.TYPE
+        return self.search(sort='addedAt:desc', maxresults=maxresults, libtype=libtype)
 
     def firstCharacter(self):
         key = '/library/sections/%s/firstCharacter' % self.key
@@ -1399,6 +1402,14 @@ class MovieSection(LibrarySection):
         """ Search for a movie. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='movie', **kwargs)
 
+    def recentlyAddedMovies(self, maxresults=50):
+        """ Returns a list of recently added movies from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='movie')
+
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Movie library section as sync item for specified device.
             See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
@@ -1460,13 +1471,29 @@ class ShowSection(LibrarySection):
         """ Search for an episode. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='episode', **kwargs)
 
-    def recentlyAdded(self, maxresults=50):
+    def recentlyAddedShows(self, maxresults=50):
+        """ Returns a list of recently added shows from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='show')
+
+    def recentlyAddedSeasons(self, maxresults=50):
+        """ Returns a list of recently added seasons from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='season')
+
+    def recentlyAddedEpisodes(self, maxresults=50):
         """ Returns a list of recently added episodes from this library section.
 
             Parameters:
                 maxresults (int): Max number of items to return (default 50).
         """
-        return self.search(sort='episode.addedAt:desc', maxresults=maxresults)
+        return self.recentlyAdded(maxresults=maxresults, libtype='episode')
 
     def sync(self, videoQuality, limit=None, unwatched=False, **kwargs):
         """ Add current Show library section as sync item for specified device.
@@ -1539,6 +1566,30 @@ class MusicSection(LibrarySection):
         """ Search for a track. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='track', **kwargs)
 
+    def recentlyAddedArtists(self, maxresults=50):
+        """ Returns a list of recently added artists from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='artist')
+
+    def recentlyAddedAlbums(self, maxresults=50):
+        """ Returns a list of recently added albums from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='album')
+
+    def recentlyAddedTracks(self, maxresults=50):
+        """ Returns a list of recently added tracks from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        return self.recentlyAdded(maxresults=maxresults, libtype='track')
+
     def sync(self, bitrate, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
             See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting and
@@ -1597,12 +1648,21 @@ class PhotoSection(LibrarySection):
         raise NotImplementedError('Collections are not available for a Photo library.')
 
     def searchAlbums(self, title, **kwargs):
-        """ Search for an album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
+        """ Search for a photo album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='photoalbum', title=title, **kwargs)
 
     def searchPhotos(self, title, **kwargs):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search` for usage. """
         return self.search(libtype='photo', title=title, **kwargs)
+
+    def recentlyAddedAlbums(self, maxresults=50):
+        """ Returns a list of recently added photo albums from this library section.
+
+            Parameters:
+                maxresults (int): Max number of items to return (default 50).
+        """
+        # Use search() instead of recentlyAdded() because libtype=None
+        return self.search(sort='addedAt:desc', maxresults=maxresults)
 
     def sync(self, resolution, limit=None, **kwargs):
         """ Add current Music library section as sync item for specified device.
