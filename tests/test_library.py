@@ -329,12 +329,14 @@ def test_library_MovieSection_hubSearch(movies):
     assert movies.hubSearch("Elephants Dream")
 
 
-def test_library_MovieSection_search(movies, movie):
+def test_library_MovieSection_search(movies, movie, collection):
     movie.addLabel("test_search")
     movie.addCollection("test_search")
     _test_library_search(movies, movie)
     movie.removeLabel("test_search", locked=False)
     movie.removeCollection("test_search", locked=False)
+
+    _test_library_search(movies, collection)
 
 
 def test_library_MovieSection_advancedSearch(movies, movie):
