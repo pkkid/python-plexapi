@@ -595,13 +595,22 @@ class LibrarySection(PlexObject):
         """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and
             list of :class:`~plexapi.library.FilteringFieldType` for this library section.
         """
-        key = ('/library/sections/%s/all?includeMeta=1&includeAdvanced=1'
-               '&X-Plex-Container-Start=0&X-Plex-Container-Size=0') % self.key
+        _key = ('/library/sections/%s/%s?includeMeta=1&includeAdvanced=1'
+               '&X-Plex-Container-Start=0&X-Plex-Container-Size=0')
+               
+        key = _key % (self.key, 'all')
         data = self._server.query(key)
         meta = data.find('Meta')
         if meta:
             self._filterTypes = self.findItems(meta, FilteringType)
             self._fieldTypes = self.findItems(meta, FilteringFieldType)
+
+        if self.TYPE != 'photo':  # No collections for photo library
+            key = _key % (self.key, 'collections')
+            data = self._server.query(key)
+            meta = data.find('Meta')
+            if meta:
+                self._filterTypes.extend(self.findItems(meta, FilteringType))
 
     def filterTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringType` for this library section. """
@@ -614,7 +623,7 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo).
+                    artist, album, track, photoalbum, photo, collection).
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: Unknown libtype for this library.
@@ -659,7 +668,7 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo).
+                    artist, album, track, photoalbum, photo, collection).
 
             Example:
 
@@ -678,7 +687,7 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo).
+                    artist, album, track, photoalbum, photo, collection).
 
             Example:
 
@@ -697,7 +706,7 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo).
+                    artist, album, track, photoalbum, photo, collection).
 
             Example:
 
@@ -740,7 +749,7 @@ class LibrarySection(PlexObject):
                 field (str): :class:`~plexapi.library.FilteringFilter` object,
                     or the name of the field (genre, year, contentRating, etc.).
                 libtype (str, optional): The library type to filter (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo).
+                    artist, album, track, photoalbum, photo, collection).
 
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: Invalid filter field.
@@ -973,8 +982,8 @@ class LibrarySection(PlexObject):
                     See :func:`~plexapi.library.LibrarySection.listSorts` to get a list of available sort fields.
                 maxresults (int, optional): Only return the specified number of results.
                 libtype (str, optional): Return results of a specific type (movie, show, season, episode,
-                    artist, album, track, photoalbum, photo) (e.g. ``libtype='episode'`` will only return
-                    :class:`~plexapi.video.Episode` objects)
+                    artist, album, track, photoalbum, photo, collection) (e.g. ``libtype='episode'`` will only
+                    return :class:`~plexapi.video.Episode` objects)
                 container_start (int, optional): Default 0.
                 container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
                 filters (dict): A dictionary of advanced filters. See the details below for more info.
@@ -1926,6 +1935,10 @@ class FilteringType(PlexObject):
             additionalSorts.extend([
                 ('absoluteIndex', 'asc', 'Absolute Index')
             ])
+        if self.type == 'collection':
+            additionalSorts.extend([
+                ('addedAt', 'asc', 'Date Added')
+            ])
 
         manualSorts = []
         for sortField, sortDir, sortTitle in additionalSorts:
@@ -1982,6 +1995,10 @@ class FilteringType(PlexObject):
             additionalFields.extend([
                 ('duration', 'integer', 'Duration'),
                 ('viewOffset', 'integer', 'View Offset')
+            ])
+        elif self.type == 'collection':
+            additionalFields.extend([
+                ('addedAt', 'date', 'Date Added')
             ])
 
         prefix = '' if self.type == 'movie' else self.type + '.'
