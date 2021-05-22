@@ -308,6 +308,16 @@ def test_server_account(plex):
     assert re.match(utils.REGEX_EMAIL, account.username)
 
 
+@pytest.mark.authenticated
+def test_server_claim_unclaim(plex, account):
+    server_account = plex.account()
+    assert server_account.signInState == 'ok'
+    result = plex.unclaim()
+    assert result.signInState == 'none'
+    result = plex.claim(account)
+    assert result.signInState == 'ok'
+
+
 def test_server_downloadLogs(tmpdir, plex):
     plex.downloadLogs(savepath=str(tmpdir), unpack=True)
     assert len(tmpdir.listdir()) > 1
