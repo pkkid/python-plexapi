@@ -193,6 +193,26 @@ class PlexServer(PlexObject):
         data = self.query(Account.key)
         return Account(self, data)
 
+    def claim(self, account):
+        """ Claim the Plex server using a :class:`~plexapi.myplex.MyPlexAccount`.
+            This will only work with an unclaimed server on localhost or the same subnet.
+        
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`): The account used to
+                    claim the server.
+        """
+        key = '/myplex/claim'
+        params = {'token': account.claimToken()}
+        data = self.query(key, method=self._session.post, params=params)
+        return Account(self, data)
+
+    def unclaim(self):
+        """ Unclaim the Plex server. This will remove the server from your
+            :class:`~plexapi.myplex.MyPlexAccount`.
+        """
+        data = self.query(Account.key, method=self._session.delete)
+        return Account(self, data)
+
     @property
     def activities(self):
         """Returns all current PMS activities."""
@@ -209,7 +229,7 @@ class PlexServer(PlexObject):
         return self.fetchItems(key)
 
     def createToken(self, type='delegation', scope='all'):
-        """Create a temp access token for the server."""
+        """ Create a temp access token for the server. """
         if not self._token:
             # Handle unclaimed servers
             return None
