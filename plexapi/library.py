@@ -1698,6 +1698,12 @@ class HubMediaTag(PlexObject):
         self.tagValue = utils.cast(int, data.attrib.get('tagValue'))
         self.thumb = data.attrib.get('thumb')
 
+    def items(self, *args, **kwargs):
+        """ Return the list of items within this tag. """
+        if not self.key:
+            raise BadRequest('Key is not defined for this tag: %s' % self.tag)
+        return self.fetchItems(self.key)
+
 
 @utils.registerPlexObject
 class Tag(HubMediaTag):

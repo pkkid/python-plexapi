@@ -8,7 +8,7 @@ import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
-from . import test_mixins
+from . import test_media, test_mixins
 
 
 def test_video_Movie(movies, movie):
@@ -57,6 +57,30 @@ def test_video_Movie_mixins_tags(movie):
     test_mixins.edit_label(movie)
     test_mixins.edit_producer(movie)
     test_mixins.edit_writer(movie)
+
+
+def test_video_Movie_media_tags(movie):
+    movie.reload()
+    test_media.tag_collection(movie)
+    test_media.tag_country(movie)
+    test_media.tag_director(movie)
+    test_media.tag_genre(movie)
+    test_media.tag_label(movie)
+    test_media.tag_producer(movie)
+    test_media.tag_role(movie)
+    test_media.tag_similar(movie)
+    test_media.tag_writer(movie)
+
+
+def test_video_Movie_media_tags_Exception(movie):
+    with pytest.raises(BadRequest):
+        movie.genres[0].items()
+
+
+def test_video_Movie_media_tags_collection(movie, collection):
+    movie.reload()
+    collection_tag = next(c for c in movie.collections if c.tag == "Marvel")
+    assert collection == collection_tag.collection()
 
 
 def test_video_Movie_getStreamURL(movie, account):
@@ -741,6 +765,15 @@ def test_video_Show_mixins_tags(show):
     test_mixins.edit_label(show)
 
 
+def test_video_Show_media_tags(show):
+    show.reload()
+    test_media.tag_collection(show)
+    test_media.tag_genre(show)
+    test_media.tag_label(show)
+    test_media.tag_role(show)
+    test_media.tag_similar(show)
+
+
 def test_video_Episode(show):
     episode = show.episode("Winter Is Coming")
     assert episode == show.episode(season=1, episode=1)
@@ -900,6 +933,13 @@ def test_video_Episode_mixins_tags(episode):
     test_mixins.edit_writer(episode)
 
 
+def test_video_Episode_media_tags(episode):
+    episode.reload()
+    test_media.tag_collection(episode)
+    test_media.tag_director(episode)
+    test_media.tag_writer(episode)
+
+
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) == 2
@@ -996,6 +1036,12 @@ def test_video_Season_mixins_images(show):
 def test_video_Season_mixins_tags(show):
     season = show.season(season=1)
     test_mixins.edit_collection(season)
+
+
+def test_video_Season_media_tags(show):
+    season = show.season(season=1)
+    season.reload()
+    test_media.tag_collection(season)
 
 
 def test_that_reload_return_the_same_object(plex):

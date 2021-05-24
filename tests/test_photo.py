@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import test_mixins
+from . import test_media, test_mixins
 
 
 def test_photo_Photoalbum(photoalbum):
@@ -20,3 +20,8 @@ def test_photo_Photoalbum_mixins_images(photoalbum):
 
 def test_photo_Photo_mixins_tags(photo):
     test_mixins.edit_tag(photo)
+
+
+def test_photo_Photo_media_tags(photo):
+    photo.reload()
+    test_media.tag_tag(photo)
