@@ -18,6 +18,8 @@ def test_audio_Artist_attr(artist):
     assert utils.is_metadata(artist.key)
     assert utils.is_int(artist.librarySectionID)
     assert artist.listType == "audio"
+    assert utils.is_datetime(artist.lastRatedAt)
+    assert utils.is_datetime(artist.lastViewedAt)
     assert len(artist.locations) == 1
     assert len(artist.locations[0]) >= 10
     assert artist.ratingKey >= 1
@@ -105,6 +107,8 @@ def test_audio_Album_attrs(album):
     assert album.index == 1
     assert utils.is_metadata(album._initpath)
     assert utils.is_metadata(album.key)
+    assert utils.is_datetime(album.lastRatedAt)
+    assert utils.is_datetime(album.lastViewedAt)
     assert utils.is_int(album.librarySectionID)
     assert album.listType == "audio"
     assert utils.is_datetime(album.originallyAvailableAt)
@@ -203,6 +207,7 @@ def test_audio_Track_attrs(album):
     assert track.trackNumber == track.index
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
+    assert utils.is_datetime(track.lastRatedAt)
     assert utils.is_datetime(track.lastViewedAt)
     assert utils.is_int(track.librarySectionID)
     assert track.listType == "audio"

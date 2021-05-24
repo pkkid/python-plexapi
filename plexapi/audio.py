@@ -51,6 +51,7 @@ class Audio(PlexPartialObject):
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '')
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
@@ -345,7 +346,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, CollectionMixin, MoodM
                 (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
             grandparentTitle (str): Name of the album artist for the track.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
-            originalTitle (str): The original title of the track (eg. a different language).
+            originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
             parentIndex (int): Album index.
             parentKey (str): API URL of the album (/library/metadata/<parentRatingKey>).

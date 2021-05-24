@@ -113,7 +113,7 @@ def clean_pms(server, path):
 
 
 def setup_music(music_path):
-    print("Setup files for music section..")
+    print("Setup files for the Music section..")
     makedirs(music_path, exist_ok=True)
 
     all_music = {
