@@ -409,6 +409,11 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, CollectionMixin, MoodM
         """
         return [part.file for part in self.iterParts() if part]
 
+    @property
+    def trackNumber(self):
+        """ Returns the track number. """
+        return self.index
+
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)

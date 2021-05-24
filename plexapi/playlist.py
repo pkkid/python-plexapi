@@ -253,15 +253,13 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         return cls(server, data, initpath=key)
 
     def copyToUser(self, user):
-        """ Copy playlist to another user account. """
-        from plexapi.server import PlexServer
-        myplex = self._server.myPlexAccount()
-        user = myplex.user(user)
-        # Get the token for your machine.
-        token = user.get_token(self._server.machineIdentifier)
-        # Login to your server using your friends credentials.
-        user_server = PlexServer(self._server._baseurl, token)
-        return self.create(user_server, self.title, self.items())
+        """ Copy playlist to another user account.
+        
+            Parameters:
+                user (str): Username, email or user id of the user to copy the playlist to.
+        """
+        userServer = self._server.switchUser(user)
+        return self.create(userServer, self.title, self.items())
 
     def sync(self, videoQuality=None, photoResolution=None, audioBitrate=None, client=None, clientId=None, limit=None,
              unwatched=False, title=None):

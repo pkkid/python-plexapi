@@ -219,7 +219,7 @@ class Library(PlexObject):
             **Show Preferences**
 
                 * **agent** (str): com.plexapp.agents.none, com.plexapp.agents.thetvdb, com.plexapp.agents.themoviedb,
-                  tv.plex.agent.series
+                  tv.plex.agents.series
                 * **enableBIFGeneration** (bool): Enable video preview thumbnails. Default value true.
                 * **episodeSort** (int): Episode order. Default -1 Possible options: 0:Oldest first, 1:Newest first.
                 * **flattenSeasons** (int): Seasons. Default value 0 Possible options: 0:Show,1:Hide.
@@ -1782,6 +1782,12 @@ class HubMediaTag(PlexObject):
         self.tagType = utils.cast(int, data.attrib.get('tagType'))
         self.tagValue = utils.cast(int, data.attrib.get('tagValue'))
         self.thumb = data.attrib.get('thumb')
+
+    def items(self, *args, **kwargs):
+        """ Return the list of items within this tag. """
+        if not self.key:
+            raise BadRequest('Key is not defined for this tag: %s' % self.tag)
+        return self.fetchItems(self.key)
 
 
 @utils.registerPlexObject
