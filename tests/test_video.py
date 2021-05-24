@@ -8,7 +8,7 @@ import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
-from . import test_mixins
+from . import test_media, test_mixins
 
 
 def test_video_Movie(movies, movie):
@@ -57,6 +57,30 @@ def test_video_Movie_mixins_tags(movie):
     test_mixins.edit_label(movie)
     test_mixins.edit_producer(movie)
     test_mixins.edit_writer(movie)
+
+
+def test_video_Movie_media_tags(movie):
+    movie.reload()
+    test_media.tag_collection(movie)
+    test_media.tag_country(movie)
+    test_media.tag_director(movie)
+    test_media.tag_genre(movie)
+    test_media.tag_label(movie)
+    test_media.tag_producer(movie)
+    test_media.tag_role(movie)
+    test_media.tag_similar(movie)
+    test_media.tag_writer(movie)
+
+
+def test_video_Movie_media_tags_Exception(movie):
+    with pytest.raises(BadRequest):
+        movie.genres[0].items()
+
+
+def test_video_Movie_media_tags_collection(movie, collection):
+    movie.reload()
+    collection_tag = next(c for c in movie.collections if c.tag == "Marvel")
+    assert collection == collection_tag.collection()
 
 
 def test_video_Movie_getStreamURL(movie, account):
@@ -188,6 +212,7 @@ def test_video_Movie_attrs(movies):
     assert "Animation" in [i.tag for i in movie.genres]
     assert "imdb://tt1172203" in [i.id for i in movie.guids]
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
+    assert movie.hasPreviewThumbnails is False
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
     assert movie.languageOverride is None
@@ -338,6 +363,7 @@ def test_video_Movie_attrs(movies):
     assert part.exists
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
+    assert part.hasPreviewThumbnails is False
     assert part.hasThumbnail is None
     assert utils.is_int(part.id)
     assert part.indexes is None
@@ -707,6 +733,15 @@ def test_video_Show_mixins_tags(show):
     test_mixins.edit_label(show)
 
 
+def test_video_Show_media_tags(show):
+    show.reload()
+    test_media.tag_collection(show)
+    test_media.tag_genre(show)
+    test_media.tag_label(show)
+    test_media.tag_role(show)
+    test_media.tag_similar(show)
+
+
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) == 2
@@ -896,13 +931,16 @@ def test_video_Episode_attrs(episode):
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.guid == "plex://episode/5d9c1275e98e47001eb84029"
     assert "tvdb://3254641" in [i.id for i in episode.guids]
+    assert episode.hasPreviewThumbnails is False
     assert episode.index == 1
+    assert episode.episodeNumber == episode.index
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == "video"
     assert utils.is_datetime(episode.originallyAvailableAt)
     assert episode.parentGuid == "plex://season/602e67d31d3358002c411c39"
     assert utils.is_int(episode.parentIndex)
+    assert episode.seasonNumber == episode.parentIndex
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     if episode.parentThumb:
@@ -930,6 +968,7 @@ def test_video_Episode_attrs(episode):
     assert episode.isWatched in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
+    assert episode.seasonEpisode == "s01e01"
     # Media
     media = episode.media[0]
     assert media.aspectRatio == 1.78
@@ -953,6 +992,7 @@ def test_video_Episode_attrs(episode):
     assert part.container in utils.CONTAINERS
     assert utils.is_int(part.duration, gte=150000)
     assert len(part.file) >= 10
+    assert part.hasPreviewThumbnails is False
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
@@ -992,6 +1032,13 @@ def test_video_Episode_mixins_tags(episode):
     test_mixins.edit_collection(episode)
     test_mixins.edit_director(episode)
     test_mixins.edit_writer(episode)
+
+
+def test_video_Episode_media_tags(episode):
+    episode.reload()
+    test_media.tag_collection(episode)
+    test_media.tag_director(episode)
+    test_media.tag_writer(episode)
 
 
 def test_that_reload_return_the_same_object(plex):
@@ -1104,7 +1151,7 @@ def test_video_optimize(movie, plex):
     assert len(plex.conversions()) == 0
     assert len(plex.optimizedItems()) == 1
     optimized = plex.optimizedItems()[0]
-    video = plex.optimizedItem(optimizedID=optimized.id)
-    assert movie.key == video.key
+    videos = optimized.items()
+    assert movie in videos
     plex.optimizedItems(removeAll=True)
     assert len(plex.optimizedItems()) == 0

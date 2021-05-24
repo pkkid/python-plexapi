@@ -234,11 +234,11 @@ def movie(movies):
 @pytest.fixture()
 def collection(movies):
     try:
-        return movies.collections(title="marvel")[0]
+        return movies.collections(title="Marvel")[0]
     except IndexError:
         movie = movies.get("Elephants Dream")
-        movie.addCollection("marvel")
-        return movies.collections(title="marvel")[0]
+        movie.addCollection("Marvel")
+        return movies.collections(title="Marvel")[0]
 
 
 @pytest.fixture()

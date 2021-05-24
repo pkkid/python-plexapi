@@ -33,7 +33,7 @@ def test_Collection_attrs(collection):
     assert collection.summary == ""
     assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
     assert collection.thumbBlurHash is None
-    assert collection.title == "marvel"
+    assert collection.title == "Marvel"
     assert collection.titleSort == collection.title
     assert collection.type == "collection"
     assert utils.is_datetime(collection.updatedAt)

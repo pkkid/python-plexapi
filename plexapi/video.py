@@ -340,6 +340,11 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
         """
         return [part.file for part in self.iterParts() if part]
 
+    @property
+    def hasPreviewThumbnails(self):
+        """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
+        return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
+
     def _prettyfilename(self):
         # This is just for compat.
         return self.title
@@ -648,7 +653,7 @@ class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
 
     @property
     def seasonNumber(self):
-        """ Returns season number. """
+        """ Returns the season number. """
         return self.index
 
     def episodes(self, **kwargs):
@@ -840,16 +845,21 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
         return [part.file for part in self.iterParts() if part]
 
     @property
+    def episodeNumber(self):
+        """ Returns the episode number. """
+        return self.index
+
+    @property
     def seasonNumber(self):
-        """ Returns the episodes season number. """
+        """ Returns the episode's season number. """
         if self._seasonNumber is None:
             self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
 
     @property
     def seasonEpisode(self):
-        """ Returns the s00e00 string containing the season and episode. """
-        return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.index).zfill(2))
+        """ Returns the s00e00 string containing the season and episode numbers. """
+        return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.episodeNumber).zfill(2))
 
     @property
     def hasIntroMarker(self):
@@ -857,6 +867,11 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
         if not self.isFullObject():
             self.reload()
         return any(marker.type == 'intro' for marker in self.markers)
+
+    @property
+    def hasPreviewThumbnails(self):
+        """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
+        return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
 
     def season(self):
         """" Return the episode's :class:`~plexapi.video.Season`. """

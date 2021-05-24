@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import conftest as utils
-from . import test_mixins
+from . import test_media, test_mixins
 
 
 def test_audio_Artist_attr(artist):
@@ -87,6 +87,16 @@ def test_audio_Artist_mixins_tags(artist):
     test_mixins.edit_style(artist)
 
 
+def test_audio_Artist_media_tags(artist):
+    artist.reload()
+    test_media.tag_collection(artist)
+    test_media.tag_country(artist)
+    test_media.tag_genre(artist)
+    test_media.tag_mood(artist)
+    test_media.tag_similar(artist)
+    test_media.tag_style(artist)
+
+
 def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     if album.art:
@@ -165,6 +175,15 @@ def test_audio_Album_mixins_tags(album):
     test_mixins.edit_style(album)
 
 
+def test_audio_Album_media_tags(album):
+    album.reload()
+    test_media.tag_collection(album)
+    test_media.tag_genre(album)
+    test_media.tag_label(album)
+    test_media.tag_mood(album)
+    test_media.tag_style(album)
+
+
 def test_audio_Track_attrs(album):
     track = album.get("As Colourful As Ever").reload()
     assert utils.is_datetime(track.addedAt)
@@ -180,7 +199,8 @@ def test_audio_Track_attrs(album):
         assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
     assert track.guid.startswith("mbid://") or track.guid.startswith("plex://track/")
-    assert int(track.index) == 1
+    assert track.index == 1
+    assert track.trackNumber == track.index
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
     assert utils.is_datetime(track.lastViewedAt)
@@ -292,6 +312,12 @@ def test_audio_Track_mixins_images(track):
 def test_audio_Track_mixins_tags(track):
     test_mixins.edit_collection(track)
     test_mixins.edit_mood(track)
+
+
+def test_audio_Track_media_tags(track):
+    track.reload()
+    test_media.tag_collection(track)
+    test_media.tag_mood(track)
 
 
 def test_audio_Audio_section(artist, album, track):
