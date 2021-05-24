@@ -113,7 +113,7 @@ def clean_pms(server, path):
 
 
 def setup_music(music_path):
-    print("Setup files for music section..")
+    print("Setup files for the Music section..")
     makedirs(music_path, exist_ok=True)
 
     all_music = {
@@ -522,7 +522,7 @@ if __name__ == "__main__":
                 location="/data/Movies" if opts.no_docker is False else movies_path,
                 agent="tv.plex.agents.movie",
                 scanner="Plex Movie",
-                language='en-US',
+                language="en-US",
                 expected_media_count=num_movies,
             )
         )
@@ -537,8 +537,9 @@ if __name__ == "__main__":
                 name="TV Shows",
                 type="show",
                 location="/data/TV-Shows" if opts.no_docker is False else tvshows_path,
-                agent="com.plexapp.agents.thetvdb",
-                scanner="Plex Series Scanner",
+                agent="tv.plex.agents.series",
+                scanner="Plex TV Series",
+                language="en-US",
                 expected_media_count=num_ep,
             )
         )

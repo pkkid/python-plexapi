@@ -12,7 +12,9 @@ def test_Collection_attrs(collection):
     assert collection.artBlurHash is None
     assert collection.childCount == 1
     assert collection.collectionMode == -1
+    assert collection.collectionPublished is False
     assert collection.collectionSort == 0
+    assert collection.content is None
     assert collection.contentRating
     assert not collection.fields
     assert collection.guid.startswith("collection://")
@@ -24,12 +26,14 @@ def test_Collection_attrs(collection):
     assert collection.librarySectionTitle == "Movies"
     assert utils.is_int(collection.maxYear)
     assert utils.is_int(collection.minYear)
+    assert utils.is_int(collection.ratingCount)
     assert utils.is_int(collection.ratingKey)
+    assert collection.smart is False
     assert collection.subtype == "movie"
     assert collection.summary == ""
     assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
     assert collection.thumbBlurHash is None
-    assert collection.title == "marvel"
+    assert collection.title == "Marvel"
     assert collection.titleSort == collection.title
     assert collection.type == "collection"
     assert utils.is_datetime(collection.updatedAt)

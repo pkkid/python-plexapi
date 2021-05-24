@@ -11,7 +11,7 @@ from plexapi.utils import download
 from requests import Session
 
 from . import conftest as utils
-from .payloads import SERVER_RESOURCES, SEVER_TRANSCODE_SESSIONS
+from .payloads import SERVER_RESOURCES, SERVER_TRANSCODE_SESSIONS
 
 
 def test_server_attr(plex, account):
@@ -135,6 +135,7 @@ def test_server_search(plex, movie):
     assert hub_tag.tagType == 1
     assert hub_tag.tagValue is None
     assert hub_tag.thumb is None
+    assert movie in hub_tag.items()
     # Test director search
     director = movie.directors[0]
     assert plex.search(director.tag, mediatype="director")
@@ -395,7 +396,7 @@ def test_server_system_devices(plex):
     devices = plex.systemDevices()
     assert len(devices)
     device = devices[-1]
-    assert device.clientIdentifier or device.clientIdentifier is None
+    assert device.clientIdentifier or device.clientIdentifier == ""
     assert utils.is_datetime(device.createdAt)
     assert utils.is_int(device.id)
     assert len(device.key)
@@ -465,7 +466,7 @@ def test_server_dashboard_resources(plex, requests_mock):
 
 def test_server_transcode_sessions(plex, requests_mock):
     url = plex.url("/transcode/sessions")
-    requests_mock.get(url, text=SEVER_TRANSCODE_SESSIONS)
+    requests_mock.get(url, text=SERVER_TRANSCODE_SESSIONS)
     transcode_sessions = plex.transcodeSessions()
     assert len(transcode_sessions)
     session = transcode_sessions[0]

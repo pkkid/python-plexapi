@@ -51,6 +51,7 @@ class Audio(PlexPartialObject):
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '')
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
@@ -328,13 +329,14 @@ class Album(Audio, ArtMixin, PosterMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
+class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, CollectionMixin, MoodMixin):
     """ Represents a single Track.
 
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'track'
             chapterSource (str): Unknown
+            collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             duration (int): Length of the track in milliseconds.
             grandparentArt (str): URL to album artist artwork (/library/metadata/<grandparentRatingKey>/art/<artid>).
             grandparentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
@@ -344,7 +346,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
                 (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
             grandparentTitle (str): Name of the album artist for the track.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
-            originalTitle (str): The original title of the track (eg. a different language).
+            originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
             parentIndex (int): Album index.
             parentKey (str): API URL of the album (/library/metadata/<parentRatingKey>).
@@ -364,6 +366,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
         Audio._loadData(self, data)
         Playable._loadData(self, data)
         self.chapterSource = data.attrib.get('chapterSource')
+        self.collections = self.findItems(data, media.Collection)
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.grandparentArt = data.attrib.get('grandparentArt')
         self.grandparentGuid = data.attrib.get('grandparentGuid')
@@ -405,6 +408,11 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, MoodMixin):
                 List<str> of file paths where the track is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
+
+    @property
+    def trackNumber(self):
+        """ Returns the track number. """
+        return self.index
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
