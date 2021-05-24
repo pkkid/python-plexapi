@@ -199,7 +199,8 @@ def test_audio_Track_attrs(album):
         assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
     assert track.guid.startswith("mbid://") or track.guid.startswith("plex://track/")
-    assert int(track.index) == 1
+    assert track.index == 1
+    assert track.trackNumber == track.index
     assert utils.is_metadata(track._initpath)
     assert utils.is_metadata(track.key)
     assert utils.is_datetime(track.lastViewedAt)

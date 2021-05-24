@@ -211,6 +211,7 @@ def test_video_Movie_attrs(movies):
     assert "Animation" in [i.tag for i in movie.genres]
     assert "imdb://tt1172203" in [i.id for i in movie.guids]
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
+    assert movie.hasPreviewThumbnails is False
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
     assert movie.languageOverride is None
@@ -361,6 +362,7 @@ def test_video_Movie_attrs(movies):
     assert part.exists
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
+    assert part.hasPreviewThumbnails is False
     assert part.hasThumbnail is None
     assert utils.is_int(part.id)
     assert part.indexes is None
@@ -838,12 +840,15 @@ def test_video_Episode_attrs(episode):
         assert utils.is_thumb(episode.grandparentThumb)
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.guids == []  # TODO: Change when updating test to the Plex TV agent
+    assert episode.hasPreviewThumbnails is False
     assert episode.index == 1
+    assert episode.episodeNumber == episode.index
     assert utils.is_metadata(episode._initpath)
     assert utils.is_metadata(episode.key)
     assert episode.listType == "video"
     assert utils.is_datetime(episode.originallyAvailableAt)
-    assert utils.is_int(episode.parentIndex)
+    assert episode.parentIndex == 1
+    assert episode.seasonNumber == episode.parentIndex
     assert utils.is_metadata(episode.parentKey)
     assert utils.is_int(episode.parentRatingKey)
     if episode.parentThumb:
@@ -869,6 +874,7 @@ def test_video_Episode_attrs(episode):
     assert episode.isWatched in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
+    assert episode.seasonEpisode == "s01e01"
     # Media
     media = episode.media[0]
     assert media.aspectRatio == 1.78
@@ -892,6 +898,7 @@ def test_video_Episode_attrs(episode):
     assert part.container in utils.CONTAINERS
     assert utils.is_int(part.duration, gte=150000)
     assert len(part.file) >= 10
+    assert part.hasPreviewThumbnails is False
     assert utils.is_int(part.id)
     assert utils.is_metadata(part._initpath)
     assert len(part.key) >= 10
