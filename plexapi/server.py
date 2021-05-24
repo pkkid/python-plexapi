@@ -38,8 +38,9 @@ class PlexServer(PlexObject):
             baseurl (str): Base url for to access the Plex Media Server (default: 'http://localhost:32400').
             token (str): Required Plex authentication token to access the server.
             session (requests.Session, optional): Use your own session object if you want to
-                cache the http responses from PMS
-            timeout (int): timeout in seconds on initial connect to server (default config.TIMEOUT).
+                cache the http responses from the server.
+            timeout (int, optional): Timeout in seconds on initial connection to the server
+                (default config.TIMEOUT).
 
         Attributes:
             allowCameraUpload (bool): True if server allows camera upload.
@@ -105,12 +106,13 @@ class PlexServer(PlexObject):
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
+        self._timeout = timeout
         self._library = None   # cached library
         self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
-        data = self.query(self.key, timeout=timeout)
+        data = self.query(self.key, timeout=self._timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
     def _loadData(self, data):
@@ -209,12 +211,44 @@ class PlexServer(PlexObject):
         return self.fetchItems(key)
 
     def createToken(self, type='delegation', scope='all'):
-        """Create a temp access token for the server."""
+        """ Create a temp access token for the server. """
         if not self._token:
             # Handle unclaimed servers
             return None
         q = self.query('/security/token?type=%s&scope=%s' % (type, scope))
         return q.attrib.get('token')
+
+    def switchUser(self, username, session=None, timeout=None):
+        """ Returns a new :class:`~plexapi.server.PlexServer` object logged in as the given username.
+            Note: Only the admin account can switch to other users.
+        
+            Parameters:
+                username (str): Username, email or user id of the user to log in to the server.
+                session (requests.Session, optional): Use your own session object if you want to
+                    cache the http responses from the server. This will default to the same
+                    session as the admin account if no new session is provided.
+                timeout (int, optional): Timeout in seconds on initial connection to the server.
+                    This will default to the same timeout as the admin account if no new timeout
+                    is provided.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi.server import PlexServer
+                    # Login to the Plex server using the admin token
+                    plex = PlexServer('http://plexserver:32400', token='2ffLuB84dqLswk9skLos')
+                    # Login to the same Plex server using a different account
+                    userPlex = plex.switchUser("Username")
+
+        """
+        user = self.myPlexAccount().user(username)
+        userToken = user.get_token(self.machineIdentifier)
+        if session is None:
+            session = self._session
+        if timeout is None:
+            timeout = self._timeout
+        return PlexServer(self._baseurl, token=userToken, session=session, timeout=timeout)
 
     def systemAccounts(self):
         """ Returns a list of :class:`~plexapi.server.SystemAccount` objects this server contains. """
