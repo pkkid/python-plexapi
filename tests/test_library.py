@@ -572,7 +572,11 @@ def _test_library_search(library, obj):
             operators += [andOp]
 
         for operator in operators:
-            if fieldAttr == "unmatched" and operator.key == "!=" or fieldAttr == "userRating":
+            if (
+                fieldAttr == "unmatched" and operator.key == "!="
+                or fieldAttr in {"audienceRating", "rating"} and operator.key in {"=", "!="}
+                or fieldAttr == "userRating"
+            ):
                 continue
 
             value = getattr(obj, fieldAttr, None)
