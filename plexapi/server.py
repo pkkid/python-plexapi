@@ -489,6 +489,7 @@ class PlexServer(PlexObject):
             backgroundProcessing = self.fetchItem('/playlists?type=42')
             return self.fetchItems('%s/items' % backgroundProcessing.key, cls=Optimized)
 
+    @deprecated('use "plexapi.media.Optimized.items()" instead')
     def optimizedItem(self, optimizedID):
         """ Returns single queued optimized item :class:`~plexapi.media.Video` object.
             Allows for using optimized item ID to connect back to source item.
