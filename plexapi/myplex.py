@@ -885,13 +885,7 @@ class MyPlexServerShare(PlexObject):
         """
         url = MyPlexAccount.FRIENDSERVERS.format(machineId=self.machineIdentifier, serverId=self.id)
         data = self._server.query(url)
-        sections = []
-
-        for section in data.iter('Section'):
-            if ElementTree.iselement(section):
-                sections.append(Section(self, section, url))
-
-        return sections
+        return self.findItems(data, Section, rtag='SharedServer')
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get all Play History for a user in this shared server.

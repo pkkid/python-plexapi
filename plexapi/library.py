@@ -603,17 +603,13 @@ class LibrarySection(PlexObject):
                
         key = _key % (self.key, 'all')
         data = self._server.query(key)
-        meta = data.find('Meta')
-        if meta:
-            self._filterTypes = self.findItems(meta, FilteringType)
-            self._fieldTypes = self.findItems(meta, FilteringFieldType)
+        self._filterTypes = self.findItems(data, FilteringType, rtag='Meta')
+        self._fieldTypes = self.findItems(data, FilteringFieldType, rtag='Meta')
 
         if self.TYPE != 'photo':  # No collections for photo library
             key = _key % (self.key, 'collections')
             data = self._server.query(key)
-            meta = data.find('Meta')
-            if meta:
-                self._filterTypes.extend(self.findItems(meta, FilteringType))
+            self._filterTypes.extend(self.findItems(data, FilteringType, rtag='Meta'))
 
     def filterTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringType` for this library section. """

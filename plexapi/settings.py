@@ -167,7 +167,7 @@ class Preferences(Setting):
             TAG (str): 'Preferences'
             FILTER (str): 'preferences'
     """
-    TAG = 'Preferences'
+    TAG = 'Setting'
     FILTER = 'preferences'
 
     def _default(self):

@@ -110,12 +110,8 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
 
     def _preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
-        items = []
         data = self._server.query(self._details_key)
-        for item in data.iter('Setting'):
-            items.append(Setting(data=item, server=self._server))
-
-        return items
+        return self.findItems(data, Setting, rtag='Preferences')
 
     def modeUpdate(self, mode=None):
         """ Update Collection Mode

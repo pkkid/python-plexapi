@@ -263,7 +263,7 @@ class PlexObject(object):
                 item.librarySectionID = librarySectionID
         return items
 
-    def findItems(self, data, cls=None, initpath=None, **kwargs):
+    def findItems(self, data, cls=None, initpath=None, rtag=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
@@ -273,6 +273,9 @@ class PlexObject(object):
             kwargs['etag'] = cls.TAG
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
+        # rtag to iter on a specific root tag
+        if rtag:
+            data = next(data.iter(rtag), [])
         # loop through all data elements to find matches
         items = []
         for elem in data:

@@ -154,11 +154,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixi
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        directory = data.find('Directory')
-        if directory:
-            related = directory.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
