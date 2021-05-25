@@ -164,7 +164,7 @@ class Preferences(Setting):
     """ Represents a single Preferences.
 
         Attributes:
-            TAG (str): 'Preferences'
+            TAG (str): 'Setting'
             FILTER (str): 'preferences'
     """
     TAG = 'Setting'
