@@ -790,13 +790,13 @@ class Review(MediaTag):
 
     def _loadData(self, data):
         self._data = data
-        self.id = cast(int, data.attrib.get('id', 0))
         self.filter = data.attrib.get('filter')
-        self.tag = data.attrib.get('tag')
-        self.text = data.attrib.get('text')
+        self.id = cast(int, data.attrib.get('id', 0))
         self.image = data.attrib.get('image')
         self.link = data.attrib.get('link')
         self.source = data.attrib.get('source')
+        self.tag = data.attrib.get('tag')
+        self.text = data.attrib.get('text')
 
 
 @utils.registerPlexObject
