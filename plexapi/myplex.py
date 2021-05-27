@@ -14,7 +14,6 @@ from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
-from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
 
 
@@ -452,7 +451,7 @@ class MyPlexAccount(PlexObject):
         if isinstance(allowChannels, dict):
             params['filterMusic'] = self._filterDictToStr(filterMusic or {})
         if params:
-            url += joinArgs(params)
+            url += utils.joinArgs(params)
             response_filters = self.query(url, self._session.put)
         return response_servers, response_filters
 

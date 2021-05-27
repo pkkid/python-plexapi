@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import tag_plural, tag_helper
 
 DONT_RELOAD_FOR_KEYS = {'key', 'session'}
 DONT_OVERWRITE_SESSION_KEYS = {'usernames', 'players', 'transcodeSessions', 'session'}
@@ -524,9 +523,9 @@ class PlexPartialObject(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        value = getattr(self, tag_plural(tag))
+        value = getattr(self, utils.tag_plural(tag))
         existing_tags = [t.tag for t in value if t and remove is False]
-        tag_edits = tag_helper(tag, existing_tags + items, locked, remove)
+        tag_edits = utils.tag_helper(tag, existing_tags + items, locked, remove)
         self.edit(**tag_edits)
 
     def refresh(self):

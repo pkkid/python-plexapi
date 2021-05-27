@@ -15,7 +15,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
-from plexapi.utils import cast, deprecated
+from plexapi.utils import deprecated
 from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
@@ -118,47 +118,47 @@ class PlexServer(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.allowCameraUpload = cast(bool, data.attrib.get('allowCameraUpload'))
-        self.allowChannelAccess = cast(bool, data.attrib.get('allowChannelAccess'))
-        self.allowMediaDeletion = cast(bool, data.attrib.get('allowMediaDeletion'))
-        self.allowSharing = cast(bool, data.attrib.get('allowSharing'))
-        self.allowSync = cast(bool, data.attrib.get('allowSync'))
-        self.backgroundProcessing = cast(bool, data.attrib.get('backgroundProcessing'))
-        self.certificate = cast(bool, data.attrib.get('certificate'))
-        self.companionProxy = cast(bool, data.attrib.get('companionProxy'))
+        self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
+        self.allowChannelAccess = utils.cast(bool, data.attrib.get('allowChannelAccess'))
+        self.allowMediaDeletion = utils.cast(bool, data.attrib.get('allowMediaDeletion'))
+        self.allowSharing = utils.cast(bool, data.attrib.get('allowSharing'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
+        self.backgroundProcessing = utils.cast(bool, data.attrib.get('backgroundProcessing'))
+        self.certificate = utils.cast(bool, data.attrib.get('certificate'))
+        self.companionProxy = utils.cast(bool, data.attrib.get('companionProxy'))
         self.diagnostics = utils.toList(data.attrib.get('diagnostics'))
-        self.eventStream = cast(bool, data.attrib.get('eventStream'))
+        self.eventStream = utils.cast(bool, data.attrib.get('eventStream'))
         self.friendlyName = data.attrib.get('friendlyName')
-        self.hubSearch = cast(bool, data.attrib.get('hubSearch'))
+        self.hubSearch = utils.cast(bool, data.attrib.get('hubSearch'))
         self.machineIdentifier = data.attrib.get('machineIdentifier')
-        self.multiuser = cast(bool, data.attrib.get('multiuser'))
-        self.myPlex = cast(bool, data.attrib.get('myPlex'))
+        self.multiuser = utils.cast(bool, data.attrib.get('multiuser'))
+        self.myPlex = utils.cast(bool, data.attrib.get('myPlex'))
         self.myPlexMappingState = data.attrib.get('myPlexMappingState')
         self.myPlexSigninState = data.attrib.get('myPlexSigninState')
-        self.myPlexSubscription = cast(bool, data.attrib.get('myPlexSubscription'))
+        self.myPlexSubscription = utils.cast(bool, data.attrib.get('myPlexSubscription'))
         self.myPlexUsername = data.attrib.get('myPlexUsername')
         self.ownerFeatures = utils.toList(data.attrib.get('ownerFeatures'))
-        self.photoAutoTag = cast(bool, data.attrib.get('photoAutoTag'))
+        self.photoAutoTag = utils.cast(bool, data.attrib.get('photoAutoTag'))
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
-        self.pluginHost = cast(bool, data.attrib.get('pluginHost'))
-        self.readOnlyLibraries = cast(int, data.attrib.get('readOnlyLibraries'))
-        self.requestParametersInCookie = cast(bool, data.attrib.get('requestParametersInCookie'))
+        self.pluginHost = utils.cast(bool, data.attrib.get('pluginHost'))
+        self.readOnlyLibraries = utils.cast(int, data.attrib.get('readOnlyLibraries'))
+        self.requestParametersInCookie = utils.cast(bool, data.attrib.get('requestParametersInCookie'))
         self.streamingBrainVersion = data.attrib.get('streamingBrainVersion')
-        self.sync = cast(bool, data.attrib.get('sync'))
+        self.sync = utils.cast(bool, data.attrib.get('sync'))
         self.transcoderActiveVideoSessions = int(data.attrib.get('transcoderActiveVideoSessions', 0))
-        self.transcoderAudio = cast(bool, data.attrib.get('transcoderAudio'))
-        self.transcoderLyrics = cast(bool, data.attrib.get('transcoderLyrics'))
-        self.transcoderPhoto = cast(bool, data.attrib.get('transcoderPhoto'))
-        self.transcoderSubtitles = cast(bool, data.attrib.get('transcoderSubtitles'))
-        self.transcoderVideo = cast(bool, data.attrib.get('transcoderVideo'))
+        self.transcoderAudio = utils.cast(bool, data.attrib.get('transcoderAudio'))
+        self.transcoderLyrics = utils.cast(bool, data.attrib.get('transcoderLyrics'))
+        self.transcoderPhoto = utils.cast(bool, data.attrib.get('transcoderPhoto'))
+        self.transcoderSubtitles = utils.cast(bool, data.attrib.get('transcoderSubtitles'))
+        self.transcoderVideo = utils.cast(bool, data.attrib.get('transcoderVideo'))
         self.transcoderVideoBitrates = utils.toList(data.attrib.get('transcoderVideoBitrates'))
         self.transcoderVideoQualities = utils.toList(data.attrib.get('transcoderVideoQualities'))
         self.transcoderVideoResolutions = utils.toList(data.attrib.get('transcoderVideoResolutions'))
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
-        self.updater = cast(bool, data.attrib.get('updater'))
+        self.updater = utils.cast(bool, data.attrib.get('updater'))
         self.version = data.attrib.get('version')
-        self.voiceSearch = cast(bool, data.attrib.get('voiceSearch'))
+        self.voiceSearch = utils.cast(bool, data.attrib.get('voiceSearch'))
 
     def _headers(self, **kwargs):
         """ Returns dict containing base headers for all requests to the server. """
@@ -770,11 +770,11 @@ class PlexServer(PlexObject):
                 raise BadRequest('Unknown filter: %s=%s' % (key, value))
             if key.startswith('at'):
                 try:
-                    value = cast(int, value.timestamp())
+                    value = utils.cast(int, value.timestamp())
                 except AttributeError:
                     raise BadRequest('Time frame filter must be a datetime object: %s=%s' % (key, value))
             elif key.startswith('bytes') or key == 'lan':
-                value = cast(int, value)
+                value = utils.cast(int, value)
             elif key == 'accountID':
                 if value == self.myPlexAccount().id:
                     value = 1  # The admin account is accountID=1
@@ -834,7 +834,7 @@ class Account(PlexObject):
         self.privateAddress = data.attrib.get('privateAddress')
         self.privatePort = data.attrib.get('privatePort')
         self.subscriptionFeatures = utils.toList(data.attrib.get('subscriptionFeatures'))
-        self.subscriptionActive = cast(bool, data.attrib.get('subscriptionActive'))
+        self.subscriptionActive = utils.cast(bool, data.attrib.get('subscriptionActive'))
         self.subscriptionState = data.attrib.get('subscriptionState')
 
 
@@ -844,8 +844,8 @@ class Activity(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.cancellable = cast(bool, data.attrib.get('cancellable'))
-        self.progress = cast(int, data.attrib.get('progress'))
+        self.cancellable = utils.cast(bool, data.attrib.get('cancellable'))
+        self.progress = utils.cast(int, data.attrib.get('progress'))
         self.title = data.attrib.get('title')
         self.subtitle = data.attrib.get('subtitle')
         self.type = data.attrib.get('type')
@@ -884,13 +884,13 @@ class SystemAccount(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.autoSelectAudio = cast(bool, data.attrib.get('autoSelectAudio'))
+        self.autoSelectAudio = utils.cast(bool, data.attrib.get('autoSelectAudio'))
         self.defaultAudioLanguage = data.attrib.get('defaultAudioLanguage')
         self.defaultSubtitleLanguage = data.attrib.get('defaultSubtitleLanguage')
-        self.id = cast(int, data.attrib.get('id'))
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.key = data.attrib.get('key')
         self.name = data.attrib.get('name')
-        self.subtitleMode = cast(int, data.attrib.get('subtitleMode'))
+        self.subtitleMode = utils.cast(int, data.attrib.get('subtitleMode'))
         self.thumb = data.attrib.get('thumb')
         # For backwards compatibility
         self.accountID = self.id
@@ -915,7 +915,7 @@ class SystemDevice(PlexObject):
         self._data = data
         self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
-        self.id = cast(int, data.attrib.get('id'))
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.key = '/devices/%s' % self.id
         self.name = data.attrib.get('name')
         self.platform = data.attrib.get('platform')
@@ -939,12 +939,12 @@ class StatisticsBandwidth(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.accountID = cast(int, data.attrib.get('accountID'))
+        self.accountID = utils.cast(int, data.attrib.get('accountID'))
         self.at = utils.toDatetime(data.attrib.get('at'))
-        self.bytes = cast(int, data.attrib.get('bytes'))
-        self.deviceID = cast(int, data.attrib.get('deviceID'))
-        self.lan = cast(bool, data.attrib.get('lan'))
-        self.timespan = cast(int, data.attrib.get('timespan'))
+        self.bytes = utils.cast(int, data.attrib.get('bytes'))
+        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))
+        self.lan = utils.cast(bool, data.attrib.get('lan'))
+        self.timespan = utils.cast(int, data.attrib.get('timespan'))
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -980,11 +980,11 @@ class StatisticsResources(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.at = utils.toDatetime(data.attrib.get('at'))
-        self.hostCpuUtilization = cast(float, data.attrib.get('hostCpuUtilization'))
-        self.hostMemoryUtilization = cast(float, data.attrib.get('hostMemoryUtilization'))
-        self.processCpuUtilization = cast(float, data.attrib.get('processCpuUtilization'))
-        self.processMemoryUtilization = cast(float, data.attrib.get('processMemoryUtilization'))
-        self.timespan = cast(int, data.attrib.get('timespan'))
+        self.hostCpuUtilization = utils.cast(float, data.attrib.get('hostCpuUtilization'))
+        self.hostMemoryUtilization = utils.cast(float, data.attrib.get('hostMemoryUtilization'))
+        self.processCpuUtilization = utils.cast(float, data.attrib.get('processCpuUtilization'))
+        self.processMemoryUtilization = utils.cast(float, data.attrib.get('processMemoryUtilization'))
+        self.timespan = utils.cast(int, data.attrib.get('timespan'))
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
