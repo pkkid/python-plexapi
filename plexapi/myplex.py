@@ -704,8 +704,7 @@ class MyPlexAccount(PlexObject):
         """ Returns an user account Online Media Sourcessettings :class:`~plexapi.myplex.AccountOptOut`
         """
         url = self.SETTINGS % {'userUUID': self.uuid} + '/opt_outs'
-        elem = self.query(url, headers={'X-Plex-Token': self._token,
-                                    'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
+        elem = self.query(url)
         return self.findItems(elem, cls=AccountOptOut, etag='optOut')
 
     def settings(self):
