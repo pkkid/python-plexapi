@@ -707,15 +707,15 @@ class MyPlexAccount(PlexObject):
         elem = self.query(url)
         return self.findItems(elem, cls=AccountOptOut, etag='optOut')
 
+    @property
     def settings(self):
         """ Returns an user account settings :class:`~plexapi.myplex.AccountSettings`
         """
-        req = requests.get(self.SETTINGS % {'userUUID': self.uuid} ,
+        req = requests.get(self.SETTINGS % {'userUUID': self.uuid},
                            headers={'X-Plex-Token': self._token,
                                     'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
         elem = ElementTree.fromstring(req.text)
-        for item in elem.iter('setting'):
-            return AccountSettings(data=item, server=self._server)
+        return self.findItems(elem, cls=AccountSettings, etag='setting')[0]
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
