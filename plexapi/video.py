@@ -986,6 +986,21 @@ class Extra(Clip):
 
         Attributes:
             TAG (str): 'Extras'
+            TYPE (str): 'clip'
+            addedAt (datetime): Datetime the item was added to the library.
+            duration (int): Duration of the clip in milliseconds.
+            extraType (int): Unknown.
+            index (int): Plex index number for the clip.
+            key (str): API URL (/library/metadata/<ratingkey>).
+            media (List<:class:`~plexapi.media.Media`>): List of media objects.
+            originallyAvailableAt (datetime): Datetime the clip was released.
+            ratingKey (int): Unique key identifying the item.
+            subtype (str): Type of clip (trailer, behindTheScenes, sceneOrSample, etc.).
+            summary (str): Summary of the movie, show, season, episode, or clip.
+            thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
+            title (str): Name of the movie, show, season, episode, or clip.
+            type (str): 'movie', 'show', 'season', 'episode', or 'clip'.
+            year (int): Year clip was released.
     """
     TAG = 'Extras'
 
