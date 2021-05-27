@@ -519,11 +519,17 @@ class PlexServer(PlexObject):
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results
 
-    def playlists(self):
-        """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
-        # TODO: Add sort and type options?
-        # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
-        return self.fetchItems('/playlists')
+    def playlists(self, playlistType=None):
+        """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects on the server.
+
+            Parameters:
+                playlistType (str, optional): The type of playlists to return (audio, video, photo).
+                    Default returns all playlists.
+        """
+        key = '/playlists'
+        if playlistType:
+            key = '%s?playlistType=%s' % (key, playlistType)
+        return self.fetchItems(key)
 
     def playlist(self, title):
         """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.
