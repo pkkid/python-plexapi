@@ -151,7 +151,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
     def items(self):
         """ Returns a list of all items in the playlist. """
         if self._items is None:
-            key = '/playlists/%s/items' % self.ratingKey
+            key = '%s/items' % self.key
             items = self.fetchItems(key)
             self._items = items
         return self._items
@@ -242,7 +242,37 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             key += '?after=%s' % after.playlistItemID
         self._server.query(key, method=self._server._session.put)
 
+    def updateFilters(self, limit=None, sort=None, filters=None, **kwargs):
+        """ Update the filters for a smart playlist.
 
+            Parameters:
+                limit (int): Limit the number of items in the playlist.
+                sort (str or list, optional): A string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): A dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Additional custom filters to apply to the search results.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying update filters for a regular playlist.
+        """
+        if not self.smart:
+            raise BadRequest('Cannot update filters for a regular playlist.')
+
+        section = self.section()
+        searchKey = section._buildSearchKey(
+            sort=sort, libtype=section.METADATA_TYPE, filters=filters, **kwargs)
+        uri = '%s%s' % (self._uriRoot(), searchKey)
+
+        if limit:
+            uri = uri + '&limit=%s' % str(limit)
+
+        key = '%s/items%s' % (self.key, utils.joinArgs({
+            'uri': uri
+        }))
+        self._server.query(key, method=self._server._session.put)
 
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
@@ -331,7 +361,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                     video, or photo objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
                 section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
-                    library section to create the playlist in.
+                    the library section to create the playlist in.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
@@ -340,7 +370,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                     See :func:`plexapi.library.LibrarySection.search` for more info.
                 **kwargs (dict): Smart playlists only, additional custom filters to apply to the
                     search results. See :func:`plexapi.library.LibrarySection.search` for more info.
-                
+
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
                 :class:`plexapi.exceptions.BadRequest`: When mixing media types in the playlist.
