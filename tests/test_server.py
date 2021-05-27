@@ -163,6 +163,8 @@ def test_server_playlists(plex, show):
     try:
         playlists = plex.playlists()
         assert len(playlists) == count + 1
+        assert playlist in plex.playlists(playlistType='video')
+        assert playlist not in plex.playlists(playlistType='audio')
     finally:
         playlist.delete()
 
