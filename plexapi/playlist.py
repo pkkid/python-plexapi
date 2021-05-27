@@ -20,9 +20,11 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             addedAt (datetime): Datetime the playlist was added to the server.
             allowSync (bool): True if you allow syncing playlists.
             composite (str): URL to composite image (/playlist/<ratingKey>/composite/<compositeid>)
+            content (str): The filter URI string for smart playlists.
             duration (int): Duration of the playlist in milliseconds.
             durationInSeconds (int): Duration of the playlist in seconds.
             guid (str): Plex GUID for the playlist (com.plexapp.agents.none://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
+            icon (str): Icon URI string for smart playlists.
             key (str): API URL (/playlist/<ratingkey>).
             leafCount (int): Number of items in the playlist view.
             playlistType (str): 'audio', 'video', or 'photo'
@@ -42,8 +44,10 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         self.addedAt = toDatetime(data.attrib.get('addedAt'))
         self.allowSync = cast(bool, data.attrib.get('allowSync'))
         self.composite = data.attrib.get('composite')  # url to thumbnail
+        self.content = data.attrib.get('content')
         self.duration = cast(int, data.attrib.get('duration'))
         self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds'))
+        self.icon = data.attrib.get('icon')
         self.guid = data.attrib.get('guid')
         self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
         self.leafCount = cast(int, data.attrib.get('leafCount'))
