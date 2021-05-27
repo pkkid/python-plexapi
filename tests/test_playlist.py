@@ -2,13 +2,12 @@
 import time
 
 import pytest
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unsupported
 
 
 def test_create_playlist(plex, show):
     # create the playlist
     title = 'test_create_playlist_show'
-    #print('Creating playlist %s..' % title)
     episodes = show.episodes()
     playlist = plex.createPlaylist(title, episodes[:3])
     try:
@@ -21,32 +20,55 @@ def test_create_playlist(plex, show):
         assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2a].'
         # Test move items around (b)
         playlist.moveItem(items[1])
-        items = playlist.items()
+        items = playlist.reload().items()
         assert items[0].ratingKey == episodes[1].ratingKey, 'Items not in proper order [0b].'
         assert items[1].ratingKey == episodes[0].ratingKey, 'Items not in proper order [1b].'
         assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2b].'
         # Test move items around (c)
         playlist.moveItem(items[0], items[1])
-        items = playlist.items()
+        items = playlist.reload().items()
         assert items[0].ratingKey == episodes[0].ratingKey, 'Items not in proper order [0c].'
         assert items[1].ratingKey == episodes[1].ratingKey, 'Items not in proper order [1c].'
         assert items[2].ratingKey == episodes[2].ratingKey, 'Items not in proper order [2c].'
         # Test add item
         playlist.addItems(episodes[3])
-        items = playlist.items()
+        items = playlist.reload().items()
         assert items[3].ratingKey == episodes[3].ratingKey, 'Missing added item: %s' % episodes[3]
         # Test add two items
         playlist.addItems(episodes[4:6])
-        items = playlist.items()
+        items = playlist.reload().items()
         assert items[4].ratingKey == episodes[4].ratingKey, 'Missing added item: %s' % episodes[4]
         assert items[5].ratingKey == episodes[5].ratingKey, 'Missing added item: %s' % episodes[5]
         assert len(items) == 6, 'Playlist should have 6 items, %s found' % len(items)
         # Test remove item
-        toremove = items[3]
-        playlist.removeItem(toremove)
-        items = playlist.items()
-        assert toremove not in items, 'Removed item still in playlist: %s' % items[3]
+        toremove = items[5]
+        playlist.removeItems(toremove)
+        items = playlist.reload().items()
+        assert toremove not in items, 'Removed item still in playlist: %s' % items[5]
         assert len(items) == 5, 'Playlist should have 5 items, %s found' % len(items)
+        # Test remove two item
+        toremove = items[3:5]
+        playlist.removeItems(toremove)
+        items = playlist.reload().items()
+        assert toremove[0] not in items, 'Removed item still in playlist: %s' % items[3]
+        assert toremove[1] not in items, 'Removed item still in playlist: %s' % items[4]
+        assert len(items) == 3, 'Playlist should have 5 items, %s found' % len(items)
+    finally:
+        playlist.delete()
+
+
+def test_playlist_edit(plex, movie):
+    title = 'test_playlist_edit'
+    new_title = 'test_playlist_edit_new_title'
+    new_summary = 'test_playlist_edit_summary'
+    try:
+        playlist = plex.createPlaylist(title, movie)
+        assert playlist.title == title
+        assert playlist.summary == ''
+        playlist.edit(title=new_title, summary=new_summary)
+        playlist.reload()
+        assert playlist.title == new_title
+        assert playlist.summary == new_summary
     finally:
         playlist.delete()
 
@@ -111,10 +133,74 @@ def test_copyToUser(plex, show, fresh_plex, shared_username):
         playlist.delete()
 
 
-def test_smart_playlist(plex, movies):
+def test_smart_playlist(plex, movies, movie):
     try:
-        pl = plex.createPlaylist(title='smart_playlist', smart=True, limit=1, section=movies, year=2008)
-        assert len(pl.items()) == 1
-        assert pl.smart
+        playlist = plex.createPlaylist(
+            title='smart_playlist',
+            smart=True,
+            limit=2,
+            section=movies,
+            sort='titleSort:desc',
+            **{'year>>': 2007}
+        )
+        items = playlist.items()
+        assert playlist.smart
+        assert len(items) == 2
+        assert items == sorted(items, key=lambda i: i.titleSort, reverse=True)
+        playlist.updateFilters(limit=1, year=movie.year)
+        playlist.reload()
+        assert len(playlist.items()) == 1
+        assert movie in playlist
     finally:
-        pl.delete()
+        playlist.delete()
+
+
+def test_smart_playlist_section(plex, movies, movie):
+    title = 'test_playlist_section'
+    try:
+        playlist = plex.createPlaylist(title, movie)
+        with pytest.raises(BadRequest):
+            playlist.section()
+    finally:
+        playlist.delete()
+
+    try:
+        playlist = plex.createPlaylist(title, smart=True, section=movies, **{'year>>': 2000})
+        assert playlist.section() == movies
+        playlist.content = ''
+        assert playlist.section() == movies
+        playlist.updateFilters(year=1990)
+        playlist.reload()
+        playlist.content = ''
+        with pytest.raises(Unsupported):
+            playlist.section()
+    finally:
+        playlist.delete()
+
+
+def test_playlist_exceptions(plex, movies, movie, artist):
+    title = 'test_playlist_exceptions'
+    try:
+        playlist = plex.createPlaylist(title, movie)
+        with pytest.raises(BadRequest):
+            playlist.updateFilters()
+        with pytest.raises(BadRequest):
+            playlist.addItems(artist)
+    finally:
+        playlist.delete()
+
+    with pytest.raises(BadRequest):
+        plex.createPlaylist(title, items=[])
+    with pytest.raises(BadRequest):
+        plex.createPlaylist(title, items=[movie, artist])
+
+    try:
+        playlist = plex.createPlaylist(title, smart=True, section=movies, **{'year>>': 2000})
+        with pytest.raises(BadRequest):
+            playlist.addItems(movie)
+        with pytest.raises(BadRequest):
+            playlist.removeItems(movie)
+        with pytest.raises(BadRequest):
+            playlist.moveItem(movie)
+    finally:
+        playlist.delete()
