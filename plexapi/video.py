@@ -995,7 +995,7 @@ class Extra(Clip):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.extraType = data.attrib.get('extraType')
-        self.index = data.attrib.get('index')
+        self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '')
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(
@@ -1006,4 +1006,4 @@ class Extra(Clip):
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self.year = data.attrib.get('year')
+        self.year = utils.cast(int, data.attrib.get('year'))
