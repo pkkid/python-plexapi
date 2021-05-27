@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from urllib.parse import quote_plus
+import re
+from urllib.parse import quote_plus, unquote
 
 from plexapi import utils
 from plexapi.base import Playable, PlexPartialObject
@@ -59,6 +60,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         self.type = data.attrib.get('type')
         self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
         self._items = None  # cache for self.items
+        self._section = None  # cache for self.section
 
     def __len__(self):  # pragma: no cover
         return len(self.items())
@@ -107,6 +109,33 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         else:
             uuid = self._server.machineIdentifier
         return 'server://%s/com.plexapp.plugins.library' % uuid
+
+    def section(self):
+        """ Returns the :class:`~plexapi.library.LibrarySection` this smart playlist belongs to.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to get the section for a regular playlist.
+                :class:`plexapi.exceptions.Unsupported`: When unable to determine the library section.
+        """
+        if not self.smart:
+            raise BadRequest('Regular playlists are not associated with a library.')
+
+        if self._section is None:
+            # Try to parse the library section from the content URI string
+            match = re.search(r'/library/sections/(\d+)/all', unquote(self.content or ''))
+            if match:
+                sectionKey = int(match.group(1))
+                self._section = self._server.library.sectionByID(sectionKey)
+                return self._section
+        
+            # Try to get the library section from the first item in the playlist
+            if self.items():
+                self._section = self.items()[0].section()
+                return self._section
+
+            raise Unsupported('Unable to determine the library section')
+
+        return self._section
 
     def item(self, title):
         """ Returns the item in the playlist that matches the specified title.
