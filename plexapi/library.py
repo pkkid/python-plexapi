@@ -1374,6 +1374,14 @@ class LibrarySection(PlexObject):
         key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
         return self.fetchItems(key, **kwargs)
 
+    def createPlaylist(self, title, items=None, limit=None, smart=False,
+                       sort=None, filters=None, **kwargs):
+        """ Alias for :func:`~plexapi.server.PlexServer.createPlaylist` using this
+            :class:`~plexapi.library.LibrarySection`.
+        """
+        return self._server.createPlaylist(title, items=items, section=self, limit=limit, smart=smart,
+                                           sort=sort, filters=filters, **kwargs)
+
     @deprecated('use "listFields" instead')
     def filterFields(self, mediaType=None):
         return self.listFields(libtype=mediaType)
