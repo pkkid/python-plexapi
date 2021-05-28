@@ -199,6 +199,15 @@ def test_library_MovieSection_collections(movies, collection):
     assert len(movies.collections())
 
 
+def test_library_MovieSection_createPlaylist(movies):
+    items = movies.all()
+    try:
+        playlist = movies.createPlaylist("Library Playlist", items=items)
+        assert len(playlist) == len(items)
+    finally:
+        playlist.delete()
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
