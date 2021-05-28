@@ -76,6 +76,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
     @property
     def metadataType(self):
+        """ Returns the type of metadata in the playlist (movie, track, or photo). """
         if self.isVideo:
             return 'movie'
         elif self.isAudio:
@@ -87,14 +88,17 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
     @property
     def isVideo(self):
+        """ Returns True if this is a video playlist. """
         return self.playlistType == 'video'
 
     @property
     def isAudio(self):
+        """ Returns True if this is an audio playlist. """
         return self.playlistType == 'audio'
 
     @property
     def isPhoto(self):
+        """ Returns True if this is a photo playlist. """
         return self.playlistType == 'photo'
 
     def __contains__(self, other):  # pragma: no cover
@@ -142,6 +146,9 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
             Parameters:
                 title (str): Title of the item to return.
+
+            Raises:
+                :class:`plexapi.exceptions.NotFound`: When the item is not found in the playlist.
         """
         for item in self.items():
             if item.title.lower() == title.lower():
