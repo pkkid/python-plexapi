@@ -270,11 +270,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
         section = self.section()
         searchKey = section._buildSearchKey(
-            sort=sort, libtype=section.METADATA_TYPE, filters=filters, **kwargs)
+            sort=sort, libtype=section.METADATA_TYPE, limit=limit, filters=filters, **kwargs)
         uri = '%s%s' % (self._uriRoot(), searchKey)
-
-        if limit:
-            uri = uri + '&limit=%s' % str(limit)
 
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': uri
@@ -340,11 +337,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             section = server.library.section(section)
 
         searchKey = section._buildSearchKey(
-            sort=sort, libtype=section.METADATA_TYPE, filters=filters, **kwargs)
+            sort=sort, libtype=section.METADATA_TYPE, limit=limit, filters=filters, **kwargs)
         uri = '%s%s' % (cls._uriRoot(server), searchKey)
-
-        if limit:
-            uri = uri + '&limit=%s' % str(limit)
 
         key = '/playlists%s' % utils.joinArgs({
             'uri': uri,
@@ -401,7 +395,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
     def sync(self, videoQuality=None, photoResolution=None, audioBitrate=None, client=None, clientId=None, limit=None,
              unwatched=False, title=None):
-        """ Add current playlist as sync item for specified device.
+        """ Add the playlist as a sync item for the specified device.
             See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
             Parameters:
