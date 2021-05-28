@@ -975,7 +975,7 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
 
     def section(self):
         """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
-        # Clip payloads currently do not contain 'librarySectionID'.
+        # Clip payloads may not contain 'librarySectionID'
         # Return None to avoid unnecessary attribute lookup attempts.
         return None
 
