@@ -1402,6 +1402,14 @@ class AccountOptOut(PlexObject):
         self.value = data.attrib.get('value')
 
     def updateOptOut(self, option):
+        """Method for toggling Online Media Sources options.
+            Parameters:
+                option (str): see CHOICES
+
+            Raises:
+                :class:`NotFound`: `option` str not found in CHOICES.
+                :class:`BadRequest`: option is currently set to `option`.
+        """
         if option not in self.CHOICES:
             raise NotFound('%s not found in available choices: %s' % (option, self.CHOICES))
         if option == self.value:
