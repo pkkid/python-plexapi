@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound, Unsupported
+from plexapi.library import LibrarySection
 from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.mixins import LabelMixin
 from plexapi.settings import Setting
@@ -161,3 +162,93 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
         part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
+
+    @classmethod
+    def _create(cls, server, title, section, items):
+        """ Create a regular collection. """
+        if not items:
+            raise BadRequest('Must include items to add when creating new collection.')
+
+        if not isinstance(section, LibrarySection):
+            section = server.library.section(section)
+
+        if items and not isinstance(items, (list, tuple)):
+            items = [items]
+
+        itemType = items[0].type
+        ratingKeys = []
+        for item in items:
+            if item.type != itemType:  # pragma: no cover
+                raise BadRequest('Can not mix media types when building a collection.')
+            ratingKeys.append(str(item.ratingKey))
+
+        ratingKeys = ','.join(ratingKeys)
+        uri = '%s/library/metadata/%s' % (cls._uriRoot(server), ratingKeys)
+
+        key = '/library/collections%s' % utils.joinArgs({
+            'uri': uri,
+            'type': utils.searchType(itemType),
+            'title': title,
+            'smart': 0,
+            'sectionId': section.key
+        })
+        data = server.query(key, method=server._session.post)[0]
+        return cls(server, data, initpath=key)
+
+    @classmethod
+    def _createSmart(cls, server, title, section, limit=None, libtype=None, sort=None, filters=None, **kwargs):
+        """ Create a smart collection. """
+        if not isinstance(section, LibrarySection):
+            section = server.library.section(section)
+
+        libtype = libtype or section.TYPE
+
+        searchKey = section._buildSearchKey(
+            sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
+        uri = '%s%s' % (cls._uriRoot(server), searchKey)
+
+        key = '/library/collections%s' % utils.joinArgs({
+            'uri': uri,
+            'type': utils.searchType(libtype),
+            'title': title,
+            'smart': 1,
+            'sectionId': section.key
+        })
+        data = server.query(key, method=server._session.post)[0]
+        return cls(server, data, initpath=key)
+
+    @classmethod
+    def create(cls, server, title, section, items=None, smart=False, limit=None,
+               libtype=None, sort=None, filters=None, **kwargs):
+        """ Create a collection.
+
+            Parameters:
+                server (:class:`~plexapi.server.PlexServer`): Server to create the collection on.
+                title (str): Title of the collection.
+                section (:class:`~plexapi.library.LibrarySection`, str): The library section to create the collection in.
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): Regular collections only, list of audio,
+                    video, or photo objects to be added to the collection.
+                smart (bool): True to create a smart collection. Default False.
+                limit (int): Smart collections only, limit the number of items in the collection.
+                libtype (str): Smart collections only, the specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
+                sort (str or list, optional): Smart collections only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart collections only, a dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart collections only, additional custom filters to apply to the
+                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the collection.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the collection.
+
+            Returns:
+                :class:`~plexapi.collection.Collection`: A new instance of the created Collection.
+        """
+        if smart:
+            return cls._createSmart(server, title, section, limit, libtype, sort, filters, **kwargs)
+        else:
+            return cls._create(server, title, section, items)
