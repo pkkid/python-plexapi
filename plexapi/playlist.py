@@ -69,6 +69,12 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         for item in self.items():
             yield item
 
+    def __contains__(self, other):  # pragma: no cover
+        return any(i.key == other.key for i in self.items())
+
+    def __getitem__(self, key):  # pragma: no cover
+        return self.items()[key]
+
     @property
     def thumb(self):
         """ Alias to self.composite. """
@@ -100,12 +106,6 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
     def isPhoto(self):
         """ Returns True if this is a photo playlist. """
         return self.playlistType == 'photo'
-
-    def __contains__(self, other):  # pragma: no cover
-        return any(i.key == other.key for i in self.items())
-
-    def __getitem__(self, key):  # pragma: no cover
-        return self.items()[key]
 
     def _uriRoot(self, server=None):
         if server:
