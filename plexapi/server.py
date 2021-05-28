@@ -9,6 +9,7 @@ from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
+from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Hub, Library, Path, File
 from plexapi.media import Conversion, Optimized
@@ -391,18 +392,51 @@ class PlexServer(PlexObject):
 
         raise NotFound('Unknown client name: %s' % name)
 
-    def createPlaylist(self, title, items=None, section=None, limit=None, smart=False,
+    def createCollection(self, title, section, items=None, smart=False, limit=None,
+                         libtype=None, sort=None, filters=None, **kwargs):
+        """ Creates and returns a new :class:`~plexapi.collection.Collection`.
+
+            Parameters:
+                title (str): Title of the collection.
+                section (:class:`~plexapi.library.LibrarySection`, str): The library section to create the collection in.
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): Regular collections only, list of audio,
+                    video, or photo objects to be added to the collection.
+                smart (bool): True to create a smart collection. Default False.
+                limit (int): Smart collections only, limit the number of items in the collection.
+                libtype (str): Smart collections only, the specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
+                sort (str or list, optional): Smart collections only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart collections only, a dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart collections only, additional custom filters to apply to the
+                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the collection.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the collection.
+
+            Returns:
+                :class:`~plexapi.collection.Collection`: A new instance of the created Collection.
+        """
+        return Collection.create(
+            self, title, section, items=items, smart=smart, limit=limit,
+            libtype=libtype, sort=sort, filters=filters, **kwargs)
+
+    def createPlaylist(self, title, section=None, items=None, smart=False, limit=None,
                        sort=None, filters=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
                 title (str): Title of the playlist.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
+                    library section to create the playlist in.
                 items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
                     or List<:class:`~plexapi.photo.Photo`>): Regular playlists only, list of audio,
                     video, or photo objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
-                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
-                    library section to create the playlist in.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
@@ -419,8 +453,9 @@ class PlexServer(PlexObject):
             Returns:
                 :class:`~plexapi.playlist.Playlist`: A new instance of the created Playlist.
         """
-        return Playlist.create(self, title, items=items, section=section, limit=limit, smart=smart,
-                               sort=sort, filters=filters, **kwargs)
+        return Playlist.create(
+            self, title, section=section, items=items, smart=smart, limit=limit,
+            sort=sort, filters=filters, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.

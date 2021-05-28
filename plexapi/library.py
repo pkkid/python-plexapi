@@ -1362,6 +1362,15 @@ class LibrarySection(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
+    def createCollection(self, title, items=None, smart=False, limit=None,
+                         libtype=None, sort=None, filters=None, **kwargs):
+        """ Alias for :func:`~plexapi.server.PlexServer.createCollection` using this
+            :class:`~plexapi.library.LibrarySection`.
+        """
+        return self._server.createCollection(
+            title, section=self, items=items, smart=smart, limit=limit,
+            libtype=libtype, sort=sort, filters=filters, **kwargs)
+
     @deprecated('use "collections" (plural) instead')
     def collection(self, **kwargs):
         return self.collections()
@@ -1372,18 +1381,19 @@ class LibrarySection(PlexObject):
         """
         return self.search(libtype='collection', **kwargs)
 
-    def playlists(self, **kwargs):
-        """ Returns a list of playlists from this library section. """
-        key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
-        return self.fetchItems(key, **kwargs)
-
-    def createPlaylist(self, title, items=None, limit=None, smart=False,
+    def createPlaylist(self, title, items=None, smart=False, limit=None,
                        sort=None, filters=None, **kwargs):
         """ Alias for :func:`~plexapi.server.PlexServer.createPlaylist` using this
             :class:`~plexapi.library.LibrarySection`.
         """
-        return self._server.createPlaylist(title, items=items, section=self, limit=limit, smart=smart,
-                                           sort=sort, filters=filters, **kwargs)
+        return self._server.createPlaylist(
+            title, section=self, items=items, smart=smart, limit=limit,
+            sort=sort, filters=filters, **kwargs)
+
+    def playlists(self, **kwargs):
+        """ Returns a list of playlists from this library section. """
+        key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
+        return self.fetchItems(key, **kwargs)
 
     @deprecated('use "listFields" instead')
     def filterFields(self, mediaType=None):

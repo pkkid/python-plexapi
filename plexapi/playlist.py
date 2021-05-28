@@ -350,19 +350,19 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         return cls(server, data, initpath=key)
 
     @classmethod
-    def create(cls, server, title, items=None, section=None, limit=None, smart=False,
+    def create(cls, server, title, section=None, items=None, smart=False, limit=None,
                sort=None, filters=None, **kwargs):
         """ Create a playlist.
 
             Parameters:
                 server (:class:`~plexapi.server.PlexServer`): Server to create the playlist on.
                 title (str): Title of the playlist.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
+                    the library section to create the playlist in.
                 items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
                     or List<:class:`~plexapi.photo.Photo`>): Regular playlists only, list of audio,
                     video, or photo objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
-                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
-                    the library section to create the playlist in.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
