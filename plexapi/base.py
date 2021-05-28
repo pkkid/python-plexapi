@@ -727,12 +727,11 @@ class MediaContainer(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.allowSync = utils.cast(int, data.attrib.get('allowSync'))
-        self.librarySectionID = data.attrib.get('librarySectionID')
-        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
-        self.librarySectionUUID = data.attrib.get('librarySectionUUID')
         self.augmentationKey = data.attrib.get('augmentationKey')
         self.identifier = data.attrib.get('identifier')
-        self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionUUID = data.attrib.get('librarySectionUUID')
         self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
         self.size = utils.cast(int, data.attrib.get('size'))
