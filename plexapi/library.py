@@ -966,7 +966,7 @@ class LibrarySection(PlexObject):
 
         return validatedFilters
 
-    def _buildSearchKey(self, title=None, sort=None, libtype=None, filters=None, returnKwargs=False, **kwargs):
+    def _buildSearchKey(self, title=None, sort=None, libtype=None, limit=None, filters=None, returnKwargs=False, **kwargs):
         """ Returns the validated and formatted search query API key
             (``/library/sections/<sectionKey>/all?<params>``).
         """
@@ -987,6 +987,8 @@ class LibrarySection(PlexObject):
             args['sort'] = self._validateSortFields(sort, libtype)
         if libtype is not None:
             args['type'] = utils.searchType(libtype)
+        if limit is not None:
+            args['limit'] = limit
 
         joined_args = utils.joinArgs(args).lstrip('?')
         joined_filter_args = '&'.join(filter_args) if filter_args else ''
@@ -1004,7 +1006,7 @@ class LibrarySection(PlexObject):
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
     def search(self, title=None, sort=None, maxresults=None, libtype=None,
-               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, filters=None, **kwargs):
+               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, limit=None, filters=None, **kwargs):
         """ Search the library. The http requests will be batched in container_size. If you are only looking for the
             first <num> results, it would be wise to set the maxresults option to that amount so the search doesn't iterate
             over all results on the server.
@@ -1020,7 +1022,8 @@ class LibrarySection(PlexObject):
                     return :class:`~plexapi.video.Episode` objects)
                 container_start (int, optional): Default 0.
                 container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
-                filters (dict): A dictionary of advanced filters. See the details below for more info.
+                limit (int, optional): Limit the number of results from the filter.
+                filters (dict, optional): A dictionary of advanced filters. See the details below for more info.
                 **kwargs (dict): Additional custom filters to apply to the search results.
                     See the details below for more info.
 
@@ -1237,7 +1240,7 @@ class LibrarySection(PlexObject):
 
         """
         key, kwargs = self._buildSearchKey(
-            title=title, sort=sort, libtype=libtype, filters=filters, returnKwargs=True, **kwargs)
+            title=title, sort=sort, libtype=libtype, limit=limit, filters=filters, returnKwargs=True, **kwargs)
         return self._search(key, maxresults, container_start, container_size, **kwargs)
 
     def _search(self, key, maxresults, container_start, container_size, **kwargs):
