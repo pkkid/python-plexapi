@@ -391,14 +391,36 @@ class PlexServer(PlexObject):
 
         raise NotFound('Unknown client name: %s' % name)
 
-    def createPlaylist(self, title, items=None, section=None, limit=None, smart=None, **kwargs):
+    def createPlaylist(self, title, items=None, section=None, limit=None, smart=False,
+                       sort=None, filters=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
-                title (str): Title of the playlist to be created.
-                items (list<Media>): List of media items to include in the playlist.
+                title (str): Title of the playlist.
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): Regular playlists only, list of audio,
+                    video, or photo objects to be added to the playlist.
+                smart (bool): True to create a smart playlist. Default False.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
+                    library section to create the playlist in.
+                limit (int): Smart playlists only, limit the number of items in the playlist.
+                sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart playlists only, a dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart playlists only, additional custom filters to apply to the
+                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the playlist.
+
+            Returns:
+                :class:`~plexapi.playlist.Playlist`: A new instance of the created Playlist.
         """
-        return Playlist.create(self, title, items=items, limit=limit, section=section, smart=smart, **kwargs)
+        return Playlist.create(self, title, items=items, section=section, limit=limit, smart=smart,
+                               sort=sort, filters=filters, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.

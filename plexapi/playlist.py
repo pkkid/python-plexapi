@@ -172,22 +172,27 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
     @classmethod
     def _create(cls, server, title, items):
-        """ Create a playlist. """
+        """ Create a regular playlist. """
         if not items:
             raise BadRequest('Must include items to add when creating new playlist')
             
         if items and not isinstance(items, (list, tuple)):
             items = [items]
+
+        listType = items[0].listType
         ratingKeys = []
         for item in items:
-            if item.listType != items[0].listType:  # pragma: no cover
+            if item.listType != listType:  # pragma: no cover
                 raise BadRequest('Can not mix media types when building a playlist')
             ratingKeys.append(str(item.ratingKey))
+
         ratingKeys = ','.join(ratingKeys)
-        uuid = items[0].section().uuid
+        uuid = server.machineIdentifier
+        uri = 'server://%s/com.plexapp.plugins.library/library/metadata/%s' % (uuid, ratingKeys)
+
         key = '/playlists%s' % utils.joinArgs({
-            'uri': 'library://%s/directory//library/metadata/%s' % (uuid, ratingKeys),
-            'type': items[0].listType,
+            'uri': uri,
+            'type': listType,
             'title': title,
             'smart': 0
         })
@@ -195,54 +200,19 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         return cls(server, data, initpath=key)
 
     @classmethod
-    def create(cls, server, title, items=None, section=None, limit=None, smart=False, **kwargs):
-        """Create a playlist.
-
-        Parameters:
-            server (:class:`~plexapi.server.PlexServer`): Server your connected to.
-            title (str): Title of the playlist.
-            items (Iterable): Iterable of objects that should be in the playlist.
-            section (:class:`~plexapi.library.LibrarySection`, str):
-            limit (int): default None.
-            smart (bool): default False.
-
-            **kwargs (dict): is passed to the filters. For a example see the search method.
-            
-        Raises:
-            :class:`plexapi.exceptions.BadRequest`: when no items are included in create request.
-
-        Returns:
-            :class:`~plexapi.playlist.Playlist`: an instance of created Playlist.
-        """
-        if smart:
-            return cls._createSmart(server, title, section, limit, **kwargs)
-
-        else:
-            return cls._create(server, title, items)
-
-    @classmethod
-    def _createSmart(cls, server, title, section, limit=None, **kwargs):
+    def _createSmart(cls, server, title, section, limit=None, sort=None, filters=None, **kwargs):
         """ Create a Smart playlist. """
-
         if not isinstance(section, LibrarySection):
             section = server.library.section(section)
 
-        sectionType = utils.searchType(section.type)
-        sectionId = section.key
-        uuid = section.uuid
-        uri = 'library://%s/directory//library/sections/%s/all?type=%s' % (uuid,
-                                                                           sectionId,
-                                                                           sectionType)
+        searchKey = section._buildSearchKey(
+            sort=sort, libtype=section.METADATA_TYPE, filters=filters, **kwargs)
+        uuid = server.machineIdentifier
+        uri = 'server://%s/com.plexapp.plugins.library%s' % (uuid, searchKey)
+
         if limit:
             uri = uri + '&limit=%s' % str(limit)
 
-        for category, value in kwargs.items():
-            sectionChoices = section.listFilterChoices(category)
-            for choice in sectionChoices:
-                if str(choice.title).lower() == str(value).lower():
-                    uri = uri + '&%s=%s' % (category.lower(), str(choice.key))
-
-        uri = uri + '&sourceType=%s' % sectionType
         key = '/playlists%s' % utils.joinArgs({
             'uri': uri,
             'type': section.CONTENT_TYPE,
@@ -251,6 +221,41 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         })
         data = server.query(key, method=server._session.post)[0]
         return cls(server, data, initpath=key)
+
+    @classmethod
+    def create(cls, server, title, items=None, section=None, limit=None, smart=False,
+               sort=None, filters=None, **kwargs):
+        """Create a playlist.
+
+            Parameters:
+                server (:class:`~plexapi.server.PlexServer`): Server to create the playlist on.
+                title (str): Title of the playlist.
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): Regular playlists only, list of audio,
+                    video, or photo objects to be added to the playlist.
+                smart (bool): True to create a smart playlist. Default False.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
+                    library section to create the playlist in.
+                limit (int): Smart playlists only, limit the number of items in the playlist.
+                sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart playlists only, a dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart playlists only, additional custom filters to apply to the
+                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+                
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the playlist.
+
+            Returns:
+                :class:`~plexapi.playlist.Playlist`: An instance of created Playlist.
+        """
+        if smart:
+            return cls._createSmart(server, title, section, limit, sort, filters, **kwargs)
+        else:
+            return cls._create(server, title, items)
 
     def copyToUser(self, user):
         """ Copy playlist to another user account.
