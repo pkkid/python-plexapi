@@ -5,6 +5,7 @@ from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.mixins import LabelMixin
+from plexapi.playqueue import PlayQueue
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
@@ -82,32 +83,66 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self._items = None  # cache for self.items
+        self._section = None  # cache for self.section
+
+    def __len__(self):  # pragma: no cover
+        return self.childCount
+
+    def __iter__(self):  # pragma: no cover
+        for item in self.items():
+            yield item
+
+    def __contains__(self, other):  # pragma: no cover
+        return any(i.key == other.key for i in self.items())
+
+    def __getitem__(self, key):  # pragma: no cover
+        return self.items()[key]
+
+    def _uriRoot(self, server=None):
+        if server:
+            uuid = server.machineIentifier
+        else:
+            uuid = self._server.machineIdentifier
+        return 'server://%s/com.plexapp.plugins.library' % uuid
 
     @property
     @deprecated('use "items" instead', stacklevel=3)
     def children(self):
         return self.items()
 
+    def section(self):
+        """ Returns the :class:`~plexapi.library.LibrarySection` this collection belongs to.
+        """
+        if self._section is None:
+            self._section = super(Collection, self).section()
+        return self._section
+
     def item(self, title):
         """ Returns the item in the collection that matches the specified title.
 
             Parameters:
                 title (str): Title of the item to return.
+
+            Raises:
+                :class:`plexapi.exceptions.NotFound`: When the item is not found in the collection.
         """
-        key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItem(key, title__iexact=title)
+        for item in self.items():
+            if item.title.lower() == title.lower():
+                return item
+        raise NotFound('Item with title "%s" not found in the collection' % title)
 
     def items(self):
         """ Returns a list of all items in the collection. """
-        key = '/library/metadata/%s/children' % self.ratingKey
-        return self.fetchItems(key)
+        if self._items is None:
+            key = '%s/children' % self.key
+            items = self.fetchItems(key)
+            self._items = items
+        return self._items
 
     def get(self, title):
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
-
-    def __len__(self):
-        return self.childCount
 
     def _preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
@@ -162,6 +197,125 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
         part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
         return self._server.query(part, method=self._server._session.put)
+
+    def addItems(self, items):
+        """ Add items to the collection.
+
+            Parameters:
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
+                    to be added to the collection.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to add items to a smart collection.
+        """
+        if self.smart:
+            raise BadRequest('Cannot add items to a smart collection.')
+
+        if items and not isinstance(items, (list, tuple)):
+            items = [items]
+
+        ratingKeys = []
+        for item in items:
+            if item.type != self.subtype:  # pragma: no cover
+                raise BadRequest('Can not mix media types when building a collection: %s and %s' %
+                    (self.subtype, item.type))
+            ratingKeys.append(str(item.ratingKey))
+
+        ratingKeys = ','.join(ratingKeys)
+        uri = '%s/library/metadata/%s' % (self._uriRoot(), ratingKeys)
+
+        key = '%s/items%s' % (self.key, utils.joinArgs({
+            'uri': uri
+        }))
+        self._server.query(key, method=self._server._session.put)
+
+    def removeItems(self, items):
+        """ Remove items from the collection.
+
+            Parameters:
+                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
+                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
+                    to be removed from the collection. Items must be retrieved from
+                    :func:`plexapi.collection.Collection.items`.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to remove items from a smart collection.
+        """
+        if self.smart:
+            raise BadRequest('Cannot remove items from a smart collection.')
+
+        if items and not isinstance(items, (list, tuple)):
+            items = [items]
+
+        for item in items:
+            key = '%s/items/%s' % (self.key, item.ratingKey)
+            self._server.query(key, method=self._server._session.delete)
+
+    def updateFilters(self, libtype=None, limit=None, sort=None, filters=None, **kwargs):
+        """ Update the filters for a smart collection.
+
+            Parameters:
+                libtype (str): The specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
+                limit (int): Limit the number of items in the collection.
+                sort (str or list, optional): A string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                filters (dict): A dictionary of advanced filters.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Additional custom filters to apply to the search results.
+                    See :func:`plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying update filters for a regular collection.
+        """
+        if not self.smart:
+            raise BadRequest('Cannot update filters for a regular collection.')
+
+        section = self.section()
+        searchKey = section._buildSearchKey(
+            sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
+        uri = '%s%s' % (self._uriRoot(), searchKey)
+
+        key = '%s/items%s' % (self.key, utils.joinArgs({
+            'uri': uri
+        }))
+        self._server.query(key, method=self._server._session.put)
+
+    def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):
+        """ Edit the collection.
+        
+            Parameters:
+                title (str, optional): The title of the collection.
+                titleSort (str, optional): The sort title of the collection.
+                contentRating (str, optional): The summary of the collection.
+                summary (str, optional): The summary of the collection.
+        """
+        args = {}
+        if title:
+            args['title.value'] = title
+            args['title.locked'] = 1
+        if titleSort:
+            args['titleSort.value'] = titleSort
+            args['titleSort.locked'] = 1
+        if contentRating:
+            args['contentRating.value'] = contentRating
+            args['contentRating.locked'] = 1
+        if summary:
+            args['summary.value'] = summary
+            args['summary.locked'] = 1
+
+        args.update(kwargs)
+        super(Collection, self).edit(**args)
+
+    def delete(self):
+        """ Delete the collection. """
+        super(Collection, self).delete()
+
+    def playQueue(self, *args, **kwargs):
+        """ Returns a new :class:`~plexapi.playqueue.PlayQueue` from the collection. """
+        return PlayQueue.create(self._server, self.items(), *args, **kwargs)
 
     @classmethod
     def _create(cls, server, title, section, items):
