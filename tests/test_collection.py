@@ -15,7 +15,7 @@ def test_Collection_attrs(collection):
     assert collection.collectionPublished is False
     assert collection.collectionSort == 0
     assert collection.content is None
-    assert collection.contentRating
+    assert collection.contentRating is None
     assert not collection.fields
     assert collection.guid.startswith("collection://")
     assert utils.is_int(collection.index)
@@ -33,7 +33,7 @@ def test_Collection_attrs(collection):
     assert collection.summary == ""
     assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
     assert collection.thumbBlurHash is None
-    assert collection.title == "Marvel"
+    assert collection.title == "Test Collection"
     assert collection.titleSort == collection.title
     assert collection.type == "collection"
     assert utils.is_datetime(collection.updatedAt)
