@@ -382,6 +382,8 @@ def test_library_MovieSection_advancedSearch(movies, movie):
     }
     results = movies.search(filters=advancedFilters)
     assert movie in results
+    results = movies.search(limit=1)
+    assert len(results) == 1
 
 
 def test_library_ShowSection_search(tvshows, show):
