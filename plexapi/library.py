@@ -1371,9 +1371,15 @@ class LibrarySection(PlexObject):
             title, section=self, items=items, smart=smart, limit=limit,
             libtype=libtype, sort=sort, filters=filters, **kwargs)
 
-    @deprecated('use "collections" (plural) instead')
-    def collection(self, **kwargs):
-        return self.collections()
+    def collection(self, title):
+        """ Returns the collection with the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        results = self.collections(title__iexact=title)
+        if results:
+            return results[0]
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
@@ -1389,6 +1395,16 @@ class LibrarySection(PlexObject):
         return self._server.createPlaylist(
             title, section=self, items=items, smart=smart, limit=limit,
             sort=sort, filters=filters, **kwargs)
+
+    def playlist(self, title):
+        """ Returns the playlist with the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        results = self.playlists(title__iexact=title)
+        if results:
+            return results[0]
 
     def playlists(self, **kwargs):
         """ Returns a list of playlists from this library section. """
