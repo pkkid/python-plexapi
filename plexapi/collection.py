@@ -53,6 +53,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
     TYPE = 'collection'
 
     def _loadData(self, data):
+        self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
@@ -293,16 +294,16 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
                 summary (str, optional): The summary of the collection.
         """
         args = {}
-        if title:
+        if title is not None:
             args['title.value'] = title
             args['title.locked'] = 1
-        if titleSort:
+        if titleSort is not None:
             args['titleSort.value'] = titleSort
             args['titleSort.locked'] = 1
-        if contentRating:
+        if contentRating is not None:
             args['contentRating.value'] = contentRating
             args['contentRating.locked'] = 1
-        if summary:
+        if summary is not None:
             args['summary.value'] = summary
             args['summary.locked'] = 1
 

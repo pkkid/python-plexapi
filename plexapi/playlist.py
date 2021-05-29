@@ -286,9 +286,9 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 summary (str, optional): The summary of the playlist.
         """
         args = {}
-        if title:
+        if title is not None:
             args['title'] = title
-        if summary:
+        if summary is not None:
             args['summary'] = summary
 
         key = '%s%s' % (self.key, utils.joinArgs(args))
