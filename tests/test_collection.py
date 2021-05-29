@@ -39,6 +39,23 @@ def test_Collection_attrs(collection):
     assert utils.is_datetime(collection.updatedAt)
 
 
+def test_Collection_section(collection, movies):
+    assert collection.section() == movies
+
+
+def test_Collection_item(collection):
+    item1 = collection.item("Elephants Dream")
+    assert item1.title == "Elephants Dream"
+    item2 = collection.get("Elephants Dream")
+    assert item2.title == "Elephants Dream"
+    assert item1 == item2
+
+
+def test_Collection_items(collection):
+    items = collection.items()
+    assert len(items) == 1
+
+
 def test_Collection_modeUpdate(collection):
     mode_dict = {"default": -1, "hide": 0, "hideItems": 1, "showItems": 2}
     for key, value in mode_dict.items():
@@ -61,40 +78,131 @@ def test_Collection_sortUpdate(collection):
     collection.sortUpdate("release")
 
 
-def test_Collection_edit(collection):
-    edits = {"titleSort.value": "New Title Sort", "titleSort.locked": 1}
-    collectionTitleSort = collection.titleSort
-    collection.edit(**edits)
+def test_Collection_add_remove(collection, movies, show):
+    movie = movies.get("Big Buck Bunny")
+    assert movie not in collection
+    collection.addItems(movie)
     collection.reload()
-    for field in collection.fields:
-        if field.name == "titleSort":
-            assert collection.titleSort == "New Title Sort"
-            assert field.locked is True
-    collection.edit(**{"titleSort.value": collectionTitleSort, "titleSort.locked": 0})
+    assert movie in collection
+    collection.removeItems(movie)
+    collection.reload()
+    assert movie not in collection
+    with pytest.raises(BadRequest):
+        collection.addItems(show)
 
 
-def test_Collection_delete(movies):
-    delete_collection = "delete_collection"
-    movie = movies.get("Sintel")
-    movie.addCollection(delete_collection)
-    collections = movies.collections(title=delete_collection)
-    assert len(collections) == 1
-    collections[0].delete()
-    collections = movies.collections(title=delete_collection)
-    assert len(collections) == 0
+def test_Collection_edit(collection, movies):
+    fields = {"title", "titleSort", "contentRating", "summary"}
+    title = collection.title
+    titleSort = collection.titleSort
+    contentRating = collection.contentRating
+    summary = collection.summary
+
+    newTitle = "New Title"
+    newTitleSort = "New Title Sort"
+    newContentRating = "New Content Rating"
+    newSummary = "New Summary"
+    collection.edit(
+        title=newTitle,
+        titleSort=newTitleSort,
+        contentRating=newContentRating,
+        summary=newSummary
+    )
+    collection.reload()
+    assert collection.title == newTitle
+    assert collection.titleSort == newTitleSort
+    assert collection.contentRating == newContentRating
+    assert collection.summary == newSummary
+    lockedFields = [f.locked for f in collection.fields if f.name in fields]
+    assert all(lockedFields)
+
+    collection.edit(
+        title=title,
+        titleSort=titleSort,
+        contentRating=contentRating or "",
+        summary=summary,
+        **{
+            "title.locked": 0,
+            "titleSort.locked": 0,
+            "contentRating.locked": 0,
+            "summary.locked": 0
+        }
+    )
+    # Cannot use collection.reload() since PlexObject.__setattr__()
+    # will not overwrite contentRating with None
+    collection = movies.collection("Test Collection")
+    assert collection.title == title
+    assert collection.titleSort == titleSort
+    assert collection.contentRating is None
+    assert collection.summary == summary
+    lockedFields = [f.locked for f in collection.fields if f.name in fields]
+    assert not any(lockedFields)
 
 
-def test_Collection_item(collection):
-    item1 = collection.item("Elephants Dream")
-    assert item1.title == "Elephants Dream"
-    item2 = collection.get("Elephants Dream")
-    assert item2.title == "Elephants Dream"
-    assert item1 == item2
+def test_Collection_create(plex, tvshows):
+    title = "test_Collection_create"
+    try:
+        collection = plex.createCollection(
+            title=title,
+            section=tvshows,
+            items=tvshows.all()
+        )
+        assert collection in tvshows.collections()
+        assert collection.smart is False
+    finally:
+        collection.delete()
 
 
-def test_Collection_items(collection):
-    items = collection.items()
-    assert len(items) == 1
+def test_Collection_createSmart(plex, tvshows):
+    title = "test_Collection_createSmart"
+    try:
+        collection = plex.createCollection(
+            title=title,
+            section=tvshows,
+            smart=True,
+            limit=3,
+            libtype="episode",
+            sort="episode.index:desc",
+            filters={"show.title": "Game of Thrones"}
+        )
+        assert collection in tvshows.collections()
+        assert collection.smart is True
+        assert len(collection.items()) == 3
+        assert all([e.type == "episode" for e in collection.items()])
+        assert all([e.grandparentTitle == "Game of Thrones" for e in collection.items()])
+        assert collection.items() == sorted(collection.items(), key=lambda e: e.index, reverse=True)
+        collection.updateFilters(limit=5, libtype="episode", filters={"show.title": "The 100"})
+        collection.reload()
+        assert len(collection.items()) == 5
+        assert all([e.grandparentTitle == "The 100" for e in collection.items()])
+    finally:
+        collection.delete()
+
+
+def test_Collection_exceptions(plex, movies, movie, artist):
+    title = 'test_Collection_exceptions'
+    try:
+        collection = plex.createCollection(title, movies, movie)
+        with pytest.raises(BadRequest):
+            collection.updateFilters()
+        with pytest.raises(BadRequest):
+            collection.addItems(artist)
+    finally:
+        collection.delete()
+
+    with pytest.raises(BadRequest):
+        plex.createCollection(title, movies, items=[])
+    with pytest.raises(BadRequest):
+        plex.createCollection(title, movies, items=[movie, artist])
+
+    try:
+        collection = plex.createCollection(title, smart=True, section=movies, **{'year>>': 2000})
+        with pytest.raises(BadRequest):
+            collection.addItems(movie)
+        with pytest.raises(BadRequest):
+            collection.removeItems(movie)
+    finally:
+        collection.delete()
 
 
 def test_Collection_posters(collection):
@@ -104,7 +212,7 @@ def test_Collection_posters(collection):
 
 def test_Collection_art(collection):
     arts = collection.arts()
-    assert not arts  # Collection has no default art
+    assert arts
 
 
 def test_Collection_mixins_images(collection):

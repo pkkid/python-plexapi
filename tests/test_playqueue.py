@@ -141,6 +141,19 @@ def test_create_playqueue_from_playlist(plex, album):
         playlist.delete()
 
 
+def test_create_playqueue_from_collection(plex, music, album):
+    try:
+        collection = plex.createCollection("test_collection", music, album)
+        pq = collection.playQueue(shuffle=1)
+        assert pq.playQueueShuffled is True
+        assert len(collection) == len(album.tracks())
+        assert len(pq) == len(collection)
+        pq.addItem(collection.items()[0])
+        assert len(pq) == len(collection) + 1
+    finally:
+        collection.delete()
+
+
 def test_lookup_playqueue(plex, movie):
     pq = PlayQueue.create(plex, movie)
     pq_id = pq.playQueueID
