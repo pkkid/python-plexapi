@@ -88,7 +88,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         self._section = None  # cache for self.section
 
     def __len__(self):  # pragma: no cover
-        return self.childCount
+        return len(self.items())
 
     def __iter__(self):  # pragma: no cover
         for item in self.items():
