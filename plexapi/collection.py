@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
@@ -99,6 +101,38 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
 
     def __getitem__(self, key):  # pragma: no cover
         return self.items()[key]
+
+    @property
+    def listType(self):
+        """ Returns the listType for the collection. """
+        if self.isVideo:
+            return 'video'
+        elif self.isAudio:
+            return 'audio'
+        elif self.isPhoto:
+            return 'photo'
+        else:
+            raise Unsupported('Unexpected collection type')
+
+    @property
+    def metadataType(self):
+        """ Returns the type of metadata in the collection. """
+        return self.subtype
+
+    @property
+    def isVideo(self):
+        """ Returns True if this is a video collection. """
+        return self.subtype in {'movie', 'show', 'season', 'episode'}
+
+    @property
+    def isAudio(self):
+        """ Returns True if this is an audio collection. """
+        return self.subtype in {'artist', 'album', 'track'}
+
+    @property
+    def isPhoto(self):
+        """ Returns True if this is a photo collection. """
+        return self.subtype in {'photoalbum', 'photo'}
 
     def _uriRoot(self, server=None):
         if server:
@@ -407,3 +441,59 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
             return cls._createSmart(server, title, section, limit, libtype, sort, filters, **kwargs)
         else:
             return cls._create(server, title, section, items)
+
+    def sync(self, videoQuality=None, photoResolution=None, audioBitrate=None, client=None, clientId=None, limit=None,
+             unwatched=False, title=None):
+        """ Add the collection as sync item for the specified device.
+            See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
+
+            Parameters:
+                videoQuality (int): idx of quality of the video, one of VIDEO_QUALITY_* values defined in
+                                    :mod:`~plexapi.sync` module. Used only when collection contains video.
+                photoResolution (str): maximum allowed resolution for synchronized photos, see PHOTO_QUALITY_* values in
+                                       the module :mod:`~plexapi.sync`. Used only when collection contains photos.
+                audioBitrate (int): maximum bitrate for synchronized music, better use one of MUSIC_BITRATE_* values
+                                    from the module :mod:`~plexapi.sync`. Used only when collection contains audio.
+                client (:class:`~plexapi.myplex.MyPlexDevice`): sync destination, see
+                                                               :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                clientId (str): sync destination, see :func:`~plexapi.myplex.MyPlexAccount.sync`.
+                limit (int): maximum count of items to sync, unlimited if `None`.
+                unwatched (bool): if `True` watched videos wouldn't be synced.
+                title (str): descriptive title for the new :class:`~plexapi.sync.SyncItem`, if empty the value would be
+                             generated from metadata of current photo.
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: When collection is not allowed to sync.
+                :exc:`~plexapi.exceptions.Unsupported`: When collection content is unsupported.
+
+            Returns:
+                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
+        """
+        if not self.section().allowSync:
+            raise BadRequest('The collection is not allowed to sync')
+
+        from plexapi.sync import SyncItem, Policy, MediaSettings
+
+        myplex = self._server.myPlexAccount()
+        sync_item = SyncItem(self._server, None)
+        sync_item.title = title if title else self.title
+        sync_item.rootTitle = self.title
+        sync_item.contentType = self.listType
+        sync_item.metadataType = self.metadataType
+        sync_item.machineIdentifier = self._server.machineIdentifier
+
+        sync_item.location = 'library:///directory/%s' % quote_plus(
+            '%s/children?excludeAllLeaves=1' % (self.key)
+        )
+        sync_item.policy = Policy.create(limit, unwatched)
+
+        if self.isVideo:
+            sync_item.mediaSettings = MediaSettings.createVideo(videoQuality)
+        elif self.isAudio:
+            sync_item.mediaSettings = MediaSettings.createMusic(audioBitrate)
+        elif self.isPhoto:
+            sync_item.mediaSettings = MediaSettings.createPhoto(photoResolution)
+        else:
+            raise Unsupported('Unsupported collection content')
+
+        return myplex.sync(sync_item, client=client, clientId=clientId)
