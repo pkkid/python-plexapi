@@ -107,13 +107,6 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         """ Returns True if this is a photo playlist. """
         return self.playlistType == 'photo'
 
-    def _uriRoot(self, server=None):
-        if server:
-            uuid = server.machineIentifier
-        else:
-            uuid = self._server.machineIdentifier
-        return 'server://%s/com.plexapp.plugins.library' % uuid
-
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this smart playlist belongs to.
 
@@ -191,7 +184,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (self._uriRoot(), ratingKeys)
+        uri = '%s/library/metadata/%s' % (self._server._uriRoot(), ratingKeys)
 
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': uri
@@ -267,7 +260,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         section = self.section()
         searchKey = section._buildSearchKey(
             sort=sort, libtype=section.METADATA_TYPE, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (self._uriRoot(), searchKey)
+        uri = '%s%s' % (self._server._uriRoot(), searchKey)
 
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': uri
@@ -315,7 +308,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (cls._uriRoot(server), ratingKeys)
+        uri = '%s/library/metadata/%s' % (server._uriRoot(), ratingKeys)
 
         key = '/playlists%s' % utils.joinArgs({
             'uri': uri,
@@ -334,7 +327,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
 
         searchKey = section._buildSearchKey(
             sort=sort, libtype=section.METADATA_TYPE, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (cls._uriRoot(server), searchKey)
+        uri = '%s%s' % (server._uriRoot(), searchKey)
 
         key = '/playlists%s' % utils.joinArgs({
             'uri': uri,

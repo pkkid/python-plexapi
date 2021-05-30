@@ -169,6 +169,9 @@ class PlexServer(PlexObject):
         headers.update(kwargs)
         return headers
 
+    def _uriRoot(self):
+        return 'server://%s/com.plexapp.plugins.library' % self.machineIdentifier
+
     @property
     def library(self):
         """ Library to browse or search your media. """

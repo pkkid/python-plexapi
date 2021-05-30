@@ -134,13 +134,6 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         """ Returns True if this is a photo collection. """
         return self.subtype in {'photoalbum', 'photo'}
 
-    def _uriRoot(self, server=None):
-        if server:
-            uuid = server.machineIentifier
-        else:
-            uuid = self._server.machineIdentifier
-        return 'server://%s/com.plexapp.plugins.library' % uuid
-
     @property
     @deprecated('use "items" instead', stacklevel=3)
     def children(self):
@@ -262,7 +255,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (self._uriRoot(), ratingKeys)
+        uri = '%s/library/metadata/%s' % (self._server._uriRoot(), ratingKeys)
 
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': uri
@@ -314,7 +307,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         section = self.section()
         searchKey = section._buildSearchKey(
             sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (self._uriRoot(), searchKey)
+        uri = '%s%s' % (self._server._uriRoot(), searchKey)
 
         key = '%s/items%s' % (self.key, utils.joinArgs({
             'uri': uri
@@ -375,7 +368,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (cls._uriRoot(server), ratingKeys)
+        uri = '%s/library/metadata/%s' % (server._uriRoot(), ratingKeys)
 
         key = '/library/collections%s' % utils.joinArgs({
             'uri': uri,
@@ -397,7 +390,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
 
         searchKey = section._buildSearchKey(
             sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (cls._uriRoot(server), searchKey)
+        uri = '%s%s' % (server._uriRoot(), searchKey)
 
         key = '/library/collections%s' % utils.joinArgs({
             'uri': uri,
