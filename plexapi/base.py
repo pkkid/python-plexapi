@@ -8,8 +8,9 @@ from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import tag_plural, tag_helper
 
-DONT_RELOAD_FOR_KEYS = {'key', 'session'}
-DONT_OVERWRITE_SESSION_KEYS = {'usernames', 'players', 'transcodeSessions', 'session'}
+USER_DONT_RELOAD_FOR_KEYS = set()
+_DONT_RELOAD_FOR_KEYS = {'key', 'session'}
+_DONT_OVERWRITE_SESSION_KEYS = {'usernames', 'players', 'transcodeSessions', 'session'}
 OPERATORS = {
     'exact': lambda v, q: v == q,
     'iexact': lambda v, q: v.lower() == q.lower(),
@@ -53,6 +54,7 @@ class PlexObject(object):
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
+        self._autoReload = False
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
@@ -61,10 +63,12 @@ class PlexObject(object):
 
     def __setattr__(self, attr, value):
         # Don't overwrite session specific attr with []
-        if attr in DONT_OVERWRITE_SESSION_KEYS and value == []:
+        if attr in _DONT_OVERWRITE_SESSION_KEYS and value == []:
             value = getattr(self, attr, [])
-        # Don't overwrite an attr with None unless it's a private variable
-        if value is not None or attr.startswith('_') or attr not in self.__dict__:
+
+        autoReload = self.__dict__.get('_autoReload')
+        # Don't overwrite an attr with None unless it's a private variable or not auto reload
+        if value is not None or attr.startswith('_') or attr not in self.__dict__ or not autoReload:
             self.__dict__[attr] = value
 
     def _clean(self, value):
@@ -298,7 +302,7 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key=None, **kwargs):
+    def reload(self, key=None, _autoReload=False, **kwargs):
         """ Reload the data for this object from self.key.
 
             Parameters:
@@ -335,7 +339,9 @@ class PlexObject(object):
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
         data = self._server.query(key)
+        self._autoReload = _autoReload
         self._loadData(data[0])
+        self._autoReload = False
         return self
 
     def _checkAttrs(self, elem, **kwargs):
@@ -441,8 +447,9 @@ class PlexPartialObject(PlexObject):
         # Dragons inside.. :-/
         value = super(PlexPartialObject, self).__getattribute__(attr)
         # Check a few cases where we dont want to reload
-        if attr in DONT_RELOAD_FOR_KEYS: return value
-        if attr in DONT_OVERWRITE_SESSION_KEYS: return value
+        if attr in _DONT_RELOAD_FOR_KEYS: return value
+        if attr in _DONT_OVERWRITE_SESSION_KEYS: return value
+        if attr in USER_DONT_RELOAD_FOR_KEYS: return
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
@@ -452,7 +459,7 @@ class PlexPartialObject(PlexObject):
         objname = "%s '%s'" % (clsname, title) if title else clsname
         log.debug("Reloading %s for attr '%s'", objname, attr)
         # Reload and return the value
-        self.reload()
+        self.reload(_autoReload=True)
         return super(PlexPartialObject, self).__getattribute__(attr)
 
     def analyze(self):
@@ -694,7 +701,7 @@ class Playable(object):
         key = '/:/progress?key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s' % (self.ratingKey,
                                                                                               time, state)
         self._server.query(key)
-        self.reload()
+        self.reload(_autoReload=True)
 
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
@@ -712,4 +719,4 @@ class Playable(object):
         key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
-        self.reload()
+        self.reload(_autoReload=True)
