@@ -187,10 +187,12 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
 
                     collection.updateMode(mode="hide")
         """
-        mode_dict = {'default': -1,
-                     'hide': 0,
-                     'hideItems': 1,
-                     'showItems': 2}
+        mode_dict = {
+            'default': -1,
+            'hide': 0,
+            'hideItems': 1,
+            'showItems': 2
+        }
         key = mode_dict.get(mode)
         if key is None:
             raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
@@ -211,9 +213,11 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
 
                     collection.updateSort(mode="alpha")
         """
-        sort_dict = {'release': 0,
-                     'alpha': 1,
-                     'custom': 2}
+        sort_dict = {
+            'release': 0,
+            'alpha': 1,
+            'custom': 2
+        }
         key = sort_dict.get(sort)
         if key is None:
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))

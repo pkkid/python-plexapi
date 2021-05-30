@@ -222,7 +222,7 @@ def test_Playlist_exceptions(plex, movies, movie, artist):
         plex.createPlaylist(title, items=[movie, artist])
 
     try:
-        playlist = plex.createPlaylist(title, smart=True, section=movies, **{'year>>': 2000})
+        playlist = plex.createPlaylist(title, smart=True, section=movies.title, **{'year>>': 2000})
         with pytest.raises(BadRequest):
             playlist.addItems(movie)
         with pytest.raises(BadRequest):

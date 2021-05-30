@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
 from . import test_mixins
@@ -37,6 +37,11 @@ def test_Collection_attrs(collection):
     assert collection.titleSort == collection.title
     assert collection.type == "collection"
     assert utils.is_datetime(collection.updatedAt)
+    assert collection.listType == "video"
+    assert collection.metadataType == collection.subtype
+    assert collection.isVideo is True
+    assert collection.isAudio is False
+    assert collection.isPhoto is False
 
 
 def test_Collection_section(collection, movies):
@@ -49,6 +54,8 @@ def test_Collection_item(collection):
     item2 = collection.get("Elephants Dream")
     assert item2.title == "Elephants Dream"
     assert item1 == item2
+    with pytest.raises(NotFound):
+        collection.item("Does not exist")
 
 
 def test_Collection_items(collection):
@@ -68,7 +75,7 @@ def test_Collection_modeUpdate(collection):
 
 
 def test_Collection_sortUpdate(collection):
-    sort_dict = {"release": 0, "alpha": 1, "custom": 2}
+    sort_dict = {"release": 0, "alpha": 1}
     for key, value in sort_dict.items():
         collection.sortUpdate(sort=key)
         collection.reload()
@@ -182,7 +189,7 @@ def test_Collection_createSmart(plex, tvshows):
 def test_Collection_exceptions(plex, movies, movie, artist):
     title = 'test_Collection_exceptions'
     try:
-        collection = plex.createCollection(title, section=movies, items=movie)
+        collection = plex.createCollection(title, section=movies.title, items=movie)
         with pytest.raises(BadRequest):
             collection.updateFilters()
         with pytest.raises(BadRequest):
@@ -196,7 +203,7 @@ def test_Collection_exceptions(plex, movies, movie, artist):
         plex.createCollection(title, section=movies, items=[movie, artist])
 
     try:
-        collection = plex.createCollection(title, smart=True, section=movies, **{'year>>': 2000})
+        collection = plex.createCollection(title, smart=True, section=movies.title, **{'year>>': 2000})
         with pytest.raises(BadRequest):
             collection.addItems(movie)
         with pytest.raises(BadRequest):
