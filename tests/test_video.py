@@ -49,6 +49,10 @@ def test_video_Movie_mixins_images(movie):
     test_mixins.edit_poster(movie)
 
 
+def test_video_Movie_mixins_rating(movie):
+    test_mixins.edit_rating(movie)
+
+
 def test_video_Movie_mixins_tags(movie):
     test_mixins.edit_collection(movie)
     test_mixins.edit_country(movie)
@@ -729,6 +733,10 @@ def test_video_Show_mixins_images(show):
     test_mixins.attr_posterUrl(show)
 
 
+def test_video_Show_mixins_rating(show):
+    test_mixins.edit_rating(show)
+
+
 def test_video_Show_mixins_tags(show):
     test_mixins.edit_collection(show)
     test_mixins.edit_genre(show)
@@ -841,6 +849,11 @@ def test_video_Season_mixins_images(show):
     test_mixins.edit_poster(season)
     test_mixins.attr_artUrl(season)
     test_mixins.attr_posterUrl(season)
+
+
+def test_video_Season_mixins_rating(show):
+    season = show.season(season=1)
+    test_mixins.edit_rating(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1031,6 +1044,10 @@ def test_video_Episode_mixins_images(episode):
     test_mixins.edit_poster(episode)
     test_mixins.attr_artUrl(episode)
     test_mixins.attr_posterUrl(episode)
+
+
+def test_video_Episode_mixins_rating(episode):
+    test_mixins.edit_rating(episode)
 
 
 def test_video_Episode_mixins_tags(episode):

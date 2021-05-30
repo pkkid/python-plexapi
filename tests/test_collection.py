@@ -114,5 +114,9 @@ def test_Collection_mixins_images(collection):
     test_mixins.attr_posterUrl(collection)
 
 
+def test_Collection_mixins_rating(collection):
+    test_mixins.edit_rating(collection)
+
+
 def test_Collection_mixins_tags(collection):
     test_mixins.edit_label(collection)
