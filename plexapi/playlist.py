@@ -171,9 +171,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         """ Add items to the playlist.
 
             Parameters:
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
-                    to be added to the playlist.
+                items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to add items to a smart playlist.
@@ -207,10 +206,9 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         """ Remove items from the playlist.
 
             Parameters:
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
-                    to be removed from the playlist. Items must be retrieved from
-                    :func:`plexapi.playlist.Playlist.items`.
+                items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be removed from the playlist.
+                    Items must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to remove items from a smart playlist.
@@ -229,14 +227,12 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         """ Move an item to a new position in playlist.
 
             Parameters:
-                item (:class:`~plexapi.audio.Audio` or :class:`~plexapi.video.Video`
-                    or :class:`~plexapi.photo.Photo`): Audio, video, or photo object
-                    to be moved in the playlist. Item must be retrieved from
-                    :func:`plexapi.playlist.Playlist.items`.
-                after (:class:`~plexapi.audio.Audio` or :class:`~plexapi.video.Video`
-                    or :class:`~plexapi.photo.Photo`): Audio, video, or photo object
-                    to move the item after in the playlist. Item must be retrieved from
-                    :func:`plexapi.playlist.Playlist.items`.
+                items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be moved in the playlist.
+                    Item must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
+                after (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to move the item after in the playlist.
+                    Item must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to move items in a smart playlist.
@@ -256,11 +252,11 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 limit (int): Limit the number of items in the playlist.
                 sort (str or list, optional): A string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 filters (dict): A dictionary of advanced filters.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 **kwargs (dict): Additional custom filters to apply to the search results.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying update filters for a regular playlist.
@@ -286,9 +282,9 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 summary (str, optional): The summary of the playlist.
         """
         args = {}
-        if title is not None:
+        if title:
             args['title'] = title
-        if summary is not None:
+        if summary:
             args['summary'] = summary
 
         key = '%s%s' % (self.key, utils.joinArgs(args))
@@ -359,18 +355,17 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 title (str): Title of the playlist.
                 section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
                     the library section to create the playlist in.
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): Regular playlists only, list of audio,
-                    video, or photo objects to be added to the playlist.
+                items (List): Regular playlists only, list of :class:`~plexapi.audio.Audio`,
+                    :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 filters (dict): Smart playlists only, a dictionary of advanced filters.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 **kwargs (dict): Smart playlists only, additional custom filters to apply to the
-                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+                    search results. See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
@@ -418,7 +413,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 :exc:`~plexapi.exceptions.Unsupported`: When playlist content is unsupported.
 
             Returns:
-                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: A new instance of the created sync item.
         """
         if not self.allowSync:
             raise BadRequest('The playlist is not allowed to sync')

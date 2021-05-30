@@ -189,17 +189,20 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         return items
 
     def modeUpdate(self, mode=None):
-        """ Update Collection Mode
+        """ Update the collection mode advanced setting.
 
             Parameters:
-                mode: default     (Library default)
-                      hide        (Hide Collection)
-                      hideItems   (Hide Items in this Collection)
-                      showItems   (Show this Collection and its Items)
+                mode (str): One of the following values:
+                    "default" (Library default),
+                    "hide" (Hide Collection),
+                    "hideItems" (Hide Items in this Collection),
+                    "showItems" (Show this Collection and its Items)
+
             Example:
 
-                collection = 'plexapi.collection.Collection'
-                collection.updateMode(mode="hide")
+                .. code-block:: python
+
+                    collection.updateMode(mode="hide")
         """
         mode_dict = {'default': -1,
                      'hide': 0,
@@ -212,17 +215,19 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         return self._server.query(part, method=self._server._session.put)
 
     def sortUpdate(self, sort=None):
-        """ Update Collection Sorting
+        """ Update the collection order advanced setting.
 
             Parameters:
-                sort: realease     (Order Collection by realease dates)
-                      alpha        (Order Collection alphabetically)
-                      custom       (Custom collection order)
+                sort (str): One of the following values:
+                    "realease" (Order Collection by realease dates),
+                    "alpha" (Order Collection alphabetically),
+                    "custom" (Custom collection order)
 
             Example:
 
-                colleciton = 'plexapi.collection.Collection'
-                collection.updateSort(mode="alpha")
+                .. code-block:: python
+
+                    collection.updateSort(mode="alpha")
         """
         sort_dict = {'release': 0,
                      'alpha': 1,
@@ -237,9 +242,8 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         """ Add items to the collection.
 
             Parameters:
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
-                    to be added to the collection.
+                items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be added to the collection.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to add items to a smart collection.
@@ -269,10 +273,9 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         """ Remove items from the collection.
 
             Parameters:
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): List of audio, video, or photo objects
-                    to be removed from the collection. Items must be retrieved from
-                    :func:`plexapi.collection.Collection.items`.
+                items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be removed from the collection.
+                    Items must be retrieved from :func:`~plexapi.collection.Collection.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to remove items from a smart collection.
@@ -296,11 +299,11 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
                 limit (int): Limit the number of items in the collection.
                 sort (str or list, optional): A string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 filters (dict): A dictionary of advanced filters.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 **kwargs (dict): Additional custom filters to apply to the search results.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying update filters for a regular collection.
@@ -415,20 +418,19 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
                 server (:class:`~plexapi.server.PlexServer`): Server to create the collection on.
                 title (str): Title of the collection.
                 section (:class:`~plexapi.library.LibrarySection`, str): The library section to create the collection in.
-                items (List<:class:`~plexapi.audio.Audio`> or List<:class:`~plexapi.video.Video`>
-                    or List<:class:`~plexapi.photo.Photo`>): Regular collections only, list of audio,
-                    video, or photo objects to be added to the collection.
+                items (List): Regular collections only, list of :class:`~plexapi.audio.Audio`,
+                    :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the collection.
                 smart (bool): True to create a smart collection. Default False.
                 limit (int): Smart collections only, limit the number of items in the collection.
                 libtype (str): Smart collections only, the specific type of content to filter
                     (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
                 sort (str or list, optional): Smart collections only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 filters (dict): Smart collections only, a dictionary of advanced filters.
-                    See :func:`plexapi.library.LibrarySection.search` for more info.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
                 **kwargs (dict): Smart collections only, additional custom filters to apply to the
-                    search results. See :func:`plexapi.library.LibrarySection.search` for more info.
+                    search results. See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When no items are included to create the collection.
@@ -467,7 +469,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
                 :exc:`~plexapi.exceptions.Unsupported`: When collection content is unsupported.
 
             Returns:
-                :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
+                :class:`~plexapi.sync.SyncItem`: A new instance of the created sync item.
         """
         if not self.section().allowSync:
             raise BadRequest('The collection is not allowed to sync')
