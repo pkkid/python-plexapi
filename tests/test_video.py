@@ -697,11 +697,13 @@ def test_video_Show_analyze(show):
 
 def test_video_Show_markWatched(show):
     show.markWatched()
+    show.reload()
     assert show.isWatched
 
 
 def test_video_Show_markUnwatched(show):
     show.markUnwatched()
+    show.reload()
     assert not show.isWatched
 
 
@@ -814,12 +816,14 @@ def test_video_Season_show(show):
 def test_video_Season_watched(show):
     season = show.season("Season 1")
     season.markWatched()
+    season.reload()
     assert season.isWatched
 
 
 def test_video_Season_unwatched(show):
     season = show.season("Season 1")
     season.markUnwatched()
+    season.reload()
     assert not season.isWatched
 
 
