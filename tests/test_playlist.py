@@ -4,8 +4,35 @@ import time
 import pytest
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 
+from . import conftest as utils
 
-def test_create_playlist(plex, show):
+
+def test_Playlist_attrs(playlist):
+    assert utils.is_datetime(playlist.addedAt)
+    assert playlist.allowSync is True
+    assert utils.is_composite(playlist.composite, prefix="/playlists")
+    assert playlist.content is None
+    assert utils.is_int(playlist.duration)
+    assert playlist.durationInSeconds is None
+    assert playlist.icon is None
+    assert playlist.guid.startswith("com.plexapp.agents.none://")
+    assert playlist.key.startswith("/playlists/")
+    assert playlist.leafCount == 3
+    assert playlist.playlistType == "video"
+    assert utils.is_int(playlist.ratingKey)
+    assert playlist.smart is False
+    assert playlist.summary == ""
+    assert playlist.title == "Test Playlist"
+    assert playlist.type == "playlist"
+    assert utils.is_datetime(playlist.updatedAt)
+    assert playlist.thumb == playlist.composite
+    assert playlist.metadataType == "movie"
+    assert playlist.isVideo is True
+    assert playlist.isAudio is False
+    assert playlist.isPhoto is False
+
+
+def test_Playlist_create(plex, show):
     # create the playlist
     title = 'test_create_playlist_show'
     episodes = show.episodes()
@@ -57,7 +84,7 @@ def test_create_playlist(plex, show):
         playlist.delete()
 
 
-def test_playlist_edit(plex, movie):
+def test_Playlist_edit(plex, movie):
     title = 'test_playlist_edit'
     new_title = 'test_playlist_edit_new_title'
     new_summary = 'test_playlist_edit_summary'
@@ -73,7 +100,7 @@ def test_playlist_edit(plex, movie):
         playlist.delete()
 
 
-def test_playlist_item(plex, show):
+def test_Playlist_item(plex, show):
     title = 'test_playlist_item'
     episodes = show.episodes()
     try:
@@ -90,7 +117,7 @@ def test_playlist_item(plex, show):
 
 
 @pytest.mark.client
-def test_playlist_play(plex, client, artist, album):
+def test_Playlist_play(plex, client, artist, album):
     try:
         playlist_name = 'test_play_playlist'
         playlist = plex.createPlaylist(playlist_name, items=album)
@@ -101,7 +128,7 @@ def test_playlist_play(plex, client, artist, album):
     assert playlist_name not in [i.title for i in plex.playlists()]
 
 
-def test_playlist_photos(plex, photoalbum):
+def test_Playlist_photos(plex, photoalbum):
     album = photoalbum
     photos = album.photos()
     try:
@@ -114,14 +141,14 @@ def test_playlist_photos(plex, photoalbum):
 
 
 @pytest.mark.client
-def test_play_photos(plex, client, photoalbum):
+def test_Play_photos(plex, client, photoalbum):
     photos = photoalbum.photos()
     for photo in photos[:4]:
         client.playMedia(photo)
         time.sleep(2)
 
 
-def test_copyToUser(plex, show, fresh_plex, shared_username):
+def test_Playlist_copyToUser(plex, show, fresh_plex, shared_username):
     episodes = show.episodes()
     playlist = plex.createPlaylist('shared_from_test_plexapi', items=episodes)
     try:
@@ -133,7 +160,7 @@ def test_copyToUser(plex, show, fresh_plex, shared_username):
         playlist.delete()
 
 
-def test_smart_playlist(plex, movies, movie):
+def test_Playlist_createSmart(plex, movies, movie):
     try:
         playlist = plex.createPlaylist(
             title='smart_playlist',
@@ -155,7 +182,7 @@ def test_smart_playlist(plex, movies, movie):
         playlist.delete()
 
 
-def test_smart_playlist_section(plex, movies, movie):
+def test_Playlist_section(plex, movies, movie):
     title = 'test_playlist_section'
     try:
         playlist = plex.createPlaylist(title, items=movie)
@@ -178,7 +205,7 @@ def test_smart_playlist_section(plex, movies, movie):
         playlist.delete()
 
 
-def test_playlist_exceptions(plex, movies, movie, artist):
+def test_Playlist_exceptions(plex, movies, movie, artist):
     title = 'test_playlist_exceptions'
     try:
         playlist = plex.createPlaylist(title, items=movie)

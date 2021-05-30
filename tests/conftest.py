@@ -410,6 +410,10 @@ def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
 
 
+def is_composite(key, prefix="/library/metadata/"):
+    return is_metadata(key, prefix=prefix, contains="/composite/")
+
+
 def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
     start = time.time()
     ready = condition_function(*args, **kwargs)
