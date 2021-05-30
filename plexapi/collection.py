@@ -5,15 +5,14 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import ArtMixin, PosterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin
 from plexapi.mixins import LabelMixin
 from plexapi.playqueue import PlayQueue
-from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
+class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:
@@ -172,15 +171,6 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
 
-    def _preferences(self):
-        """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
-        items = []
-        data = self._server.query(self._details_key)
-        for item in data.iter('Setting'):
-            items.append(Setting(data=item, server=self._server))
-
-        return items
-
     def modeUpdate(self, mode=None):
         """ Update the collection mode advanced setting.
 
@@ -204,8 +194,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         key = mode_dict.get(mode)
         if key is None:
             raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
-        part = '/library/metadata/%s/prefs?collectionMode=%s' % (self.ratingKey, key)
-        return self._server.query(part, method=self._server._session.put)
+        self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
         """ Update the collection order advanced setting.
@@ -228,8 +217,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
         key = sort_dict.get(sort)
         if key is None:
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
-        part = '/library/metadata/%s/prefs?collectionSort=%s' % (self.ratingKey, key)
-        return self._server.query(part, method=self._server._session.put)
+        self.editAdvanced(collectionSort=key)
 
     def addItems(self, items):
         """ Add items to the collection.
