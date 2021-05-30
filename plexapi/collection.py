@@ -29,6 +29,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin, LabelMix
             index (int): Plex index number for the collection.
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
+            lastRatedAt (datetime): Datetime the collection was last rated.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
             librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
@@ -45,6 +46,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin, LabelMix
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'collection'
             updatedAt (datatime): Datetime the collection was updated.
+            userRating (float): Rating of the collection (0.0 - 10.0) equaling (0 stars - 5 stars).
     """
 
     TAG = 'Directory'
@@ -65,6 +67,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin, LabelMix
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '').replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
@@ -81,6 +84,7 @@ class Collection(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin, LabelMix
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.userRating = utils.cast(float, data.attrib.get('userRating'))
 
     @property
     @deprecated('use "items" instead', stacklevel=3)
