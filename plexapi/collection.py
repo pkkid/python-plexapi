@@ -2,14 +2,14 @@
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtMixin, PosterMixin
+from plexapi.mixins import ArtMixin, PosterMixin, RatingMixin
 from plexapi.mixins import LabelMixin
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, ArtMixin, PosterMixin, LabelMixin):
+class Collection(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:

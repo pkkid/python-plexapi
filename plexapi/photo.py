@@ -4,11 +4,11 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, TagMixin
+from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, RatingMixin, TagMixin
 
 
 @utils.registerPlexObject
-class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin):
+class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
     """ Represents a single Photoalbum (collection of photos).
 
         Attributes:
@@ -137,7 +137,7 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, TagMixin):
+class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin, TagMixin):
     """ Represents a single Photo.
 
         Attributes:

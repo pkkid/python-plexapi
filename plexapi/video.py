@@ -6,7 +6,7 @@ from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -73,23 +73,14 @@ class Video(PlexPartialObject):
         return self._server.url(part, includeToken=True) if part else None
 
     def markWatched(self):
-        """ Mark video as watched. """
+        """ Mark the video as palyed. """
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
-        self.reload()
 
     def markUnwatched(self):
-        """ Mark video unwatched. """
+        """ Mark the video as unplayed. """
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
-        self.reload()
-
-    def rate(self, rate):
-        """ Rate video. """
-        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
-
-        self._server.query(key)
-        self.reload()
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
@@ -249,7 +240,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
@@ -387,7 +378,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
 
 
 @utils.registerPlexObject
-class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -591,7 +582,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -729,7 +720,8 @@ class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorMixin, WriterMixin):
+class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
+        CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -865,8 +857,6 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
     @property
     def hasIntroMarker(self):
         """ Returns True if the episode has an intro marker in the xml. """
-        if not self.isFullObject():
-            self.reload()
         return any(marker.type == 'intro' for marker in self.markers)
 
     @property
