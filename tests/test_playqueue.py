@@ -130,7 +130,7 @@ def test_modify_playqueue_with_library_media(plex, show):
 
 def test_create_playqueue_from_playlist(plex, album):
     try:
-        playlist = plex.createPlaylist("test_playlist", album)
+        playlist = plex.createPlaylist("test_playlist", items=album)
         pq = playlist.playQueue(shuffle=1)
         assert pq.playQueueShuffled is True
         assert len(playlist) == len(album.tracks())

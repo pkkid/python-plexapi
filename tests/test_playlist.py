@@ -9,7 +9,7 @@ def test_create_playlist(plex, show):
     # create the playlist
     title = 'test_create_playlist_show'
     episodes = show.episodes()
-    playlist = plex.createPlaylist(title, episodes[:3])
+    playlist = plex.createPlaylist(title, items=episodes[:3])
     try:
         items = playlist.items()
         # Test create playlist
@@ -62,7 +62,7 @@ def test_playlist_edit(plex, movie):
     new_title = 'test_playlist_edit_new_title'
     new_summary = 'test_playlist_edit_summary'
     try:
-        playlist = plex.createPlaylist(title, movie)
+        playlist = plex.createPlaylist(title, items=movie)
         assert playlist.title == title
         assert playlist.summary == ''
         playlist.edit(title=new_title, summary=new_summary)
@@ -77,7 +77,7 @@ def test_playlist_item(plex, show):
     title = 'test_playlist_item'
     episodes = show.episodes()
     try:
-        playlist = plex.createPlaylist(title, episodes[:3])
+        playlist = plex.createPlaylist(title, items=episodes[:3])
         item1 = playlist.item("Winter Is Coming")
         assert item1 in playlist.items()
         item2 = playlist.get("Winter Is Coming")
@@ -93,7 +93,7 @@ def test_playlist_item(plex, show):
 def test_playlist_play(plex, client, artist, album):
     try:
         playlist_name = 'test_play_playlist'
-        playlist = plex.createPlaylist(playlist_name, album)
+        playlist = plex.createPlaylist(playlist_name, items=album)
         client.playMedia(playlist); time.sleep(5)
         client.stop('music'); time.sleep(1)
     finally:
@@ -106,7 +106,7 @@ def test_playlist_photos(plex, photoalbum):
     photos = album.photos()
     try:
         playlist_name = 'test_playlist_photos'
-        playlist = plex.createPlaylist(playlist_name, photos)
+        playlist = plex.createPlaylist(playlist_name, items=photos)
         assert len(playlist.items()) >= 1
     finally:
         playlist.delete()
@@ -123,7 +123,7 @@ def test_play_photos(plex, client, photoalbum):
 
 def test_copyToUser(plex, show, fresh_plex, shared_username):
     episodes = show.episodes()
-    playlist = plex.createPlaylist('shared_from_test_plexapi', episodes)
+    playlist = plex.createPlaylist('shared_from_test_plexapi', items=episodes)
     try:
         playlist.copyToUser(shared_username)
         user = plex.myPlexAccount().user(shared_username)
@@ -158,7 +158,7 @@ def test_smart_playlist(plex, movies, movie):
 def test_smart_playlist_section(plex, movies, movie):
     title = 'test_playlist_section'
     try:
-        playlist = plex.createPlaylist(title, movie)
+        playlist = plex.createPlaylist(title, items=movie)
         with pytest.raises(BadRequest):
             playlist.section()
     finally:
@@ -181,7 +181,7 @@ def test_smart_playlist_section(plex, movies, movie):
 def test_playlist_exceptions(plex, movies, movie, artist):
     title = 'test_playlist_exceptions'
     try:
-        playlist = plex.createPlaylist(title, movie)
+        playlist = plex.createPlaylist(title, items=movie)
         with pytest.raises(BadRequest):
             playlist.updateFilters()
         with pytest.raises(BadRequest):

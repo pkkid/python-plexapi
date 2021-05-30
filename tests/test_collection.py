@@ -182,7 +182,7 @@ def test_Collection_createSmart(plex, tvshows):
 def test_Collection_exceptions(plex, movies, movie, artist):
     title = 'test_Collection_exceptions'
     try:
-        collection = plex.createCollection(title, movies, movie)
+        collection = plex.createCollection(title, section=movies, items=movie)
         with pytest.raises(BadRequest):
             collection.updateFilters()
         with pytest.raises(BadRequest):
@@ -191,9 +191,9 @@ def test_Collection_exceptions(plex, movies, movie, artist):
         collection.delete()
 
     with pytest.raises(BadRequest):
-        plex.createCollection(title, movies, items=[])
+        plex.createCollection(title, section=movies, items=[])
     with pytest.raises(BadRequest):
-        plex.createCollection(title, movies, items=[movie, artist])
+        plex.createCollection(title, section=movies, items=[movie, artist])
 
     try:
         collection = plex.createCollection(title, smart=True, section=movies, **{'year>>': 2000})
@@ -212,7 +212,7 @@ def test_Collection_posters(collection):
 
 def test_Collection_art(collection):
     arts = collection.arts()
-    assert arts
+    assert not arts  # Collection has no default art
 
 
 def test_Collection_mixins_images(collection):
