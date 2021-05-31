@@ -97,8 +97,7 @@ def _test_mixins_image(obj, attr):
             # Select a different image
             set_img_method(images[1])
             images = get_img_method()
-            assert images[0].selected is False
-            assert images[1].selected is True
+            assert utils.wait_until(_check_img_selected, get_img_method=get_img_method)
     else:
         default_image = None
     # Test upload image from file
@@ -112,6 +111,11 @@ def _test_mixins_image(obj, attr):
     # Reset to default image
     if default_image:
         set_img_method(default_image)
+
+
+def _check_img_selected(get_img_method):
+    images = get_img_method()
+    return images[0].selected is False and images[1].selected is True
 
 
 def edit_art(obj):
