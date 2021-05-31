@@ -722,6 +722,7 @@ def test_video_Show_mixins_edit_advanced_settings(show):
     test_mixins.edit_advanced_settings(show)
 
 
+@pytest.mark.xfail(reason="Changing show art fails randomly")
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
     test_mixins.edit_poster(show)
