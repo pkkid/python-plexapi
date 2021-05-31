@@ -97,7 +97,7 @@ def _test_mixins_image(obj, attr):
             # Select a different image
             set_img_method(images[1])
             images = get_img_method()
-            assert utils.wait_until(_check_img_selected, get_img_method=get_img_method)
+            assert utils.wait_until(_check_img_selected, delay=0.25, timeout=5, get_img_method=get_img_method)
     else:
         default_image = None
     # Test upload image from file
