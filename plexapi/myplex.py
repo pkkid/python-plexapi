@@ -77,7 +77,8 @@ class MyPlexAccount(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
-    SETTINGS = 'https://plex.tv/api/v2/user/%(userUUID)s/settings'                              # get
+    SETTINGS = 'https://plex.tv/api/v2/user/settings'                                           # get
+    OPTOUTS = 'https://plex.tv/api/v2/user/%(userUUID)s/settings/opt_outs'                      # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/'                                                       # get
@@ -704,7 +705,7 @@ class MyPlexAccount(PlexObject):
     def onlineMediaSources(self):
         """ Returns an user account Online Media Sourcessettings :class:`~plexapi.myplex.AccountOptOut`
         """
-        url = self.SETTINGS % {'userUUID': self.uuid} + '/opt_outs'
+        url = self.OPTOUTS % {'userUUID': self.uuid}
         elem = self.query(url)
         return self.findItems(elem, cls=AccountOptOut, etag='optOut')
 
@@ -712,8 +713,7 @@ class MyPlexAccount(PlexObject):
     def settings(self):
         """ Returns an user account settings :class:`~plexapi.myplex.AccountSettings`
         """
-        req = requests.get(self.SETTINGS % {'userUUID': self.uuid},
-                           headers={'X-Plex-Token': self._token,
+        req = requests.get(self.SETTINGS, headers={'X-Plex-Token': self._token,
                                     'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem, cls=AccountSettings, etag='setting')[0]
