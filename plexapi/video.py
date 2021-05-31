@@ -973,12 +973,6 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         """
         return [part.file for part in self.iterParts() if part]
 
-    def section(self):
-        """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
-        # Clip payloads may not contain 'librarySectionID'
-        # Return None to avoid unnecessary attribute lookup attempts.
-        return None
-
 
 @utils.registerPlexObject
 class Extra(Clip):
@@ -1022,3 +1016,9 @@ class Extra(Clip):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
         self.year = utils.cast(int, data.attrib.get('year'))
+
+    def section(self):
+        """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
+        # Clip payloads may not contain 'librarySectionID'
+        # Return None to avoid unnecessary attribute lookup attempts.
+        return None
