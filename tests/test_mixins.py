@@ -93,11 +93,17 @@ def _test_mixins_image(obj, attr):
         assert len(image.ratingKey) >= 10
         assert utils.is_bool(image.selected)
         assert len(image.thumb) >= 10
+        print(images)
         if len(images) >= 2:
             # Select a different image
+            for i in images:
+                print(vars(i))
             set_img_method(images[1])
             images = get_img_method()
-            assert utils.wait_until(_check_img_selected, delay=0.25, timeout=5, get_img_method=get_img_method)
+            for i in images:
+                print(vars(i))
+            assert images[0].selected is False
+            assert images[1].selected is True
     else:
         default_image = None
     # Test upload image from file
@@ -111,11 +117,6 @@ def _test_mixins_image(obj, attr):
     # Reset to default image
     if default_image:
         set_img_method(default_image)
-
-
-def _check_img_selected(get_img_method):
-    images = get_img_method()
-    return images[0].selected is False and images[1].selected is True
 
 
 def edit_art(obj):
