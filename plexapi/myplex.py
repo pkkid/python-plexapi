@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 import threading
+import json
 import time
 from xml.etree import ElementTree
 
@@ -1378,12 +1379,13 @@ class AccountSettings(PlexObject):
     def _loadData(self, data):
         self.id = data.attrib.get('id')
         self.type = data.attrib.get('type')
-        self.value = eval(self.values(data.attrib.get('value')))
+        self.value = self.values(data.attrib.get('value'))
         self.hidden = data.attrib.get('hidden')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
 
     def values(self, value):
-        return value.replace(':false', ':False').replace(':true', ':True').replace(':null', ':None')
+        value.replace(':false', ':False').replace(':true', ':True').replace(':null', ':None')
+        return json.loads(value)
 
 
 class AccountOptOut(PlexObject):
