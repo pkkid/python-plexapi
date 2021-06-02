@@ -260,7 +260,6 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             Parameters:
                 items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
                     or :class:`~plexapi.photo.Photo` objects to be removed from the collection.
-                    Items must be retrieved from :func:`~plexapi.collection.Collection.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to remove items from a smart collection.

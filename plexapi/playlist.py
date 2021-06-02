@@ -160,6 +160,13 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
         """ Alias to :func:`~plexapi.playlist.Playlist.item`. """
         return self.item(title)
 
+    def _getPlaylistItemID(self, item):
+        """ Match an item to a playlist item and return the item playlistItemID. """
+        for _item in self.items():
+            if _item.ratingKey == item.ratingKey:
+                return _item.playlistItemID
+        raise NotFound('Item with title "%s" not found in the playlist' % item.title)
+
     def addItems(self, items):
         """ Add items to the playlist.
 
@@ -201,10 +208,10 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             Parameters:
                 items (List): List of :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
                     or :class:`~plexapi.photo.Photo` objects to be removed from the playlist.
-                    Items must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to remove items from a smart playlist.
+                :class:`plexapi.exceptions.NotFound`: When the item does not exist in the playlist.
         """
         if self.smart:
             raise BadRequest('Cannot remove items from a smart playlist.')
@@ -213,7 +220,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             items = [items]
 
         for item in items:
-            key = '%s/items/%s' % (self.key, item.playlistItemID)
+            playlistItemID = self._getPlaylistItemID(item)
+            key = '%s/items/%s' % (self.key, playlistItemID)
             self._server.query(key, method=self._server._session.delete)
 
     def moveItem(self, item, after=None):
@@ -222,20 +230,23 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             Parameters:
                 items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
                     or :class:`~plexapi.photo.Photo` objects to be moved in the playlist.
-                    Item must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
                 after (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
                     or :class:`~plexapi.photo.Photo` objects to move the item after in the playlist.
-                    Item must be retrieved from :func:`~plexapi.playlist.Playlist.items`.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to move items in a smart playlist.
+                :class:`plexapi.exceptions.NotFound`: When the item or item after does not exist in the playlist.
         """
         if self.smart:
             raise BadRequest('Cannot move items in a smart playlist.')
 
-        key = '%s/items/%s/move' % (self.key, item.playlistItemID)
+        playlistItemID = self._getPlaylistItemID(item)
+        key = '%s/items/%s/move' % (self.key, playlistItemID)
+
         if after:
-            key += '?after=%s' % after.playlistItemID
+            afterPlaylistItemID = self._getPlaylistItemID(after)
+            key += '?after=%s' % afterPlaylistItemID
+
         self._server.query(key, method=self._server._session.put)
 
     def updateFilters(self, limit=None, sort=None, filters=None, **kwargs):
