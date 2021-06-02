@@ -302,7 +302,7 @@ class PlexObject(object):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key=None, _autoReload=False, **kwargs):
+    def reload(self, key=None, **kwargs):
         """ Reload the data for this object from self.key.
 
             Parameters:
@@ -333,6 +333,10 @@ class PlexObject(object):
                     movie.isFullObject()  # Returns True
 
         """
+        return self._reload(key=key, **kwargs)
+
+    def _reload(self, key=None, _autoReload=False, **kwargs):
+        """ Perform the actual reload. """
         details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
         key = key or details_key or self.key
         if not key:
@@ -459,7 +463,7 @@ class PlexPartialObject(PlexObject):
         objname = "%s '%s'" % (clsname, title) if title else clsname
         log.debug("Reloading %s for attr '%s'", objname, attr)
         # Reload and return the value
-        self.reload(_autoReload=True)
+        self._reload(_autoReload=True)
         return super(PlexPartialObject, self).__getattribute__(attr)
 
     def analyze(self):
@@ -701,7 +705,7 @@ class Playable(object):
         key = '/:/progress?key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s' % (self.ratingKey,
                                                                                               time, state)
         self._server.query(key)
-        self.reload(_autoReload=True)
+        self._reload(_autoReload=True)
 
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
@@ -719,4 +723,4 @@ class Playable(object):
         key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
-        self.reload(_autoReload=True)
+        self._reload(_autoReload=True)
