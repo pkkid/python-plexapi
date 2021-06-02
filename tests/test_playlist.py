@@ -213,6 +213,12 @@ def test_Playlist_exceptions(plex, movies, movie, artist):
             playlist.updateFilters()
         with pytest.raises(BadRequest):
             playlist.addItems(artist)
+        with pytest.raises(NotFound):
+            playlist.removeItems(artist)
+        with pytest.raises(NotFound):
+            playlist.moveItem(artist)
+        with pytest.raises(NotFound):
+            playlist.moveItem(item=movie, after=artist)
     finally:
         playlist.delete()
 
