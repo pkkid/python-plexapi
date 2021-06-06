@@ -694,20 +694,11 @@ class MyPlexAccount(PlexObject):
         return self.findItems(elem)
 
     def onlineMediaSources(self):
-        """ Returns an user account Online Media Sourcessettings :class:`~plexapi.myplex.AccountOptOut`
+        """ Returns a list of user account Online Media Sources settings :class:`~plexapi.myplex.AccountOptOut`
         """
         url = self.OPTOUTS % {'userUUID': self.uuid}
         elem = self.query(url)
         return self.findItems(elem, cls=AccountOptOut, etag='optOut')
-
-    @property
-    def settings(self):
-        """ Returns an user account settings :class:`~plexapi.myplex.AccountSettings`
-        """
-        req = requests.get(self.SETTINGS, headers={'X-Plex-Token': self._token,
-                                    'X-Plex-Client-Identifier': X_PLEX_IDENTIFIER})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem, cls=AccountSettings, etag='setting')[0]
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
@@ -1378,28 +1369,47 @@ class AccountOptOut(PlexObject):
         'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'
 
         Attributes:
+            TAG (str): optOut
             key (str): Online Media Source key
-            value (str): Online Media Source opt_in or opt_out
+            value (str): Online Media Source opt_in, opt_out, or opt_out_managed
     """
-
-    CHOICES = ['opt_in', 'opt_out', 'opt_out_managed']
+    TAG = 'optOut'
+    CHOICES = {'opt_in', 'opt_out', 'opt_out_managed'}
 
     def _loadData(self, data):
         self.key = data.attrib.get('key')
         self.value = data.attrib.get('value')
 
-    def updateOptOut(self, option):
-        """Method for toggling Online Media Sources options.
+    def _updateOptOut(self, option):
+        """ Sets the Online Media Sources option.
+
             Parameters:
                 option (str): see CHOICES
 
             Raises:
-                :class:`NotFound`: `option` str not found in CHOICES.
-                :class:`BadRequest`: option is currently set to `option`.
+                :exc:`~plexapi.exceptions.NotFound`: ``option`` str not found in CHOICES.
         """
         if option not in self.CHOICES:
             raise NotFound('%s not found in available choices: %s' % (option, self.CHOICES))
-        if option == self.value:
-            raise BadRequest('OptOut option is already set to %s' % option)
-        url = self._initpath + '?key=%s&value=%s&' % (self.key, option)
-        self._server.query(url, method=self._server._session.post)
+        url = self._server.OPTOUTS % {'userUUID': self._server.uuid}
+        params = {'key': self.key, 'value': option}
+        self._server.query(url, method=self._server._session.post, params=params)
+        self.value = option  # assume query successful and set the value to option
+
+    def optIn(self):
+        """ Sets the Online Media Source to "Enabled". """
+        self._updateOptOut('opt_in')
+
+    def optOut(self):
+        """ Sets the Online Media Source to "Disabled". """
+        self._updateOptOut('opt_out')
+
+    def optOutManaged(self):
+        """ Sets the Online Media Source to "Disabled for Managed Users".
+        
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: When trying to opt out music.
+        """
+        if self.key == 'tv.plex.provider.music':
+            raise BadRequest('%s does not have the option to opt out managed users.' % self.key)
+        self._updateOptOut('opt_out_managed')
