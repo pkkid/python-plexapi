@@ -146,7 +146,7 @@ def test_server_search(plex, movie):
 
 def test_server_playlist(plex, show):
     episodes = show.episodes()
-    playlist = plex.createPlaylist("test_playlist", episodes[:3])
+    playlist = plex.createPlaylist("test_playlist", items=episodes[:3])
     try:
         assert playlist.title == "test_playlist"
         with pytest.raises(NotFound):
@@ -159,10 +159,12 @@ def test_server_playlists(plex, show):
     playlists = plex.playlists()
     count = len(playlists)
     episodes = show.episodes()
-    playlist = plex.createPlaylist("test_playlist", episodes[:3])
+    playlist = plex.createPlaylist("test_playlist", items=episodes[:3])
     try:
         playlists = plex.playlists()
         assert len(playlists) == count + 1
+        assert playlist in plex.playlists(playlistType='video')
+        assert playlist not in plex.playlists(playlistType='audio')
     finally:
         playlist.delete()
 
@@ -307,6 +309,16 @@ def test_server_account(plex):
         else "Unknown"
     )
     assert re.match(utils.REGEX_EMAIL, account.username)
+
+
+@pytest.mark.authenticated
+def test_server_claim_unclaim(plex, account):
+    server_account = plex.account()
+    assert server_account.signInState == 'ok'
+    result = plex.unclaim()
+    assert result.signInState == 'none'
+    result = plex.claim(account)
+    assert result.signInState == 'ok'
 
 
 def test_server_downloadLogs(tmpdir, plex):

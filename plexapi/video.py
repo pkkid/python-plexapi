@@ -6,7 +6,7 @@ from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -22,6 +22,7 @@ class Video(PlexPartialObject):
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the movie, show, season, episode, or clip (plex://movie/5d776b59ad5437001f79c6f8).
             key (str): API URL (/library/metadata/<ratingkey>).
+            lastRatedAt (datetime): Datetime the item was last rated.
             lastViewedAt (datetime): Datetime the item was last played.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
@@ -35,6 +36,7 @@ class Video(PlexPartialObject):
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'movie', 'show', 'season', 'episode', or 'clip'.
             updatedAt (datatime): Datetime the item was updated.
+            userRating (float): Rating of the item (0.0 - 10.0) equaling (0 stars - 5 stars).
             viewCount (int): Count of times the item was played.
     """
 
@@ -61,6 +63,7 @@ class Video(PlexPartialObject):
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
     @property
@@ -73,23 +76,14 @@ class Video(PlexPartialObject):
         return self._server.url(part, includeToken=True) if part else None
 
     def markWatched(self):
-        """ Mark video as watched. """
+        """ Mark the video as palyed. """
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
-        self.reload()
 
     def markUnwatched(self):
-        """ Mark video unwatched. """
+        """ Mark the video as unplayed. """
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
-        self.reload()
-
-    def rate(self, rate):
-        """ Rate video. """
-        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rate)
-
-        self._server.query(key)
-        self.reload()
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
@@ -249,7 +243,7 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
@@ -283,7 +277,6 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
             useOriginalTitle (int): Setting that indicates if the original title is used for the movie
                 (-1 = Library default, 0 = No, 1 = Yes).
-            userRating (float): User rating (2.0; 8.0).
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year movie was released.
@@ -321,7 +314,6 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
         self.useOriginalTitle = utils.cast(int, data.attrib.get('useOriginalTitle', '-1'))
-        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
@@ -387,7 +379,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Split
 
 
 @utils.registerPlexObject
-class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -434,7 +426,6 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
             useOriginalTitle (int): Setting that indicates if the original title is used for the show
                 (-1 = Library default, 0 = No, 1 = Yes).
-            userRating (float): User rating (2.0; 8.0).
             viewedLeafCount (int): Number of items marked as played in the show view.
             year (int): Year the show was released.
     """
@@ -477,7 +468,6 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
         self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
         self.useOriginalTitle = utils.cast(int, data.attrib.get('useOriginalTitle', '-1'))
-        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
 
@@ -591,7 +581,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Spl
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -729,7 +719,8 @@ class Season(Video, ArtMixin, PosterMixin, CollectionMixin):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorMixin, WriterMixin):
+class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
+        CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -764,7 +755,6 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
             parentYear (int): Year the season was released.
             rating (float): Episode rating (7.9; 9.8; 8.1).
             skipParent (bool): True if the show's seasons are set to hidden.
-            userRating (float): User rating (2.0; 8.0).
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year the episode was released.
@@ -807,7 +797,6 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
         self.parentYear = utils.cast(int, data.attrib.get('parentYear'))
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
-        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
@@ -865,8 +854,6 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, CollectionMixin, DirectorM
     @property
     def hasIntroMarker(self):
         """ Returns True if the episode has an intro marker in the xml. """
-        if not self.isFullObject():
-            self.reload()
         return any(marker.type == 'intro' for marker in self.markers)
 
     @property

@@ -272,6 +272,8 @@ def create_section(server, section, opts):
     processed_media = 0
     expected_media_count = section.pop("expected_media_count", 0)
     expected_media_type = (section["type"],)
+    if section["type"] == "show":
+        expected_media_type = ("show", "season", "episode")
     if section["type"] == "artist":
         expected_media_type = ("artist", "album", "track")
     expected_media_type = tuple(SEARCHTYPES[t] for t in expected_media_type)
