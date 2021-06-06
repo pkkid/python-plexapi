@@ -18,6 +18,14 @@ def test_photo_Photoalbum_mixins_images(photoalbum):
     test_mixins.attr_posterUrl(photoalbum)
 
 
+def test_photo_Photoalbum_mixins_rating(photoalbum):
+    test_mixins.edit_rating(photoalbum)
+
+
+def test_photo_Photo_mixins_rating(photo):
+    test_mixins.edit_rating(photo)
+
+
 def test_photo_Photo_mixins_tags(photo):
     test_mixins.edit_tag(photo)
 

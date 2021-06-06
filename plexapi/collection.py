@@ -5,14 +5,14 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin
 from plexapi.mixins import LabelMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, LabelMixin):
+class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, LabelMixin):
     """ Represents a single Collection.
 
         Attributes:
@@ -32,6 +32,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             index (int): Plex index number for the collection.
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
+            lastRatedAt (datetime): Datetime the collection was last rated.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
             librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
@@ -48,6 +49,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'collection'
             updatedAt (datatime): Datetime the collection was updated.
+            userRating (float): Rating of the collection (0.0 - 10.0) equaling (0 stars - 5 stars).
     """
 
     TAG = 'Directory'
@@ -69,6 +71,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = data.attrib.get('key', '').replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
+        self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
@@ -85,6 +88,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
+        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self._items = None  # cache for self.items
         self._section = None  # cache for self.section
 
