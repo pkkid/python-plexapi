@@ -80,6 +80,10 @@ def test_audio_Artist_mixins_images(artist):
     test_mixins.attr_posterUrl(artist)
 
 
+def test_audio_Artist_mixins_rating(artist):
+    test_mixins.edit_rating(artist)
+
+
 def test_audio_Artist_mixins_tags(artist):
     test_mixins.edit_collection(artist)
     test_mixins.edit_country(artist)
@@ -169,6 +173,10 @@ def test_audio_Album_mixins_images(album):
     test_mixins.edit_poster(album)
     test_mixins.attr_artUrl(album)
     test_mixins.attr_posterUrl(album)
+
+
+def test_audio_Album_mixins_rating(album):
+    test_mixins.edit_rating(album)
 
 
 def test_audio_Album_mixins_tags(album):
@@ -312,6 +320,10 @@ def test_audio_Track_artist(album, artist):
 def test_audio_Track_mixins_images(track):
     test_mixins.attr_artUrl(track)
     test_mixins.attr_posterUrl(track)
+
+
+def test_audio_Track_mixins_rating(track):
+    test_mixins.edit_rating(track)
 
 
 def test_audio_Track_mixins_tags(track):

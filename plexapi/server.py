@@ -9,6 +9,7 @@ from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
+from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.library import Hub, Library, Path, File
 from plexapi.media import Conversion, Optimized
@@ -168,6 +169,9 @@ class PlexServer(PlexObject):
         headers.update(kwargs)
         return headers
 
+    def _uriRoot(self):
+        return 'server://%s/com.plexapp.plugins.library' % self.machineIdentifier
+
     @property
     def library(self):
         """ Library to browse or search your media. """
@@ -193,6 +197,26 @@ class PlexServer(PlexObject):
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query(Account.key)
+        return Account(self, data)
+
+    def claim(self, account):
+        """ Claim the Plex server using a :class:`~plexapi.myplex.MyPlexAccount`.
+            This will only work with an unclaimed server on localhost or the same subnet.
+        
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`): The account used to
+                    claim the server.
+        """
+        key = '/myplex/claim'
+        params = {'token': account.claimToken()}
+        data = self.query(key, method=self._session.post, params=params)
+        return Account(self, data)
+
+    def unclaim(self):
+        """ Unclaim the Plex server. This will remove the server from your
+            :class:`~plexapi.myplex.MyPlexAccount`.
+        """
+        data = self.query(Account.key, method=self._session.delete)
         return Account(self, data)
 
     @property
@@ -391,14 +415,68 @@ class PlexServer(PlexObject):
 
         raise NotFound('Unknown client name: %s' % name)
 
-    def createPlaylist(self, title, items=None, section=None, limit=None, smart=None, **kwargs):
+    def createCollection(self, title, section, items=None, smart=False, limit=None,
+                         libtype=None, sort=None, filters=None, **kwargs):
+        """ Creates and returns a new :class:`~plexapi.collection.Collection`.
+
+            Parameters:
+                title (str): Title of the collection.
+                section (:class:`~plexapi.library.LibrarySection`, str): The library section to create the collection in.
+                items (List): Regular collections only, list of :class:`~plexapi.audio.Audio`,
+                    :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the collection.
+                smart (bool): True to create a smart collection. Default False.
+                limit (int): Smart collections only, limit the number of items in the collection.
+                libtype (str): Smart collections only, the specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
+                sort (str or list, optional): Smart collections only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart collections only, a dictionary of advanced filters.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart collections only, additional custom filters to apply to the
+                    search results. See :func:`~plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the collection.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the collection.
+
+            Returns:
+                :class:`~plexapi.collection.Collection`: A new instance of the created Collection.
+        """
+        return Collection.create(
+            self, title, section, items=items, smart=smart, limit=limit,
+            libtype=libtype, sort=sort, filters=filters, **kwargs)
+
+    def createPlaylist(self, title, section=None, items=None, smart=False, limit=None,
+                       sort=None, filters=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
-                title (str): Title of the playlist to be created.
-                items (list<Media>): List of media items to include in the playlist.
+                title (str): Title of the playlist.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
+                    library section to create the playlist in.
+                items (List): Regular playlists only, list of :class:`~plexapi.audio.Audio`,
+                    :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
+                smart (bool): True to create a smart playlist. Default False.
+                limit (int): Smart playlists only, limit the number of items in the playlist.
+                sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
+                    or a list of sort fields in the format ``column:dir``.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
+                filters (dict): Smart playlists only, a dictionary of advanced filters.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
+                **kwargs (dict): Smart playlists only, additional custom filters to apply to the
+                    search results. See :func:`~plexapi.library.LibrarySection.search` for more info.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
+                :class:`plexapi.exceptions.BadRequest`: When mixing media types in the playlist.
+
+            Returns:
+                :class:`~plexapi.playlist.Playlist`: A new instance of the created Playlist.
         """
-        return Playlist.create(self, title, items=items, limit=limit, section=section, smart=smart, **kwargs)
+        return Playlist.create(
+            self, title, section=section, items=items, smart=smart, limit=limit,
+            sort=sort, filters=filters, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.
@@ -497,11 +575,17 @@ class PlexServer(PlexObject):
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results
 
-    def playlists(self):
-        """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects saved on the server. """
-        # TODO: Add sort and type options?
-        # /playlists/all?type=15&sort=titleSort%3Aasc&playlistType=video&smart=0
-        return self.fetchItems('/playlists')
+    def playlists(self, playlistType=None):
+        """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects on the server.
+
+            Parameters:
+                playlistType (str, optional): The type of playlists to return (audio, video, photo).
+                    Default returns all playlists.
+        """
+        key = '/playlists'
+        if playlistType:
+            key = '%s?playlistType=%s' % (key, playlistType)
+        return self.fetchItems(key)
 
     def playlist(self, title):
         """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.

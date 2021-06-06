@@ -5,7 +5,7 @@ from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 
 
@@ -21,6 +21,7 @@ class Audio(PlexPartialObject):
             guid (str): Plex GUID for the artist, album, or track (plex://artist/5d07bcb0403c64029053ac4c).
             index (int): Plex index number (often the track number).
             key (str): API URL (/library/metadata/<ratingkey>).
+            lastRatedAt (datetime): Datetime the item was last rated.
             lastViewedAt (datetime): Datetime the item was last played.
             librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
             librarySectionKey (str): :class:`~plexapi.library.LibrarySection` key.
@@ -35,7 +36,7 @@ class Audio(PlexPartialObject):
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'artist', 'album', or 'track'.
             updatedAt (datatime): Datetime the item was updated.
-            userRating (float): Rating of the track (0.0 - 10.0) equaling (0 stars - 5 stars).
+            userRating (float): Rating of the item (0.0 - 10.0) equaling (0 stars - 5 stars).
             viewCount (int): Count of times the item was played.
     """
 
@@ -66,7 +67,7 @@ class Audio(PlexPartialObject):
         self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
-        self.userRating = utils.cast(float, data.attrib.get('userRating', 0))
+        self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
     def url(self, part):
@@ -115,7 +116,7 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
@@ -218,7 +219,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, SplitMergeMixi
 
 
 @utils.registerPlexObject
-class Album(Audio, ArtMixin, PosterMixin, UnmatchMatchMixin,
+class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
     """ Represents a single Album.
 
@@ -325,7 +326,8 @@ class Album(Audio, ArtMixin, PosterMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, CollectionMixin, MoodMixin):
+class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
+        CollectionMixin, MoodMixin):
     """ Represents a single Track.
 
         Attributes:

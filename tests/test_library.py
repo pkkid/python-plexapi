@@ -195,8 +195,16 @@ def test_library_MovieSection_analyze(movies):
     movies.analyze()
 
 
-def test_library_MovieSection_collections(movies, collection):
-    assert len(movies.collections())
+def test_library_MovieSection_collections(movies, movie):
+    try:
+        collection = movies.createCollection("test_library_MovieSection_collections", movie)
+        collections = movies.collections()
+        assert len(collections)
+        assert collection in collections
+        c = movies.collection(collection.title)
+        assert collection == c
+    finally:
+        collection.delete()
 
 
 def test_library_ShowSection_all(tvshows):
@@ -224,11 +232,15 @@ def test_library_ShowSection_recentlyAdded(tvshows, show):
     assert episode in tvshows.recentlyAddedEpisodes()
 
 
-def test_library_ShowSection_playlists(plex, tvshows, show):
+def test_library_ShowSection_playlists(tvshows, show):
     episodes = show.episodes()
-    playlist = plex.createPlaylist("test_library_ShowSection_playlists", episodes[:3])
     try:
-        assert len(tvshows.playlists())
+        playlist = tvshows.createPlaylist("test_library_ShowSection_playlists", episodes[:3])
+        playlists = tvshows.playlists()
+        assert len(playlists)
+        assert playlist in playlists
+        p = tvshows.playlist(playlist.title)
+        assert playlist == p
     finally:
         playlist.delete()
 
@@ -373,6 +385,8 @@ def test_library_MovieSection_advancedSearch(movies, movie):
     }
     results = movies.search(filters=advancedFilters)
     assert movie in results
+    results = movies.search(limit=1)
+    assert len(results) == 1
 
 
 def test_library_ShowSection_search(tvshows, show):

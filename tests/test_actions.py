@@ -6,9 +6,11 @@ def test_mark_movie_watched(movie):
     print('Marking movie watched: %s' % movie)
     print('View count: %s' % movie.viewCount)
     movie.markWatched()
+    movie.reload()
     print('View count: %s' % movie.viewCount)
     assert movie.viewCount == 1, 'View count 0 after watched.'
     movie.markUnwatched()
+    movie.reload()
     print('View count: %s' % movie.viewCount)
     assert movie.viewCount == 0, 'View count 1 after unwatched.'
 
@@ -19,12 +21,3 @@ def test_refresh_section(tvshows):
 
 def test_refresh_video(movie):
     movie.refresh()
-
-
-def test_rate_movie(movie):
-    oldrate = movie.userRating
-    if oldrate is None:
-        oldrate = 1
-    movie.rate(10.0)
-    assert movie.userRating == 10.0, 'User rating 10.0 after rating five stars.'
-    movie.rate(oldrate)

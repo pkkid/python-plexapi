@@ -962,6 +962,39 @@ class LibrarySection(PlexObject):
 
         return validatedFilters
 
+    def _buildSearchKey(self, title=None, sort=None, libtype=None, limit=None, filters=None, returnKwargs=False, **kwargs):
+        """ Returns the validated and formatted search query API key
+            (``/library/sections/<sectionKey>/all?<params>``).
+        """
+        args = {}
+        filter_args = []
+        for field, values in list(kwargs.items()):
+            if field.split('__')[-1] not in OPERATORS:
+                filter_args.append(self._validateFilterField(field, values, libtype))
+                del kwargs[field]
+        if title is not None:
+            if isinstance(title, (list, tuple)):
+                filter_args.append(self._validateFilterField('title', title, libtype))
+            else:
+                args['title'] = title
+        if filters is not None:
+            filter_args.extend(self._validateAdvancedSearch(filters, libtype))
+        if sort is not None:
+            args['sort'] = self._validateSortFields(sort, libtype)
+        if libtype is not None:
+            args['type'] = utils.searchType(libtype)
+        if limit is not None:
+            args['limit'] = limit
+
+        joined_args = utils.joinArgs(args).lstrip('?')
+        joined_filter_args = '&'.join(filter_args) if filter_args else ''
+        params = '&'.join([joined_args, joined_filter_args]).strip('&')
+        key = '/library/sections/%s/all?%s' % (self.key, params)
+
+        if returnKwargs:
+            return key, kwargs
+        return key
+
     def hubSearch(self, query, mediatype=None, limit=None):
         """ Returns the hub search results for this library. See :func:`plexapi.server.PlexServer.search`
             for details and parameters.
@@ -969,7 +1002,7 @@ class LibrarySection(PlexObject):
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
     def search(self, title=None, sort=None, maxresults=None, libtype=None,
-               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, filters=None, **kwargs):
+               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, limit=None, filters=None, **kwargs):
         """ Search the library. The http requests will be batched in container_size. If you are only looking for the
             first <num> results, it would be wise to set the maxresults option to that amount so the search doesn't iterate
             over all results on the server.
@@ -985,7 +1018,8 @@ class LibrarySection(PlexObject):
                     return :class:`~plexapi.video.Episode` objects)
                 container_start (int, optional): Default 0.
                 container_size (int, optional): Default X_PLEX_CONTAINER_SIZE in your config file.
-                filters (dict): A dictionary of advanced filters. See the details below for more info.
+                limit (int, optional): Limit the number of results from the filter.
+                filters (dict, optional): A dictionary of advanced filters. See the details below for more info.
                 **kwargs (dict): Additional custom filters to apply to the search results.
                     See the details below for more info.
 
@@ -1201,30 +1235,8 @@ class LibrarySection(PlexObject):
                     library.search(genre="holiday", viewCount__gte=3)
 
         """
-        # cleanup the core arguments
-        args = {}
-        filter_args = []
-        for field, values in list(kwargs.items()):
-            if field.split('__')[-1] not in OPERATORS:
-                filter_args.append(self._validateFilterField(field, values, libtype))
-                del kwargs[field]
-        if title is not None:
-            if isinstance(title, (list, tuple)):
-                filter_args.append(self._validateFilterField('title', title, libtype))
-            else:
-                args['title'] = title
-        if filters is not None:
-            filter_args.extend(self._validateAdvancedSearch(filters, libtype))
-        if sort is not None:
-            args['sort'] = self._validateSortFields(sort, libtype)
-        if libtype is not None:
-            args['type'] = utils.searchType(libtype)
-
-        joined_args = utils.joinArgs(args).lstrip('?')
-        joined_filter_args = '&'.join(filter_args) if filter_args else ''
-        params = '&'.join([joined_args, joined_filter_args]).strip('&')
-        key = '/library/sections/%s/all?%s' % (self.key, params)
-
+        key, kwargs = self._buildSearchKey(
+            title=title, sort=sort, libtype=libtype, limit=limit, filters=filters, returnKwargs=True, **kwargs)
         return self._search(key, maxresults, container_start, container_size, **kwargs)
 
     def _search(self, key, maxresults, container_start, container_size, **kwargs):
@@ -1322,15 +1334,6 @@ class LibrarySection(PlexObject):
         if not self.allowSync:
             raise BadRequest('The requested library is not allowed to sync')
 
-        args = {}
-        filter_args = []
-        for field, values in kwargs.items():
-            filter_args.append(self._validateFilterField(field, values, libtype))
-        if sort is not None:
-            args['sort'] = self._validateSortFields(sort, libtype)
-        if libtype is not None:
-            args['type'] = utils.searchType(libtype)
-
         myplex = self._server.myPlexAccount()
         sync_item = SyncItem(self._server, None)
         sync_item.title = title if title else self.title
@@ -1339,10 +1342,7 @@ class LibrarySection(PlexObject):
         sync_item.metadataType = self.METADATA_TYPE
         sync_item.machineIdentifier = self._server.machineIdentifier
 
-        joined_args = utils.joinArgs(args).lstrip('?')
-        joined_filter_args = '&'.join(filter_args) if filter_args else ''
-        params = '&'.join([joined_args, joined_filter_args]).strip('&')
-        key = '/library/sections/%s/all?%s' % (self.key, params)
+        key = self._buildSearchKey(title=title, sort=sort, libtype=libtype, **kwargs)
 
         sync_item.location = 'library://%s/directory/%s' % (self.uuid, quote_plus(key))
         sync_item.policy = policy
@@ -1358,15 +1358,49 @@ class LibrarySection(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
 
-    @deprecated('use "collections" (plural) instead')
-    def collection(self, **kwargs):
-        return self.collections()
+    def createCollection(self, title, items=None, smart=False, limit=None,
+                         libtype=None, sort=None, filters=None, **kwargs):
+        """ Alias for :func:`~plexapi.server.PlexServer.createCollection` using this
+            :class:`~plexapi.library.LibrarySection`.
+        """
+        return self._server.createCollection(
+            title, section=self, items=items, smart=smart, limit=limit,
+            libtype=libtype, sort=sort, filters=filters, **kwargs)
+
+    def collection(self, title):
+        """ Returns the collection with the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        results = self.collections(title__iexact=title)
+        if results:
+            return results[0]
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
             See description of :func:`~plexapi.library.LibrarySection.search` for details about filtering / sorting.
         """
         return self.search(libtype='collection', **kwargs)
+
+    def createPlaylist(self, title, items=None, smart=False, limit=None,
+                       sort=None, filters=None, **kwargs):
+        """ Alias for :func:`~plexapi.server.PlexServer.createPlaylist` using this
+            :class:`~plexapi.library.LibrarySection`.
+        """
+        return self._server.createPlaylist(
+            title, section=self, items=items, smart=smart, limit=limit,
+            sort=sort, filters=filters, **kwargs)
+
+    def playlist(self, title):
+        """ Returns the playlist with the specified title.
+
+            Parameters:
+                title (str): Title of the item to return.
+        """
+        results = self.playlists(title__iexact=title)
+        if results:
+            return results[0]
 
     def playlists(self, **kwargs):
         """ Returns a list of playlists from this library section. """
@@ -1449,7 +1483,6 @@ class ShowSection(LibrarySection):
             TAG (str): 'Directory'
             TYPE (str): 'show'
     """
-
     TAG = 'Directory'
     TYPE = 'show'
     METADATA_TYPE = 'episode'
@@ -1536,9 +1569,8 @@ class MusicSection(LibrarySection):
     """
     TAG = 'Directory'
     TYPE = 'artist'
-
-    CONTENT_TYPE = 'audio'
     METADATA_TYPE = 'track'
+    CONTENT_TYPE = 'audio'
 
     def albums(self):
         """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
@@ -1630,8 +1662,8 @@ class PhotoSection(LibrarySection):
     """
     TAG = 'Directory'
     TYPE = 'photo'
-    CONTENT_TYPE = 'photo'
     METADATA_TYPE = 'photo'
+    CONTENT_TYPE = 'photo'
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
