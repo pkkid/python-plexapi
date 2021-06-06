@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.mixins import ArtMixin, PosterMixin
 from plexapi.playqueue import PlayQueue
-from plexapi.utils import cast, deprecated, toDatetime
+from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
@@ -42,23 +42,23 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
-        self.addedAt = toDatetime(data.attrib.get('addedAt'))
-        self.allowSync = cast(bool, data.attrib.get('allowSync'))
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
+        self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
         self.composite = data.attrib.get('composite')  # url to thumbnail
         self.content = data.attrib.get('content')
-        self.duration = cast(int, data.attrib.get('duration'))
-        self.durationInSeconds = cast(int, data.attrib.get('durationInSeconds'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.durationInSeconds = utils.cast(int, data.attrib.get('durationInSeconds'))
         self.icon = data.attrib.get('icon')
         self.guid = data.attrib.get('guid')
         self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
-        self.leafCount = cast(int, data.attrib.get('leafCount'))
+        self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.playlistType = data.attrib.get('playlistType')
-        self.ratingKey = cast(int, data.attrib.get('ratingKey'))
-        self.smart = cast(bool, data.attrib.get('smart'))
+        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
+        self.smart = utils.cast(bool, data.attrib.get('smart'))
         self.summary = data.attrib.get('summary')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
-        self.updatedAt = toDatetime(data.attrib.get('updatedAt'))
+        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self._items = None  # cache for self.items
         self._section = None  # cache for self.section
 

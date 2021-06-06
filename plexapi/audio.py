@@ -155,11 +155,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        directory = data.find('Directory')
-        if directory:
-            related = directory.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -406,7 +402,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the track.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the track is found on disk.
         """
         return [part.file for part in self.iterParts() if part]

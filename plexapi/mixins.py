@@ -10,15 +10,8 @@ class AdvancedSettingsMixin(object):
 
     def preferences(self):
         """ Returns a list of :class:`~plexapi.settings.Preferences` objects. """
-        items = []
         data = self._server.query(self._details_key)
-        for item in data.iter('Preferences'):
-            for elem in item:
-                setting = settings.Preferences(data=elem, server=self._server)
-                setting._initpath = self.key
-                items.append(setting)
-
-        return items
+        return self.findItems(data, settings.Preferences, rtag='Preferences')
 
     def preference(self, pref):
         """ Returns a :class:`~plexapi.settings.Preferences` object for the specified pref.

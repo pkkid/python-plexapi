@@ -328,7 +328,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the movie.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the movie is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -345,11 +345,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        video = data.find('Video')
-        if video:
-            related = video.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
@@ -488,21 +484,14 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        directory = data.find('Directory')
-        if directory:
-            related = directory.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def onDeck(self):
         """ Returns show's On Deck :class:`~plexapi.video.Video` object or `None`.
             If show is unwatched, return will likely be the first episode.
         """
         data = self._server.query(self._details_key)
-        episode = next(data.iter('OnDeck'), None)
-        if episode:
-            return self.findItems(episode)[0]
-        return None
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def season(self, title=None, season=None):
         """ Returns the season with the specified title or number.
@@ -682,10 +671,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
             Will only return a match if the show's On Deck episode is in this season.
         """
         data = self._server.query(self._details_key)
-        episode = next(data.iter('OnDeck'), None)
-        if episode:
-            return self.findItems(episode)[0]
-        return None
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
@@ -829,7 +815,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the episode.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the episode is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -918,7 +904,7 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the clip.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the clip is found on disk.
         """
         return [part.file for part in self.iterParts() if part]

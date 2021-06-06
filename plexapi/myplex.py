@@ -14,7 +14,6 @@ from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
-from plexapi.utils import joinArgs
 from requests.status_codes import _codes as codes
 
 
@@ -128,26 +127,18 @@ class MyPlexAccount(PlexObject):
         self.title = data.attrib.get('title')
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
-        subscription = data.find('subscription')
 
+        subscription = data.find('subscription')
         self.subscriptionActive = utils.cast(bool, subscription.attrib.get('active'))
         self.subscriptionStatus = subscription.attrib.get('status')
         self.subscriptionPlan = subscription.attrib.get('plan')
-
-        self.subscriptionFeatures = []
-        for feature in subscription.iter('feature'):
-            self.subscriptionFeatures.append(feature.attrib.get('id'))
+        self.subscriptionFeatures = self.listAttrs(subscription, 'id', etag='feature')
 
         roles = data.find('roles')
-        self.roles = []
-        if roles is not None:
-            for role in roles.iter('role'):
-                self.roles.append(role.attrib.get('id'))
+        self.roles = self.listAttrs(roles, 'id', etag='role')
 
         entitlements = data.find('entitlements')
-        self.entitlements = []
-        for entitlement in entitlements.iter('entitlement'):
-            self.entitlements.append(entitlement.attrib.get('id'))
+        self.entitlements = self.listAttrs(entitlements, 'id', etag='entitlement')
 
         # TODO: Fetch missing MyPlexAccount attributes
         self.profile_settings = None
@@ -460,7 +451,7 @@ class MyPlexAccount(PlexObject):
         if isinstance(allowChannels, dict):
             params['filterMusic'] = self._filterDictToStr(filterMusic or {})
         if params:
-            url += joinArgs(params)
+            url += utils.joinArgs(params)
             response_filters = self.query(url, self._session.put)
         return response_servers, response_filters
 
@@ -885,13 +876,7 @@ class MyPlexServerShare(PlexObject):
         """
         url = MyPlexAccount.FRIENDSERVERS.format(machineId=self.machineIdentifier, serverId=self.id)
         data = self._server.query(url)
-        sections = []
-
-        for section in data.iter('Section'):
-            if ElementTree.iselement(section):
-                sections.append(Section(self, section, url))
-
-        return sections
+        return self.findItems(data, Section, rtag='SharedServer')
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get all Play History for a user in this shared server.
@@ -1076,7 +1061,7 @@ class MyPlexDevice(PlexObject):
         self.screenDensity = data.attrib.get('screenDensity')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
         self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
-        self.connections = [connection.attrib.get('uri') for connection in data.iter('Connection')]
+        self.connections = self.listAttrs(data, 'uri', etag='Connection')
 
     def connect(self, timeout=None):
         """ Returns a new :class:`~plexapi.client.PlexClient` or :class:`~plexapi.server.PlexServer`
