@@ -780,25 +780,6 @@ class Producer(MediaTag):
 
 
 @utils.registerPlexObject
-class Review(MediaTag):
-    """ Represents a single Review for a Movie.
-        Attributes:
-            TAG (str): 'Review'
-    """
-    TAG = 'Review'
-
-    def _loadData(self, data):
-        self._data = data
-        self.filter = data.attrib.get('filter')
-        self.id = cast(int, data.attrib.get('id', 0))
-        self.image = data.attrib.get('image')
-        self.link = data.attrib.get('link')
-        self.source = data.attrib.get('source')
-        self.tag = data.attrib.get('tag')
-        self.text = data.attrib.get('text')
-
-
-@utils.registerPlexObject
 class Role(MediaTag):
     """ Represents a single Role (actor/actress) media tag.
 
@@ -879,6 +860,26 @@ class Guid(GuidTag):
             TAG (str): 'Guid'
     """
     TAG = 'Guid'
+
+
+@utils.registerPlexObject
+class Review(MediaTag):
+    """ Represents a single Review for a Movie.
+    
+        Attributes:
+            TAG (str): 'Review'
+    """
+    TAG = 'Review'
+
+    def _loadData(self, data):
+        self._data = data
+        self.filter = data.attrib.get('filter')
+        self.id = utils.cast(int, data.attrib.get('id', 0))
+        self.image = data.attrib.get('image')
+        self.link = data.attrib.get('link')
+        self.source = data.attrib.get('source')
+        self.tag = data.attrib.get('tag')
+        self.text = data.attrib.get('text')
 
 
 class BaseImage(PlexObject):

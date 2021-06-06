@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus, urlencode
 
 from plexapi import library, media, utils
-from plexapi.base import Playable, PlexPartialObject, MediaContainer
+from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
@@ -87,20 +87,20 @@ class Video(PlexPartialObject):
 
     def augmentation(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects.
-
-            augmentation returns hub items relating to online media sources
-            such as Tidal Music "Track From {item}" or "Soundtrack of {item}"
-            Plex Pass and linked Tidal account are required
-
+            Augmentation returns hub items relating to online media sources
+            such as Tidal Music "Track from {item}" or "Soundtrack of {item}".
+            Plex Pass and linked Tidal account are required.
         """
         account = self._server.myPlexAccount()
-        tidalOptOut = [service.value for service in account.onlineMediaSources()
-                       if service.key.endswith('music')][0]
+        tidalOptOut = next(
+            (service.value for service in account.onlineMediaSources()
+                if service.key == 'tv.plex.provider.music'),
+            None
+        )
         if account.subscriptionStatus != 'Active' or tidalOptOut == 'opt_out':
             raise BadRequest('Requires Plex Pass and Tidal Music enabled.')
         data = self._server.query(self.key + '?asyncAugmentMetadata=1')
-        mediaContainer = MediaContainer(data=data, server=self._server)
-        augmentationKey = mediaContainer.augmentationKey
+        augmentationKey = data.attrib.get('augmentationKey')
         return self.fetchItems(augmentationKey)
 
     def _defaultSyncTitle(self):
@@ -362,22 +362,13 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
 
     def reviews(self):
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
-        items = []
-        data = self._server.query(self.key + '?includeReviews=1')
-        for item in data.iter('Review'):
-            items.append(media.Review(data=item, server=self._server))
-
-        return items
+        data = self._server.query(self._details_key)
+        return self.findItems(data, media.Review, rtag='Video')
 
     def extras(self):
         """ Returns a list of :class:`~plexapi.video.Extra` objects. """
-        items = []
         data = self._server.query(self._details_key)
-        for extra in data.iter('Extras'):
-            for video in extra.iter('Video'):
-                items.append(Extra(data=video, server=self._server))
-
-        return items
+        return self.findItems(data, Extra, rtag='Extras')
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """

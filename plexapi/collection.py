@@ -51,7 +51,6 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             updatedAt (datatime): Datetime the collection was updated.
             userRating (float): Rating of the collection (0.0 - 10.0) equaling (0 stars - 5 stars).
     """
-
     TAG = 'Directory'
     TYPE = 'collection'
 
