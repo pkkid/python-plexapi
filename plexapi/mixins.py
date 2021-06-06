@@ -39,16 +39,18 @@ class AdvancedSettingsMixin(object):
         """ Edit a Plex object's advanced settings. """
         data = {}
         key = '%s/prefs?' % self.key
-        preferences = {pref.id: list(pref.enumValues.keys()) for pref in self.preferences()}
+        preferences = {pref.id: pref for pref in self.preferences() if pref.enumValues}
         for settingID, value in kwargs.items():
             try:
-                enums = preferences[settingID]
+                pref = preferences[settingID]
             except KeyError:
                 raise NotFound('%s not found in %s' % (value, list(preferences.keys())))
-            if value in enums:
+            
+            enumValues = pref.enumValues
+            if enumValues.get(value, enumValues.get(str(value))):
                 data[settingID] = value
             else:
-                raise NotFound('%s not found in %s' % (value, enums))
+                raise NotFound('%s not found in %s' % (value, list(enumValues)))
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
 

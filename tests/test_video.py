@@ -83,7 +83,7 @@ def test_video_Movie_media_tags_Exception(movie):
 
 def test_video_Movie_media_tags_collection(movie, collection):
     movie.reload()
-    collection_tag = next(c for c in movie.collections if c.tag == "Marvel")
+    collection_tag = next(c for c in movie.collections if c.tag == "Test Collection")
     assert collection == collection_tag.collection()
 
 
