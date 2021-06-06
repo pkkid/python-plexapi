@@ -915,7 +915,6 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
             viewOffset (int): View offset in milliseconds.
             year (int): Year clip was released.
     """
-
     TAG = 'Video'
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
@@ -925,17 +924,19 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self._data = data
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.index = utils.cast(int, data.attrib.get('index'))
         self.media = self.findItems(data, media.Media)
-        self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+        self.originallyAvailableAt = utils.toDatetime(
+            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
         self.subtype = data.attrib.get('subtype')
         self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
-        
+
     @property
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
@@ -947,51 +948,13 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         return [part.file for part in self.iterParts() if part]
 
 
-@utils.registerPlexObject
 class Extra(Clip):
-    """ Represents a single Extra (trailer, behindTheScenes, etc).
-
-        Attributes:
-            TAG (str): 'Extras'
-            TYPE (str): 'clip'
-            addedAt (datetime): Datetime the item was added to the library.
-            duration (int): Duration of the clip in milliseconds.
-            extraType (int): Unknown.
-            index (int): Plex index number for the clip.
-            key (str): API URL (/library/metadata/<ratingkey>).
-            media (List<:class:`~plexapi.media.Media`>): List of media objects.
-            originallyAvailableAt (datetime): Datetime the clip was released.
-            ratingKey (int): Unique key identifying the item.
-            subtype (str): Type of clip (trailer, behindTheScenes, sceneOrSample, etc.).
-            summary (str): Summary of the movie, show, season, episode, or clip.
-            thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
-            title (str): Name of the movie, show, season, episode, or clip.
-            type (str): 'movie', 'show', 'season', 'episode', or 'clip'.
-            year (int): Year clip was released.
-    """
-    TAG = 'Extras'
+    """ Represents a single Extra (trailer, behindTheScenes, etc). """
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
-        self.duration = utils.cast(int, data.attrib.get('duration'))
-        self.extraType = data.attrib.get('extraType')
-        self.index = utils.cast(int, data.attrib.get('index'))
-        self.key = data.attrib.get('key', '')
-        self.media = self.findItems(data, media.Media)
-        self.originallyAvailableAt = utils.toDatetime(
-            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
-        self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
-        self.subtype = data.attrib.get('subtype')
-        self.summary = data.attrib.get('summary')
-        self.thumb = data.attrib.get('thumb')
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-        self.year = utils.cast(int, data.attrib.get('year'))
-
-    def section(self):
-        """Return the :class:`~plexapi.library.LibrarySection` this item belongs to."""
-        # Clip payloads may not contain 'librarySectionID'
-        # Return None to avoid unnecessary attribute lookup attempts.
-        return None
+        super(Extra, self)._loadData(data)
+        parent = self._parent()
+        self.librarySectionID = parent.librarySectionID
+        self.librarySectionKey = parent.librarySectionKey
+        self.librarySectionTitle = parent.librarySectionTitle
