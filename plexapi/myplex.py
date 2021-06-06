@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
 import threading
-import json
 import time
 from xml.etree import ElementTree
 
@@ -76,7 +75,6 @@ class MyPlexAccount(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'                                           # get
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
-    SETTINGS = 'https://plex.tv/api/v2/user/settings'                                           # get
     OPTOUTS = 'https://plex.tv/api/v2/user/%(userUUID)s/settings/opt_outs'                      # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
@@ -1337,31 +1335,6 @@ def _chooseConnection(ctype, name, results):
         log.debug('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
     raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
-
-
-class AccountSettings(PlexObject):
-    """ Represents a single Account Setting
-        'https://plex.tv/api/v2/user/{userUUID}/settings'
-
-        Attributes:
-            id (str): Unknown. "experience"?
-            type (str): "json"
-            value (dict): Lots of user server, library,
-                          and other endpoints and settings
-            hidden (str): Unknown. Are these settings hidden?
-            updatedAt (datetime): Datetime last updated
-    """
-
-    def _loadData(self, data):
-        self.id = data.attrib.get('id')
-        self.type = data.attrib.get('type')
-        self.value = self.values(data.attrib.get('value'))
-        self.hidden = data.attrib.get('hidden')
-        self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
-
-    def values(self, value):
-        value.replace(':false', ':False').replace(':true', ':True').replace(':null', ':None')
-        return json.loads(value)
 
 
 class AccountOptOut(PlexObject):
