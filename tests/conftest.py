@@ -207,13 +207,13 @@ def client(request, plex):
 
 
 @pytest.fixture()
-def tvshows(plex):
-    return plex.library.section("TV Shows")
+def movies(plex):
+    return plex.library.section("Movies")
 
 
 @pytest.fixture()
-def movies(plex):
-    return plex.library.section("Movies")
+def tvshows(plex):
+    return plex.library.section("TV Shows")
 
 
 @pytest.fixture()
@@ -232,13 +232,18 @@ def movie(movies):
 
 
 @pytest.fixture()
-def collection(movies):
-    try:
-        return movies.collections(title="Marvel")[0]
-    except IndexError:
-        movie = movies.get("Elephants Dream")
-        movie.addCollection("Marvel")
-        return movies.collections(title="Marvel")[0]
+def show(tvshows):
+    return tvshows.get("Game of Thrones")
+
+
+@pytest.fixture()
+def season(show):
+    return show.season(1)
+
+
+@pytest.fixture()
+def episode(season):
+    return season.get("Winter Is Coming")
 
 
 @pytest.fixture()
@@ -257,16 +262,6 @@ def track(album):
 
 
 @pytest.fixture()
-def show(tvshows):
-    return tvshows.get("Game of Thrones")
-
-
-@pytest.fixture()
-def episode(show):
-    return show.get("Winter Is Coming")
-
-
-@pytest.fixture()
 def photoalbum(photos):
     try:
         return photos.get("Cats")
@@ -277,6 +272,29 @@ def photoalbum(photos):
 @pytest.fixture()
 def photo(photoalbum):
     return photoalbum.photo("photo1")
+
+
+@pytest.fixture()
+def collection(plex, movies, movie):
+    c = movies.collection("Test Collection")
+    if c: return c
+    else:
+        return plex.createCollection(
+            title="Test Collection",
+            section=movies,
+            items=movie
+        )
+
+
+@pytest.fixture()
+def playlist(plex, tvshows, season):
+    p = tvshows.playlist("Test Playlist")
+    if p: return p
+    else:
+        return plex.createPlaylist(
+            title="Test Playlist",
+            items=season.episodes()[:3]
+        )
 
 
 @pytest.fixture()
@@ -390,6 +408,10 @@ def is_banner(key):
 
 def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
+
+
+def is_composite(key, prefix="/library/metadata/"):
+    return is_metadata(key, prefix=prefix, contains="/composite/")
 
 
 def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
