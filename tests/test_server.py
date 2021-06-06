@@ -146,7 +146,7 @@ def test_server_search(plex, movie):
 
 def test_server_playlist(plex, show):
     episodes = show.episodes()
-    playlist = plex.createPlaylist("test_playlist", episodes[:3])
+    playlist = plex.createPlaylist("test_playlist", items=episodes[:3])
     try:
         assert playlist.title == "test_playlist"
         with pytest.raises(NotFound):
@@ -159,10 +159,12 @@ def test_server_playlists(plex, show):
     playlists = plex.playlists()
     count = len(playlists)
     episodes = show.episodes()
-    playlist = plex.createPlaylist("test_playlist", episodes[:3])
+    playlist = plex.createPlaylist("test_playlist", items=episodes[:3])
     try:
         playlists = plex.playlists()
         assert len(playlists) == count + 1
+        assert playlist in plex.playlists(playlistType='video')
+        assert playlist not in plex.playlists(playlistType='audio')
     finally:
         playlist.delete()
 

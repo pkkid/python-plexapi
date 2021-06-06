@@ -491,3 +491,25 @@ def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
     assert len(items) == len(media_list)
     assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
     playlist.delete()
+
+
+def test_collection_sync(plex, clear_sync_device, movies, movie):
+    items = [movie]
+    collection = plex.createCollection("Sync: Collection", movies, items)
+    new_item = collection.sync(
+        videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device
+    )
+    collection._server.refreshSync()
+    item = utils.wait_until(
+        get_sync_item_from_server,
+        delay=0.5,
+        timeout=3,
+        sync_device=clear_sync_device,
+        sync_item=new_item,
+    )
+    media_list = utils.wait_until(
+        get_media, delay=0.25, timeout=3, item=item, server=collection._server
+    )
+    assert len(items) == len(media_list)
+    assert [e.ratingKey for e in items] == [m.ratingKey for m in media_list]
+    collection.delete()
