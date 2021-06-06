@@ -49,6 +49,10 @@ def test_video_Movie_mixins_images(movie):
     test_mixins.edit_poster(movie)
 
 
+def test_video_Movie_mixins_rating(movie):
+    test_mixins.edit_rating(movie)
+
+
 def test_video_Movie_mixins_tags(movie):
     test_mixins.edit_collection(movie)
     test_mixins.edit_country(movie)
@@ -79,7 +83,7 @@ def test_video_Movie_media_tags_Exception(movie):
 
 def test_video_Movie_media_tags_collection(movie, collection):
     movie.reload()
-    collection_tag = next(c for c in movie.collections if c.tag == "Marvel")
+    collection_tag = next(c for c in movie.collections if c.tag == "Test Collection")
     assert collection == collection_tag.collection()
 
 
@@ -693,11 +697,13 @@ def test_video_Show_analyze(show):
 
 def test_video_Show_markWatched(show):
     show.markWatched()
+    show.reload()
     assert show.isWatched
 
 
 def test_video_Show_markUnwatched(show):
     show.markUnwatched()
+    show.reload()
     assert not show.isWatched
 
 
@@ -722,11 +728,16 @@ def test_video_Show_mixins_edit_advanced_settings(show):
     test_mixins.edit_advanced_settings(show)
 
 
+@pytest.mark.xfail(reason="Changing show art fails randomly")
 def test_video_Show_mixins_images(show):
     test_mixins.edit_art(show)
     test_mixins.edit_poster(show)
     test_mixins.attr_artUrl(show)
     test_mixins.attr_posterUrl(show)
+
+
+def test_video_Show_mixins_rating(show):
+    test_mixins.edit_rating(show)
 
 
 def test_video_Show_mixins_tags(show):
@@ -806,12 +817,14 @@ def test_video_Season_show(show):
 def test_video_Season_watched(show):
     season = show.season("Season 1")
     season.markWatched()
+    season.reload()
     assert season.isWatched
 
 
 def test_video_Season_unwatched(show):
     season = show.season("Season 1")
     season.markUnwatched()
+    season.reload()
     assert not season.isWatched
 
 
@@ -841,6 +854,11 @@ def test_video_Season_mixins_images(show):
     test_mixins.edit_poster(season)
     test_mixins.attr_artUrl(season)
     test_mixins.attr_posterUrl(season)
+
+
+def test_video_Season_mixins_rating(show):
+    season = show.season(season=1)
+    test_mixins.edit_rating(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1031,6 +1049,10 @@ def test_video_Episode_mixins_images(episode):
     test_mixins.edit_poster(episode)
     test_mixins.attr_artUrl(episode)
     test_mixins.attr_posterUrl(episode)
+
+
+def test_video_Episode_mixins_rating(episode):
+    test_mixins.edit_rating(episode)
 
 
 def test_video_Episode_mixins_tags(episode):

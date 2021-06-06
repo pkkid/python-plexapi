@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import tag_singular
 import pytest
 
@@ -177,3 +177,21 @@ def edit_advanced_settings(obj):
     _test_mixins_editAdvanced(obj)
     _test_mixins_editAdvanced_bad_pref(obj)
     _test_mixins_defaultAdvanced(obj)
+
+
+def edit_rating(obj):
+    obj.rate(10.0)
+    obj.reload()
+    assert utils.is_datetime(obj.lastRatedAt)
+    assert obj.userRating == 10.0
+    obj.rate()
+    # Cannot use obj.reload() since PlexObject.__setattr__()
+    # will not overwrite userRating with None
+    obj = obj.fetchItem(obj._details_key)
+    assert obj.userRating is None
+    with pytest.raises(BadRequest):
+        assert obj.rate('bad-rating')
+    with pytest.raises(BadRequest):
+        assert obj.rate(-1)
+    with pytest.raises(BadRequest):
+        assert obj.rate(100)
