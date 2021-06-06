@@ -480,7 +480,7 @@ class PlexPartialObject(PlexObject):
         self._server.query(key, method=self._server._session.put)
 
     def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
+        """ Returns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie would contain.

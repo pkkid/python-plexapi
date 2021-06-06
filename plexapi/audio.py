@@ -402,7 +402,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the track.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the track is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
