@@ -385,7 +385,7 @@ def test_sync_entire_library_photos(clear_sync_device, photos):
 
 def test_playlist_movie_sync(plex, clear_sync_device, movies):
     items = movies.all()
-    playlist = plex.createPlaylist("Sync: Movies", items)
+    playlist = plex.createPlaylist("Sync: Movies", items=items)
     new_item = playlist.sync(
         videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device
     )
@@ -407,7 +407,7 @@ def test_playlist_movie_sync(plex, clear_sync_device, movies):
 
 def test_playlist_tvshow_sync(plex, clear_sync_device, show):
     items = show.episodes()
-    playlist = plex.createPlaylist("Sync: TV Show", items)
+    playlist = plex.createPlaylist("Sync: TV Show", items=items)
     new_item = playlist.sync(
         videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device
     )
@@ -429,7 +429,7 @@ def test_playlist_tvshow_sync(plex, clear_sync_device, show):
 
 def test_playlist_mixed_sync(plex, clear_sync_device, movie, episode):
     items = [movie, episode]
-    playlist = plex.createPlaylist("Sync: Mixed", items)
+    playlist = plex.createPlaylist("Sync: Mixed", items=items)
     new_item = playlist.sync(
         videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device
     )
@@ -451,7 +451,7 @@ def test_playlist_mixed_sync(plex, clear_sync_device, movie, episode):
 
 def test_playlist_music_sync(plex, clear_sync_device, artist):
     items = artist.tracks()
-    playlist = plex.createPlaylist("Sync: Music", items)
+    playlist = plex.createPlaylist("Sync: Music", items=items)
     new_item = playlist.sync(
         audioBitrate=AUDIO_BITRATE_192_KBPS, client=clear_sync_device
     )
@@ -473,7 +473,7 @@ def test_playlist_music_sync(plex, clear_sync_device, artist):
 
 def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
     items = photoalbum.photos()
-    playlist = plex.createPlaylist("Sync: Photos", items)
+    playlist = plex.createPlaylist("Sync: Photos", items=items)
     new_item = playlist.sync(
         photoResolution=PHOTO_QUALITY_MEDIUM, client=clear_sync_device
     )
@@ -495,7 +495,7 @@ def test_playlist_photos_sync(plex, clear_sync_device, photoalbum):
 
 def test_collection_sync(plex, clear_sync_device, movies, movie):
     items = [movie]
-    collection = plex.createCollection("Sync: Collection", movies, items)
+    collection = plex.createCollection("Sync: Collection", section=movies, items=items)
     new_item = collection.sync(
         videoQuality=VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device
     )
