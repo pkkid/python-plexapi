@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import tag_plural, tag_helper
 
 DONT_RELOAD_FOR_KEYS = {'key', 'session'}
 DONT_OVERWRITE_SESSION_KEYS = {'usernames', 'players', 'transcodeSessions', 'session'}
@@ -263,7 +262,7 @@ class PlexObject(object):
                 item.librarySectionID = librarySectionID
         return items
 
-    def findItems(self, data, cls=None, initpath=None, **kwargs):
+    def findItems(self, data, cls=None, initpath=None, rtag=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
@@ -273,6 +272,9 @@ class PlexObject(object):
             kwargs['etag'] = cls.TAG
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
+        # rtag to iter on a specific root tag
+        if rtag:
+            data = next(data.iter(rtag), [])
         # loop through all data elements to find matches
         items = []
         for elem in data:
@@ -478,7 +480,7 @@ class PlexPartialObject(PlexObject):
         self._server.query(key, method=self._server._session.put)
 
     def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
+        """ Returns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie would contain.
@@ -521,9 +523,9 @@ class PlexPartialObject(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        value = getattr(self, tag_plural(tag))
+        value = getattr(self, utils.tag_plural(tag))
         existing_tags = [t.tag for t in value if t and remove is False]
-        tag_edits = tag_helper(tag, existing_tags + items, locked, remove)
+        tag_edits = utils.tag_helper(tag, existing_tags + items, locked, remove)
         self.edit(**tag_edits)
 
     def refresh(self):

@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
-from plexapi.utils import cast
 
 
 @utils.registerPlexObject
@@ -51,31 +50,31 @@ class Media(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.aspectRatio = cast(float, data.attrib.get('aspectRatio'))
-        self.audioChannels = cast(int, data.attrib.get('audioChannels'))
+        self.aspectRatio = utils.cast(float, data.attrib.get('aspectRatio'))
+        self.audioChannels = utils.cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
         self.audioProfile = data.attrib.get('audioProfile')
-        self.bitrate = cast(int, data.attrib.get('bitrate'))
+        self.bitrate = utils.cast(int, data.attrib.get('bitrate'))
         self.container = data.attrib.get('container')
-        self.duration = cast(int, data.attrib.get('duration'))
-        self.height = cast(int, data.attrib.get('height'))
-        self.id = cast(int, data.attrib.get('id'))
-        self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
-        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.height = utils.cast(int, data.attrib.get('height'))
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.has64bitOffsets = utils.cast(bool, data.attrib.get('has64bitOffsets'))
+        self.optimizedForStreaming = utils.cast(bool, data.attrib.get('optimizedForStreaming'))
         self.parts = self.findItems(data, MediaPart)
-        self.proxyType = cast(int, data.attrib.get('proxyType'))
+        self.proxyType = utils.cast(int, data.attrib.get('proxyType'))
         self.target = data.attrib.get('target')
         self.title = data.attrib.get('title')
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoFrameRate = data.attrib.get('videoFrameRate')
         self.videoProfile = data.attrib.get('videoProfile')
         self.videoResolution = data.attrib.get('videoResolution')
-        self.width = cast(int, data.attrib.get('width'))
+        self.width = utils.cast(int, data.attrib.get('width'))
 
         if self._isChildOf(etag='Photo'):
             self.aperture = data.attrib.get('aperture')
             self.exposure = data.attrib.get('exposure')
-            self.iso = cast(int, data.attrib.get('iso'))
+            self.iso = utils.cast(int, data.attrib.get('iso'))
             self.lens = data.attrib.get('lens')
             self.make = data.attrib.get('make')
             self.model = data.attrib.get('model')
@@ -128,25 +127,25 @@ class MediaPart(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.accessible = cast(bool, data.attrib.get('accessible'))
+        self.accessible = utils.cast(bool, data.attrib.get('accessible'))
         self.audioProfile = data.attrib.get('audioProfile')
         self.container = data.attrib.get('container')
         self.decision = data.attrib.get('decision')
-        self.deepAnalysisVersion = cast(int, data.attrib.get('deepAnalysisVersion'))
-        self.duration = cast(int, data.attrib.get('duration'))
-        self.exists = cast(bool, data.attrib.get('exists'))
+        self.deepAnalysisVersion = utils.cast(int, data.attrib.get('deepAnalysisVersion'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.exists = utils.cast(bool, data.attrib.get('exists'))
         self.file = data.attrib.get('file')
-        self.has64bitOffsets = cast(bool, data.attrib.get('has64bitOffsets'))
-        self.hasThumbnail = cast(bool, data.attrib.get('hasThumbnail'))
-        self.id = cast(int, data.attrib.get('id'))
+        self.has64bitOffsets = utils.cast(bool, data.attrib.get('has64bitOffsets'))
+        self.hasThumbnail = utils.cast(bool, data.attrib.get('hasThumbnail'))
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.indexes = data.attrib.get('indexes')
         self.key = data.attrib.get('key')
-        self.optimizedForStreaming = cast(bool, data.attrib.get('optimizedForStreaming'))
-        self.packetLength = cast(int, data.attrib.get('packetLength'))
+        self.optimizedForStreaming = utils.cast(bool, data.attrib.get('optimizedForStreaming'))
+        self.packetLength = utils.cast(int, data.attrib.get('packetLength'))
         self.requiredBandwidths = data.attrib.get('requiredBandwidths')
-        self.size = cast(int, data.attrib.get('size'))
+        self.size = utils.cast(int, data.attrib.get('size'))
         self.streams = self._buildStreams(data)
-        self.syncItemId = cast(int, data.attrib.get('syncItemId'))
+        self.syncItemId = utils.cast(int, data.attrib.get('syncItemId'))
         self.syncState = data.attrib.get('syncState')
         self.videoProfile = data.attrib.get('videoProfile')
 
@@ -233,21 +232,21 @@ class MediaPartStream(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.bitrate = cast(int, data.attrib.get('bitrate'))
+        self.bitrate = utils.cast(int, data.attrib.get('bitrate'))
         self.codec = data.attrib.get('codec')
-        self.default = cast(bool, data.attrib.get('default'))
+        self.default = utils.cast(bool, data.attrib.get('default'))
         self.displayTitle = data.attrib.get('displayTitle')
         self.extendedDisplayTitle = data.attrib.get('extendedDisplayTitle')
         self.key = data.attrib.get('key')
-        self.id = cast(int, data.attrib.get('id'))
-        self.index = cast(int, data.attrib.get('index', '-1'))
+        self.id = utils.cast(int, data.attrib.get('id'))
+        self.index = utils.cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')
         self.languageCode = data.attrib.get('languageCode')
         self.requiredBandwidths = data.attrib.get('requiredBandwidths')
-        self.selected = cast(bool, data.attrib.get('selected', '0'))
-        self.streamType = cast(int, data.attrib.get('streamType'))
+        self.selected = utils.cast(bool, data.attrib.get('selected', '0'))
+        self.streamType = utils.cast(int, data.attrib.get('streamType'))
         self.title = data.attrib.get('title')
-        self.type = cast(int, data.attrib.get('streamType'))
+        self.type = utils.cast(int, data.attrib.get('streamType'))
 
 
 @utils.registerPlexObject
@@ -298,38 +297,38 @@ class VideoStream(MediaPartStream):
         """ Load attribute values from Plex XML response. """
         super(VideoStream, self)._loadData(data)
         self.anamorphic = data.attrib.get('anamorphic')
-        self.bitDepth = cast(int, data.attrib.get('bitDepth'))
-        self.cabac = cast(int, data.attrib.get('cabac'))
+        self.bitDepth = utils.cast(int, data.attrib.get('bitDepth'))
+        self.cabac = utils.cast(int, data.attrib.get('cabac'))
         self.chromaLocation = data.attrib.get('chromaLocation')
         self.chromaSubsampling = data.attrib.get('chromaSubsampling')
         self.codecID = data.attrib.get('codecID')
-        self.codedHeight = cast(int, data.attrib.get('codedHeight'))
-        self.codedWidth = cast(int, data.attrib.get('codedWidth'))
+        self.codedHeight = utils.cast(int, data.attrib.get('codedHeight'))
+        self.codedWidth = utils.cast(int, data.attrib.get('codedWidth'))
         self.colorPrimaries = data.attrib.get('colorPrimaries')
         self.colorRange = data.attrib.get('colorRange')
         self.colorSpace = data.attrib.get('colorSpace')
         self.colorTrc = data.attrib.get('colorTrc')
-        self.DOVIBLCompatID = cast(int, data.attrib.get('DOVIBLCompatID'))
-        self.DOVIBLPresent = cast(bool, data.attrib.get('DOVIBLPresent'))
-        self.DOVIELPresent = cast(bool, data.attrib.get('DOVIELPresent'))
-        self.DOVILevel = cast(int, data.attrib.get('DOVILevel'))
-        self.DOVIPresent = cast(bool, data.attrib.get('DOVIPresent'))
-        self.DOVIProfile = cast(int, data.attrib.get('DOVIProfile'))
-        self.DOVIRPUPresent = cast(bool, data.attrib.get('DOVIRPUPresent'))
-        self.DOVIVersion = cast(float, data.attrib.get('DOVIVersion'))
-        self.duration = cast(int, data.attrib.get('duration'))
-        self.frameRate = cast(float, data.attrib.get('frameRate'))
+        self.DOVIBLCompatID = utils.cast(int, data.attrib.get('DOVIBLCompatID'))
+        self.DOVIBLPresent = utils.cast(bool, data.attrib.get('DOVIBLPresent'))
+        self.DOVIELPresent = utils.cast(bool, data.attrib.get('DOVIELPresent'))
+        self.DOVILevel = utils.cast(int, data.attrib.get('DOVILevel'))
+        self.DOVIPresent = utils.cast(bool, data.attrib.get('DOVIPresent'))
+        self.DOVIProfile = utils.cast(int, data.attrib.get('DOVIProfile'))
+        self.DOVIRPUPresent = utils.cast(bool, data.attrib.get('DOVIRPUPresent'))
+        self.DOVIVersion = utils.cast(float, data.attrib.get('DOVIVersion'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.frameRate = utils.cast(float, data.attrib.get('frameRate'))
         self.frameRateMode = data.attrib.get('frameRateMode')
-        self.hasScallingMatrix = cast(bool, data.attrib.get('hasScallingMatrix'))
-        self.height = cast(int, data.attrib.get('height'))
-        self.level = cast(int, data.attrib.get('level'))
+        self.hasScallingMatrix = utils.cast(bool, data.attrib.get('hasScallingMatrix'))
+        self.height = utils.cast(int, data.attrib.get('height'))
+        self.level = utils.cast(int, data.attrib.get('level'))
         self.profile = data.attrib.get('profile')
         self.pixelAspectRatio = data.attrib.get('pixelAspectRatio')
         self.pixelFormat = data.attrib.get('pixelFormat')
-        self.refFrames = cast(int, data.attrib.get('refFrames'))
+        self.refFrames = utils.cast(int, data.attrib.get('refFrames'))
         self.scanType = data.attrib.get('scanType')
-        self.streamIdentifier = cast(int, data.attrib.get('streamIdentifier'))
-        self.width = cast(int, data.attrib.get('width'))
+        self.streamIdentifier = utils.cast(int, data.attrib.get('streamIdentifier'))
+        self.width = utils.cast(int, data.attrib.get('width'))
 
 
 @utils.registerPlexObject
@@ -367,23 +366,23 @@ class AudioStream(MediaPartStream):
         """ Load attribute values from Plex XML response. """
         super(AudioStream, self)._loadData(data)
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
-        self.bitDepth = cast(int, data.attrib.get('bitDepth'))
+        self.bitDepth = utils.cast(int, data.attrib.get('bitDepth'))
         self.bitrateMode = data.attrib.get('bitrateMode')
-        self.channels = cast(int, data.attrib.get('channels'))
-        self.duration = cast(int, data.attrib.get('duration'))
+        self.channels = utils.cast(int, data.attrib.get('channels'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
         self.profile = data.attrib.get('profile')
-        self.samplingRate = cast(int, data.attrib.get('samplingRate'))
-        self.streamIdentifier = cast(int, data.attrib.get('streamIdentifier'))
+        self.samplingRate = utils.cast(int, data.attrib.get('samplingRate'))
+        self.streamIdentifier = utils.cast(int, data.attrib.get('streamIdentifier'))
 
         if self._isChildOf(etag='Track'):
-            self.albumGain = cast(float, data.attrib.get('albumGain'))
-            self.albumPeak = cast(float, data.attrib.get('albumPeak'))
-            self.albumRange = cast(float, data.attrib.get('albumRange'))
+            self.albumGain = utils.cast(float, data.attrib.get('albumGain'))
+            self.albumPeak = utils.cast(float, data.attrib.get('albumPeak'))
+            self.albumRange = utils.cast(float, data.attrib.get('albumRange'))
             self.endRamp = data.attrib.get('endRamp')
-            self.gain = cast(float, data.attrib.get('gain'))
-            self.loudness = cast(float, data.attrib.get('loudness'))
-            self.lra = cast(float, data.attrib.get('lra'))
-            self.peak = cast(float, data.attrib.get('peak'))
+            self.gain = utils.cast(float, data.attrib.get('gain'))
+            self.loudness = utils.cast(float, data.attrib.get('loudness'))
+            self.lra = utils.cast(float, data.attrib.get('lra'))
+            self.peak = utils.cast(float, data.attrib.get('peak'))
             self.startRamp = data.attrib.get('startRamp')
 
 
@@ -407,7 +406,7 @@ class SubtitleStream(MediaPartStream):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
         self.container = data.attrib.get('container')
-        self.forced = cast(bool, data.attrib.get('forced', '0'))
+        self.forced = utils.cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.headerCompression = data.attrib.get('headerCompression')
         self.transient = data.attrib.get('transient')
@@ -431,9 +430,9 @@ class LyricStream(MediaPartStream):
         """ Load attribute values from Plex XML response. """
         super(LyricStream, self)._loadData(data)
         self.format = data.attrib.get('format')
-        self.minLines = cast(int, data.attrib.get('minLines'))
+        self.minLines = utils.cast(int, data.attrib.get('minLines'))
         self.provider = data.attrib.get('provider')
-        self.timed = cast(bool, data.attrib.get('timed', '0'))
+        self.timed = utils.cast(bool, data.attrib.get('timed', '0'))
 
 
 @utils.registerPlexObject
@@ -496,36 +495,36 @@ class TranscodeSession(PlexObject):
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self.audioChannels = cast(int, data.attrib.get('audioChannels'))
+        self.audioChannels = utils.cast(int, data.attrib.get('audioChannels'))
         self.audioCodec = data.attrib.get('audioCodec')
         self.audioDecision = data.attrib.get('audioDecision')
-        self.complete = cast(bool, data.attrib.get('complete', '0'))
+        self.complete = utils.cast(bool, data.attrib.get('complete', '0'))
         self.container = data.attrib.get('container')
         self.context = data.attrib.get('context')
-        self.duration = cast(int, data.attrib.get('duration'))
-        self.height = cast(int, data.attrib.get('height'))
+        self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.height = utils.cast(int, data.attrib.get('height'))
         self.key = data.attrib.get('key')
-        self.maxOffsetAvailable = cast(float, data.attrib.get('maxOffsetAvailable'))
-        self.minOffsetAvailable = cast(float, data.attrib.get('minOffsetAvailable'))
-        self.progress = cast(float, data.attrib.get('progress'))
+        self.maxOffsetAvailable = utils.cast(float, data.attrib.get('maxOffsetAvailable'))
+        self.minOffsetAvailable = utils.cast(float, data.attrib.get('minOffsetAvailable'))
+        self.progress = utils.cast(float, data.attrib.get('progress'))
         self.protocol = data.attrib.get('protocol')
-        self.remaining = cast(int, data.attrib.get('remaining'))
-        self.size = cast(int, data.attrib.get('size'))
+        self.remaining = utils.cast(int, data.attrib.get('remaining'))
+        self.size = utils.cast(int, data.attrib.get('size'))
         self.sourceAudioCodec = data.attrib.get('sourceAudioCodec')
         self.sourceVideoCodec = data.attrib.get('sourceVideoCodec')
-        self.speed = cast(float, data.attrib.get('speed'))
+        self.speed = utils.cast(float, data.attrib.get('speed'))
         self.subtitleDecision = data.attrib.get('subtitleDecision')
-        self.throttled = cast(bool, data.attrib.get('throttled', '0'))
-        self.timestamp = cast(float, data.attrib.get('timeStamp'))
+        self.throttled = utils.cast(bool, data.attrib.get('throttled', '0'))
+        self.timestamp = utils.cast(float, data.attrib.get('timeStamp'))
         self.transcodeHwDecoding = data.attrib.get('transcodeHwDecoding')
         self.transcodeHwDecodingTitle = data.attrib.get('transcodeHwDecodingTitle')
         self.transcodeHwEncoding = data.attrib.get('transcodeHwEncoding')
         self.transcodeHwEncodingTitle = data.attrib.get('transcodeHwEncodingTitle')
-        self.transcodeHwFullPipeline = cast(bool, data.attrib.get('transcodeHwFullPipeline', '0'))
-        self.transcodeHwRequested = cast(bool, data.attrib.get('transcodeHwRequested', '0'))
+        self.transcodeHwFullPipeline = utils.cast(bool, data.attrib.get('transcodeHwFullPipeline', '0'))
+        self.transcodeHwRequested = utils.cast(bool, data.attrib.get('transcodeHwRequested', '0'))
         self.videoCodec = data.attrib.get('videoCodec')
         self.videoDecision = data.attrib.get('videoDecision')
-        self.width = cast(int, data.attrib.get('width'))
+        self.width = utils.cast(int, data.attrib.get('width'))
 
 
 @utils.registerPlexObject
@@ -666,7 +665,7 @@ class MediaTag(PlexObject):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.filter = data.attrib.get('filter')
-        self.id = cast(int, data.attrib.get('id'))
+        self.id = utils.cast(int, data.attrib.get('id'))
         self.key = data.attrib.get('key')
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
@@ -900,7 +899,7 @@ class BaseImage(PlexObject):
         self.key = data.attrib.get('key')
         self.provider = data.attrib.get('provider')
         self.ratingKey = data.attrib.get('ratingKey')
-        self.selected = cast(bool, data.attrib.get('selected'))
+        self.selected = utils.cast(bool, data.attrib.get('selected'))
         self.thumb = data.attrib.get('thumb')
 
     def select(self):
@@ -935,13 +934,13 @@ class Chapter(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.id = cast(int, data.attrib.get('id', 0))
+        self.id = utils.cast(int, data.attrib.get('id', 0))
         self.filter = data.attrib.get('filter')  # I couldn't filter on it anyways
         self.tag = data.attrib.get('tag')
         self.title = self.tag
-        self.index = cast(int, data.attrib.get('index'))
-        self.start = cast(int, data.attrib.get('startTimeOffset'))
-        self.end = cast(int, data.attrib.get('endTimeOffset'))
+        self.index = utils.cast(int, data.attrib.get('index'))
+        self.start = utils.cast(int, data.attrib.get('startTimeOffset'))
+        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
 
 
 @utils.registerPlexObject
@@ -962,8 +961,8 @@ class Marker(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.type = data.attrib.get('type')
-        self.start = cast(int, data.attrib.get('startTimeOffset'))
-        self.end = cast(int, data.attrib.get('endTimeOffset'))
+        self.start = utils.cast(int, data.attrib.get('startTimeOffset'))
+        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
 
 
 @utils.registerPlexObject
@@ -978,7 +977,7 @@ class Field(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.name = data.attrib.get('name')
-        self.locked = cast(bool, data.attrib.get('locked'))
+        self.locked = utils.cast(bool, data.attrib.get('locked'))
 
 
 @utils.registerPlexObject
@@ -1000,7 +999,7 @@ class SearchResult(PlexObject):
         self.guid = data.attrib.get('guid')
         self.lifespanEnded = data.attrib.get('lifespanEnded')
         self.name = data.attrib.get('name')
-        self.score = cast(int, data.attrib.get('score'))
+        self.score = utils.cast(int, data.attrib.get('score'))
         self.year = data.attrib.get('year')
 
 
@@ -1045,7 +1044,7 @@ class AgentMediaType(Agent):
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
 
     def _loadData(self, data):
-        self.mediaType = cast(int, data.attrib.get('mediaType'))
+        self.mediaType = utils.cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
         self.languageCode = []
         for code in data:

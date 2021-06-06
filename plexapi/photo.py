@@ -232,7 +232,7 @@ class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixi
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the photo.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the photo is found on disk.
         """
         return [part.file for item in self.media for part in item.parts if part]
