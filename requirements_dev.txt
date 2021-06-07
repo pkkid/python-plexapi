@@ -11,7 +11,7 @@ pytest-cov==2.11.1
 pytest-mock<3.6.2
 recommonmark==0.7.1
 requests==2.25.1
-requests-mock==1.9.1
+requests-mock==1.9.3
 sphinx==4.0.2
 sphinx-rtd-theme==0.5.2
 tqdm==4.61.0
