@@ -564,6 +564,7 @@ def test_video_Movie_hubs(movies):
 
 
 @pytest.mark.authenticated
+@pytest.mark.xfail(reason="Test account is missing online media sources?")
 def test_video_Movie_augmentation(movie, account):
     onlineMediaSources = account.onlineMediaSources()
     tidalOptOut = next(
