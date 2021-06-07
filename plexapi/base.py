@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import tag_plural, tag_helper
 
 USER_DONT_RELOAD_FOR_KEYS = set()
 _DONT_RELOAD_FOR_KEYS = {'key', 'session'}
@@ -267,7 +266,7 @@ class PlexObject(object):
                 item.librarySectionID = librarySectionID
         return items
 
-    def findItems(self, data, cls=None, initpath=None, **kwargs):
+    def findItems(self, data, cls=None, initpath=None, rtag=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
@@ -277,6 +276,9 @@ class PlexObject(object):
             kwargs['etag'] = cls.TAG
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
+        # rtag to iter on a specific root tag
+        if rtag:
+            data = next(data.iter(rtag), [])
         # loop through all data elements to find matches
         items = []
         for elem in data:
@@ -489,7 +491,7 @@ class PlexPartialObject(PlexObject):
         self._server.query(key, method=self._server._session.put)
 
     def isFullObject(self):
-        """ Retruns True if this is already a full object. A full object means all attributes
+        """ Returns True if this is already a full object. A full object means all attributes
             were populated from the api path representing only this item. For example, the
             search result for a movie often only contain a portion of the attributes a full
             object (main url) for that movie would contain.
@@ -532,9 +534,9 @@ class PlexPartialObject(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        value = getattr(self, tag_plural(tag))
+        value = getattr(self, utils.tag_plural(tag))
         existing_tags = [t.tag for t in value if t and remove is False]
-        tag_edits = tag_helper(tag, existing_tags + items, locked, remove)
+        tag_edits = utils.tag_helper(tag, existing_tags + items, locked, remove)
         self.edit(**tag_edits)
 
     def refresh(self):
@@ -619,7 +621,7 @@ class Playable(object):
             Raises:
                 :exc:`~plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
-        if self.TYPE not in ('movie', 'episode', 'track'):
+        if self.TYPE not in ('movie', 'episode', 'track', 'clip'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
         mvb = params.get('maxVideoBitrate')
         vr = params.get('videoResolution', '')
@@ -724,3 +726,34 @@ class Playable(object):
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
         self._reload(_autoReload=True)
+
+
+class MediaContainer(PlexObject):
+    """ Represents a single MediaContainer.
+
+        Attributes:
+            TAG (str): 'MediaContainer'
+            allowSync (int): Sync/Download is allowed/disallowed for feature.
+            augmentationKey (str): API URL (/library/metadata/augmentations/<augmentationKey>).
+            identifier (str): "com.plexapp.plugins.library"
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
+            librarySectionUUID (str): :class:`~plexapi.library.LibrarySection` UUID.
+            mediaTagPrefix (str): "/system/bundle/media/flags/"
+            mediaTagVersion (int): Unknown
+            size (int): The number of items in the hub.
+
+    """
+    TAG = 'MediaContainer'
+
+    def _loadData(self, data):
+        self._data = data
+        self.allowSync = utils.cast(int, data.attrib.get('allowSync'))
+        self.augmentationKey = data.attrib.get('augmentationKey')
+        self.identifier = data.attrib.get('identifier')
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionUUID = data.attrib.get('librarySectionUUID')
+        self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
+        self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.size = utils.cast(int, data.attrib.get('size'))

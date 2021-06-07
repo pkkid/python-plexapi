@@ -85,6 +85,24 @@ class Video(PlexPartialObject):
         key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
 
+    def augmentation(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects.
+            Augmentation returns hub items relating to online media sources
+            such as Tidal Music "Track from {item}" or "Soundtrack of {item}".
+            Plex Pass and linked Tidal account are required.
+        """
+        account = self._server.myPlexAccount()
+        tidalOptOut = next(
+            (service.value for service in account.onlineMediaSources()
+                if service.key == 'tv.plex.provider.music'),
+            None
+        )
+        if account.subscriptionStatus != 'Active' or tidalOptOut == 'opt_out':
+            raise BadRequest('Requires Plex Pass and Tidal Music enabled.')
+        data = self._server.query(self.key + '?asyncAugmentMetadata=1')
+        augmentationKey = data.attrib.get('augmentationKey')
+        return self.fetchItems(augmentationKey)
+
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return self.title
@@ -328,7 +346,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the movie.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the movie is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -342,14 +360,20 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         # This is just for compat.
         return self.title
 
+    def reviews(self):
+        """ Returns a list of :class:`~plexapi.media.Review` objects. """
+        data = self._server.query(self._details_key)
+        return self.findItems(data, media.Review, rtag='Video')
+
+    def extras(self):
+        """ Returns a list of :class:`~plexapi.video.Extra` objects. """
+        data = self._server.query(self._details_key)
+        return self.findItems(data, Extra, rtag='Extras')
+
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        video = data.find('Video')
-        if video:
-            related = video.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download video files to specified directory.
@@ -488,21 +512,14 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
-        directory = data.find('Directory')
-        if directory:
-            related = directory.find('Related')
-            if related:
-                return self.findItems(related, library.Hub)
+        return self.findItems(data, library.Hub, rtag='Related')
 
     def onDeck(self):
         """ Returns show's On Deck :class:`~plexapi.video.Video` object or `None`.
             If show is unwatched, return will likely be the first episode.
         """
         data = self._server.query(self._details_key)
-        episode = next(data.iter('OnDeck'), None)
-        if episode:
-            return self.findItems(episode)[0]
-        return None
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def season(self, title=None, season=None):
         """ Returns the season with the specified title or number.
@@ -682,10 +699,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
             Will only return a match if the show's On Deck episode is in this season.
         """
         data = self._server.query(self._details_key)
-        episode = next(data.iter('OnDeck'), None)
-        if episode:
-            return self.findItems(episode)[0]
-        return None
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
@@ -829,7 +843,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the episode.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the episode is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
@@ -892,7 +906,6 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
             viewOffset (int): View offset in milliseconds.
             year (int): Year clip was released.
     """
-
     TAG = 'Video'
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
@@ -902,11 +915,13 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         Video._loadData(self, data)
         Playable._loadData(self, data)
         self._data = data
+        self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.index = utils.cast(int, data.attrib.get('index'))
         self.media = self.findItems(data, media.Media)
-        self.originallyAvailableAt = data.attrib.get('originallyAvailableAt')
+        self.originallyAvailableAt = utils.toDatetime(
+            data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
         self.subtype = data.attrib.get('subtype')
         self.thumbAspectRatio = data.attrib.get('thumbAspectRatio')
@@ -918,7 +933,25 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the clip.
 
-            Retruns:
+            Returns:
                 List<str> of file paths where the clip is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
+
+    def _prettyfilename(self):
+        return self.title
+
+
+class Extra(Clip):
+    """ Represents a single Extra (trailer, behindTheScenes, etc). """
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        super(Extra, self)._loadData(data)
+        parent = self._parent()
+        self.librarySectionID = parent.librarySectionID
+        self.librarySectionKey = parent.librarySectionKey
+        self.librarySectionTitle = parent.librarySectionTitle
+
+    def _prettyfilename(self):
+        return '%s (%s)' % (self.title, self.subtype)

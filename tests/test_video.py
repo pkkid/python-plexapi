@@ -563,6 +563,51 @@ def test_video_Movie_hubs(movies):
     assert hub.size == 1
 
 
+@pytest.mark.authenticated
+def test_video_Movie_augmentation(movie, account):
+    onlineMediaSources = account.onlineMediaSources()
+    tidalOptOut = next(
+        optOut for optOut in onlineMediaSources
+        if optOut.key == 'tv.plex.provider.music'
+    )
+    optOutValue = tidalOptOut.value
+
+    tidalOptOut.optOut()
+    with pytest.raises(BadRequest):
+        movie.augmentation()
+
+    tidalOptOut.optIn()
+    augmentations = movie.augmentation()
+    assert augmentations or augmentations == []
+
+    # Reset original Tidal opt out value
+    tidalOptOut._updateOptOut(optOutValue)
+
+
+def test_video_Movie_reviews(movies):
+    movie = movies.get("Sita Sings The Blues")
+    reviews = movie.reviews()
+    assert reviews
+    review = next(r for r in reviews if r.link)
+    assert review.filter
+    assert utils.is_int(review.id)
+    assert review.image.startswith("rottentomatoes://")
+    assert review.link.startswith("http")
+    assert review.source
+    assert review.tag
+    assert review.text
+
+
+@pytest.mark.authenticated
+def test_video_Movie_extras(movies):
+    movie = movies.get("Sita Sings The Blues")
+    extras = movie.extras()
+    assert extras
+    extra = extras[0]
+    assert extra.type == 'clip'
+    assert extra.section() == movies
+
+
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     if show.art:
