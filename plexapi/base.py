@@ -610,7 +610,7 @@ class Playable(object):
             Raises:
                 :exc:`~plexapi.exceptions.Unsupported`: When the item doesn't support fetching a stream URL.
         """
-        if self.TYPE not in ('movie', 'episode', 'track'):
+        if self.TYPE not in ('movie', 'episode', 'track', 'clip'):
             raise Unsupported('Fetching stream URL for %s is unsupported.' % self.TYPE)
         mvb = params.get('maxVideoBitrate')
         vr = params.get('videoResolution', '')
@@ -715,3 +715,34 @@ class Playable(object):
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
         self.reload()
+
+
+class MediaContainer(PlexObject):
+    """ Represents a single MediaContainer.
+
+        Attributes:
+            TAG (str): 'MediaContainer'
+            allowSync (int): Sync/Download is allowed/disallowed for feature.
+            augmentationKey (str): API URL (/library/metadata/augmentations/<augmentationKey>).
+            identifier (str): "com.plexapp.plugins.library"
+            librarySectionID (int): :class:`~plexapi.library.LibrarySection` ID.
+            librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
+            librarySectionUUID (str): :class:`~plexapi.library.LibrarySection` UUID.
+            mediaTagPrefix (str): "/system/bundle/media/flags/"
+            mediaTagVersion (int): Unknown
+            size (int): The number of items in the hub.
+
+    """
+    TAG = 'MediaContainer'
+
+    def _loadData(self, data):
+        self._data = data
+        self.allowSync = utils.cast(int, data.attrib.get('allowSync'))
+        self.augmentationKey = data.attrib.get('augmentationKey')
+        self.identifier = data.attrib.get('identifier')
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
+        self.librarySectionUUID = data.attrib.get('librarySectionUUID')
+        self.mediaTagPrefix = data.attrib.get('mediaTagPrefix')
+        self.mediaTagVersion = data.attrib.get('mediaTagVersion')
+        self.size = utils.cast(int, data.attrib.get('size'))

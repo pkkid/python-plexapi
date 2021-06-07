@@ -862,6 +862,33 @@ class Guid(GuidTag):
     TAG = 'Guid'
 
 
+@utils.registerPlexObject
+class Review(PlexObject):
+    """ Represents a single Review for a Movie.
+    
+        Attributes:
+            TAG (str): 'Review'
+            filter (str): filter for reviews?
+            id (int): The ID of the review.
+            image (str): The image uri for the review.
+            link (str): The url to the online review.
+            source (str): The source of the review.
+            tag (str): The name of the reviewer.
+            text (str): The text of the review.
+    """
+    TAG = 'Review'
+
+    def _loadData(self, data):
+        self._data = data
+        self.filter = data.attrib.get('filter')
+        self.id = utils.cast(int, data.attrib.get('id', 0))
+        self.image = data.attrib.get('image')
+        self.link = data.attrib.get('link')
+        self.source = data.attrib.get('source')
+        self.tag = data.attrib.get('tag')
+        self.text = data.attrib.get('text')
+
+
 class BaseImage(PlexObject):
     """ Base class for all Art, Banner, and Poster objects.
 
