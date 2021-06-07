@@ -185,9 +185,7 @@ def edit_rating(obj):
     assert utils.is_datetime(obj.lastRatedAt)
     assert obj.userRating == 10.0
     obj.rate()
-    # Cannot use obj.reload() since PlexObject.__setattr__()
-    # will not overwrite userRating with None
-    obj = obj.fetchItem(obj._details_key)
+    obj.reload()
     assert obj.userRating is None
     with pytest.raises(BadRequest):
         assert obj.rate('bad-rating')

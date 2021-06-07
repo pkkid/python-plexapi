@@ -135,9 +135,7 @@ def test_Collection_edit(collection, movies):
             "summary.locked": 0
         }
     )
-    # Cannot use collection.reload() since PlexObject.__setattr__()
-    # will not overwrite contentRating with None
-    collection = movies.collection("Test Collection")
+    collection.reload()
     assert collection.title == title
     assert collection.titleSort == titleSort
     assert collection.contentRating is None
