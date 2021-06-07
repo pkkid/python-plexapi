@@ -125,18 +125,28 @@ def test_myplex_optout(account_once):
 
 @pytest.mark.authenticated
 def test_myplex_onlineMediaSources_optOut(account):
-    mediaOptOut = account.onlineMediaSources()[0]
-    optOutValue = mediaOptOut.value
+    onlineMediaSources = account.onlineMediaSources()
+    for optOut in onlineMediaSources:
+        if optOut.key == 'tv.plex.provider.news':
+            # News is no longer available
+            continue
+
+        optOutValue = optOut.value
+        optOut.optIn()
+        assert optOut.value == 'opt_in'
+        optOut.optOut()
+        assert optOut.value == 'opt_out'
+        if optOut.key == 'tv.plex.provider.music':
+            with pytest.raises(BadRequest):
+                optOut.optOutManaged()
+        else:
+            optOut.optOutManaged()
+            assert optOut.value == 'opt_out_managed'
+        # Reset original value
+        optOut._updateOptOut(optOutValue)
+
     with pytest.raises(NotFound):
-        assert mediaOptOut.updateOptOut('what')
-    with pytest.raises(BadRequest):
-        assert mediaOptOut.updateOptOut(optOutValue)
-    choices = mediaOptOut.CHOICES
-    choices.remove(optOutValue)
-    mediaOptOut.updateOptOut(choices[0])
-    assert account.onlineMediaSources()[0].value == choices[0]
-    choices.append(optOutValue)
-    account.onlineMediaSources()[0].updateOptOut(optOutValue)
+        assert onlineMediaSources[0]._updateOptOut('unknown')
 
 
 def test_myplex_inviteFriend_remove(account, plex, mocker):
