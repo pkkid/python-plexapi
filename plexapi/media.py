@@ -863,11 +863,18 @@ class Guid(GuidTag):
 
 
 @utils.registerPlexObject
-class Review(MediaTag):
+class Review(PlexObject):
     """ Represents a single Review for a Movie.
     
         Attributes:
             TAG (str): 'Review'
+            filter (str): filter for reviews?
+            id (int): The ID of the review.
+            image (str): The image uri for the review.
+            link (str): The url to the online review.
+            source (str): The source of the review.
+            tag (str): The name of the reviewer.
+            text (str): The text of the review.
     """
     TAG = 'Review'
 
