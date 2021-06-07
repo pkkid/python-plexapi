@@ -598,6 +598,7 @@ def test_video_Movie_reviews(movies):
     assert review.text
 
 
+@pytest.mark.authenticated
 def test_video_Movie_extras(movies):
     movie = movies.get("Sita Sings The Blues")
     extras = movie.extras()
