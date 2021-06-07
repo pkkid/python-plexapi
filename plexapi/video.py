@@ -938,6 +938,9 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         """
         return [part.file for part in self.iterParts() if part]
 
+    def _prettyfilename(self):
+        return self.title
+
 
 class Extra(Clip):
     """ Represents a single Extra (trailer, behindTheScenes, etc). """
@@ -949,3 +952,6 @@ class Extra(Clip):
         self.librarySectionID = parent.librarySectionID
         self.librarySectionKey = parent.librarySectionKey
         self.librarySectionTitle = parent.librarySectionTitle
+
+    def _prettyfilename(self):
+        return '%s (%s)' % (self.title, self.subtype)
