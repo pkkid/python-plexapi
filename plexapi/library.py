@@ -2080,10 +2080,6 @@ class FilteringType(PlexObject):
                 ('rating', 'integer', 'Critic Rating'),
                 ('viewOffset', 'integer', 'View Offset')
             ])
-        elif self.type == 'artist':
-            additionalFields.extend([
-                ('lastViewedAt', 'date', 'Artist Last Played')
-            ])
         elif self.type == 'track':
             additionalFields.extend([
                 ('duration', 'integer', 'Duration'),
