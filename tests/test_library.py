@@ -461,9 +461,6 @@ def test_library_MovieSection_search_sort(movies):
     guid_asc = [r.guid for r in results_guid]
     assert guid_asc == sorted(guid_asc)
 
-    results_random = movies.search(sort="random")
-    assert len(results_random) == len(results)
-
     results_summary = movies.search(sort="summary")
     summary_asc = [r.summary for r in results_summary]
     assert summary_asc == sorted(summary_asc)
