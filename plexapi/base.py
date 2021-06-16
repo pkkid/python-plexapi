@@ -455,7 +455,7 @@ class PlexPartialObject(PlexObject):
         # Check a few cases where we dont want to reload
         if attr in _DONT_RELOAD_FOR_KEYS: return value
         if attr in _DONT_OVERWRITE_SESSION_KEYS: return value
-        if attr in USER_DONT_RELOAD_FOR_KEYS: return
+        if attr in USER_DONT_RELOAD_FOR_KEYS: return value
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value

@@ -26,7 +26,7 @@ lib/
 pip-selfcheck.json
 pyvenv.cfg
 MANIFEST
-
+venv/
 
 # path for the test lib.
 tools/plex
