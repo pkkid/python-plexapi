@@ -295,9 +295,12 @@ class PlexObject(object):
             if value is not None:
                 return value
 
-    def listAttrs(self, data, attr, **kwargs):
+    def listAttrs(self, data, attr, rtag=None, **kwargs):
         """ Return a list of values from matching attribute. """
         results = []
+        # rtag to iter on a specific root tag
+        if rtag:
+            data = next(data.iter(rtag), [])
         for elem in data:
             kwargs['%s__exists' % attr] = True
             if self._checkAttrs(elem, **kwargs):

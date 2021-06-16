@@ -135,11 +135,9 @@ class MyPlexAccount(PlexObject):
         self.subscriptionPlan = subscription.attrib.get('plan')
         self.subscriptionFeatures = self.listAttrs(subscription, 'id', etag='feature')
 
-        roles = data.find('roles')
-        self.roles = self.listAttrs(roles, 'id', etag='role')
+        self.roles = self.listAttrs(data, 'id', rtag='roles', etag='role')
 
-        entitlements = data.find('entitlements')
-        self.entitlements = self.listAttrs(entitlements, 'id', etag='entitlement')
+        self.entitlements = self.listAttrs(data, 'id', rtag='entitlements', etag='entitlement')
 
         # TODO: Fetch missing MyPlexAccount attributes
         self.profile_settings = None
