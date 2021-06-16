@@ -390,7 +390,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
                 user (str): Username, email or user id of the user to copy the playlist to.
         """
         userServer = self._server.switchUser(user)
-        return self.create(userServer, self.title, self.items())
+        return self.create(server=userServer, title=self.title, items=self.items())
 
     def sync(self, videoQuality=None, photoResolution=None, audioBitrate=None, client=None, clientId=None, limit=None,
              unwatched=False, title=None):
