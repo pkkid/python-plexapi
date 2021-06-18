@@ -927,7 +927,7 @@ class LibrarySection(PlexObject):
                            'Available sort directions: %s'
                            % (sortDir, availableDirections))
 
-        return '%s:%s' % (sortField, sortDir)
+        return '%s:%s' % (sortField, sortDir) if sortDir else sortField
 
     def _validateAdvancedSearch(self, filters, libtype):
         """ Validates an advanced search filter dictionary.
