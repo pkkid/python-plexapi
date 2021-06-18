@@ -2026,7 +2026,11 @@ class FilteringType(PlexObject):
             additionalSorts.extend([
                 ('absoluteIndex', 'asc', 'Absolute Index')
             ])
-        if self.type == 'collection':
+        elif self.type == 'photo':
+            additionalSorts.extend([
+                ('viewUpdatedAt', 'desc', 'View Updated At')
+            ])
+        elif self.type == 'collection':
             additionalSorts.extend([
                 ('addedAt', 'asc', 'Date Added')
             ])
