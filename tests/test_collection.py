@@ -184,6 +184,24 @@ def test_Collection_createSmart(plex, tvshows):
         collection.delete()
 
 
+def test_Collection_smartFilters(plex, tvshows):
+    title = "test_Collection_smartFilters"
+    try:
+        collection = plex.createCollection(
+            title=title,
+            section=tvshows,
+            smart=True,
+            limit=5,
+            libtype="episode",
+            sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
+            filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
+        )
+        filters = collection.filters()
+        assert tvshows.search(**filters) == collection.items()
+    finally:
+        collection.delete()
+
+
 def test_Collection_exceptions(plex, movies, movie, artist):
     title = 'test_Collection_exceptions'
     try:
