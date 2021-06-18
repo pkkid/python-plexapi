@@ -6,13 +6,13 @@ from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin
-from plexapi.mixins import LabelMixin
+from plexapi.mixins import LabelMixin, SmartFilterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, LabelMixin):
+class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, LabelMixin, SmartFilterMixin):
     """ Represents a single Collection.
 
         Attributes:
@@ -90,6 +90,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self._items = None  # cache for self.items
         self._section = None  # cache for self.section
+        self._filters = None  # cache for self.filters
 
     def __len__(self):  # pragma: no cover
         return len(self.items())
@@ -140,6 +141,15 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
     @deprecated('use "items" instead', stacklevel=3)
     def children(self):
         return self.items()
+
+    def filters(self):
+        """ Returns the search filter dict for smart collection.
+            The filter dict be passed back into :func:`~plexapi.library.LibrarySection.search`
+            to get the list of items.
+        """
+        if self.smart and self._filters is None:
+            self._filters = self._parseFilters(self.content)
+        return self._filters
 
     def section(self):
         """ Returns the :class:`~plexapi.library.LibrarySection` this collection belongs to.
