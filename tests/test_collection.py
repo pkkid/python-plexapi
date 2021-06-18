@@ -184,20 +184,31 @@ def test_Collection_createSmart(plex, tvshows):
         collection.delete()
 
 
-def test_Collection_smartFilters(plex, tvshows):
+def test_Collection_smartFilters(plex, movies):
     title = "test_Collection_smartFilters"
+    advancedFilters = {
+        'and': [
+            {
+                'or': [
+                    {'title': 'elephant'},
+                    {'title=': 'Big Buck Bunny'}
+                ]
+            },
+            {'year>>': 1990},
+            {'unwatched': True}
+        ]
+    }
     try:
         collection = plex.createCollection(
             title=title,
-            section=tvshows,
+            section=movies,
             smart=True,
             limit=5,
-            libtype="episode",
-            sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
-            filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
+            sort="year",
+            filters=advancedFilters
         )
         filters = collection.filters()
-        assert tvshows.search(**filters) == collection.items()
+        assert movies.search(**filters) == collection.items()
     finally:
         collection.delete()
 

@@ -39,6 +39,15 @@ def test_utils_searchType():
         utils.searchType("kekekekeke")
 
 
+def test_utils_reverseSearchType():
+    st = utils.reverseSearchType(1)
+    assert st == "movie"
+    movie = utils.reverseSearchType("movie")
+    assert movie == "movie"
+    with pytest.raises(NotFound):
+        utils.reverseSearchType(-1)
+
+
 def test_utils_joinArgs():
     test_dict = {"genre": "action", "type": 1337}
     assert utils.joinArgs(test_dict) == "?genre=action&type=1337"
