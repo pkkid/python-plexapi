@@ -606,9 +606,12 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :exc:`~plexapi.exceptions.NotFound`: Invalid playlist title.
+                :exc:`~plexapi.exceptions.NotFound`: Unable to find playlist.
         """
-        return self.fetchItem('/playlists', title=title)
+        try:
+            return self.playlists(title=title, title__iexact=title)[0]
+        except IndexError:
+            raise NotFound('Unable to find playlist with title "%s".' % title) from None
 
     def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """
