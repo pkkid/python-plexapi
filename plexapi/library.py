@@ -921,10 +921,7 @@ class LibrarySection(PlexObject):
 
         sortField = libtype + '.' + filterSort.key
 
-        if not sortDir:
-            sortDir = filterSort.defaultDirection
-
-        availableDirections = ['asc', 'desc', 'nullsLast']
+        availableDirections = ['', 'asc', 'desc', 'nullsLast']
         if sortDir not in availableDirections:
             raise NotFound('Unknown sort direction "%s". '
                            'Available sort directions: %s'
