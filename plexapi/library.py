@@ -1402,10 +1402,10 @@ class LibrarySection(PlexObject):
         if results:
             return results[0]
 
-    def playlists(self, **kwargs):
+    def playlists(self, sort=None, **kwargs):
         """ Returns a list of playlists from this library section. """
-        key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
-        return self.fetchItems(key, **kwargs)
+        return self._server.playlists(
+            playlistType=self.CONTENT_TYPE, sectionId=self.key, sort=sort, **kwargs)
 
     @deprecated('use "listFields" instead')
     def filterFields(self, mediaType=None):
