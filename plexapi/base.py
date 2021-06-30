@@ -699,9 +699,9 @@ class Playable(object):
     def updateProgress(self, time, state='stopped'):
         """ Set the watched progress for this video.
 
-        Note that setting the time to 0 will not work.
-        Use `markWatched` or `markUnwatched` to achieve
-        that goal.
+            Note that setting the time to 0 will not work.
+            Use `markWatched` or `markUnwatched` to achieve
+            that goal.
 
             Parameters:
                 time (int): Milliseconds watched. Minimum is 60001 ms (60 sec),
