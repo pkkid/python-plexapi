@@ -85,17 +85,24 @@ def test_Collection_sortUpdate(collection):
     collection.sortUpdate("release")
 
 
-def test_Collection_add_remove(collection, movies, show):
+def test_Collection_add_move_remove(collection, movies, show):
     movie = movies.get("Big Buck Bunny")
     assert movie not in collection
     collection.addItems(movie)
     collection.reload()
     assert movie in collection
+    items = collection.items()
+    collection.moveItem(items[1])
+    items_moved = collection.reload().items()
+    assert items_moved[0] == items[1]
+    assert items_moved[1] == items[0]
+    collection.moveItem(items[1], after=items[0])
+    items_moved = collection.reload().items()
+    assert items_moved[0] == items[0]
+    assert items_moved[1] == items[1]
     collection.removeItems(movie)
     collection.reload()
     assert movie not in collection
-    with pytest.raises(BadRequest):
-        collection.addItems(show)
 
 
 def test_Collection_edit(collection, movies):
@@ -206,6 +213,8 @@ def test_Collection_exceptions(plex, movies, movie, artist):
             collection.addItems(movie)
         with pytest.raises(BadRequest):
             collection.removeItems(movie)
+        with pytest.raises(BadRequest):
+            collection.moveItem(movie)
     finally:
         collection.delete()
 
