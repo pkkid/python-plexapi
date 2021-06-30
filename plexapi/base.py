@@ -704,9 +704,15 @@ class Playable(object):
         that goal.
 
             Parameters:
-                time (int): milliseconds watched
-                state (string): state of the video, default 'stopped'
+                time (int): Milliseconds watched. Minimum is 60001 ms (60 sec),
+                    maximum is the duration of the video minus 1000 ms (1 sec remaining)
+                state (string): State of the video, default 'stopped'
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: time is not within minimum and maximum values
         """
+        if time <= 60000 or time > self.duration - 1000:
+            raise BadRequest('time must be between 60001 ms and %s (duration - 1000 ms)' % (self.duration - 1000))
         key = '/:/progress?key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s' % (self.ratingKey,
                                                                                               time, state)
         self._server.query(key)
@@ -716,10 +722,18 @@ class Playable(object):
         """ Set the timeline progress for this video.
 
             Parameters:
-                time (int): milliseconds watched
+                time (int): Milliseconds watched. Minimum is 60001 ms (60 sec),
+                    maximum is the duration of the video.
                 state (string): state of the video, default 'stopped'
                 duration (int): duration of the item
+
+            Raises:
+                :exc:`~plexapi.exceptions.Unsupported`: video duration is less than 60 sec
+                :exc:`~plexapi.exceptions.BadRequest`: time is not within minimum and maximum values
         """
+        if time <= 60000 or time > self.duration:
+            raise BadRequest('time must be between 60001 ms and %s (duration)' % self.duration)
+
         durationStr = '&duration='
         if duration is not None:
             durationStr = durationStr + str(duration)
