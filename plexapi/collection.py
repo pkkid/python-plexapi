@@ -277,6 +277,28 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             key = '%s/items/%s' % (self.key, item.ratingKey)
             self._server.query(key, method=self._server._session.delete)
 
+    def moveItem(self, item, after=None):
+        """ Move an item to a new position in the collection.
+
+            Parameters:
+                items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to be moved in the collection.
+                after (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` objects to move the item after in the collection.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to move items in a smart collection.
+        """
+        if self.smart:
+            raise BadRequest('Cannot move items in a smart collection.')
+
+        key = '%s/items/%s/move' % (self.key, item.ratingKey)
+
+        if after:
+            key += '?after=%s' % after.ratingKey
+
+        self._server.query(key, method=self._server._session.put)
+
     def updateFilters(self, libtype=None, limit=None, sort=None, filters=None, **kwargs):
         """ Update the filters for a smart collection.
 

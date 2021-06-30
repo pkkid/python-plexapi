@@ -225,7 +225,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin):
             self._server.query(key, method=self._server._session.delete)
 
     def moveItem(self, item, after=None):
-        """ Move an item to a new position in playlist.
+        """ Move an item to a new position in the playlist.
 
             Parameters:
                 items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
