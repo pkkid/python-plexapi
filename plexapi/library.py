@@ -847,12 +847,6 @@ class LibrarySection(PlexObject):
             values = [values]
 
         fieldType = self.getFieldType(filterField.type)
-        choiceTypes = {'tag', 'subtitleLanguage', 'audioLanguage', 'resolution'}
-        if fieldType.type in choiceTypes:
-            filterChoices = self.listFilterChoices(filterField.key, libtype)
-        else:
-            filterChoices = []
-
         results = []
 
         try:
@@ -865,11 +859,8 @@ class LibrarySection(PlexObject):
                     value = float(value) if '.' in str(value) else int(value)
                 elif fieldType.type == 'string':
                     value = str(value)
-                elif fieldType.type in choiceTypes:
-                    value = str((value.id or value.tag) if isinstance(value, media.MediaTag) else value)
-                    matchValue = value.lower()
-                    value = next((f.key for f in filterChoices
-                                  if matchValue in {f.key.lower(), f.title.lower()}), value)
+                elif fieldType.type in {'tag', 'subtitleLanguage', 'audioLanguage', 'resolution'}:
+                    value = self._validateFieldValueTag(value, filterField, libtype)
                 results.append(str(value))
         except (ValueError, AttributeError):
             raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
@@ -887,6 +878,21 @@ class LibrarySection(PlexObject):
             return '-' + value.lstrip('-')
         else:
             return int(utils.toDatetime(value, '%Y-%m-%d').timestamp())
+
+    def _validateFieldValueTag(self, value, filterField, libtype):
+        """ Validates a filter tag value. A filter tag value can be a :class:`~plexapi.library.FilterChoice` object,
+            a :class:`~plexapi.media.MediaTag` object, the exact name :attr:`MediaTag.tag` (*str*),
+            or the exact id :attr:`MediaTag.id` (*int*).
+        """
+        if isinstance(value, FilterChoice):
+            return value.key
+        if isinstance(value, media.MediaTag):
+            value = str(value.id or value.tag)
+        else:
+            value = str(value)
+        filterChoices = self.listFilterChoices(filterField.key, libtype)
+        matchValue = value.lower()
+        return next((f.key for f in filterChoices if matchValue in {f.key.lower(), f.title.lower()}), value)
 
     def _validateSortFields(self, sort, libtype=None):
         """ Validates a list of filter sort fields is available for the library.
