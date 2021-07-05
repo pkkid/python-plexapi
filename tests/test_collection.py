@@ -85,7 +85,15 @@ def test_Collection_sortUpdate(collection):
     collection.sortUpdate("release")
 
 
-def test_Collection_add_move_remove(collection, movies, show):
+@pytest.mark.authenticated
+def test_Collection_sortUpdate_custom(collection):
+    collection.sortUpdate(sort="custom")
+    collection.reload()
+    assert collection.collectionSort == 2
+    collection.sortUpdate("release")
+
+
+def test_Collection_add_move_remove(collection, movies):
     movie = movies.get("Big Buck Bunny")
     assert movie not in collection
     collection.addItems(movie)
