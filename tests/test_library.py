@@ -370,6 +370,13 @@ def test_library_MovieSection_search(movies, movie, collection):
     _test_library_search(movies, collection)
 
 
+def test_library_MovieSection_search_FilterChoice(movies, collection):
+    filterChoice = next(c for c in movies.listFilterChoices("collection") if c.title == collection.title)
+    results = movies.search(filters={'collection': filterChoice})
+    movie = collection.items()[0]
+    assert movie in results
+
+
 def test_library_MovieSection_advancedSearch(movies, movie):
     advancedFilters = {
         'and': [
@@ -483,7 +490,13 @@ def test_library_MovieSection_search_sort(movies):
 
     results_multi_list = movies.search(sort=["year:desc", "titleSort:desc"])
     titleSort_multi_list = [(r.year, r.titleSort) for r in results_multi_list]
-    assert titleSort_multi_list == sorted(titleSort_multi_str, reverse=True)
+    assert titleSort_multi_list == sorted(titleSort_multi_list, reverse=True)
+
+    # Test sort using FilteringSort object
+    sortObj = next(s for s in movies.listSorts() if s.key == "year")
+    results_sortObj = movies.search(sort=sortObj)
+    sortObj_list = [r.year for r in results_sortObj]
+    assert sortObj_list == sorted(sortObj_list, reverse=True)
 
 
 def test_library_ShowSection_search_sort(tvshows):
