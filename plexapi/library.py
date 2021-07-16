@@ -2014,7 +2014,6 @@ class FilteringType(PlexObject):
             ('guid', 'asc', 'Guid'),
             ('id', 'asc', 'Rating Key'),
             ('index', 'asc', '%s Number' % self.type.capitalize()),
-            ('random', 'asc', 'Random'),
             ('summary', 'asc', 'Summary'),
             ('tagline', 'asc', 'Tagline'),
             ('updatedAt', 'asc', 'Date Updated')
@@ -2080,10 +2079,6 @@ class FilteringType(PlexObject):
                 ('duration', 'integer', 'Duration'),
                 ('rating', 'integer', 'Critic Rating'),
                 ('viewOffset', 'integer', 'View Offset')
-            ])
-        elif self.type == 'artist':
-            additionalFields.extend([
-                ('lastViewedAt', 'date', 'Artist Last Played')
             ])
         elif self.type == 'track':
             additionalFields.extend([
