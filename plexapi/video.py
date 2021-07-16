@@ -875,6 +875,11 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
         return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.episodeNumber).zfill(2))
 
     @property
+    def hasCommercialMarker(self):
+        """ Returns True if the episode has a commercial marker in the xml. """
+        return any(marker.type == 'commercial' for marker in self.markers)
+
+    @property
     def hasIntroMarker(self):
         """ Returns True if the episode has an intro marker in the xml. """
         return any(marker.type == 'intro' for marker in self.markers)
