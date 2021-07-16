@@ -623,9 +623,7 @@ class MyPlexAccount(PlexObject):
         }
 
         url = SyncList.key.format(clientId=client.clientIdentifier)
-        data = self.query(url, method=self._session.post, headers={
-            'Content-type': 'x-www-form-urlencoded',
-        }, params=params)
+        data = self.query(url, method=self._session.post, params=params)
 
         return SyncItem(self, data, None, clientIdentifier=client.clientIdentifier)
 
