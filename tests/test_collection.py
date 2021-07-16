@@ -184,6 +184,35 @@ def test_Collection_createSmart(plex, tvshows):
         collection.delete()
 
 
+def test_Collection_smartFilters(plex, movies):
+    title = "test_Collection_smartFilters"
+    advancedFilters = {
+        'and': [
+            {
+                'or': [
+                    {'title': 'elephant'},
+                    {'title=': 'Big Buck Bunny'}
+                ]
+            },
+            {'year>>': 1990},
+            {'unwatched': True}
+        ]
+    }
+    try:
+        collection = plex.createCollection(
+            title=title,
+            section=movies,
+            smart=True,
+            limit=5,
+            sort="year",
+            filters=advancedFilters
+        )
+        filters = collection.filters()
+        assert movies.search(**filters) == collection.items()
+    finally:
+        collection.delete()
+
+
 def test_Collection_exceptions(plex, movies, movie, artist):
     title = 'test_Collection_exceptions'
     try:

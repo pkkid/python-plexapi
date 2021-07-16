@@ -182,6 +182,22 @@ def test_Playlist_createSmart(plex, movies, movie):
         playlist.delete()
 
 
+def test_Playlist_smartFilters(plex, tvshows):
+    try:
+        playlist = plex.createPlaylist(
+            title="smart_playlist_filters",
+            smart=True,
+            section=tvshows,
+            limit=5,
+            sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
+            filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
+        )
+        filters = playlist.filters()
+        assert tvshows.search(**filters) == playlist.items()
+    finally:
+        playlist.delete()
+
+
 def test_Playlist_section(plex, movies, movie):
     title = 'test_playlist_section'
     try:

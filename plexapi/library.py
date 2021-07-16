@@ -921,16 +921,13 @@ class LibrarySection(PlexObject):
 
         sortField = libtype + '.' + filterSort.key
 
-        if not sortDir:
-            sortDir = filterSort.defaultDirection
-
-        availableDirections = ['asc', 'desc', 'nullsLast']
+        availableDirections = ['', 'asc', 'desc', 'nullsLast']
         if sortDir not in availableDirections:
             raise NotFound('Unknown sort direction "%s". '
                            'Available sort directions: %s'
                            % (sortDir, availableDirections))
 
-        return '%s:%s' % (sortField, sortDir)
+        return '%s:%s' % (sortField, sortDir) if sortDir else sortField
 
     def _validateAdvancedSearch(self, filters, libtype):
         """ Validates an advanced search filter dictionary.
@@ -2028,7 +2025,11 @@ class FilteringType(PlexObject):
             additionalSorts.extend([
                 ('absoluteIndex', 'asc', 'Absolute Index')
             ])
-        if self.type == 'collection':
+        elif self.type == 'photo':
+            additionalSorts.extend([
+                ('viewUpdatedAt', 'desc', 'View Updated At')
+            ])
+        elif self.type == 'collection':
             additionalSorts.extend([
                 ('addedAt', 'asc', 'Date Added')
             ])
