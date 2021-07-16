@@ -913,13 +913,13 @@ def test_video_Season_mixins_tags(show):
 
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
-    episode.updateProgress(10 * 60 * 1000)  # 10 minutes.
+    episode.updateProgress(2 * 60 * 1000)  # 2 minutes.
 
 
 def test_video_Episode_updateTimeline(episode, patched_http_call):
     episode.updateTimeline(
-        10 * 60 * 1000, state="playing", duration=episode.duration
-    )  # 10 minutes.
+        2 * 60 * 1000, state="playing", duration=episode.duration
+    )  # 2 minutes.
 
 
 def test_video_Episode_stop(episode, mocker, patched_http_call):
