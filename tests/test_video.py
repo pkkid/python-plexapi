@@ -1016,8 +1016,13 @@ def test_video_Episode_attrs(episode):
         assert utils.is_thumb(episode.parentThumb)
     assert episode.parentTitle == "Season 1"
     assert episode.parentYear is None
+    if episode.producers:
+        assert episode.producers  # Test episode doesn't have producers
     assert episode.rating is None
     assert utils.is_int(episode.ratingKey)
+    if episode.roles:
+        assert "Jason Momoa" in [i.tag for i in episode.roles]
+        assert episode.actors == episode.roles
     assert episode._server._baseurl == utils.SERVER_BASEURL
     assert episode.skipParent is False
     assert utils.is_string(episode.summary, gte=100)
