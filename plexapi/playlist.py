@@ -376,7 +376,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
                 smart (bool): True to create a smart playlist. Default False.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
                 libtype (str): Smart playlists only, the specific type of content to filter
-                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo).
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
                     See :func:`~plexapi.library.LibrarySection.search` for more info.
