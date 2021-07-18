@@ -341,13 +341,15 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
         return cls(server, data, initpath=key)
 
     @classmethod
-    def _createSmart(cls, server, title, section, limit=None, sort=None, filters=None, **kwargs):
+    def _createSmart(cls, server, title, section, limit=None, libtype=None, sort=None, filters=None, **kwargs):
         """ Create a smart playlist. """
         if not isinstance(section, LibrarySection):
             section = server.library.section(section)
 
+        libtype = libtype or section.METADATA_TYPE
+
         searchKey = section._buildSearchKey(
-            sort=sort, libtype=section.METADATA_TYPE, limit=limit, filters=filters, **kwargs)
+            sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
         uri = '%s%s' % (server._uriRoot(), searchKey)
 
         key = '/playlists%s' % utils.joinArgs({
@@ -361,7 +363,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
 
     @classmethod
     def create(cls, server, title, section=None, items=None, smart=False, limit=None,
-               sort=None, filters=None, **kwargs):
+               libtype=None, sort=None, filters=None, **kwargs):
         """ Create a playlist.
 
             Parameters:
@@ -373,6 +375,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
                     :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
+                libtype (str): Smart playlists only, the specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
                     See :func:`~plexapi.library.LibrarySection.search` for more info.
@@ -389,7 +393,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
                 :class:`~plexapi.playlist.Playlist`: A new instance of the created Playlist.
         """
         if smart:
-            return cls._createSmart(server, title, section, limit, sort, filters, **kwargs)
+            return cls._createSmart(server, title, section, limit, libtype, sort, filters, **kwargs)
         else:
             return cls._create(server, title, items)
 

@@ -448,7 +448,7 @@ class PlexServer(PlexObject):
             libtype=libtype, sort=sort, filters=filters, **kwargs)
 
     def createPlaylist(self, title, section=None, items=None, smart=False, limit=None,
-                       sort=None, filters=None, **kwargs):
+                       libtype=None, sort=None, filters=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
@@ -459,6 +459,8 @@ class PlexServer(PlexObject):
                     :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
                 limit (int): Smart playlists only, limit the number of items in the playlist.
+                libtype (str): Smart playlists only, the specific type of content to filter
+                    (movie, show, season, episode, artist, album, track, photoalbum, photo, collection).
                 sort (str or list, optional): Smart playlists only, a string of comma separated sort fields
                     or a list of sort fields in the format ``column:dir``.
                     See :func:`~plexapi.library.LibrarySection.search` for more info.
@@ -476,7 +478,7 @@ class PlexServer(PlexObject):
         """
         return Playlist.create(
             self, title, section=section, items=items, smart=smart, limit=limit,
-            sort=sort, filters=filters, **kwargs)
+            libtype=libtype, sort=sort, filters=filters, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.
