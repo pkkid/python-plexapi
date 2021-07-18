@@ -189,10 +189,12 @@ def test_Playlist_smartFilters(plex, tvshows):
             smart=True,
             section=tvshows,
             limit=5,
+            libtype='show',
             sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
             filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
         )
         filters = playlist.filters()
+        filters['libtype'] = tvshows.METADATA_TYPE  # Override libtype to check playlist items
         assert tvshows.search(**filters) == playlist.items()
     finally:
         playlist.delete()
