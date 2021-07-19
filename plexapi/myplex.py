@@ -16,10 +16,6 @@ from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
 from requests.status_codes import _codes as codes
 
-# Default order to prioritize available resource connections
-RESOURCE_LOCATION_ORDER = ['local', 'remote', 'relay']
-RESOURCE_SCHEME_ORDER = ['https', 'http']
-
 
 class MyPlexAccount(PlexObject):
     """ MyPlex account and profile information. This object represents the data found Account on
@@ -927,6 +923,10 @@ class MyPlexResource(PlexObject):
     TAG = 'Device'
     key = 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
 
+    # Default order to prioritize available resource connections
+    DEFAULT_LOCATION_ORDER = ['local', 'remote', 'relay']
+    DEFAULT_SCHEME_ORDER = ['https', 'http']
+
     def _loadData(self, data):
         self._data = data
         self.name = data.attrib.get('name')
@@ -955,8 +955,8 @@ class MyPlexResource(PlexObject):
         self,
         ssl=None,
         timeout=None,
-        locations=RESOURCE_LOCATION_ORDER,
-        schemes=RESOURCE_SCHEME_ORDER,
+        locations=DEFAULT_LOCATION_ORDER,
+        schemes=DEFAULT_SCHEME_ORDER,
     ):
         """ Returns a sorted list of the available connection addresses for this resource.
             Often times there is more than one address specified for a server or client.
@@ -991,8 +991,8 @@ class MyPlexResource(PlexObject):
         self,
         ssl=None,
         timeout=None,
-        locations=RESOURCE_LOCATION_ORDER,
-        schemes=RESOURCE_SCHEME_ORDER,
+        locations=DEFAULT_LOCATION_ORDER,
+        schemes=DEFAULT_SCHEME_ORDER,
     ):
         """ Returns a new :class:`~plexapi.server.PlexServer` or :class:`~plexapi.client.PlexClient` object.
             Uses `MyPlexResource.preferred_connections()` to generate the priority order of connection addresses.
