@@ -951,7 +951,8 @@ class MyPlexResource(PlexObject):
         self.ownerid = utils.cast(int, data.attrib.get('ownerId', 0))
         self.sourceTitle = data.attrib.get('sourceTitle')  # owners plex username.
 
-    def preferred_connections(self,
+    def preferred_connections(
+        self,
         ssl=None,
         timeout=None,
         locations=RESOURCE_LOCATION_ORDER,
@@ -986,7 +987,8 @@ class MyPlexResource(PlexObject):
                 connections.extend(connections_dict[location][scheme])
         return connections
 
-    def connect(self,
+    def connect(
+        self,
         ssl=None,
         timeout=None,
         locations=RESOURCE_LOCATION_ORDER,
