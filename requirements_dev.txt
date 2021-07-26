@@ -2,7 +2,7 @@
 # PlexAPI requirements to run py.test.
 # pip install -r requirements_dev.txt
 #---------------------------------------------------------
-coveralls==3.1.0
+coveralls==3.2.0
 flake8==3.9.2
 pillow==8.3.1
 pytest==6.2.4
