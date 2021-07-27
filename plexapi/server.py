@@ -575,17 +575,29 @@ class PlexServer(PlexObject):
             args['X-Plex-Container-Start'] += args['X-Plex-Container-Size']
         return results
 
-    def playlists(self, playlistType=None):
+    def playlists(self, playlistType=None, sectionId=None, title=None, sort=None, **kwargs):
         """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects on the server.
 
             Parameters:
                 playlistType (str, optional): The type of playlists to return (audio, video, photo).
                     Default returns all playlists.
+                sectionId (int, optional): The section ID (key) of the library to search within.
+                title (str, optional): General string query to search for. Partial string matches are allowed.
+                sort (str or list, optional): A string of comma separated sort fields in the format ``column:dir``.
         """
-        key = '/playlists'
-        if playlistType:
-            key = '%s?playlistType=%s' % (key, playlistType)
-        return self.fetchItems(key)
+        args = {}
+        if playlistType is not None:
+            args['playlistType'] = playlistType
+        if sectionId is not None:
+            args['sectionID'] = sectionId
+        if title is not None:
+            args['title'] = title
+        if sort is not None:
+            # TODO: Automatically retrieve and validate sort field similar to LibrarySection.search()
+            args['sort'] = sort
+
+        key = '/playlists%s' % utils.joinArgs(args)
+        return self.fetchItems(key, **kwargs)
 
     def playlist(self, title):
         """ Returns the :class:`~plexapi.client.Playlist` that matches the specified title.
@@ -594,9 +606,12 @@ class PlexServer(PlexObject):
                 title (str): Title of the playlist to return.
 
             Raises:
-                :exc:`~plexapi.exceptions.NotFound`: Invalid playlist title.
+                :exc:`~plexapi.exceptions.NotFound`: Unable to find playlist.
         """
-        return self.fetchItem('/playlists', title=title)
+        try:
+            return self.playlists(title=title, title__iexact=title)[0]
+        except IndexError:
+            raise NotFound('Unable to find playlist with title "%s".' % title) from None
 
     def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """

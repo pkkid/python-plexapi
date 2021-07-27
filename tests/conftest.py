@@ -276,9 +276,9 @@ def photo(photoalbum):
 
 @pytest.fixture()
 def collection(plex, movies, movie):
-    c = movies.collection("Test Collection")
-    if c: return c
-    else:
+    try:
+        return movies.collection("Test Collection")
+    except NotFound:
         return plex.createCollection(
             title="Test Collection",
             section=movies,
@@ -288,9 +288,9 @@ def collection(plex, movies, movie):
 
 @pytest.fixture()
 def playlist(plex, tvshows, season):
-    p = tvshows.playlist("Test Playlist")
-    if p: return p
-    else:
+    try:
+        return tvshows.playlist("Test Playlist")
+    except NotFound:
         return plex.createPlaylist(
             title="Test Playlist",
             items=season.episodes()[:3]

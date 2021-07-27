@@ -1405,10 +1405,14 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 title (str): Title of the item to return.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: Unable to find collection.
         """
-        results = self.collections(title__iexact=title)
-        if results:
-            return results[0]
+        try:
+            return self.collections(title=title, title__iexact=title)[0]
+        except IndexError:
+            raise NotFound('Unable to find collection with title "%s".' % title) from None
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
@@ -1430,15 +1434,19 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 title (str): Title of the item to return.
-        """
-        results = self.playlists(title__iexact=title)
-        if results:
-            return results[0]
 
-    def playlists(self, **kwargs):
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: Unable to find playlist.
+        """
+        try:
+            return self.playlists(title=title, title__iexact=title)[0]
+        except IndexError:
+            raise NotFound('Unable to find playlist with title "%s".' % title) from None
+
+    def playlists(self, sort=None, **kwargs):
         """ Returns a list of playlists from this library section. """
-        key = '/playlists?type=15&playlistType=%s&sectionID=%s' % (self.CONTENT_TYPE, self.key)
-        return self.fetchItems(key, **kwargs)
+        return self._server.playlists(
+            playlistType=self.CONTENT_TYPE, sectionId=self.key, sort=sort, **kwargs)
 
     @deprecated('use "listFields" instead')
     def filterFields(self, mediaType=None):

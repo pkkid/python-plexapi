@@ -207,6 +207,11 @@ def test_library_MovieSection_collections(movies, movie):
         collection.delete()
 
 
+def test_library_MovieSection_collection_exception(movies):
+    with pytest.raises(NotFound):
+        movies.collection("Does Not Exists")
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
@@ -241,8 +246,15 @@ def test_library_ShowSection_playlists(tvshows, show):
         assert playlist in playlists
         p = tvshows.playlist(playlist.title)
         assert playlist == p
+        playlists = tvshows.playlists(title="test_", sort="mediaCount:asc")
+        assert playlist in playlists
     finally:
         playlist.delete()
+
+
+def test_library_ShowSection_playlist_exception(tvshows):
+    with pytest.raises(NotFound):
+        tvshows.playlist("Does Not Exists")
 
 
 def test_library_MusicSection_albums(music):
