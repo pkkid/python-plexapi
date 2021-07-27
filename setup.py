@@ -35,7 +35,7 @@ setup(
     url='https://github.com/pkkid/python-plexapi',
     packages=['plexapi'],
     install_requires=requirements,
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     long_description=readme,
     keywords=['plex', 'api'],
     classifiers=[
