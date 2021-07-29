@@ -45,7 +45,7 @@ def write_version(version):
     version_values = str(version).split(".", 2)
 
     for n, v in zip(version_names, version_values):
-        version_line = f"{n}_VERSION: Final = "
+        version_line = f"{n}_VERSION = "
         content = re.sub(f"{version_line}.*\n", f"{version_line}{v}\n", content)
 
     with open("plexapi/const.py", "wt") as f:
