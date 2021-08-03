@@ -575,11 +575,44 @@ class PlexPartialObject(PlexObject):
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get Play History for a media item.
+
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
                 mindate (datetime): Min datetime to return results from.
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
+
+    def _buildWebURL(self, base=None, endpoint='details', key='', legacy=False):
+        """ Build the Plex Web URL for the item.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+                endpoint (str): The Plex Web URL endpoint.
+                    'playlist' for playlists, 'details' for all other media types.
+                key (str): The Plex API URL for the item (/library/metadata/<ratingKey>).
+                legacy (bool): True or False to use the legacy URL.
+                    Photoalbum and Photo use the legacy URL.
+        """
+        if base is None:
+            base = 'https://app.plex.tv/desktop'
+
+        params = {'key': key or self.key}
+        if legacy:
+            params['legacy'] = 1
+
+        return '%s#!/server/%s/%s%s' % (
+            base, self._server.machineIdentifier, endpoint, utils.joinArgs(params)
+        )
+
+    def getWebURL(self, base=None):
+        """ Returns the Plex Web URL for the item.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+        """
+        return self._buildWebURL(base=base)
 
 
 class Playable(object):
