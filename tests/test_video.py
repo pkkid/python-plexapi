@@ -608,6 +608,17 @@ def test_video_Movie_extras(movies):
     assert extra.type == 'clip'
     assert extra.section() == movies
 
+def test_video_Movie_PlexWebURL(plex, movie):
+    url = movie.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(movie.key) in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = movie.getWebURL(base=base)
+    assert url.startswith(base)
+
 
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
@@ -801,6 +812,14 @@ def test_video_Show_media_tags(show):
     test_media.tag_similar(show)
 
 
+def test_video_Show_PlexWebURL(plex, show):
+    url = show.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(show.key) in url
+
+
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) == 2
@@ -910,6 +929,14 @@ def test_video_Season_mixins_rating(show):
 def test_video_Season_mixins_tags(show):
     season = show.season(season=1)
     test_mixins.edit_collection(season)
+
+
+def test_video_Season_PlexWebURL(plex, season):
+    url = season.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(season.key) in url
 
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
@@ -1117,6 +1144,14 @@ def test_video_Episode_media_tags(episode):
     test_media.tag_collection(episode)
     test_media.tag_director(episode)
     test_media.tag_writer(episode)
+
+
+def test_video_Episode_PlexWebURL(plex, episode):
+    url = episode.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(episode.key) in url
 
 
 def test_that_reload_return_the_same_object(plex):

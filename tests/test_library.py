@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
+
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -210,6 +212,30 @@ def test_library_MovieSection_collections(movies, movie):
 def test_library_MovieSection_collection_exception(movies):
     with pytest.raises(NotFound):
         movies.collection("Does Not Exists")
+
+
+def test_library_MovieSection_PlexWebURL(plex, movies):
+    tab = 'library'
+    url = movies.getWebURL(tab=tab)
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=%s' % movies.key in url
+    assert 'pivot=%s' % tab in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = movies.getWebURL(base=base)
+    assert url.startswith(base)
+
+
+def test_library_MovieSection_PlexWebURL_hub(plex, movies):
+    hubs = movies.hubs()
+    hub = next(iter(hubs), None)
+    assert hub is not None
+    url = hub.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=%s' % movies.key in url
+    assert quote_plus(hub.key) in url
 
 
 def test_library_ShowSection_all(tvshows):

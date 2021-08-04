@@ -512,3 +512,16 @@ def test_server_transcode_sessions(plex, requests_mock):
     assert session.videoCodec in utils.CODECS
     assert session.videoDecision == "transcode"
     assert utils.is_int(session.width, gte=852)
+
+
+def test_server_PlaylistsPlexWebURL(plex):
+    tab = 'audio'
+    url = plex.getPlaylistsWebURL(tab=tab)
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=playlists' in url
+    assert 'pivot=playlists.%s' % tab in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = plex.getPlaylistsWebURL(base=base)
+    assert url.startswith(base)

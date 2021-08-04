@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from . import test_media, test_mixins
 
 
@@ -22,6 +24,15 @@ def test_photo_Photoalbum_mixins_rating(photoalbum):
     test_mixins.edit_rating(photoalbum)
 
 
+def test_video_Photoalbum_PlexWebURL(plex, photoalbum):
+    url = photoalbum.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(photoalbum.key) in url
+    assert 'legacy=1' in url
+
+
 def test_photo_Photo_mixins_rating(photo):
     test_mixins.edit_rating(photo)
 
@@ -33,3 +44,12 @@ def test_photo_Photo_mixins_tags(photo):
 def test_photo_Photo_media_tags(photo):
     photo.reload()
     test_media.tag_tag(photo)
+
+
+def test_video_Photo_PlexWebURL(plex, photo):
+    url = photo.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(photo.parentKey) in url
+    assert 'legacy=1' in url
