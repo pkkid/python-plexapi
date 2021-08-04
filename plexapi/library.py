@@ -1456,6 +1456,29 @@ class LibrarySection(PlexObject):
     def listChoices(self, category, libtype=None, **kwargs):
         return self.listFilterChoices(field=category, libtype=libtype)
 
+    def getWebURL(self, base=None, tab=None, key=None):
+        """ Returns the Plex Web URL for the library.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+                tab (str): The library tab (recommended, library, collections, playlists, timeline).
+                key (str): A hub key.
+        """
+        if base is None:
+            base = 'https://app.plex.tv/desktop/'
+
+        params = {'source': self.key}
+        if tab is not None:
+            params['pivot'] = tab
+        if key is not None:
+            params['key'] = key
+            params['pageType'] = 'list'
+
+        return '%s#!/media/%s/com.plexapp.plugins.library%s' % (
+            base, self._server.machineIdentifier, utils.joinArgs(params)
+        )
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
@@ -1857,6 +1880,7 @@ class Hub(PlexObject):
         self.style = data.attrib.get('style')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+        self._section = None  # cache for self.section
 
     def __len__(self):
         return self.size
@@ -1867,6 +1891,22 @@ class Hub(PlexObject):
             self.items = self.fetchItems(self.key)
             self.more = False
             self.size = len(self.items)
+
+    def section(self):
+        """ Returns the :class:`~plexapi.library.LibrarySection` this hub belongs to.
+        """
+        if self._section is None:
+            self._section = self._server.library.sectionByID(self.librarySectionID)
+        return self._section
+
+    def getWebURL(self, base=None):
+        """ Returns the Plex Web URL for the library.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+        """
+        return self.section().getWebURL(base=base, key=self.key)
 
 
 class HubMediaTag(PlexObject):

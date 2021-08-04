@@ -595,7 +595,7 @@ class PlexPartialObject(PlexObject):
                     Photoalbum and Photo use the legacy URL.
         """
         if base is None:
-            base = 'https://app.plex.tv/desktop'
+            base = 'https://app.plex.tv/desktop/'
 
         params = {'key': key or self.key}
         if legacy:
