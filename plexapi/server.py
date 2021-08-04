@@ -890,6 +890,25 @@ class PlexServer(PlexObject):
         key = '/statistics/resources?timespan=6'
         return self.fetchItems(key, StatisticsResources)
 
+    def getPlaylistsWebURL(self, base=None, tab=None):
+        """ Returns the Plex Web URL for the server playlists page.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+                tab (str): The playlist tab (audio, video, photo).
+        """
+        if base is None:
+            base = 'https://app.plex.tv/desktop/'
+
+        params = {'source': 'playlists'}
+        if tab is not None:
+            params['pivot'] = 'playlists.%s' % tab
+
+        return '%s#!/media/%s/com.plexapp.plugins.library%s' % (
+            base, self._server.machineIdentifier, utils.joinArgs(params)
+        )
+
 
 class Account(PlexObject):
     """ Contains the locally cached MyPlex account information. The properties provided don't
