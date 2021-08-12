@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Helper script to bump the current version."""
 import argparse
 import re
@@ -63,7 +64,13 @@ def main():
     parser.add_argument(
         "--commit", action="store_true", help="Create a version bump commit"
     )
+    parser.add_argument(
+        "--tag", action="store_true", help="Tag the commit with the release version"
+    )
     arguments = parser.parse_args()
+
+    if arguments.tag and not arguments.commit:
+        parser.error("--tag requires use of --commit")
 
     if arguments.commit and subprocess.run(["git", "diff", "--quiet"]).returncode == 1:
         print("Cannot use --commit because git is dirty")
@@ -80,6 +87,8 @@ def main():
 
     subprocess.run(["git", "commit", "-nam", f"Release {bumped}"])
 
+    if arguments.tag:
+        subprocess.run(["git", "tag", str(bumped), "-m", f"Release {bumped}"])
 
 def test_bump_version():
     """Make sure it all works."""
