@@ -28,6 +28,7 @@ class Audio(PlexPartialObject):
             librarySectionTitle (str): :class:`~plexapi.library.LibrarySection` title.
             listType (str): Hardcoded as 'audio' (useful for search filters).
             moods (List<:class:`~plexapi.media.Mood`>): List of mood objects.
+            musicAnalysisVersion (int): Notes whether item has been Sonically Analyzed.
             ratingKey (int): Unique key identifying the item.
             summary (str): Summary of the artist, album, or track.
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
@@ -59,6 +60,7 @@ class Audio(PlexPartialObject):
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.listType = 'audio'
         self.moods = self.findItems(data, media.Mood)
+        self.musicAnalysisVersion = utils.cast(int, data.attrib.get('musicAnalysisVersion'))
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
