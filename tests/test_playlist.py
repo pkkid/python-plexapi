@@ -6,6 +6,7 @@ import pytest
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 
 from . import conftest as utils
+from . import test_mixins
 
 
 def test_Playlist_attrs(playlist):
@@ -270,3 +271,8 @@ def test_Playlist_PlexWebURL(plex, show):
         assert quote_plus(playlist.key) in url
     finally:
         playlist.delete()
+
+
+def test_Playlist_mixins_images(playlist):
+    #test_mixins.edit_art(playlist)
+    test_mixins.edit_poster(playlist)
