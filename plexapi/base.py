@@ -505,6 +505,17 @@ class PlexPartialObject(PlexObject):
         """ Returns True if this is not a full object. """
         return not self.isFullObject()
 
+    def _edit(self, **kwargs):
+        """ Actually edit an object. """
+        if 'id' not in kwargs:
+            kwargs['id'] = self.ratingKey
+        if 'type' not in kwargs:
+            kwargs['type'] = utils.searchType(self.type)
+
+        part = '/library/sections/%s/all?%s' % (self.librarySectionID,
+                                                urlencode(kwargs))
+        self._server.query(part, method=self._server._session.put)
+
     def edit(self, **kwargs):
         """ Edit an object.
 
@@ -517,14 +528,7 @@ class PlexPartialObject(PlexObject):
                  'collection[0].tag.tag': 'Super',
                  'collection.locked': 0}
         """
-        if 'id' not in kwargs:
-            kwargs['id'] = self.ratingKey
-        if 'type' not in kwargs:
-            kwargs['type'] = utils.searchType(self.type)
-
-        part = '/library/sections/%s/all?%s' % (self.librarySectionID,
-                                                urlencode(kwargs))
-        self._server.query(part, method=self._server._session.put)
+        self._edit(**kwargs)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
         """ Helper to edit tags.
