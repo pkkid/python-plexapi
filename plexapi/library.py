@@ -460,6 +460,17 @@ class LibrarySection(PlexObject):
         key = '/library/sections/%s/all?includeGuids=1&title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
+    def getGuid(self, guid):
+        """ Returns the media item with the specified external IMDB, TMDB, or TVDB ID.
+            Note: This search uses a PlexAPI operator so performance may be slow.
+
+            Parameters:
+                guid (str): The external guid of the item to return.
+                    Examples: IMDB ``imdb://tt0944947``, TMDB ``tmdb://1399``, TVDB ``tvdb://121361``.
+        """
+        key = '/library/sections/%s/all?includeGuids=1' % self.key
+        return self.fetchItem(key, Guid__id__iexact=guid)
+
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
             See description of :func:`~plexapi.library.LibrarySection.search()` for details about filtering / sorting.
