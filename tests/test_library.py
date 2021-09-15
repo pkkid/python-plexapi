@@ -2,6 +2,7 @@
 from collections import namedtuple
 from datetime import datetime, timedelta
 import pytest
+import plexapi.base
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
@@ -56,6 +57,19 @@ def test_library_section_movies_all(movies):
     # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
     assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
+
+
+def test_library_section_movies_all_guids(movies):
+    plexapi.base.USER_DONT_RELOAD_FOR_KEYS.add('guids')
+    try:
+        results = movies.all(includeGuids=False)
+        assert results[0].guids == []
+        results = movies.all()
+        assert results[0].guids
+        movie = movies.get("Sita Sings the Blues")
+        assert movie.guids
+    finally:
+        plexapi.base.USER_DONT_RELOAD_FOR_KEYS.remove('guids')
 
 
 def test_library_section_totalViewSize(tvshows):
