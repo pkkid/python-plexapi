@@ -456,6 +456,9 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 title (str): Title of the item to return.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: The title is not found in the library.
         """
         key = '/library/sections/%s/all?includeGuids=1&title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
@@ -467,6 +470,9 @@ class LibrarySection(PlexObject):
             Parameters:
                 guid (str): The external guid of the item to return.
                     Examples: IMDB ``imdb://tt0944947``, TMDB ``tmdb://1399``, TVDB ``tvdb://121361``.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: The guid is not found in the library.
         """
         key = '/library/sections/%s/all?includeGuids=1' % self.key
         return self.fetchItem(key, Guid__id__iexact=guid)
