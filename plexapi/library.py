@@ -457,7 +457,7 @@ class LibrarySection(PlexObject):
             Parameters:
                 title (str): Title of the item to return.
         """
-        key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
+        key = '/library/sections/%s/all?includeGuids=1&title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
 
     def all(self, libtype=None, **kwargs):
@@ -979,6 +979,8 @@ class LibrarySection(PlexObject):
         """
         args = {}
         filter_args = []
+
+        args['includeGuids'] = int(bool(kwargs.pop('includeGuids', True)))
         for field, values in list(kwargs.items()):
             if field.split('__')[-1] not in OPERATORS:
                 filter_args.append(self._validateFilterField(field, values, libtype))
