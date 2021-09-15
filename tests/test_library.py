@@ -53,6 +53,11 @@ def test_library_section_get_movie(movies):
     assert movies.get("Sita Sings the Blues")
 
 
+def test_library_MovieSection_getGuid(movies, movie):
+    result = movies.getGuid(guid=movie.guids[0].id)
+    assert result == movie
+
+
 def test_library_section_movies_all(movies):
     # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
