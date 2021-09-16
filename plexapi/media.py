@@ -732,6 +732,18 @@ class Director(MediaTag):
 
 
 @utils.registerPlexObject
+class Format(MediaTag):
+    """ Represents a single Format media tag.
+
+        Attributes:
+            TAG (str): 'Format'
+            FILTER (str): 'format'
+    """
+    TAG = 'Format'
+    FILTER = 'format'
+
+
+@utils.registerPlexObject
 class Genre(MediaTag):
     """ Represents a single Genre media tag.
 
@@ -813,6 +825,18 @@ class Style(MediaTag):
     """
     TAG = 'Style'
     FILTER = 'style'
+
+
+@utils.registerPlexObject
+class Subformat(MediaTag):
+    """ Represents a single Subformat media tag.
+
+        Attributes:
+            TAG (str): 'Subformat'
+            FILTER (str): 'subformat'
+    """
+    TAG = 'Subformat'
+    FILTER = 'subformat'
 
 
 @utils.registerPlexObject
