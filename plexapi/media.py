@@ -174,7 +174,7 @@ class MediaPart(PlexObject):
         return [stream for stream in self.streams if isinstance(stream, SubtitleStream)]
 
     def lyricStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
+        """ Returns a list of :class:`~plexapi.media.LyricStream` objects in this MediaPart. """
         return [stream for stream in self.streams if isinstance(stream, LyricStream)]
 
     def setDefaultAudioStream(self, stream):
