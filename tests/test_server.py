@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import time
+from urllib.parse import quote_plus
 
 import pytest
 from datetime import datetime
@@ -514,14 +515,22 @@ def test_server_transcode_sessions(plex, requests_mock):
     assert utils.is_int(session.width, gte=852)
 
 
-def test_server_PlaylistsPlexWebURL(plex):
+def test_server_PlexWebURL(plex):
+    url = plex.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert quote_plus('/hubs') in url
+    assert 'pageType=hub' in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = plex.getWebURL(base=base)
+    assert url.startswith(base)
+
+
+def test_server_PlexWebURL_playlists(plex):
     tab = 'audio'
-    url = plex.getPlaylistsWebURL(tab=tab)
+    url = plex.getWebURL(playlistTab=tab)
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
     assert 'source=playlists' in url
     assert 'pivot=playlists.%s' % tab in url
-    # Test a different base
-    base = 'https://doesnotexist.com/plex'
-    url = plex.getPlaylistsWebURL(base=base)
-    assert url.startswith(base)

@@ -231,7 +231,7 @@ def test_library_MovieSection_PlexWebURL_hub(plex, movies):
     hubs = movies.hubs()
     hub = next(iter(hubs), None)
     assert hub is not None
-    url = hub.getWebURL()
+    url = hub.section().getWebURL(key=hub.key)
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
     assert 'source=%s' % movies.key in url
