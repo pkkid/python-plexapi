@@ -890,24 +890,41 @@ class PlexServer(PlexObject):
         key = '/statistics/resources?timespan=6'
         return self.fetchItems(key, StatisticsResources)
 
-    def getPlaylistsWebURL(self, base=None, tab=None):
-        """ Returns the Plex Web URL for the server playlists page.
+    def _buildWebURL(self, base=None, endpoint=None, **kwargs):
+        """ Build the Plex Web URL for the object.
 
             Parameters:
                 base (str): The base URL before the fragment (``#!``).
                     Default is https://app.plex.tv/desktop.
-                tab (str): The playlist tab (audio, video, photo).
+                endpoint (str): The Plex Web URL endpoint.
+                    None for server, 'playlist' for playlists, 'details' for all other media types.
+                **kwargs (dict): Dictionary of URL parameters.
         """
         if base is None:
             base = 'https://app.plex.tv/desktop/'
 
-        params = {'source': 'playlists'}
-        if tab is not None:
-            params['pivot'] = 'playlists.%s' % tab
+        if endpoint:
+            return '%s#!/server/%s/%s%s' % (
+                base, self.machineIdentifier, endpoint, utils.joinArgs(kwargs)
+            )
+        else:
+            return '%s#!/media/%s/com.plexapp.plugins.library%s' % (
+                base, self.machineIdentifier, utils.joinArgs(kwargs)
+            )
 
-        return '%s#!/media/%s/com.plexapp.plugins.library%s' % (
-            base, self._server.machineIdentifier, utils.joinArgs(params)
-        )
+    def getWebURL(self, base=None, playlistTab=None):
+        """ Returns the Plex Web URL for the server.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+                playlistTab (str): The playlist tab (audio, video, photo). Only used for the playlist URL.
+        """
+        if playlistTab is not None:
+            params = {'source': 'playlists', 'pivot': 'playlists.%s' % playlistTab}
+        else:
+            params = {'key': '/hubs', 'pageType': 'hub'}
+        return self._buildWebURL(base=base, **params)
 
 
 class Account(PlexObject):

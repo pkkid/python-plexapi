@@ -137,14 +137,9 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
                 filepaths.append(filepath)
         return filepaths
 
-    def getWebURL(self, base=None):
-        """ Returns the Plex Web URL for the photoalbum.
-
-            Parameters:
-                base (str): The base URL before the fragment (``#!``).
-                    Default is https://app.plex.tv/desktop.
-        """
-        return self._buildWebURL(base=base, legacy=True)
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters. """
+        return self._server._buildWebURL(base=base, endpoint='details', key=self.key, legacy=1)
 
 
 @utils.registerPlexObject
@@ -311,11 +306,6 @@ class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixi
                 filepaths.append(filepath)
         return filepaths
 
-    def getWebURL(self, base=None):
-        """ Returns the Plex Web URL for the photo's photoalbum.
-
-            Parameters:
-                base (str): The base URL before the fragment (``#!``).
-                    Default is https://app.plex.tv/desktop.
-        """
-        return self._buildWebURL(base=base, key=self.parentKey, legacy=True)
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters. """
+        return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey, legacy=1)

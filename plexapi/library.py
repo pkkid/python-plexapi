@@ -1465,19 +1465,13 @@ class LibrarySection(PlexObject):
                 tab (str): The library tab (recommended, library, collections, playlists, timeline).
                 key (str): A hub key.
         """
-        if base is None:
-            base = 'https://app.plex.tv/desktop/'
-
         params = {'source': self.key}
         if tab is not None:
             params['pivot'] = tab
         if key is not None:
             params['key'] = key
             params['pageType'] = 'list'
-
-        return '%s#!/media/%s/com.plexapp.plugins.library%s' % (
-            base, self._server.machineIdentifier, utils.joinArgs(params)
-        )
+        return self._server._buildWebURL(base=base, **params)
 
 
 class MovieSection(LibrarySection):
@@ -1898,15 +1892,6 @@ class Hub(PlexObject):
         if self._section is None:
             self._section = self._server.library.sectionByID(self.librarySectionID)
         return self._section
-
-    def getWebURL(self, base=None):
-        """ Returns the Plex Web URL for the library.
-
-            Parameters:
-                base (str): The base URL before the fragment (``#!``).
-                    Default is https://app.plex.tv/desktop.
-        """
-        return self.section().getWebURL(base=base, key=self.key)
 
 
 class HubMediaTag(PlexObject):

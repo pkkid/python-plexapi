@@ -582,37 +582,20 @@ class PlexPartialObject(PlexObject):
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
 
-    def _buildWebURL(self, base=None, endpoint='details', key='', legacy=False):
-        """ Build the Plex Web URL for the item.
-
-            Parameters:
-                base (str): The base URL before the fragment (``#!``).
-                    Default is https://app.plex.tv/desktop.
-                endpoint (str): The Plex Web URL endpoint.
-                    'playlist' for playlists, 'details' for all other media types.
-                key (str): The Plex API URL for the item (/library/metadata/<ratingKey>).
-                legacy (bool): True or False to use the legacy URL.
-                    Photoalbum and Photo use the legacy URL.
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters.
+            Private method to allow overriding parameters from subclasses.
         """
-        if base is None:
-            base = 'https://app.plex.tv/desktop/'
-
-        params = {'key': key or self.key}
-        if legacy:
-            params['legacy'] = 1
-
-        return '%s#!/server/%s/%s%s' % (
-            base, self._server.machineIdentifier, endpoint, utils.joinArgs(params)
-        )
+        return self._server._buildWebURL(base=base, endpoint='details', key=self.key)
 
     def getWebURL(self, base=None):
-        """ Returns the Plex Web URL for the item.
+        """ Returns the Plex Web URL for a media item.
 
             Parameters:
                 base (str): The base URL before the fragment (``#!``).
                     Default is https://app.plex.tv/desktop.
         """
-        return self._buildWebURL(base=base)
+        return self._getWebURL(base=base)
 
 
 class Playable(object):
