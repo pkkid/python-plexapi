@@ -72,7 +72,7 @@ class AlertListener(threading.Thread):
             data = json.loads(message)['NotificationContainer']
             log.debug('Alert: %s %s %s', *data)
             if self._callback:
-                self._callback(data)
+                self._callback(data, None)
         except Exception as err:  # pragma: no cover
             log.error('AlertListener Msg Error: %s', err)
 
@@ -84,4 +84,9 @@ class AlertListener(threading.Thread):
             This is to support compatibility with current and previous releases of websocket-client.
         """
         err = args[-1]
-        log.error('AlertListener Error: %s', err)
+        try:
+            log.error('AlertListener Error: %s', err)
+            if self._callback:
+                self._callback(None, err)
+        except Exception as err:  # pragma: no cover
+            log.error('AlertListener Error: Error: %s', err)
