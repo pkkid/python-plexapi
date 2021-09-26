@@ -20,7 +20,7 @@ Add code snippet to help explain your problem.
 
 A clear and concise description of what you expected to happen.
 
-**Enviroment (please complete the following information):**
+**Environment (please complete the following information):**
 
  - OS: [e.g. Linux, Windows, Docker]
  - Plex version [eg. version 1.21.1.3830]
