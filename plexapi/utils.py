@@ -484,6 +484,10 @@ def base64str(text):
     return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
 
+def pathExist(path):
+    return os.path.isdir(path)
+
+
 def deprecated(message, stacklevel=2):
     def decorator(func):
         """This is a decorator which can be used to mark functions
