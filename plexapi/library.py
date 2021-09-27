@@ -441,10 +441,16 @@ class LibrarySection(PlexObject):
         return self._server.library.section(self.title)
 
     def edit(self, agent=None, **kwargs):
-        """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
+        """ Edit a library. See :class:`~plexapi.library.Library` for example usage.
 
             Parameters:
+                agent (str, optional): The library agent.
                 kwargs (dict): Dict of settings to edit.
+
+            Example:
+
+                .. code-block:: python
+                LibrarySection.edit(**{'location': ['/path/1', 'path/2', '/path/3']})
         """
         if not agent:
             agent = self.agent
