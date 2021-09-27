@@ -2,7 +2,7 @@
 import re
 from urllib.parse import quote_plus, unquote
 
-from plexapi import utils
+from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
@@ -24,6 +24,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
             content (str): The filter URI string for smart playlists.
             duration (int): Duration of the playlist in milliseconds.
             durationInSeconds (int): Duration of the playlist in seconds.
+            fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the playlist (com.plexapp.agents.none://XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXX).
             icon (str): Icon URI string for smart playlists.
             key (str): API URL (/playlist/<ratingkey>).
@@ -48,8 +49,9 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
         self.content = data.attrib.get('content')
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.durationInSeconds = utils.cast(int, data.attrib.get('durationInSeconds'))
-        self.icon = data.attrib.get('icon')
+        self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
+        self.icon = data.attrib.get('icon')
         self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.playlistType = data.attrib.get('playlistType')
@@ -288,6 +290,11 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
         }))
         self._server.query(key, method=self._server._session.put)
 
+    def _edit(self, **kwargs):
+        """ Actually edit the playlist. """
+        key = '%s%s' % (self.key, utils.joinArgs(kwargs))
+        self._server.query(key, method=self._server._session.put)
+
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
         
@@ -300,9 +307,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
             args['title'] = title
         if summary:
             args['summary'] = summary
-
-        key = '%s%s' % (self.key, utils.joinArgs(args))
-        self._server.query(key, method=self._server._session.put)
+        self._edit(**args)
 
     def delete(self):
         """ Delete the playlist. """

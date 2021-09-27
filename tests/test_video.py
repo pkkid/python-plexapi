@@ -45,6 +45,8 @@ def test_video_Movie_mixins_edit_advanced_settings(movie):
 
 
 def test_video_Movie_mixins_images(movie):
+    test_mixins.lock_art(movie)
+    test_mixins.lock_poster(movie)
     test_mixins.edit_art(movie)
     test_mixins.edit_poster(movie)
 
@@ -776,6 +778,8 @@ def test_video_Show_mixins_edit_advanced_settings(show):
 
 @pytest.mark.xfail(reason="Changing show art fails randomly")
 def test_video_Show_mixins_images(show):
+    test_mixins.lock_art(show)
+    test_mixins.lock_poster(show)
     test_mixins.edit_art(show)
     test_mixins.edit_poster(show)
     test_mixins.attr_artUrl(show)
@@ -896,6 +900,8 @@ def test_video_Season_episodes(show):
 
 def test_video_Season_mixins_images(show):
     season = show.season(season=1)
+    test_mixins.lock_art(season)
+    test_mixins.lock_poster(season)
     test_mixins.edit_art(season)
     test_mixins.edit_poster(season)
     test_mixins.attr_artUrl(season)
@@ -1096,7 +1102,9 @@ def test_video_Episode_unwatched(tvshows):
 
 
 def test_video_Episode_mixins_images(episode):
-    #test_mixins.edit_art(episode)  # Uploading episode artwork is broken in Plex
+    test_mixins.lock_art(episode)
+    test_mixins.lock_poster(episode)
+    # test_mixins.edit_art(episode)  # Uploading episode artwork is broken in Plex
     test_mixins.edit_poster(episode)
     test_mixins.attr_artUrl(episode)
     test_mixins.attr_posterUrl(episode)

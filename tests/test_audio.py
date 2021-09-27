@@ -11,7 +11,7 @@ def test_audio_Artist_attr(artist):
         assert utils.is_art(artist.art)
     if artist.countries:
         assert "United States of America" in [i.tag for i in artist.countries]
-    #assert "Electronic" in [i.tag for i in artist.genres]
+    # assert "Electronic" in [i.tag for i in artist.genres]
     assert utils.is_string(artist.guid, gte=5)
     assert artist.index == 1
     assert utils.is_metadata(artist._initpath)
@@ -74,6 +74,8 @@ def test_audio_Artist_mixins_edit_advanced_settings(artist):
 
 
 def test_audio_Artist_mixins_images(artist):
+    test_mixins.lock_art(artist)
+    test_mixins.lock_poster(artist)
     test_mixins.edit_art(artist)
     test_mixins.edit_poster(artist)
     test_mixins.attr_artUrl(artist)
@@ -169,6 +171,8 @@ def test_audio_Album_artist(album):
 
 
 def test_audio_Album_mixins_images(album):
+    test_mixins.lock_art(album)
+    test_mixins.lock_poster(album)
     test_mixins.edit_art(album)
     test_mixins.edit_poster(album)
     test_mixins.attr_artUrl(album)

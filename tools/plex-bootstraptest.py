@@ -55,15 +55,15 @@ DOCKER_CMD = [
     "-p",
     "32414:32414/udp",
     "-e",
-    'TZ="Europe/London"',
-    "-e",
     "PLEX_CLAIM=%(claim_token)s",
     "-e",
     "ADVERTISE_IP=http://%(advertise_ip)s:32400/",
+    "-e",
+    "TZ=%(timezone)s",
+    "-e",
+    "LANG=%(language)s",
     "-h",
     "%(hostname)s",
-    "-e",
-    'TZ="%(timezone)s"',
     "-v",
     "%(destination)s/db:/config",
     "-v",
@@ -353,6 +353,9 @@ if __name__ == "__main__":
         "--timezone", help="Timezone to set inside plex", default="UTC"
     )  # noqa
     parser.add_argument(
+        "--language", help="Language to set inside plex", default="en_US.UTF-8"
+    )  # noqa
+    parser.add_argument(
         "--destination",
         help="Local path where to store all the media",
         default=os.path.join(os.getcwd(), "plex"),
@@ -441,6 +444,7 @@ if __name__ == "__main__":
             "hostname": opts.server_name,
             "claim_token": account.claimToken() if account else "",
             "timezone": opts.timezone,
+            "language": opts.language,
             "advertise_ip": opts.advertise_ip,
             "image_tag": opts.docker_tag,
             "container_name_extra": "" if account else "unclaimed-",
