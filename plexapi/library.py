@@ -448,7 +448,15 @@ class LibrarySection(PlexObject):
         """
         if not agent:
             agent = self.agent
-        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(kwargs))
+
+        if kwargs['location']:
+            paths = kwargs.get('location')
+            for path in paths:
+                if not utils.pathExist(path):
+                    raise BadRequest('Path: %s does not exist.' % path)
+        params = list(kwargs.items())
+
+        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(params, doseq=True))
         self._server.query(part, method=self._server._session.put)
 
         # Reload this way since the self.key dont have a full path, but is simply a id.
