@@ -294,8 +294,13 @@ class Library(PlexObject):
                   40:South Africa, 41:Spain, 42:Sweden, 43:Switzerland, 44:Taiwan, 45:Trinidad,
                   46:United Kingdom, 47:United States, 48:Uruguay, 49:Venezuela.
         """
-        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
-            quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
+        if isinstance(location, str):
+            if not utils.pathExist(location):
+                raise BadRequest('Path: %s does not exist.' % location)
+            location = [location]
+        locations = [('location', l) for l in location]
+        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&%s' % (
+            quote_plus(name), type, agent, quote_plus(scanner), language, urlencode(locations, doseq=True))  # noqa E126
         if kwargs:
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
