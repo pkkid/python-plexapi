@@ -464,6 +464,51 @@ class LibrarySection(PlexObject):
             if s.key == self.key:
                 return s
 
+    def addLocations(self, location):
+        """ Add a location to a library.
+
+            Parameters:
+                location (str, list, or class): A single folder path, list of paths,
+                    or :class:`~plexapi.library.Location`.
+
+            Example:
+
+                .. code-block:: python
+                LibrarySection.addLocations('/path/1')
+                LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
+                MovieLibrarySection.addLocations(ShowLibrarySection._locations()[0])
+        """
+        locations = self.locations
+        if isinstance(location, Location):
+            location = location.path
+        if isinstance(location, list):
+            locations += location
+        else:
+            locations.append(location)
+        self.edit(location=locations)
+
+    def removeLocations(self, location):
+        """ Remove a location from a library.
+
+            Parameters:
+                location (str, list, or class): A single folder path, list of paths,
+                     or :class:`~plexapi.library.Location`.
+            Example:
+
+                .. code-block:: python
+                LibrarySection.removeLocations('/path/1')
+                LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
+                LibrarySection.removeLocations(LibrarySection._locations()[0])
+        """
+        locations = self.locations
+        if isinstance(location, Location):
+            location = location.path
+        if isinstance(location, list):
+            locations -= location
+        else:
+            locations.remove(location)
+        self.edit(location=locations)
+
     def get(self, title):
         """ Returns the media item with the specified title.
 
