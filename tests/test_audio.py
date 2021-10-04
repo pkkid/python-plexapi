@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote_plus
 
+import pytest
+from plexapi.exceptions import BadRequest
+
 from . import conftest as utils
 from . import test_media, test_mixins
 
@@ -38,9 +41,9 @@ def test_audio_Artist_attr(artist):
     assert utils.is_int(artist.viewCount, gte=0)
 
 
-def test_audio_Artist_get(artist, music):
-    artist == music.searchArtists(**{"title": "Broke For Free"})[0]
-    artist.title == "Broke For Free"
+def test_audio_Artist_get(artist):
+    track = artist.get(album="Layers", title="As Colourful as Ever")
+    assert track.title == "As Colourful as Ever"
 
 
 def test_audio_Artist_history(artist):
@@ -54,6 +57,8 @@ def test_audio_Artist_track(artist):
     track = artist.track(album="Layers", track=1)
     assert track.parentTitle == "Layers"
     assert track.index == 1
+    with pytest.raises(BadRequest):
+        artist.track()
 
 
 def test_audio_Artist_tracks(artist):
@@ -69,6 +74,11 @@ def test_audio_Artist_album(artist):
 def test_audio_Artist_albums(artist):
     albums = artist.albums()
     assert len(albums) == 1 and albums[0].title == "Layers"
+
+
+def test_audio_Artist_hubs(artist):
+    hubs = artist.hubs()
+    assert isinstance(hubs, list)
 
 
 def test_audio_Artist_mixins_edit_advanced_settings(artist):
@@ -119,6 +129,7 @@ def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     if album.art:
         assert utils.is_art(album.art)
+    assert isinstance(album.formats, list)
     assert isinstance(album.genres, list)
     assert album.index == 1
     assert utils.is_metadata(album._initpath)
@@ -136,6 +147,7 @@ def test_audio_Album_attrs(album):
     assert album.ratingKey >= 1
     assert album._server._baseurl == utils.SERVER_BASEURL
     assert album.studio == "[no label]"
+    assert isinstance(album.subformats, list)
     assert album.summary == ""
     if album.thumb:
         assert utils.is_thumb(album.thumb)
@@ -167,6 +179,8 @@ def test_audio_Album_track(album, track=None):
     track = track or album.track("As Colourful As Ever")
     track2 = album.track(track=1)
     assert track == track2
+    with pytest.raises(BadRequest):
+        album.track()
 
 
 def test_audio_Album_get(album):
@@ -233,6 +247,7 @@ def test_audio_Track_attrs(album):
         assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
     assert track.guid.startswith("mbid://") or track.guid.startswith("plex://track/")
+    assert track.hasSonicAnalysis is False
     assert track.index == 1
     assert track.trackNumber == track.index
     assert utils.is_metadata(track._initpath)
@@ -271,6 +286,7 @@ def test_audio_Track_attrs(album):
     assert track.viewOffset == 0
     assert track.viewedAt is None
     assert track.year is None
+    assert track.url(None) is None
     assert media.aspectRatio is None
     assert media.audioChannels == 2
     assert media.audioCodec == "mp3"
