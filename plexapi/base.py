@@ -579,11 +579,27 @@ class PlexPartialObject(PlexObject):
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get Play History for a media item.
+
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
                 mindate (datetime): Min datetime to return results from.
         """
         return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=self.ratingKey)
+
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters.
+            Private method to allow overriding parameters from subclasses.
+        """
+        return self._server._buildWebURL(base=base, endpoint='details', key=self.key)
+
+    def getWebURL(self, base=None):
+        """ Returns the Plex Web URL for a media item.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+        """
+        return self._getWebURL(base=base)
 
 
 class Playable(object):
