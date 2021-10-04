@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 from . import conftest as utils
 from . import test_media, test_mixins
 
@@ -105,6 +107,14 @@ def test_audio_Artist_media_tags(artist):
     test_media.tag_style(artist)
 
 
+def test_video_Artist_PlexWebURL(plex, artist):
+    url = artist.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(artist.key) in url
+
+
 def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.addedAt)
     if album.art:
@@ -198,6 +208,14 @@ def test_audio_Album_media_tags(album):
     test_media.tag_label(album)
     test_media.tag_mood(album)
     test_media.tag_style(album)
+
+
+def test_video_Album_PlexWebURL(plex, album):
+    url = album.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(album.key) in url
 
 
 def test_audio_Track_attrs(album):
@@ -339,6 +357,14 @@ def test_audio_Track_media_tags(track):
     track.reload()
     test_media.tag_collection(track)
     test_media.tag_mood(track)
+
+
+def test_video_Track_PlexWebURL(plex, track):
+    url = track.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(track.parentKey) in url
 
 
 def test_audio_Audio_section(artist, album, track):

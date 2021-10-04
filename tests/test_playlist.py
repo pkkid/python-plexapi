@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from urllib.parse import quote_plus
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
@@ -254,6 +255,20 @@ def test_Playlist_exceptions(plex, movies, movie, artist):
             playlist.removeItems(movie)
         with pytest.raises(BadRequest):
             playlist.moveItem(movie)
+    finally:
+        playlist.delete()
+
+
+def test_Playlist_PlexWebURL(plex, show):
+    title = 'test_playlist_plexweburl'
+    episodes = show.episodes()
+    playlist = plex.createPlaylist(title, items=episodes[:3])
+    try:
+        url = playlist.getWebURL()
+        assert url.startswith('https://app.plex.tv/desktop')
+        assert plex.machineIdentifier in url
+        assert 'playlist' in url
+        assert quote_plus(playlist.key) in url
     finally:
         playlist.delete()
 

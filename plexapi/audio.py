@@ -422,3 +422,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)
+
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters. """
+        return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey)

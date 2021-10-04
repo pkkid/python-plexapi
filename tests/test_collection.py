@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -285,3 +287,11 @@ def test_Collection_mixins_rating(collection):
 
 def test_Collection_mixins_tags(collection):
     test_mixins.edit_label(collection)
+
+
+def test_Collection_PlexWebURL(plex, collection):
+    url = collection.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(collection.key) in url
