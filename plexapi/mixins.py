@@ -601,7 +601,9 @@ class SmartFilterMixin(object):
                 key += '='
                 value = value[1:]
 
-            if key == 'type':
+            if key == 'includeGuids':
+                filters['includeGuids'] = int(value)
+            elif key == 'type':
                 filters['libtype'] = utils.reverseSearchType(value)
             elif key == 'sort':
                 filters['sort'] = value.split(',')
