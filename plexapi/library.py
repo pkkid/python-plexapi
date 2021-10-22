@@ -446,11 +446,6 @@ class LibrarySection(PlexObject):
             Parameters:
                 agent (str, optional): The library agent.
                 kwargs (dict): Dict of settings to edit.
-
-            Example:
-
-                .. code-block:: python
-                LibrarySection.edit(**{'location': ['/path/1', 'path/2', '/path/3']})
         """
         if not agent:
             agent = self.agent
