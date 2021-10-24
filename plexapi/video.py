@@ -357,8 +357,8 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
 
     def _prettyfilename(self):
-        # This is just for compat.
-        return self.title
+        """ Returns a filename for use in download. """
+        return '%s (%s)' % (self.title, self.year)
 
     def reviews(self):
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
@@ -374,32 +374,6 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         data = self._server.query(self._details_key)
         return self.findItems(data, library.Hub, rtag='Related')
-
-    def download(self, savepath=None, keep_original_name=False, **kwargs):
-        """ Download video files to specified directory.
-
-            Parameters:
-                savepath (str): Defaults to current working dir.
-                keep_original_name (bool): True to keep the original file name otherwise
-                    a friendlier is generated.
-                **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
-        """
-        filepaths = []
-        locations = [i for i in self.iterParts() if i]
-        for location in locations:
-            name = location.file
-            if not keep_original_name:
-                title = self.title.replace(' ', '.')
-                name = '%s.%s' % (title, location.container)
-            if kwargs is not None:
-                url = self.getStreamURL(**kwargs)
-            else:
-                self._server.url('%s?download=1' % location.key)
-            filepath = utils.download(url, self._server._token, filename=name,
-                                      savepath=savepath, session=self._server._session)
-            if filepath:
-                filepaths.append(filepath)
-        return filepaths
 
 
 @utils.registerPlexObject
@@ -583,12 +557,12 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
         return self.episodes(viewCount=0)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
-        """ Download video files to specified directory.
+        """ Download all episodes from the show. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
-                keep_original_name (bool): True to keep the original file name otherwise
-                    a friendlier is generated.
+                keep_original_name (bool): True to keep the original filename otherwise
+                    a friendlier filename is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
@@ -714,12 +688,12 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
         return self.episodes(viewCount=0)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
-        """ Download video files to specified directory.
+        """ Download all episodes from the season. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
-                keep_original_name (bool): True to keep the original file name otherwise
-                    a friendlier is generated.
+                keep_original_name (bool): True to keep the original filename otherwise
+                    a friendlier filename is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
@@ -839,8 +813,8 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
         ] if p])
 
     def _prettyfilename(self):
-        """ Returns a human friendly filename. """
-        return '%s.%s' % (self.grandparentTitle.replace(' ', '.'), self.seasonEpisode)
+        """ Returns a filename for use in download. """
+        return '%s - %s - %s' % (self.grandparentTitle, self.seasonEpisode, self.title)
 
     @property
     def actors(self):
@@ -953,6 +927,7 @@ class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
         return [part.file for part in self.iterParts() if part]
 
     def _prettyfilename(self):
+        """ Returns a filename for use in download. """
         return self.title
 
 
@@ -968,4 +943,5 @@ class Extra(Clip):
         self.librarySectionTitle = parent.librarySectionTitle
 
     def _prettyfilename(self):
+        """ Returns a filename for use in download. """
         return '%s (%s)' % (self.title, self.subtype)
