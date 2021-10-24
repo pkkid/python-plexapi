@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from urllib.parse import quote_plus
 
 from plexapi import library, media, utils
@@ -205,18 +206,20 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
         return self.track(title, album, track)
 
-    def download(self, savepath=None, keep_original_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, subfolders=False, **kwargs):
         """ Download all tracks from the artist. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original filename otherwise
                     a friendlier filename is generated.
+                subfolders (bool): True to separate tracks in to album folders.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
         for track in self.tracks():
-            filepaths += track.download(savepath, keep_original_name, **kwargs)
+            _savepath = os.path.join(savepath, track.parentTitle) if subfolders else savepath
+            filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
 

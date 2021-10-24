@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from urllib.parse import quote_plus
 
 from plexapi import media, utils, video
@@ -107,17 +108,19 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
         """ Alias to :func:`~plexapi.photo.Photoalbum.photo`. """
         return self.episode(title)
 
-    def download(self, savepath=None, keep_original_name=False):
+    def download(self, savepath=None, keep_original_name=False, subfolders=False):
         """ Download all photos and clips from the photo ablum. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original filename otherwise
                     a friendlier filename is generated.
+                subfolders (bool): True to separate photos/clips in to photo album folders.
         """
         filepaths = []
         for album in self.albums():
-            filepaths += album.download(savepath, keep_original_name)
+            _savepath = os.path.join(savepath, album.title) if subfolders else savepath
+            filepaths += album.download(_savepath, keep_original_name)
         for photo in self.photos() + self.clips():
             filepaths += photo.download(savepath, keep_original_name)
         return filepaths

@@ -556,18 +556,20 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
         return self.episodes(viewCount=0)
 
-    def download(self, savepath=None, keep_original_name=False, **kwargs):
+    def download(self, savepath=None, keep_original_name=False, subfolders=False, **kwargs):
         """ Download all episodes from the show. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
                 keep_original_name (bool): True to keep the original filename otherwise
                     a friendlier filename is generated.
+                subfolders (bool): True to separate episodes in to season folders.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
         filepaths = []
         for episode in self.episodes():
-            filepaths += episode.download(savepath, keep_original_name, **kwargs)
+            _savepath = os.path.join(savepath, 'Season %s' % str(episode.seasonNumber).zfill(2)) if subfolders else savepath
+            filepaths += episode.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
 
