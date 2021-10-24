@@ -143,10 +143,10 @@ def test_video_Movie_iterParts(movie):
 
 
 def test_video_Movie_download(monkeydownload, tmpdir, movie):
-    filepaths1 = movie.download(savepath=str(tmpdir))
-    assert len(filepaths1) >= 1
-    filepaths2 = movie.download(savepath=str(tmpdir), videoResolution="500x300")
-    assert len(filepaths2) >= 1
+    filepaths = movie.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
+    with_resolution = movie.download(savepath=str(tmpdir), videoResolution="500x300")
+    assert len(with_resolution) == 1
 
 
 def test_video_Movie_subtitlestreams(movie):
@@ -728,24 +728,25 @@ def test_video_Show_episodes(tvshows):
 
 
 def test_video_Show_download(monkeydownload, tmpdir, show):
-    episodes = show.episodes()
+    total = len(show.episodes())
     filepaths = show.download(savepath=str(tmpdir))
-    assert len(filepaths) == len(episodes)
+    assert len(filepaths) == total
+    subfolders = show.download(savepath=str(tmpdir), subfolders=True)
+    assert len(subfolders) == total
 
 
 def test_video_Season_download(monkeydownload, tmpdir, show):
-    season = show.season("Season 1")
+    season = show.season(1)
+    total = len(season.episodes())
     filepaths = season.download(savepath=str(tmpdir))
-    assert len(filepaths) >= 4
+    assert len(filepaths) == total
 
 
 def test_video_Episode_download(monkeydownload, tmpdir, episode):
-    f = episode.download(savepath=str(tmpdir))
-    assert len(f) == 1
-    with_sceen_size = episode.download(
-        savepath=str(tmpdir), **{"videoResolution": "500x300"}
-    )
-    assert len(with_sceen_size) == 1
+    filepaths = episode.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
+    with_resolution = episode.download(savepath=str(tmpdir), videoResolution="500x300")
+    assert len(with_resolution) == 1
 
 
 # Analyze seems to fail intermittently
