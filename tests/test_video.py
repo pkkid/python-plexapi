@@ -129,13 +129,9 @@ def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
 
 
-def test_video_Movie_delete_part(movie, mocker):
-    # we need to reload this as there is a bug in part.delete
-    # See https://github.com/pkkid/python-plexapi/issues/201
-    m = movie.reload()
-    for media in m.media:
-        with utils.callable_http_patch():
-            media.delete()
+def test_video_Movie_media_delete(movie, patched_http_call):
+    for media in movie.media:
+        media.delete()
 
 
 def test_video_Movie_iterParts(movie):
