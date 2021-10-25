@@ -382,12 +382,12 @@ class MyPlexAccount(PlexObject):
         return self.query(url, self._session.delete)
 
     def acceptInvite(self, user):
-        """ Accept a firend invite from the specified user.
+        """ Accept a pending firend invite from the specified user.
 
             Parameters:
                 user (str): :class:`~plexapi.myplex.MyPlexInvite`, username, or email of the friend invite to accept.
         """
-        invite = user if isinstance(user, MyPlexInvite) else self.invite(user, includeSent=False)
+        invite = user if isinstance(user, MyPlexInvite) else self.pendingInvite(user, includeSent=False)
         params = {
             'friend': int(invite.friend),
             'home': int(invite.home),
@@ -397,12 +397,12 @@ class MyPlexAccount(PlexObject):
         return self.query(url, self._session.put)
 
     def cancelInvite(self, user):
-        """ Cancel a firend invite for the specified user.
+        """ Cancel a pending firend invite for the specified user.
 
             Parameters:
                 user (str): :class:`~plexapi.myplex.MyPlexInvite`, username, or email of the friend invite to cancel.
         """
-        invite = user if isinstance(user, MyPlexInvite) else self.invite(user, includeReceived=False)
+        invite = user if isinstance(user, MyPlexInvite) else self.pendingInvite(user, includeReceived=False)
         params = {
             'friend': int(invite.friend),
             'home': int(invite.home),
@@ -504,8 +504,9 @@ class MyPlexAccount(PlexObject):
         elem = self.query(MyPlexUser.key)
         return self.findItems(elem, cls=MyPlexUser)
 
-    def invite(self, username, includeSent=True, includeReceived=True):
+    def pendingInvite(self, username, includeSent=True, includeReceived=True):
         """ Returns the :class:`~plexapi.myplex.MyPlexInvite` that matches the specified username or email.
+            Note: This can be a pending invite sent from your account or received to your account.
 
             Parameters:
                 username (str): Username, email or id of the user to return.
@@ -513,16 +514,16 @@ class MyPlexAccount(PlexObject):
                 includeReceived (bool): True to include received invites.
         """
         username = str(username)
-        for invite in self.invites(includeSent, includeReceived):
+        for invite in self.pendingInvites(includeSent, includeReceived):
             if (invite.username and invite.email and invite.id and username.lower() in
                     (invite.username.lower(), invite.email.lower(), str(invite.id))):
                 return invite
         
         raise NotFound('Unable to find invite %s' % username)
 
-    def invites(self, includeSent=True, includeReceived=True):
+    def pendingInvites(self, includeSent=True, includeReceived=True):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexInvite` objects connected to your account.
-            Note: This includes all invites sent from your account and received to your account.
+            Note: This includes all pending invites sent from your account and received to your account.
 
             Parameters:
                 includeSent (bool): True to include sent invites.

@@ -178,7 +178,7 @@ def test_myplex_inviteFriend(account, plex, mocker):
 def test_myplex_acceptInvite(account, requests_mock):
     url = MyPlexInvite.REQUESTS
     requests_mock.get(url, text=MYPLEX_INVITE)
-    invite = account.invite('testuser', includeSent=False)
+    invite = account.pendingInvite('testuser', includeSent=False)
     with utils.callable_http_patch():
         account.acceptInvite(invite)
 
@@ -186,7 +186,7 @@ def test_myplex_acceptInvite(account, requests_mock):
 def test_myplex_cancelInvite(account, requests_mock):
     url = MyPlexInvite.REQUESTED
     requests_mock.get(url, text=MYPLEX_INVITE)
-    invite = account.invite('testuser', includeReceived=False)
+    invite = account.pendingInvite('testuser', includeReceived=False)
     with utils.callable_http_patch():
         account.cancelInvite(invite)
 
