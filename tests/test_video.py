@@ -145,8 +145,12 @@ def test_video_Movie_iterParts(movie):
 def test_video_Movie_download(monkeydownload, tmpdir, movie):
     filepaths = movie.download(savepath=str(tmpdir))
     assert len(filepaths) == 1
-    with_resolution = movie.download(savepath=str(tmpdir), videoResolution="500x300")
+    with_resolution = movie.download(
+        savepath=str(tmpdir), keep_original_filename=True, videoResolution="500x300"
+    )
     assert len(with_resolution) == 1
+    filename = os.path.basename(movie.media[0].parts[0].file)
+    assert filename in with_resolution[0]
 
 
 def test_video_Movie_subtitlestreams(movie):
