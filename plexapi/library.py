@@ -511,7 +511,7 @@ class LibrarySection(PlexObject):
         if isinstance(location, Path):
             location = location.path
         if isinstance(location, list):
-            locations -= location
+            locations = [path for path in locations if path not in location]
         else:
             locations.remove(location)
         for path in locations:
