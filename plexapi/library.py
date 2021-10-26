@@ -457,7 +457,7 @@ class LibrarySection(PlexObject):
         if kwargs['location']:
             paths = kwargs.get('location')
             for path in paths:
-                if not utils.pathExist(path):
+                if not self._server.isBrowsable(path):
                     raise BadRequest('Path: %s does not exist.' % path)
         params = list(kwargs.items())
 
