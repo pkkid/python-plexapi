@@ -490,6 +490,8 @@ class LibrarySection(PlexObject):
             locations.extend(location)
         else:
             locations.append(location)
+        for path in locations:
+            self._server.isBrowsable(path)
         self.edit(location=locations)
 
     def removeLocations(self, location):
@@ -512,6 +514,8 @@ class LibrarySection(PlexObject):
             locations -= location
         else:
             locations.remove(location)
+        for path in locations:
+            self._server.isBrowsable(path)
         self.edit(location=locations)
 
     def get(self, title):
