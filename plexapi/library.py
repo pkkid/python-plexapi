@@ -295,7 +295,7 @@ class Library(PlexObject):
                   46:United Kingdom, 47:United States, 48:Uruguay, 49:Venezuela.
         """
         if isinstance(location, str):
-            if not utils.pathExist(location):
+            if not self._server.isBrowsable(location):
                 raise BadRequest('Path: %s does not exist.' % location)
             location = [location]
         locations = [('location', l) for l in location]
@@ -483,7 +483,7 @@ class LibrarySection(PlexObject):
         if isinstance(location, Location):
             location = location.path
         if isinstance(location, list):
-            locations += location
+            locations.extend(location)
         else:
             locations.append(location)
         self.edit(location=locations)
