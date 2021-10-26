@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
+import os
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
                      logfilter)
 from plexapi import utils
@@ -383,6 +384,18 @@ class PlexServer(PlexObject):
         for _path in paths:
             for path, paths, files in self.walk(_path):
                 yield path, paths, files
+
+    def isBrowsable(self, path):
+        """ Returns True if the Plex server can browse the given path.
+
+            Parameters:
+                path (:class:`~plexapi.library.Path` or str): Full path to browse.
+        """
+        if isinstance(path, Path):
+            path = path.path
+        path = os.path.normpath(path)
+        paths = [p.path for p in self.browse(os.path.dirname(path), includeFiles=False)]
+        return path in paths
 
     def clients(self):
         """ Returns list of all :class:`~plexapi.client.PlexClient` objects connected to server. """
