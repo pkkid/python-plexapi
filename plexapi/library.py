@@ -484,7 +484,7 @@ class LibrarySection(PlexObject):
                 MovieLibrarySection.addLocations(ShowLibrarySection._locations()[0])
         """
         locations = self.locations
-        if isinstance(location, Location):
+        if isinstance(location, Path):
             location = location.path
         if isinstance(location, list):
             locations.extend(location)
@@ -506,7 +506,7 @@ class LibrarySection(PlexObject):
                 LibrarySection.removeLocations(LibrarySection._locations()[0])
         """
         locations = self.locations
-        if isinstance(location, Location):
+        if isinstance(location, Path):
             location = location.path
         if isinstance(location, list):
             locations -= location
