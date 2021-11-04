@@ -61,7 +61,6 @@ def test_library_MovieSection_getGuid(movies, movie):
 
 
 def test_library_section_movies_all(movies):
-    # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
     assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
 
@@ -77,6 +76,14 @@ def test_library_section_movies_all_guids(movies):
         assert movie.guids
     finally:
         plexapi.base.USER_DONT_RELOAD_FOR_KEYS.remove('guids')
+
+
+def test_library_section_totalDuration(tvshows):
+    assert utils.is_int(tvshows.totalDuration)
+
+
+def test_library_section_totalStorage(tvshows):
+    assert utils.is_int(tvshows.totalStorage)
 
 
 def test_library_section_totalViewSize(tvshows):
