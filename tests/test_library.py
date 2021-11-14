@@ -17,6 +17,8 @@ def test_library_Library_section(plex):
     assert section_name.title == "TV Shows"
     with pytest.raises(NotFound):
         assert plex.library.section("cant-find-me")
+    with pytest.raises(NotFound):
+        assert plex.library.sectionByID(-1)
 
 
 def test_library_Library_sectionByID_is_equal_section(plex, movies):
@@ -122,12 +124,16 @@ def test_library_add_edit_delete(plex):
         scanner="Plex Movie Scanner",
         language="en",
     )
-    assert plex.library.section(section_name)
-    edited_library = plex.library.section(section_name).edit(
-        name="a renamed lib", type="movie", agent="com.plexapp.agents.imdb"
+    section = plex.library.section(section_name)
+    assert section.title == section_name
+    new_title = "a renamed lib"
+    section.edit(
+        name=new_title, type="movie", agent="com.plexapp.agents.imdb"
     )
-    assert edited_library.title == "a renamed lib"
-    plex.library.section("a renamed lib").delete()
+    section.reload()
+    assert section.title == new_title
+    section.delete()
+    assert section not in plex.library.sections()
 
 
 def test_library_Library_cleanBundle(plex):
@@ -365,7 +371,6 @@ def test_library_editAdvanced_default(movies):
         if setting.id == "collectionMode":
             assert int(setting.value) == 0
 
-    movies.reload()
     movies.defaultAdvanced()
     for setting in movies.settings():
         assert str(setting.value) == str(setting.default)
