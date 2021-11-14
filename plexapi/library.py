@@ -464,11 +464,6 @@ class LibrarySection(PlexObject):
         part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
 
-        # Reload this way since the self.key dont have a full path, but is simply a id.
-        for s in self._server.library.sections():
-            if s.key == self.key:
-                return s
-
     def get(self, title):
         """ Returns the media item with the specified title.
 
