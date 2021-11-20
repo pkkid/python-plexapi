@@ -117,7 +117,7 @@ def test_audio_Artist_media_tags(artist):
     test_media.tag_style(artist)
 
 
-def test_video_Artist_PlexWebURL(plex, artist):
+def test_audio_Artist_PlexWebURL(plex, artist):
     url = artist.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
@@ -224,7 +224,7 @@ def test_audio_Album_media_tags(album):
     test_media.tag_style(album)
 
 
-def test_video_Album_PlexWebURL(plex, album):
+def test_audio_Album_PlexWebURL(plex, album):
     url = album.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
@@ -375,7 +375,7 @@ def test_audio_Track_media_tags(track):
     test_media.tag_mood(track)
 
 
-def test_video_Track_PlexWebURL(plex, track):
+def test_audio_Track_PlexWebURL(plex, track):
     url = track.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
@@ -390,16 +390,20 @@ def test_audio_Audio_section(artist, album, track):
     assert track.section().key == album.section().key == artist.section().key
 
 
+def test_audio_Artist_download(monkeydownload, tmpdir, artist):
+    total = len(artist.tracks())
+    filepaths = artist.download(savepath=str(tmpdir))
+    assert len(filepaths) == total
+    subfolders = artist.download(savepath=str(tmpdir), subfolders=True)
+    assert len(subfolders) == total
+
+
+def test_audio_Album_download(monkeydownload, tmpdir, album):
+    total = len(album.tracks())
+    filepaths = album.download(savepath=str(tmpdir))
+    assert len(filepaths) == total
+
+
 def test_audio_Track_download(monkeydownload, tmpdir, track):
-    f = track.download(savepath=str(tmpdir))
-    assert f
-
-
-def test_audio_album_download(monkeydownload, album, tmpdir):
-    f = album.download(savepath=str(tmpdir))
-    assert len(f) == 1
-
-
-def test_audio_Artist_download(monkeydownload, artist, tmpdir):
-    f = artist.download(savepath=str(tmpdir))
-    assert len(f) == 1
+    filepaths = track.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1

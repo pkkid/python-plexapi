@@ -26,7 +26,7 @@ def test_photo_Photoalbum_mixins_rating(photoalbum):
     test_mixins.edit_rating(photoalbum)
 
 
-def test_video_Photoalbum_PlexWebURL(plex, photoalbum):
+def test_photo_Photoalbum_PlexWebURL(plex, photoalbum):
     url = photoalbum.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
@@ -48,10 +48,27 @@ def test_photo_Photo_media_tags(photo):
     test_media.tag_tag(photo)
 
 
-def test_video_Photo_PlexWebURL(plex, photo):
+def test_photo_Photo_PlexWebURL(plex, photo):
     url = photo.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
     assert 'details' in url
     assert quote_plus(photo.parentKey) in url
     assert 'legacy=1' in url
+
+
+def test_photo_Photoalbum_download(monkeydownload, tmpdir, photoalbum):
+    total = 0
+    for album in photoalbum.albums():
+        total += len(album.photos()) + len(album.clips())
+    total += len(photoalbum.photos())
+    total += len(photoalbum.clips())
+    filepaths = photoalbum.download(savepath=str(tmpdir))
+    assert len(filepaths) == total
+    subfolders = photoalbum.download(savepath=str(tmpdir), subfolders=True)
+    assert len(subfolders) == total
+
+
+def test_photo_Photo_download(monkeydownload, tmpdir, photo):
+    filepaths = photo.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
