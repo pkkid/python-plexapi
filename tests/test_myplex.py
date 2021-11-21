@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.myplex import MyPlexInvite
 
 from . import conftest as utils
+from .payloads import MYPLEX_INVITE
 
 
 def test_myplex_accounts(account, plex):
@@ -150,7 +152,7 @@ def test_myplex_onlineMediaSources_optOut(account):
         onlineMediaSources[0]._updateOptOut('unknown')
 
 
-def test_myplex_inviteFriend_remove(account, plex, mocker):
+def test_myplex_inviteFriend(account, plex, mocker):
     inv_user = "hellowlol"
     vid_filter = {"contentRating": ["G"], "label": ["foo"]}
     secs = plex.library.sections()
@@ -172,9 +174,21 @@ def test_myplex_inviteFriend_remove(account, plex, mocker):
 
         assert inv_user not in [u.title for u in account.users()]
 
-        with pytest.raises(NotFound):
-            with utils.callable_http_patch():
-                account.removeFriend(inv_user)
+
+def test_myplex_acceptInvite(account, requests_mock):
+    url = MyPlexInvite.REQUESTS
+    requests_mock.get(url, text=MYPLEX_INVITE)
+    invite = account.pendingInvite('testuser', includeSent=False)
+    with utils.callable_http_patch():
+        account.acceptInvite(invite)
+
+
+def test_myplex_cancelInvite(account, requests_mock):
+    url = MyPlexInvite.REQUESTED
+    requests_mock.get(url, text=MYPLEX_INVITE)
+    invite = account.pendingInvite('testuser', includeReceived=False)
+    with utils.callable_http_patch():
+        account.cancelInvite(invite)
 
 
 def test_myplex_updateFriend(account, plex, mocker, shared_username):
@@ -186,7 +200,6 @@ def test_myplex_updateFriend(account, plex, mocker, shared_username):
     mocker.patch.object(account, "_getSectionIds", return_value=ids)
     mocker.patch.object(account, "user", return_value=user)
     with utils.callable_http_patch():
-
         account.updateFriend(
             shared_username,
             plex,
@@ -199,6 +212,9 @@ def test_myplex_updateFriend(account, plex, mocker, shared_username):
             filterTelevision=vid_filter,
             filterMusic={"label": ["foo"]},
         )
+
+        with utils.callable_http_patch():
+            account.removeFriend(shared_username)
 
 
 def test_myplex_createExistingUser(account, plex, shared_username):

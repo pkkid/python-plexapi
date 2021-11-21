@@ -34,3 +34,10 @@ SERVER_TRANSCODE_SESSIONS = """<MediaContainer size="1">
 <TranscodeSession key="qucs2leop3yzm0sng4urq1o0" throttled="0" complete="0" progress="1.2999999523162842" size="73138224" speed="6.4000000953674316" duration="6654989" remaining="988" context="streaming" sourceVideoCodec="h264" sourceAudioCodec="dca" videoDecision="transcode" audioDecision="transcode" protocol="dash" container="mp4" videoCodec="h264" audioCodec="aac" audioChannels="2" transcodeHwRequested="1" transcodeHwDecoding="dxva2" transcodeHwDecodingTitle="Windows (DXVA2)" transcodeHwEncoding="qsv" transcodeHwEncodingTitle="Intel (QuickSync)" transcodeHwFullPipeline="0" timeStamp="1611533677.0316164" maxOffsetAvailable="84.000667334000667" minOffsetAvailable="0" height="720" width="1280" />
 </MediaContainer>
 """
+
+MYPLEX_INVITE = """<MediaContainer friendlyName="myPlex" identifier="com.plexapp.plugins.myplex" machineIdentifier="xxxxxxxxxx" size="1">
+<Invite id="12345" createdAt="1635126033" friend="1" home="1" server="1" username="testuser" email="testuser@email.com" thumb="https://plex.tv/users/1234567890abcdef/avatar?c=12345" friendlyName="testuser">
+<Server name="testserver" numLibraries="2"/>
+</Invite>
+</MediaContainer>
+"""
