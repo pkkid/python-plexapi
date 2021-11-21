@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote_plus
 
+import pytest
+
 from . import test_media, test_mixins
 
 
@@ -13,6 +15,7 @@ def test_photo_Photoalbum(photoalbum):
     assert a_pic
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_photo_Photoalbum_mixins_images(photoalbum):
     # test_mixins.lock_art(photoalbum)  # Unlocking photoalbum artwork is broken in Plex
     # test_mixins.lock_poster(photoalbum)  # Unlocking photoalbum poster is broken in Plex

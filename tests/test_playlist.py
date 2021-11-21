@@ -273,8 +273,9 @@ def test_Playlist_PlexWebURL(plex, show):
         playlist.delete()
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_Playlist_mixins_images(playlist):
-    # test_mixins.lock_art(playlist)
+    test_mixins.lock_art(playlist)
     test_mixins.lock_poster(playlist)
-    # test_mixins.edit_art(playlist)
+    test_mixins.edit_art(playlist)
     test_mixins.edit_poster(playlist)
