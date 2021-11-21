@@ -356,6 +356,9 @@ class LibrarySection(PlexObject):
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
+        self._totalSize = None
+        self._totalDuration = None
+        self._totalStorage = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
@@ -394,7 +397,36 @@ class LibrarySection(PlexObject):
     @property
     def totalSize(self):
         """ Returns the total number of items in the library for the default library type. """
-        return self.totalViewSize(includeCollections=False)
+        if self._totalSize is None:
+            self._totalSize = self.totalViewSize(includeCollections=False)
+        return self._totalSize
+
+    @property
+    def totalDuration(self):
+        """ Returns the total duration (in milliseconds) of items in the library. """
+        if self._totalDuration is None:
+            self._getTotalDurationStorage()
+        return self._totalDuration
+
+    @property
+    def totalStorage(self):
+        """ Returns the total storage (in bytes) of items in the library. """
+        if self._totalStorage is None:
+            self._getTotalDurationStorage()
+        return self._totalStorage
+
+    def _getTotalDurationStorage(self):
+        """ Queries the Plex server for the total library duration and storage and caches the values. """
+        data = self._server.query('/media/providers?includeStorage=1')
+        xpath = (
+            './MediaProvider[@identifier="com.plexapp.plugins.library"]'
+            '/Feature[@type="content"]'
+            '/Directory[@id="%s"]'
+        ) % self.key
+        directory = next(iter(data.findall(xpath)), None)
+        if directory:
+            self._totalDuration = utils.cast(int, directory.attrib.get('durationTotal'))
+            self._totalStorage = utils.cast(int, directory.attrib.get('storageTotal'))
 
     def totalViewSize(self, libtype=None, includeCollections=True):
         """ Returns the total number of items in the library for a specified libtype.
