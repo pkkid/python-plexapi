@@ -139,6 +139,9 @@ def _test_mixins_edit_image(obj, attr):
     # Reset to default image
     if default_image:
         set_img_method(default_image)
+    # Unlock the image
+    unlock_img_method = getattr(obj, "unlock" + cap_attr)
+    unlock_img_method()
 
 
 def edit_art(obj):
