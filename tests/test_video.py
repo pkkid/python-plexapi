@@ -44,6 +44,7 @@ def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Movie_mixins_images(movie):
     test_mixins.lock_art(movie)
     test_mixins.lock_poster(movie)
@@ -787,7 +788,7 @@ def test_video_Show_mixins_edit_advanced_settings(show):
     test_mixins.edit_advanced_settings(show)
 
 
-@pytest.mark.xfail(reason="Changing show art fails randomly")
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Show_mixins_images(show):
     test_mixins.lock_art(show)
     test_mixins.lock_poster(show)
@@ -917,6 +918,7 @@ def test_video_Season_episodes(show):
     assert len(episodes) >= 1
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Season_mixins_images(show):
     season = show.season(season=1)
     test_mixins.lock_art(season)
@@ -1128,6 +1130,7 @@ def test_video_Episode_unwatched(tvshows):
     episode.markUnwatched()
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Episode_mixins_images(episode):
     test_mixins.lock_art(episode)
     test_mixins.lock_poster(episode)

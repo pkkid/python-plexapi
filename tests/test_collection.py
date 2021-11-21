@@ -272,6 +272,7 @@ def test_Collection_art(collection):
     assert not arts  # Collection has no default art
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_Collection_mixins_images(collection):
     test_mixins.lock_art(collection)
     test_mixins.lock_poster(collection)

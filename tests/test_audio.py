@@ -85,6 +85,7 @@ def test_audio_Artist_mixins_edit_advanced_settings(artist):
     test_mixins.edit_advanced_settings(artist)
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_audio_Artist_mixins_images(artist):
     test_mixins.lock_art(artist)
     test_mixins.lock_poster(artist)
@@ -194,6 +195,7 @@ def test_audio_Album_artist(album):
     artist.title == "Broke For Free"
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_audio_Album_mixins_images(album):
     test_mixins.lock_art(album)
     test_mixins.lock_poster(album)
