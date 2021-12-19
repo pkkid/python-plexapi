@@ -493,7 +493,8 @@ class LibrarySection(PlexObject):
         else:
             locations.append(location)
         for path in locations:
-            self._server.isBrowsable(path)
+            if not self._server.isBrowsable(path):
+                raise BadRequest('Path: %s does not exist.' % path)
         self.edit(location=locations)
 
     def removeLocations(self, location):
@@ -517,7 +518,8 @@ class LibrarySection(PlexObject):
         else:
             locations.remove(location)
         for path in locations:
-            self._server.isBrowsable(path)
+            if not self._server.isBrowsable(path):
+                raise BadRequest('Path: %s does not exist.' % path)
         self.edit(location=locations)
 
     def get(self, title):
