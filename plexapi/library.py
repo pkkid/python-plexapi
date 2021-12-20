@@ -571,7 +571,7 @@ class LibrarySection(PlexObject):
             else:
                 raise BadRequest('Path: %s does not exist in the library.' % location)
         if len(locations) == 0:
-            raise BadRequest('You are unable to remove all locations from a library.' % location)
+            raise BadRequest('You are unable to remove all locations from a library.')
         self.edit(location=locations)
 
     def get(self, title):
