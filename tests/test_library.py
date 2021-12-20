@@ -121,24 +121,57 @@ def test_library_recentlyAdded(plex):
     assert len(list(plex.library.recentlyAdded()))
 
 
-def test_library_add_edit_delete(plex):
-    # Dont add a location to prevent scanning scanning
+def test_library_add_edit_delete(plex, movies, photos):
+    # Create Other Videos library = No external metadata scanning
     section_name = "plexapi_test_section"
+    movie_location = movies.locations[0]
+    photo_location = photos.locations[0]
     plex.library.add(
         name=section_name,
         type="movie",
-        agent="com.plexapp.agents.imdb",
-        scanner="Plex Movie Scanner",
+        agent="com.plexapp.agents.none",
+        scanner="Plex Video Files Scanner",
         language="en",
+        location=[movie_location, photo_location]
     )
     section = plex.library.section(section_name)
     assert section.title == section_name
+    # Create library with an invalid path
+    error_section_name = "plexapi_error_section"
+    with pytest.raises(BadRequest):
+        plex.library.add(
+            name=error_section_name,
+            type="movie",
+            agent="com.plexapp.agents.none",
+            scanner="Plex Video Files Scanner",
+            language="en",
+            location=[movie_location, photo_location[:-1]]
+        )
+    # Create library with no path
+    with pytest.raises(BadRequest):
+        plex.library.add(
+            name=error_section_name,
+            type="movie",
+            agent="com.plexapp.agents.none",
+            scanner="Plex Video Files Scanner",
+            language="en",
+        )
+    with pytest.raises(BadRequest):
+        plex.library.section(error_section_name)
     new_title = "a renamed lib"
-    section.edit(
-        name=new_title, type="movie", agent="com.plexapp.agents.imdb"
-    )
+    section.edit(name=new_title)
     section.reload()
     assert section.title == new_title
+    with pytest.raises(BadRequest):
+        section.addLocations(movie_location[:-1])
+    with pytest.raises(BadRequest):
+        section.removeLocations(movie_location[:-1])
+    section.removeLocations(photo_location)
+    section.reload()
+    assert len(section.locations) == 1
+    section.addLocations(photo_location)
+    section.reload()
+    assert len(section.locations) == 2
     section.delete()
     assert section not in plex.library.sections()
 
