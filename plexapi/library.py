@@ -606,6 +606,36 @@ class LibrarySection(PlexObject):
 
         self.edit(**data)
 
+    def _lockUnlockAllField(self, field, libtype=None, locked=True):
+        """ Lock or unlock a field for all items in the library. """
+        libtype = libtype or self.TYPE
+        args = {
+            'type': utils.searchType(libtype),
+            '%s.locked' % field: int(locked)
+        }
+        key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        self._server.query(key, method=self._server._session.put)
+
+    def lockAllField(self, field, libtype=None):
+        """ Lock a field for all items in the library.
+        
+            Parameters:
+                field (str): The field to lock (e.g. thumb, rating, collection).
+                libtype (str, optional): The library type to lock (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo). Default is the main library type.
+        """
+        self._lockUnlockAllField(field, libtype=libtype, locked=True)
+
+    def unlockAllField(self, field, libtype=None):
+        """ Unlock a field for all items in the library.
+        
+            Parameters:
+                field (str): The field to unlock (e.g. thumb, rating, collection).
+                libtype (str, optional): The library type to lock (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo). Default is the main library type.
+        """
+        self._lockUnlockAllField(field, libtype=libtype, locked=False)
+
     def timeline(self):
         """ Returns a timeline query for this library section. """
         key = '/library/sections/%s/timeline' % self.key
