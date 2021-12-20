@@ -156,7 +156,7 @@ def test_library_add_edit_delete(plex, movies, photos):
             scanner="Plex Video Files Scanner",
             language="en",
         )
-    with pytest.raises(BadRequest):
+    with pytest.raises(NotFound):
         plex.library.section(error_section_name)
     new_title = "a renamed lib"
     section.edit(name=new_title)
