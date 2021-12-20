@@ -524,7 +524,7 @@ class LibrarySection(PlexObject):
 
     def addLocations(self, location):
         """ Add a location to a library.
-
+        
             Parameters:
                 location (str, list, or :class:~plexapi.library.Path)): A single folder path, list of paths,
                     or :class:`~plexapi.library.Path`.
@@ -549,7 +549,7 @@ class LibrarySection(PlexObject):
 
     def removeLocations(self, location):
         """ Remove a location from a library.
-
+        
             Parameters:
                 location (str, list, or :class:~plexapi.library.Path): A single folder path, list of paths,
                      or :class:`~plexapi.library.Path`.
