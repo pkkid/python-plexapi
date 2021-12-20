@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import time
+from urllib.parse import quote_plus
 
 import pytest
 from datetime import datetime
@@ -59,24 +60,52 @@ def test_server_url(plex):
 
 
 def test_server_transcodeImage(tmpdir, plex, movie):
-    width, height = 500, 500
-    original_url = plex.url(movie.thumb)
-    resize_url = plex.transcodeImage(movie.thumb, height, width)
-    grayscale_url = plex.transcodeImage(movie.thumb, height, width, saturation=0)
+    width, height = 500, 100
+    background = "000000"
+
+    original_url = movie.thumbUrl
+    resize_jpeg_url = plex.transcodeImage(original_url, height, width)
+    no_minSize_png_url = plex.transcodeImage(original_url, height, width, minSize=False, imageFormat="png")
+    grayscale_url = plex.transcodeImage(original_url, height, width, saturation=0)
+    opacity_background_url = plex.transcodeImage(original_url, height, width, opacity=0, background=background, blur=100)
+    online_no_upscale_url = plex.transcodeImage(
+        "https://raw.githubusercontent.com/pkkid/python-plexapi/master/tests/data/cute_cat.jpg", 1000, 1000, upscale=False)
+
     original_img = download(
         original_url, plex._token, savepath=str(tmpdir), filename="original_img",
     )
-    resized_img = download(
-        resize_url, plex._token, savepath=str(tmpdir), filename="resize_image"
+    resized_jpeg_img = download(
+        resize_jpeg_url, plex._token, savepath=str(tmpdir), filename="resized_jpeg_img"
+    )
+    no_minSize_png_img = download(
+        no_minSize_png_url, plex._token, savepath=str(tmpdir), filename="no_minSize_png_img"
     )
     grayscale_img = download(
         grayscale_url, plex._token, savepath=str(tmpdir), filename="grayscale_img"
     )
-    with Image.open(resized_img) as image:
-        assert width, height == image.size
+    opacity_background_img = download(
+        opacity_background_url, plex._token, savepath=str(tmpdir), filename="opacity_background_img"
+    )
+    online_no_upscale_img = download(
+        online_no_upscale_url, plex._token, savepath=str(tmpdir), filename="online_no_upscale_img"
+    )
+
     with Image.open(original_img) as image:
-        assert width, height != image.size
+        assert image.size[0] != width
+        assert image.size[1] != height
+    with Image.open(resized_jpeg_img) as image:
+        assert image.size[0] == width
+        assert image.size[1] != height
+        assert image.format == "JPEG"
+    with Image.open(no_minSize_png_img) as image:
+        assert image.size[0] != width
+        assert image.size[1] == height
+        assert image.format == "PNG"
     assert _detect_color_image(grayscale_img, thumb_size=150) == "grayscale"
+    assert _detect_dominant_hexcolor(opacity_background_img) == background
+    with Image.open(online_no_upscale_img) as image1:
+        with Image.open(utils.STUB_IMAGE_PATH) as image2:
+            assert image1.size == image2.size
 
 
 def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=True):
@@ -98,6 +127,15 @@ def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=T
         return "grayscale" if mse <= MSE_cutoff else "color"
     elif len(bands) == 1:
         return "blackandwhite"
+
+
+def _detect_dominant_hexcolor(file):
+    # https://stackoverflow.com/questions/3241929/python-find-dominant-most-common-color-in-an-image
+    pilimg = Image.open(file)
+    pilimg.convert("RGB")
+    pilimg.resize((1, 1), resample=0)
+    rgb_color = pilimg.getpixel((0, 0))
+    return "{:02x}{:02x}{:02x}".format(*rgb_color)
 
 
 def test_server_fetchitem_notfound(plex):
@@ -512,3 +550,24 @@ def test_server_transcode_sessions(plex, requests_mock):
     assert session.videoCodec in utils.CODECS
     assert session.videoDecision == "transcode"
     assert utils.is_int(session.width, gte=852)
+
+
+def test_server_PlexWebURL(plex):
+    url = plex.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert quote_plus('/hubs') in url
+    assert 'pageType=hub' in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = plex.getWebURL(base=base)
+    assert url.startswith(base)
+
+
+def test_server_PlexWebURL_playlists(plex):
+    tab = 'audio'
+    url = plex.getWebURL(playlistTab=tab)
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=playlists' in url
+    assert 'pivot=playlists.%s' % tab in url

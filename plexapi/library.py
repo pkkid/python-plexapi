@@ -26,47 +26,61 @@ class Library(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self._sectionsByID = {}  # cached Section UUIDs
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
         self.title1 = data.attrib.get('title1')
         self.title2 = data.attrib.get('title2')
+        self._sectionsByID = {}  # cached sections by key
+        self._sectionsByTitle = {}  # cached sections by title
+
+    def _loadSections(self):
+        """ Loads and caches all the library sections. """
+        key = '/library/sections'
+        self._sectionsByID = {}
+        self._sectionsByTitle = {}
+        for elem in self._server.query(key):
+            for cls in (MovieSection, ShowSection, MusicSection, PhotoSection):
+                if elem.attrib.get('type') == cls.TYPE:
+                    section = cls(self._server, elem, key)
+                    self._sectionsByID[section.key] = section
+                    self._sectionsByTitle[section.title.lower()] = section
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
             :class:`~plexapi.library.MovieSection`, :class:`~plexapi.library.ShowSection`,
             :class:`~plexapi.library.MusicSection`, :class:`~plexapi.library.PhotoSection`.
         """
-        key = '/library/sections'
-        sections = []
-        for elem in self._server.query(key):
-            for cls in (MovieSection, ShowSection, MusicSection, PhotoSection):
-                if elem.attrib.get('type') == cls.TYPE:
-                    section = cls(self._server, elem, key)
-                    self._sectionsByID[section.key] = section
-                    sections.append(section)
-        return sections
+        self._loadSections()
+        return list(self._sectionsByID.values())
 
-    def section(self, title=None):
+    def section(self, title):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified title.
 
             Parameters:
                 title (str): Title of the section to return.
         """
-        for section in self.sections():
-            if section.title.lower() == title.lower():
-                return section
-        raise NotFound('Invalid library section: %s' % title)
+        if not self._sectionsByTitle or title not in self._sectionsByTitle:
+            self._loadSections()
+        try:
+            return self._sectionsByTitle[title.lower()]
+        except KeyError:
+            raise NotFound('Invalid library section: %s' % title) from None
 
     def sectionByID(self, sectionID):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
 
             Parameters:
                 sectionID (int): ID of the section to return.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: The library section ID is not found on the server.
         """
         if not self._sectionsByID or sectionID not in self._sectionsByID:
-            self.sections()
-        return self._sectionsByID[sectionID]
+            self._loadSections()
+        try:
+            return self._sectionsByID[sectionID]
+        except KeyError:
+            raise NotFound('Invalid library sectionID: %s' % sectionID) from None
 
     def all(self, **kwargs):
         """ Returns a list of all media from all library sections.
@@ -364,6 +378,9 @@ class LibrarySection(PlexObject):
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
+        self._totalSize = None
+        self._totalDuration = None
+        self._totalStorage = None
 
     def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
@@ -402,7 +419,36 @@ class LibrarySection(PlexObject):
     @property
     def totalSize(self):
         """ Returns the total number of items in the library for the default library type. """
-        return self.totalViewSize(includeCollections=False)
+        if self._totalSize is None:
+            self._totalSize = self.totalViewSize(includeCollections=False)
+        return self._totalSize
+
+    @property
+    def totalDuration(self):
+        """ Returns the total duration (in milliseconds) of items in the library. """
+        if self._totalDuration is None:
+            self._getTotalDurationStorage()
+        return self._totalDuration
+
+    @property
+    def totalStorage(self):
+        """ Returns the total storage (in bytes) of items in the library. """
+        if self._totalStorage is None:
+            self._getTotalDurationStorage()
+        return self._totalStorage
+
+    def _getTotalDurationStorage(self):
+        """ Queries the Plex server for the total library duration and storage and caches the values. """
+        data = self._server.query('/media/providers?includeStorage=1')
+        xpath = (
+            './MediaProvider[@identifier="com.plexapp.plugins.library"]'
+            '/Feature[@type="content"]'
+            '/Directory[@id="%s"]'
+        ) % self.key
+        directory = next(iter(data.findall(xpath)), None)
+        if directory:
+            self._totalDuration = utils.cast(int, directory.attrib.get('durationTotal'))
+            self._totalStorage = utils.cast(int, directory.attrib.get('storageTotal'))
 
     def totalViewSize(self, libtype=None, includeCollections=True):
         """ Returns the total number of items in the library for a specified libtype.
@@ -440,8 +486,12 @@ class LibrarySection(PlexObject):
             log.error(msg)
             raise
 
-    def reload(self, key=None):
-        return self._server.library.section(self.title)
+    def reload(self):
+        """ Reload the data for the library section. """
+        self._server.library._loadSections()
+        newLibrary = self._server.library.sectionByID(self.key)
+        self.__dict__.update(newLibrary.__dict__)
+        return self
 
     def edit(self, agent=None, **kwargs):
         """ Edit a library. See :class:`~plexapi.library.Library` for example usage.
@@ -530,9 +580,44 @@ class LibrarySection(PlexObject):
 
             Parameters:
                 title (str): Title of the item to return.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: The title is not found in the library.
         """
-        key = '/library/sections/%s/all?title=%s' % (self.key, quote(title, safe=''))
+        key = '/library/sections/%s/all?includeGuids=1&title=%s' % (self.key, quote(title, safe=''))
         return self.fetchItem(key, title__iexact=title)
+
+    def getGuid(self, guid):
+        """ Returns the media item with the specified external IMDB, TMDB, or TVDB ID.
+            Note: This search uses a PlexAPI operator so performance may be slow. All items from the
+            entire Plex library need to be retrieved for each guid search. It is recommended to create
+            your own lookup dictionary if you are searching for a lot of external guids.
+
+            Parameters:
+                guid (str): The external guid of the item to return.
+                    Examples: IMDB ``imdb://tt0944947``, TMDB ``tmdb://1399``, TVDB ``tvdb://121361``.
+
+            Raises:
+                :exc:`~plexapi.exceptions.NotFound`: The guid is not found in the library.
+
+            Example:
+
+                .. code-block:: python
+
+                    # This will retrieve all items in the entire library 3 times
+                    result1 = library.getGuid('imdb://tt0944947')
+                    result2 = library.getGuid('tmdb://1399')
+                    result3 = library.getGuid('tvdb://121361')
+
+                    # This will only retrieve all items in the library once to create a lookup dictionary
+                    guidLookup = {guid.id: item for item in library.all() for guid in item.guids}
+                    result1 = guidLookup['imdb://tt0944947']
+                    result2 = guidLookup['tmdb://1399']
+                    result3 = guidLookup['tvdb://121361']
+
+        """
+        key = '/library/sections/%s/all?includeGuids=1' % self.key
+        return self.fetchItem(key, Guid__id__iexact=guid)
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
@@ -1053,6 +1138,8 @@ class LibrarySection(PlexObject):
         """
         args = {}
         filter_args = []
+
+        args['includeGuids'] = int(bool(kwargs.pop('includeGuids', True)))
         for field, values in list(kwargs.items()):
             if field.split('__')[-1] not in OPERATORS:
                 filter_args.append(self._validateFilterField(field, values, libtype))
@@ -1530,6 +1617,23 @@ class LibrarySection(PlexObject):
     def listChoices(self, category, libtype=None, **kwargs):
         return self.listFilterChoices(field=category, libtype=libtype)
 
+    def getWebURL(self, base=None, tab=None, key=None):
+        """ Returns the Plex Web URL for the library.
+
+            Parameters:
+                base (str): The base URL before the fragment (``#!``).
+                    Default is https://app.plex.tv/desktop.
+                tab (str): The library tab (recommended, library, collections, playlists, timeline).
+                key (str): A hub key.
+        """
+        params = {'source': self.key}
+        if tab is not None:
+            params['pivot'] = tab
+        if key is not None:
+            params['key'] = key
+            params['pageType'] = 'list'
+        return self._server._buildWebURL(base=base, **params)
+
 
 class MovieSection(LibrarySection):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing movies.
@@ -1931,6 +2035,7 @@ class Hub(PlexObject):
         self.style = data.attrib.get('style')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+        self._section = None  # cache for self.section
 
     def __len__(self):
         return self.size
@@ -1941,6 +2046,13 @@ class Hub(PlexObject):
             self.items = self.fetchItems(self.key)
             self.more = False
             self.size = len(self.items)
+
+    def section(self):
+        """ Returns the :class:`~plexapi.library.LibrarySection` this hub belongs to.
+        """
+        if self._section is None:
+            self._section = self._server.library.sectionByID(self.librarySectionID)
+        return self._section
 
 
 class HubMediaTag(PlexObject):

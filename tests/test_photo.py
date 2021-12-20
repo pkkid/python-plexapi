@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from urllib.parse import quote_plus
+
+import pytest
+
 from . import test_media, test_mixins
 
 
@@ -11,6 +15,7 @@ def test_photo_Photoalbum(photoalbum):
     assert a_pic
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_photo_Photoalbum_mixins_images(photoalbum):
     # test_mixins.lock_art(photoalbum)  # Unlocking photoalbum artwork is broken in Plex
     # test_mixins.lock_poster(photoalbum)  # Unlocking photoalbum poster is broken in Plex
@@ -24,6 +29,15 @@ def test_photo_Photoalbum_mixins_rating(photoalbum):
     test_mixins.edit_rating(photoalbum)
 
 
+def test_photo_Photoalbum_PlexWebURL(plex, photoalbum):
+    url = photoalbum.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(photoalbum.key) in url
+    assert 'legacy=1' in url
+
+
 def test_photo_Photo_mixins_rating(photo):
     test_mixins.edit_rating(photo)
 
@@ -35,3 +49,29 @@ def test_photo_Photo_mixins_tags(photo):
 def test_photo_Photo_media_tags(photo):
     photo.reload()
     test_media.tag_tag(photo)
+
+
+def test_photo_Photo_PlexWebURL(plex, photo):
+    url = photo.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(photo.parentKey) in url
+    assert 'legacy=1' in url
+
+
+def test_photo_Photoalbum_download(monkeydownload, tmpdir, photoalbum):
+    total = 0
+    for album in photoalbum.albums():
+        total += len(album.photos()) + len(album.clips())
+    total += len(photoalbum.photos())
+    total += len(photoalbum.clips())
+    filepaths = photoalbum.download(savepath=str(tmpdir))
+    assert len(filepaths) == total
+    subfolders = photoalbum.download(savepath=str(tmpdir), subfolders=True)
+    assert len(subfolders) == total
+
+
+def test_photo_Photo_download(monkeydownload, tmpdir, photo):
+    filepaths = photo.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1

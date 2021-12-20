@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
+
 import pytest
+import plexapi.base
 from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
@@ -14,6 +17,8 @@ def test_library_Library_section(plex):
     assert section_name.title == "TV Shows"
     with pytest.raises(NotFound):
         assert plex.library.section("cant-find-me")
+    with pytest.raises(NotFound):
+        assert plex.library.sectionByID(-1)
 
 
 def test_library_Library_sectionByID_is_equal_section(plex, movies):
@@ -52,10 +57,35 @@ def test_library_section_get_movie(movies):
     assert movies.get("Sita Sings the Blues")
 
 
+def test_library_MovieSection_getGuid(movies, movie):
+    result = movies.getGuid(guid=movie.guids[0].id)
+    assert result == movie
+
+
 def test_library_section_movies_all(movies):
-    # size should always be none unless pagenation is being used.
     assert movies.totalSize == 4
     assert len(movies.all(container_start=0, container_size=1, maxresults=1)) == 1
+
+
+def test_library_section_movies_all_guids(movies):
+    plexapi.base.USER_DONT_RELOAD_FOR_KEYS.add('guids')
+    try:
+        results = movies.all(includeGuids=False)
+        assert results[0].guids == []
+        results = movies.all()
+        assert results[0].guids
+        movie = movies.get("Sita Sings the Blues")
+        assert movie.guids
+    finally:
+        plexapi.base.USER_DONT_RELOAD_FOR_KEYS.remove('guids')
+
+
+def test_library_section_totalDuration(tvshows):
+    assert utils.is_int(tvshows.totalDuration)
+
+
+def test_library_section_totalStorage(tvshows):
+    assert utils.is_int(tvshows.totalStorage)
 
 
 def test_library_section_totalViewSize(tvshows):
@@ -101,12 +131,16 @@ def test_library_add_edit_delete(plex):
         scanner="Plex Movie Scanner",
         language="en",
     )
-    assert plex.library.section(section_name)
-    edited_library = plex.library.section(section_name).edit(
-        name="a renamed lib", type="movie", agent="com.plexapp.agents.imdb"
+    section = plex.library.section(section_name)
+    assert section.title == section_name
+    new_title = "a renamed lib"
+    section.edit(
+        name=new_title, type="movie", agent="com.plexapp.agents.imdb"
     )
-    assert edited_library.title == "a renamed lib"
-    plex.library.section("a renamed lib").delete()
+    section.reload()
+    assert section.title == new_title
+    section.delete()
+    assert section not in plex.library.sections()
 
 
 def test_library_Library_cleanBundle(plex):
@@ -212,6 +246,30 @@ def test_library_MovieSection_collection_exception(movies):
         movies.collection("Does Not Exists")
 
 
+def test_library_MovieSection_PlexWebURL(plex, movies):
+    tab = 'library'
+    url = movies.getWebURL(tab=tab)
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=%s' % movies.key in url
+    assert 'pivot=%s' % tab in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = movies.getWebURL(base=base)
+    assert url.startswith(base)
+
+
+def test_library_MovieSection_PlexWebURL_hub(plex, movies):
+    hubs = movies.hubs()
+    hub = next(iter(hubs), None)
+    assert hub is not None
+    url = hub.section().getWebURL(key=hub.key)
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'source=%s' % movies.key in url
+    assert quote_plus(hub.key) in url
+
+
 def test_library_ShowSection_all(tvshows):
     assert len(tvshows.all(title__iexact="The 100"))
 
@@ -261,12 +319,16 @@ def test_library_MusicSection_albums(music):
     assert len(music.albums())
 
 
-def test_library_MusicSection_searchTracks(music):
-    assert len(music.searchTracks(title="As Colourful As Ever"))
+def test_library_MusicSection_searchArtists(music):
+    assert len(music.searchArtists(title="Broke for Free"))
 
 
 def test_library_MusicSection_searchAlbums(music):
     assert len(music.searchAlbums(title="Layers"))
+
+
+def test_library_MusicSection_searchTracks(music):
+    assert len(music.searchTracks(title="As Colourful As Ever"))
 
 
 def test_library_MusicSection_recentlyAdded(music, artist):
@@ -316,7 +378,6 @@ def test_library_editAdvanced_default(movies):
         if setting.id == "collectionMode":
             assert int(setting.value) == 0
 
-    movies.reload()
     movies.defaultAdvanced()
     for setting in movies.settings():
         assert str(setting.value) == str(setting.default)

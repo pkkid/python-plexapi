@@ -79,13 +79,16 @@ class Media(PlexObject):
             self.make = data.attrib.get('make')
             self.model = data.attrib.get('model')
 
+        parent = self._parent()
+        self._parentKey = parent.key
+
     @property
     def isOptimizedVersion(self):
         """ Returns True if the media is a Plex optimized version. """
         return self.proxyType == utils.SEARCHTYPES['optimizedVersion']
 
     def delete(self):
-        part = self._initpath + '/media/%s' % self.id
+        part = '%s/media/%s' % (self._parentKey, self.id)
         try:
             return self._server.query(part, method=self._server._session.delete)
         except BadRequest:
@@ -174,7 +177,7 @@ class MediaPart(PlexObject):
         return [stream for stream in self.streams if isinstance(stream, SubtitleStream)]
 
     def lyricStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects in this MediaPart. """
+        """ Returns a list of :class:`~plexapi.media.LyricStream` objects in this MediaPart. """
         return [stream for stream in self.streams if isinstance(stream, LyricStream)]
 
     def setDefaultAudioStream(self, stream):
@@ -732,6 +735,18 @@ class Director(MediaTag):
 
 
 @utils.registerPlexObject
+class Format(MediaTag):
+    """ Represents a single Format media tag.
+
+        Attributes:
+            TAG (str): 'Format'
+            FILTER (str): 'format'
+    """
+    TAG = 'Format'
+    FILTER = 'format'
+
+
+@utils.registerPlexObject
 class Genre(MediaTag):
     """ Represents a single Genre media tag.
 
@@ -813,6 +828,18 @@ class Style(MediaTag):
     """
     TAG = 'Style'
     FILTER = 'style'
+
+
+@utils.registerPlexObject
+class Subformat(MediaTag):
+    """ Represents a single Subformat media tag.
+
+        Attributes:
+            TAG (str): 'Subformat'
+            FILTER (str): 'subformat'
+    """
+    TAG = 'Subformat'
+    FILTER = 'subformat'
 
 
 @utils.registerPlexObject

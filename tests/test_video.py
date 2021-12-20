@@ -44,6 +44,7 @@ def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Movie_mixins_images(movie):
     test_mixins.lock_art(movie)
     test_mixins.lock_poster(movie)
@@ -129,13 +130,9 @@ def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
 
 
-def test_video_Movie_delete_part(movie, mocker):
-    # we need to reload this as there is a bug in part.delete
-    # See https://github.com/pkkid/python-plexapi/issues/201
-    m = movie.reload()
-    for media in m.media:
-        with utils.callable_http_patch():
-            media.delete()
+def test_video_Movie_media_delete(movie, patched_http_call):
+    for media in movie.media:
+        media.delete()
 
 
 def test_video_Movie_iterParts(movie):
@@ -143,10 +140,14 @@ def test_video_Movie_iterParts(movie):
 
 
 def test_video_Movie_download(monkeydownload, tmpdir, movie):
-    filepaths1 = movie.download(savepath=str(tmpdir))
-    assert len(filepaths1) >= 1
-    filepaths2 = movie.download(savepath=str(tmpdir), videoResolution="500x300")
-    assert len(filepaths2) >= 1
+    filepaths = movie.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
+    with_resolution = movie.download(
+        savepath=str(tmpdir), keep_original_filename=True, videoResolution="500x300"
+    )
+    assert len(with_resolution) == 1
+    filename = os.path.basename(movie.media[0].parts[0].file)
+    assert filename in with_resolution[0]
 
 
 def test_video_Movie_subtitlestreams(movie):
@@ -610,6 +611,17 @@ def test_video_Movie_extras(movies):
     assert extra.type == 'clip'
     assert extra.section() == movies
 
+def test_video_Movie_PlexWebURL(plex, movie):
+    url = movie.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(movie.key) in url
+    # Test a different base
+    base = 'https://doesnotexist.com/plex'
+    url = movie.getWebURL(base=base)
+    assert url.startswith(base)
+
 
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
@@ -717,24 +729,25 @@ def test_video_Show_episodes(tvshows):
 
 
 def test_video_Show_download(monkeydownload, tmpdir, show):
-    episodes = show.episodes()
+    total = len(show.episodes())
     filepaths = show.download(savepath=str(tmpdir))
-    assert len(filepaths) == len(episodes)
+    assert len(filepaths) == total
+    subfolders = show.download(savepath=str(tmpdir), subfolders=True)
+    assert len(subfolders) == total
 
 
 def test_video_Season_download(monkeydownload, tmpdir, show):
-    season = show.season("Season 1")
+    season = show.season(1)
+    total = len(season.episodes())
     filepaths = season.download(savepath=str(tmpdir))
-    assert len(filepaths) >= 4
+    assert len(filepaths) == total
 
 
 def test_video_Episode_download(monkeydownload, tmpdir, episode):
-    f = episode.download(savepath=str(tmpdir))
-    assert len(f) == 1
-    with_sceen_size = episode.download(
-        savepath=str(tmpdir), **{"videoResolution": "500x300"}
-    )
-    assert len(with_sceen_size) == 1
+    filepaths = episode.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
+    with_resolution = episode.download(savepath=str(tmpdir), videoResolution="500x300")
+    assert len(with_resolution) == 1
 
 
 # Analyze seems to fail intermittently
@@ -776,7 +789,7 @@ def test_video_Show_mixins_edit_advanced_settings(show):
     test_mixins.edit_advanced_settings(show)
 
 
-@pytest.mark.xfail(reason="Changing show art fails randomly")
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Show_mixins_images(show):
     test_mixins.lock_art(show)
     test_mixins.lock_poster(show)
@@ -803,6 +816,14 @@ def test_video_Show_media_tags(show):
     test_media.tag_label(show)
     test_media.tag_role(show)
     test_media.tag_similar(show)
+
+
+def test_video_Show_PlexWebURL(plex, show):
+    url = show.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(show.key) in url
 
 
 def test_video_Season(show):
@@ -898,6 +919,7 @@ def test_video_Season_episodes(show):
     assert len(episodes) >= 1
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Season_mixins_images(show):
     season = show.season(season=1)
     test_mixins.lock_art(season)
@@ -916,6 +938,14 @@ def test_video_Season_mixins_rating(show):
 def test_video_Season_mixins_tags(show):
     season = show.season(season=1)
     test_mixins.edit_collection(season)
+
+
+def test_video_Season_PlexWebURL(plex, season):
+    url = season.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(season.key) in url
 
 
 def test_video_Episode_updateProgress(episode, patched_http_call):
@@ -1101,6 +1131,7 @@ def test_video_Episode_unwatched(tvshows):
     episode.markUnwatched()
 
 
+@pytest.mark.xfail(reason="Changing images fails randomly")
 def test_video_Episode_mixins_images(episode):
     test_mixins.lock_art(episode)
     test_mixins.lock_poster(episode)
@@ -1125,6 +1156,14 @@ def test_video_Episode_media_tags(episode):
     test_media.tag_collection(episode)
     test_media.tag_director(episode)
     test_media.tag_writer(episode)
+
+
+def test_video_Episode_PlexWebURL(plex, episode):
+    url = episode.getWebURL()
+    assert url.startswith('https://app.plex.tv/desktop')
+    assert plex.machineIdentifier in url
+    assert 'details' in url
+    assert quote_plus(episode.key) in url
 
 
 def test_that_reload_return_the_same_object(plex):

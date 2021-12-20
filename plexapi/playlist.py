@@ -464,3 +464,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
             raise Unsupported('Unsupported playlist content')
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
+
+    def _getWebURL(self, base=None):
+        """ Get the Plex Web URL with the correct parameters. """
+        return self._server._buildWebURL(base=base, endpoint='playlist', key=self.key)
