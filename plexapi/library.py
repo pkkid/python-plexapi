@@ -296,12 +296,14 @@ class Library(PlexObject):
         """
         if isinstance(location, str):
             location = [location]
+        _locations = []
         for path in location:
             if not self._server.isBrowsable(path):
                 raise BadRequest('Path: %s does not exist.' % path)
-        locations = [('location', l) for l in location]
+            _locations.append(('location', path))
+
         part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&%s' % (
-            quote_plus(name), type, agent, quote_plus(scanner), language, urlencode(locations, doseq=True))  # noqa E126
+            quote_plus(name), type, agent, quote_plus(scanner), language, urlencode(_locations, doseq=True)) # noqa E126
         if kwargs:
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
