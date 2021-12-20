@@ -532,6 +532,7 @@ class LibrarySection(PlexObject):
             Example:
 
                 .. code-block:: python
+
                 LibrarySection.addLocations('/path/1')
                 LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
                 LibrarySection.addLocations(PlexServer.browse()[0])
@@ -556,6 +557,7 @@ class LibrarySection(PlexObject):
             Example:
 
                 .. code-block:: python
+
                 LibrarySection.removeLocations('/path/1')
                 LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
                 LibrarySection.removeLocations(PlexServer.browse()[0])
