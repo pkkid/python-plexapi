@@ -514,13 +514,14 @@ class LibrarySection(PlexObject):
         locations = self.locations
         if isinstance(location, Path):
             location = location.path
-        if isinstance(location, list):
-            locations = [path for path in locations if path not in location]
-        else:
-            locations.remove(location)
-        for path in locations:
-            if not self._server.isBrowsable(path):
-                raise BadRequest('Path: %s does not exist.' % path)
+        if isinstance(location, str):
+            location = [location]
+        for _location in location:
+            if _location in locations:
+                locations.remove(_location)
+            else:
+                raise BadRequest('Path: %s does not exist in the library.' % location)
+
         self.edit(location=locations)
 
     def get(self, title):
