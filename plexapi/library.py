@@ -454,11 +454,13 @@ class LibrarySection(PlexObject):
             agent = self.agent
 
         locations = []
-        if kwargs['location']:
-            for path in kwargs['location']:
+        if kwargs.get('location'):
+            if isinstance(kwargs['location'], str):
+                kwargs['location'] = [kwargs['location']]
+            for path in kwargs.pop('location'):
                 if not self._server.isBrowsable(path):
                     raise BadRequest('Path: %s does not exist.' % path)
-            locations = [('location', path) for path in kwargs.pop('location')]
+                locations.append(('location', path))
 
         params = list(kwargs.items()) + locations
 
