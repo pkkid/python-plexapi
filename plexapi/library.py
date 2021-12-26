@@ -510,9 +510,7 @@ class LibrarySection(PlexObject):
 
     def getGuid(self, guid):
         """ Returns the media item with the specified external IMDB, TMDB, or TVDB ID.
-            Note: This search uses a PlexAPI operator so performance may be slow. All items from the
-            entire Plex library need to be retrieved for each guid search. It is recommended to create
-            your own lookup dictionary if you are searching for a lot of external guids.
+            Note: Only available for the Plex Movie and Plex TV Series agents.
 
             Parameters:
                 guid (str): The external guid of the item to return.
@@ -525,20 +523,23 @@ class LibrarySection(PlexObject):
 
                 .. code-block:: python
 
-                    # This will retrieve all items in the entire library 3 times
                     result1 = library.getGuid('imdb://tt0944947')
                     result2 = library.getGuid('tmdb://1399')
                     result3 = library.getGuid('tvdb://121361')
 
-                    # This will only retrieve all items in the library once to create a lookup dictionary
+                    # Alternatively, create your own guid lookup dictionary for faster performance
                     guidLookup = {guid.id: item for item in library.all() for guid in item.guids}
                     result1 = guidLookup['imdb://tt0944947']
                     result2 = guidLookup['tmdb://1399']
                     result3 = guidLookup['tvdb://121361']
 
         """
-        key = '/library/sections/%s/all?includeGuids=1' % self.key
-        return self.fetchItem(key, Guid__id__iexact=guid)
+        try:
+            dummy = self.search(maxresults=1)[0]
+            match = dummy.matches(agent=self.agent, title=guid.replace('://', '-'))
+            return self.search(guid=match[0].guid)[0]
+        except IndexError:
+            raise NotFound("Guid '%s' is not found in the library" % guid) from None
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
