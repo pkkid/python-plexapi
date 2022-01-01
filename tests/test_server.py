@@ -571,3 +571,15 @@ def test_server_PlexWebURL_playlists(plex):
     assert plex.machineIdentifier in url
     assert 'source=playlists' in url
     assert 'pivot=playlists.%s' % tab in url
+
+
+def test_server_agents(plex):
+    agents = plex.agents()
+    assert agents
+    agent = next((a for a in agents if a.identifier == 'com.plexapp.agents.imdb'), None)
+    assert agent
+    settings = agent.settings()
+    assert settings
+    setting = next((s for s in settings if s.id == 'country'), None)
+    assert setting
+    assert setting.enumValues is not None
