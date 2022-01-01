@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
+from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
@@ -1074,10 +1075,14 @@ class Agent(PlexObject):
     def languageCode(self):
         return self.languageCodes
 
-    def _settings(self):
+    def settings(self):
         key = '/:/plugins/%s/prefs' % self.identifier
         data = self._server.query(key)
         return self.findItems(data, cls=settings.Setting)
+
+    @deprecated('use "settings" instead')
+    def _settings(self):
+        return self.settings()
 
 
 class AgentMediaType(Agent):
