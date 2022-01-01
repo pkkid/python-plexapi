@@ -132,8 +132,8 @@ class Setting(PlexObject):
         return value
 
     def _getEnumValues(self, data):
-        """ Returns a list of dictionary of valis value for this setting. """
-        enumstr = data.attrib.get('enumValues')
+        """ Returns a list or dictionary of values for this setting. """
+        enumstr = data.attrib.get('enumValues') or data.attrib.get('values')
         if not enumstr:
             return None
         if ':' in enumstr:
