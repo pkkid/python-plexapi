@@ -1058,15 +1058,21 @@ class Agent(PlexObject):
         self.hasAttribution = data.attrib.get('hasAttribution')
         self.hasPrefs = data.attrib.get('hasPrefs')
         self.identifier = data.attrib.get('identifier')
+        self.name = data.attrib.get('name')
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
+
         if 'mediaType' in self._initpath:
-            self.name = data.attrib.get('name')
-            self.languageCode = []
-            for code in data:
-                self.languageCode += [code.attrib.get('code')]
+            self.languageCodes = self.listAttrs(data, 'code', etag='Language')
+            self.mediaTypes = []
         else:
-            self.mediaTypes = [AgentMediaType(server=self._server, data=d) for d in data]
+            self.languageCodes = []
+            self.mediaTypes = self.findItems(data, cls=AgentMediaType)
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes
 
     def _settings(self):
         key = '/:/plugins/%s/prefs' % self.identifier
@@ -1075,14 +1081,23 @@ class Agent(PlexObject):
 
 
 class AgentMediaType(Agent):
+    """ Represents a single Agent MediaType.
+
+        Attributes:
+            TAG (str): 'MediaType'
+    """
+    TAG = 'MediaType'
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('name'))
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
 
     def _loadData(self, data):
+        self.languageCodes = self.listAttrs(data, 'code', etag='Language')
         self.mediaType = utils.cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
-        self.languageCode = []
-        for code in data:
-            self.languageCode += [code.attrib.get('code')]
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes
