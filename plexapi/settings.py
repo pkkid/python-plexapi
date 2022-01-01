@@ -113,17 +113,19 @@ class Setting(PlexObject):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
-        self._setValue = None
+        self.type = data.attrib.get('type')
+        self.advanced = utils.cast(bool, data.attrib.get('advanced'))
+        self.default = self._cast(data.attrib.get('default'))
+        self.enumValues = self._getEnumValues(data)
+        self.group = data.attrib.get('group')
+        self.hidden = utils.cast(bool, data.attrib.get('hidden'))
         self.id = data.attrib.get('id')
         self.label = data.attrib.get('label')
+        self.option = data.attrib.get('option')
+        self.secure = utils.cast(bool, data.attrib.get('secure'))
         self.summary = data.attrib.get('summary')
-        self.type = data.attrib.get('type')
-        self.default = self._cast(data.attrib.get('default'))
         self.value = self._cast(data.attrib.get('value'))
-        self.hidden = utils.cast(bool, data.attrib.get('hidden'))
-        self.advanced = utils.cast(bool, data.attrib.get('advanced'))
-        self.group = data.attrib.get('group')
-        self.enumValues = self._getEnumValues(data)
+        self._setValue = None
 
     def _cast(self, value):
         """ Cast the specific value to the type of this setting. """
