@@ -228,10 +228,10 @@ class PlexServer(PlexObject):
         return activities
 
     def agents(self, mediaType=None):
-        """ Returns the :class:`~plexapi.media.Agent` objects this server has available. """
+        """ Returns a list of :class:`~plexapi.media.Agent` objects this server has available. """
         key = '/system/agents'
         if mediaType:
-            key += '?mediaType=%s' % mediaType
+            key += '?mediaType=%s' % utils.searchType(mediaType)
         return self.fetchItems(key)
 
     def createToken(self, type='delegation', scope='all'):
