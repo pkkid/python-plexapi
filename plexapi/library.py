@@ -562,9 +562,9 @@ class LibrarySection(PlexObject):
             location = location.path
         if isinstance(location, str):
             location = [location]
-        for _location in location:
-            if _location in locations:
-                locations.remove(_location)
+        for path in location:
+            if path in locations:
+                locations.remove(path)
             else:
                 raise BadRequest('Path: %s does not exist in the library.' % location)
         if len(locations) == 0:
