@@ -125,7 +125,7 @@ def test_library_add_edit_delete(plex, movies, photos):
     # Create Other Videos library = No external metadata scanning
     section_name = "plexapi_test_section"
     movie_location = movies.locations[0]
-    movie_path = plex.browse(path=movie_location)
+    movie_path = plex.browse(path=movie_location)[0]
     photo_location = photos.locations[0]
     plex.library.add(
         name=section_name,
