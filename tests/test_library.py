@@ -177,7 +177,7 @@ def test_library_add_edit_delete(plex, movies, photos):
     assert len(section.locations) == 1
     # Attempt to remove all locations
     with pytest.raises(BadRequest):
-        plex.library.removeLocations(section.locations)
+        section.removeLocations(section.locations)
     section.delete()
     assert section not in plex.library.sections()
 
