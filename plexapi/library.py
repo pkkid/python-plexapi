@@ -521,8 +521,7 @@ class LibrarySection(PlexObject):
         """ Add a location to a library.
         
             Parameters:
-                location (str, list, or :class:~plexapi.library.Path)): A single folder path, list of paths,
-                    or :class:`~plexapi.library.Path`.
+                location (str or list): A single folder path, list of paths.
 
             Example:
 
@@ -530,11 +529,8 @@ class LibrarySection(PlexObject):
 
                 LibrarySection.addLocations('/path/1')
                 LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
-                LibrarySection.addLocations(PlexServer.browse()[0])
         """
         locations = self.locations
-        if isinstance(location, Path):
-            location = location.path
         if isinstance(location, str):
             location = [location]
         for path in location:
@@ -547,19 +543,15 @@ class LibrarySection(PlexObject):
         """ Remove a location from a library.
         
             Parameters:
-                location (str, list, or :class:~plexapi.library.Path): A single folder path, list of paths,
-                     or :class:`~plexapi.library.Path`.
+                location (str or list): A single folder path, list of paths.
             Example:
 
                 .. code-block:: python
 
                 LibrarySection.removeLocations('/path/1')
                 LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
-                LibrarySection.removeLocations(PlexServer.browse()[0])
         """
         locations = self.locations
-        if isinstance(location, Path):
-            location = location.path
         if isinstance(location, str):
             location = [location]
         for path in location:
