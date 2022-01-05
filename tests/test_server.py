@@ -376,7 +376,6 @@ def test_server_browse(plex, movies):
     assert len(paths)
     # browse the path of the movie library
     paths = plex.browse(movies_path)
-    assert plex.isBrowsable(paths[0])
     assert len(paths)
     # browse the path of the movie library without files
     paths = plex.browse(movies_path, includeFiles=False)
