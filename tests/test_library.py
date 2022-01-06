@@ -172,7 +172,7 @@ def test_library_add_edit_delete(plex, movies, photos):
     section.addLocations(photo_location)
     section.reload()
     assert len(section.locations) == 2
-    section.edit(**{'location': [movie_location]})
+    section.edit(**{'location': movie_location})
     section.reload()
     assert len(section.locations) == 1
     # Attempt to remove all locations
