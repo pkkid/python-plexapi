@@ -544,6 +544,7 @@ class LibrarySection(PlexObject):
         
             Parameters:
                 location (str or list): A single folder path, list of paths.
+
             Example:
 
                 .. code-block:: python
