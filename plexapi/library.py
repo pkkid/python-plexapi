@@ -169,7 +169,7 @@ class Library(PlexObject):
                 name (str): Name of the library
                 agent (str): Example com.plexapp.agents.imdb
                 type (str): movie, show, # check me
-                location (str): /path/to/files
+                location (str or list): /path/to/files, ["/path/to/files", "/path/to/morefiles"]
                 language (str): Two letter language fx en
                 kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
 
@@ -308,8 +308,16 @@ class Library(PlexObject):
                   40:South Africa, 41:Spain, 42:Sweden, 43:Switzerland, 44:Taiwan, 45:Trinidad,
                   46:United Kingdom, 47:United States, 48:Uruguay, 49:Venezuela.
         """
-        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
-            quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
+        if isinstance(location, str):
+            location = [location]
+        locations = []
+        for path in location:
+            if not self._server.isBrowsable(path):
+                raise BadRequest('Path: %s does not exist.' % path)
+            locations.append(('location', path))
+
+        part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&%s' % (
+            quote_plus(name), type, agent, quote_plus(scanner), language, urlencode(locations, doseq=True)) # noqa E126
         if kwargs:
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
@@ -486,15 +494,75 @@ class LibrarySection(PlexObject):
         return self
 
     def edit(self, agent=None, **kwargs):
-        """ Edit a library (Note: agent is required). See :class:`~plexapi.library.Library` for example usage.
+        """ Edit a library. See :class:`~plexapi.library.Library` for example usage.
 
             Parameters:
+                agent (str, optional): The library agent.
                 kwargs (dict): Dict of settings to edit.
         """
         if not agent:
             agent = self.agent
-        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(kwargs))
+
+        locations = []
+        if kwargs.get('location'):
+            if isinstance(kwargs['location'], str):
+                kwargs['location'] = [kwargs['location']]
+            for path in kwargs.pop('location'):
+                if not self._server.isBrowsable(path):
+                    raise BadRequest('Path: %s does not exist.' % path)
+                locations.append(('location', path))
+
+        params = list(kwargs.items()) + locations
+
+        part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(params, doseq=True))
         self._server.query(part, method=self._server._session.put)
+
+    def addLocations(self, location):
+        """ Add a location to a library.
+        
+            Parameters:
+                location (str or list): A single folder path, list of paths.
+
+            Example:
+
+                .. code-block:: python
+
+                LibrarySection.addLocations('/path/1')
+                LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
+        """
+        locations = self.locations
+        if isinstance(location, str):
+            location = [location]
+        for path in location:
+            if not self._server.isBrowsable(path):
+                raise BadRequest('Path: %s does not exist.' % path)
+            locations.append(path)
+        self.edit(location=locations)
+
+    def removeLocations(self, location):
+        """ Remove a location from a library.
+        
+            Parameters:
+                location (str or list): A single folder path, list of paths.
+
+            Example:
+
+                .. code-block:: python
+
+                LibrarySection.removeLocations('/path/1')
+                LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
+        """
+        locations = self.locations
+        if isinstance(location, str):
+            location = [location]
+        for path in location:
+            if path in locations:
+                locations.remove(path)
+            else:
+                raise BadRequest('Path: %s does not exist in the library.' % location)
+        if len(locations) == 0:
+            raise BadRequest('You are unable to remove all locations from a library.')
+        self.edit(location=locations)
 
     def get(self, title):
         """ Returns the media item with the specified title.
