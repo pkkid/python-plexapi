@@ -169,7 +169,7 @@ class Library(PlexObject):
                 name (str): Name of the library
                 agent (str): Example com.plexapp.agents.imdb
                 type (str): movie, show, # check me
-                location (str or list): /path/to/files, [/path/to/files, /path/to/morefiles]
+                location (str or list): /path/to/files, ["/path/to/files", "/path/to/morefiles"]
                 language (str): Two letter language fx en
                 kwargs (dict): Advanced options should be passed as a dict. where the id is the key.
 
