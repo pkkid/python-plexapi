@@ -710,7 +710,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
 
 @utils.registerPlexObject
 class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
-        CollectionMixin, DirectorMixin, WriterMixin):
+        CollectionMixin, DirectorMixin, LabelMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -733,6 +733,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
             grandparentTitle (str): Name of the show for the episode.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             index (int): Episode number.
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             markers (List<:class:`~plexapi.media.Marker`>): List of marker objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the episode was released.
@@ -777,6 +778,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
         self.grandparentTitle = data.attrib.get('grandparentTitle')
         self.guids = self.findItems(data, media.Guid)
         self.index = utils.cast(int, data.attrib.get('index'))
+        self.labels = self.findItems(data, media.Label)
         self.markers = self.findItems(data, media.Marker)
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
