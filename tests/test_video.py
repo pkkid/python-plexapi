@@ -1149,6 +1149,7 @@ def test_video_Episode_mixins_tags(episode):
     test_mixins.edit_collection(episode)
     test_mixins.edit_director(episode)
     test_mixins.edit_writer(episode)
+    test_mixins.edit_label(episode)
 
 
 def test_video_Episode_media_tags(episode):
