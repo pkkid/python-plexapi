@@ -224,7 +224,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
         return filepaths
 
     def stations(self):
-        """ Returns a list of :class:`~plexapi.audio.Playlist` radio stations for this artist. """
+        """ Returns a list of :class:`~plexapi.playlist.Playlist` radio stations for this artist. """
         key = '%s?includeStations=1' % self.key
         return self.fetchItems(key, cls=Playlist, rtag="Stations")
 
