@@ -624,7 +624,7 @@ class LibrarySection(PlexObject):
     def hubs(self):
         """ Returns a list of available :class:`~plexapi.library.Hub` for this library section.
         """
-        key = '/hubs/sections/%s' % self.key
+        key = '/hubs/sections/%s?includeStations=1' % self.key
         return self.fetchItems(key)
 
     def agents(self):
@@ -1786,9 +1786,8 @@ class MusicSection(LibrarySection):
         return self.fetchItems(key)
 
     def stations(self):
-        """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
-        key = '/hubs/sections/%s?includeStations=1' % self.key
-        return self.fetchItems(key, cls=Station)
+        """ Returns a list of :class:`~plexapi.playlist.Playlist` stations in this section. """
+        return next((hub.items for hub in self.hubs() if hub.context == 'hub.music.stations'), None)
 
     def searchArtists(self, **kwargs):
         """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search` for usage. """
@@ -2002,6 +2001,7 @@ class Hub(PlexObject):
             context (str): The context of the hub.
             hubKey (str): API URL for these specific hub items.
             hubIdentifier (str): The identifier of the hub.
+            items (list): List of items in the hub.
             key (str): API URL for the hub.
             more (bool): True if there are more items to load (call reload() to fetch all items).
             size (int): The number of items in the hub.
@@ -2152,39 +2152,6 @@ class Place(HubMediaTag):
             TAGTYPE (int): 400
     """
     TAGTYPE = 400
-
-
-@utils.registerPlexObject
-class Station(PlexObject):
-    """ Represents the Station area in the MusicSection.
-
-        Attributes:
-            TITLE (str): 'Stations'
-            TYPE (str): 'station'
-            hubIdentifier (str): Unknown.
-            size (int): Number of items found.
-            title (str): Title of this Hub.
-            type (str): Type of items in the Hub.
-            more (str): Unknown.
-            style (str): Unknown
-            items (str): List of items in the Hub.
-    """
-    TITLE = 'Stations'
-    TYPE = 'station'
-
-    def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.hubIdentifier = data.attrib.get('hubIdentifier')
-        self.size = utils.cast(int, data.attrib.get('size'))
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-        self.more = data.attrib.get('more')
-        self.style = data.attrib.get('style')
-        self.items = self.findItems(data)
-
-    def __len__(self):
-        return self.size
 
 
 class FilteringType(PlexObject):
