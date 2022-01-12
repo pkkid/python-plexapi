@@ -360,6 +360,10 @@ def test_library_MusicSection_albums(music):
     assert len(music.albums())
 
 
+def test_library_MusicSection_stations(music):
+    assert len(music.stations())
+
+
 def test_library_MusicSection_searchArtists(music):
     assert len(music.searchArtists(title="Broke for Free"))
 
