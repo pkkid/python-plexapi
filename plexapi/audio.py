@@ -8,6 +8,7 @@ from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+from plexapi.playlist import Playlist
 
 
 class Audio(PlexPartialObject):
@@ -221,6 +222,11 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
             _savepath = os.path.join(savepath, track.parentTitle) if subfolders else savepath
             filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
+
+    def stations(self):
+        """ Returns a list of :class:`~plexapi.audio.Playlist` radio stations for this artist. """
+        key = '%s?includeStations=1' % self.key
+        return self.fetchItems(key, cls=Playlist, rtag="Stations")
 
 
 @utils.registerPlexObject
