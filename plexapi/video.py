@@ -574,7 +574,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, LabelMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -584,6 +584,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             index (int): Season number.
             key (str): API URL (/library/metadata/<ratingkey>).
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             leafCount (int): Number of items in the season view.
             parentGuid (str): Plex GUID for the show (plex://show/5d9c086fe9d5a1001f4d9fe6).
             parentIndex (int): Plex index number for the show.
@@ -607,6 +608,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
         self.guids = self.findItems(data, media.Guid)
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
+        self.labels = self.findItems(data, media.Label)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
