@@ -82,6 +82,10 @@ class Library(PlexObject):
         except KeyError:
             raise NotFound('Invalid library sectionID: %s' % sectionID) from None
 
+    def hubs(self):
+        """ Returns a list of global :class:`~plexapi.library.Hub` library sections. """
+        return self.fetchItems('/hubs')
+
     def all(self, **kwargs):
         """ Returns a list of all media from all library sections.
             This may be a very large dataset to retrieve.
