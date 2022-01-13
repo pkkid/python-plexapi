@@ -223,10 +223,10 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
             filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
-    def stations(self):
-        """ Returns a list of :class:`~plexapi.playlist.Playlist` radio stations for this artist. """
+    def station(self):
+        """ Returns a :class:`~plexapi.playlist.Playlist` artist radio station or `None`. """
         key = '%s?includeStations=1' % self.key
-        return self.fetchItems(key, cls=Playlist, rtag="Stations")
+        return next(iter(self.fetchItems(key, cls=Playlist, rtag="Stations")), None)
 
 
 @utils.registerPlexObject
