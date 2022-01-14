@@ -93,18 +93,15 @@ class Library(PlexObject):
                     Available on `Hub` instances as the `hubIdentifier` attribute.
                     Examples: 'home.continue' or 'home.ondeck'
         """
-        args = {}
         if sectionID:
             if not isinstance(sectionID, list):
                 sectionID = [sectionID]
-            args['contentDirectoryID'] = ",".join(map(str, sectionID))
+            kwargs['contentDirectoryID'] = ",".join(map(str, sectionID))
         if identifier:
             if not isinstance(identifier, list):
                 identifier = [identifier]
-            args['identifier'] = ",".join(identifier)
-        for attr, value in kwargs.items():
-            args[attr] = value
-        key = '/hubs%s' % utils.joinArgs(args)
+            kwargs['identifier'] = ",".join(identifier)
+        key = '/hubs%s' % utils.joinArgs(kwargs)
         return self.fetchItems(key)
 
     def all(self, **kwargs):
