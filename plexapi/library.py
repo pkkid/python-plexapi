@@ -82,9 +82,30 @@ class Library(PlexObject):
         except KeyError:
             raise NotFound('Invalid library sectionID: %s' % sectionID) from None
 
-    def hubs(self):
-        """ Returns a list of global :class:`~plexapi.library.Hub` library sections. """
-        return self.fetchItems('/hubs')
+    def hubs(self, sectionID=None, identifier=None, **kwargs):
+        """ Returns a list of :class:`~plexapi.library.Hub` across all library sections.
+
+            Parameters:
+                sectionID (int or str or list, optional):
+                    IDs of the sections to limit results or "playlists".
+                identifier (str or list, optional):
+                    Names of identifiers to limit results.
+                    Available on `Hub` instances as the `hubIdentifier` attribute.
+                    Examples: 'home.continue' or 'home.ondeck'
+        """
+        args = {}
+        if sectionID:
+            if not isinstance(sectionID, list):
+                sectionID = [sectionID]
+            args['contentDirectoryID'] = ",".join(map(str, sectionID))
+        if identifier:
+            if not isinstance(identifier, list):
+                identifier = [identifier]
+            args['identifier'] = ",".join(identifier)
+        for attr, value in kwargs.items():
+            args[attr] = value
+        key = '/hubs%s' % utils.joinArgs(args)
+        return self.fetchItems(key)
 
     def all(self, **kwargs):
         """ Returns a list of all media from all library sections.
