@@ -518,15 +518,28 @@ class PlexPartialObject(PlexObject):
 
     def edit(self, **kwargs):
         """ Edit an object.
+            Note: This is a low level method and you need to know all the field/tag keys.
+            See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin` instead.
 
             Parameters:
                 kwargs (dict): Dict of settings to edit.
 
             Example:
-                {'type': 1,
-                 'id': movie.ratingKey,
-                 'collection[0].tag.tag': 'Super',
-                 'collection.locked': 0}
+
+                .. code-block:: python
+
+                    edits = {
+                        'type': 1,
+                        'id': movie.ratingKey,
+                        'title.value': 'A new title',
+                        'title.locked': 1,
+                        'summary.value': 'This is a summary.',
+                        'summary.locked': 1,
+                        'collection[0].tag.tag': 'A tag',
+                        'collection.locked': 1}
+                    }
+                    movie.edit(**edits)
+
         """
         self._edit(**kwargs)
 
