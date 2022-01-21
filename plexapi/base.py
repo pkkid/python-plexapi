@@ -530,22 +530,6 @@ class PlexPartialObject(PlexObject):
         """
         self._edit(**kwargs)
 
-    def _edit_tags(self, tag, items, locked=True, remove=False):
-        """ Helper to edit tags.
-
-            Parameters:
-                tag (str): Tag name.
-                items (list): List of tags to add.
-                locked (bool): True to lock the field.
-                remove (bool): True to remove the tags in items.
-        """
-        if not isinstance(items, list):
-            items = [items]
-        value = getattr(self, utils.tag_plural(tag))
-        existing_tags = [t.tag for t in value if t and remove is False]
-        tag_edits = utils.tag_helper(tag, existing_tags + items, locked, remove)
-        self.edit(**tag_edits)
-
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be
             refreshed, even if it already has metadata. You can think of refreshing as
