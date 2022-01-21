@@ -364,7 +364,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             args['summary.locked'] = 1
 
         args.update(kwargs)
-        super(Collection, self).edit(**args)
+        self._edit(**args)
 
     def delete(self):
         """ Delete the collection. """
