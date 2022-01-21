@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.utils import tag_singular
 import pytest
 
 from . import conftest as utils
@@ -12,7 +11,7 @@ CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
 def _test_mixins_tag(obj, attr, tag_method):
     add_tag_method = getattr(obj, "add" + tag_method)
     remove_tag_method = getattr(obj, "remove" + tag_method)
-    field_name = tag_singular(attr)
+    field_name = obj._tagSingular(attr)
     _tags = lambda: [t.tag for t in getattr(obj, attr)]
     _fields = lambda: [f for f in obj.fields if f.name == field_name]
     # Check tag is not present to begin with
