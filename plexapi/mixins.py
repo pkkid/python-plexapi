@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from urllib.parse import parse_qsl, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
@@ -341,6 +343,184 @@ class UnmatchMatchMixin(object):
 
         data = key + '?' + urlencode(params)
         self._server.query(data, method=self._server._session.put)
+
+
+class EditFieldMixin(object):
+    """ Mixin for editing Plex object fields. """
+    
+    def editField(self, field, value, locked=True):
+        """ Edit the field of a Plex object.
+        
+            Parameters:
+                field (str): The name of the field to edit.
+                value (str): The value to edit the field to.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        edits = {
+            '%s.value' % field: value,
+            '%s.locked' % field: 1 if locked else 0
+        }
+        self._edit(**edits)
+
+
+class ContentRatingMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a content rating. """
+
+    def editContentRating(self, contentRating, locked=True):
+        """ Edit the content rating.
+
+            Parameters:
+                contentRating (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('contentRating', contentRating, locked=locked)
+
+
+class OriginallyAvailableMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have an originally available date. """
+
+    def editOriginallyAvailable(self, originallyAvailable, locked=True):
+        """ Edit the originally available date.
+
+            Parameters:
+                originallyAvailable (str or datetime): The new value (YYYY-MM-DD) or datetime object.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        if isinstance(originallyAvailable, datetime):
+            originallyAvailable = originallyAvailable.strftime('%Y-%m-%d')
+        self.editField('originallyAvailableAt', originallyAvailable, locked=locked)
+
+
+class OriginalTitleMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have an original title. """
+
+    def editOriginalTitle(self, originalTitle, locked=True):
+        """ Edit the original title.
+
+            Parameters:
+                originalTitle (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('originalTitle', originalTitle, locked=locked)
+
+
+class SortTitleMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a sort title. """
+
+    def editSortTitle(self, sortTitle, locked=True):
+        """ Edit the sort title.
+
+            Parameters:
+                sortTitle (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('titleSort', sortTitle, locked=locked)
+
+
+class StudioMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a studio. """
+
+    def editStudio(self, studio, locked=True):
+        """ Edit the studio.
+
+            Parameters:
+                studio (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('studio', studio, locked=locked)
+
+
+class SummaryMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a summary. """
+
+    def editSummary(self, summary, locked=True):
+        """ Edit the summary.
+
+            Parameters:
+                summary (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('summary', summary, locked=locked)
+
+
+class TaglineMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a tagline. """
+
+    def editTagline(self, tagline, locked=True):
+        """ Edit the tagline.
+
+            Parameters:
+                tagline (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('tagline', tagline, locked=locked)
+
+
+class TitleMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a title. """
+
+    def editTitle(self, title, locked=True):
+        """ Edit the title.
+
+            Parameters:
+                title (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('title', title, locked=locked)
+
+
+class TrackArtistMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a track artist. """
+
+    def editTrackArtist(self, trackArtist, locked=True):
+        """ Edit the track artist.
+
+            Parameters:
+                trackArtist (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('originalTitle', trackArtist, locked=locked)
+
+
+class TrackNumberMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a track number. """
+
+    def editTrackNumber(self, trackNumber, locked=True):
+        """ Edit the track number.
+
+            Parameters:
+                trackNumber (int): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('index', trackNumber, locked=locked)
+
+
+class TrackDiscNumberMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a track disc number. """
+
+    def editDiscNumber(self, discNumber, locked=True):
+        """ Edit the track disc number.
+
+            Parameters:
+                discNumber (int): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        self.editField('parentIndex', discNumber, locked=locked)
+
+
+class PhotoCapturedTimeMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a captured time. """
+
+    def editCapturedTime(self, capturedTime, locked=True):
+        """ Edit the photo captured time.
+
+            Parameters:
+                capturedTime (str or datetime): The new value (YYYY-MM-DD hh:mm:ss) or datetime object.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        if isinstance(capturedTime, datetime):
+            capturedTime = capturedTime.strftime('%Y-%m-%d %H:%M:%S')
+        self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
 class CollectionMixin(object):
