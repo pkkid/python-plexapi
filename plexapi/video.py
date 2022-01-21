@@ -7,6 +7,8 @@ from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin
+from plexapi.mixins import SummaryMixin, TaglineMixin, TitleMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -262,6 +264,8 @@ class Video(PlexPartialObject):
 
 @utils.registerPlexObject
 class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+        ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+        SummaryMixin, TaglineMixin, TitleMixin,
         CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
@@ -378,6 +382,8 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
 
 @utils.registerPlexObject
 class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+        ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+        SummaryMixin, TaglineMixin, TitleMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -574,7 +580,9 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin,
+        SummaryMixin, TitleMixin,
+        CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -710,6 +718,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
 
 @utils.registerPlexObject
 class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
+        ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
         CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 

@@ -7,6 +7,8 @@ from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
 from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin
+from plexapi.mixins import TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 
 
@@ -125,6 +127,7 @@ class Audio(PlexPartialObject):
 
 @utils.registerPlexObject
 class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+        SortTitleMixin, SummaryMixin, TitleMixin,
         CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
@@ -225,6 +228,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
 
 @utils.registerPlexObject
 class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
+        OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
         CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
     """ Represents a single Album.
 
@@ -332,6 +336,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
 
 @utils.registerPlexObject
 class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
+        TitleMixin, TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
         CollectionMixin, MoodMixin):
     """ Represents a single Track.
 
