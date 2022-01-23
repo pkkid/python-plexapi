@@ -336,7 +336,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
 
 @utils.registerPlexObject
 class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
-        TitleMixin, TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
+        TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
         CollectionMixin, MoodMixin):
     """ Represents a single Track.
 
@@ -356,7 +356,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
-            parentIndex (int): Album index.
+            parentIndex (int): Disc number of the track.
             parentKey (str): API URL of the album (/library/metadata/<parentRatingKey>).
             parentRatingKey (int): Unique key identifying the album.
             parentThumb (str): URL to album thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
@@ -385,7 +385,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
         self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
         self.parentGuid = data.attrib.get('parentGuid')
-        self.parentIndex = data.attrib.get('parentIndex')
+        self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
         self.parentThumb = data.attrib.get('parentThumb')
