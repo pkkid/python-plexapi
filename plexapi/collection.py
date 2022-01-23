@@ -343,6 +343,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         }))
         self._server.query(key, method=self._server._session.put)
 
+    @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):
         """ Edit the collection.
         
