@@ -286,6 +286,13 @@ def test_Collection_mixins_rating(collection):
     test_mixins.edit_rating(collection)
 
 
+def test_Collection_mixins_fields(collection):
+    test_mixins.edit_content_rating(collection)
+    test_mixins.edit_sort_title(collection)
+    test_mixins.edit_summary(collection)
+    test_mixins.edit_title(collection)
+
+
 def test_Collection_mixins_tags(collection):
     test_mixins.edit_label(collection)
 

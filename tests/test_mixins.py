@@ -1,12 +1,93 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
+import pytest
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import tag_singular
-import pytest
 
 from . import conftest as utils
 
+TEST_MIXIN_FIELD = "Test Field"
+TEST_MIXIN_DATE = utils.MIN_DATETIME
 TEST_MIXIN_TAG = "Test Tag"
 CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
+
+
+def _test_mixins_field(obj, attr, field_method):
+    edit_field_method = getattr(obj, "edit" + field_method)
+    _value = lambda: getattr(obj, attr)
+    _fields = lambda: [f for f in obj.fields if f.name == attr]
+    # Check field does not match to begin with
+    default_value = _value()
+    if isinstance(default_value, datetime):
+        test_value = TEST_MIXIN_DATE
+    elif isinstance(default_value, int):
+        test_value = default_value + 1
+    else:
+        test_value = TEST_MIXIN_FIELD
+    assert default_value != test_value
+    # Edit and lock the field
+    edit_field_method(test_value)
+    obj.reload()
+    value = _value()
+    fields = _fields()
+    assert value == test_value
+    assert fields and fields[0].locked
+    # Reset and unlock the field to restore the clean state
+    edit_field_method(default_value, locked=False)
+    obj.reload()
+    value = _value()
+    fields = _fields()
+    assert value == default_value
+    assert not fields
+
+
+def edit_content_rating(obj):
+    _test_mixins_field(obj, "contentRating", "ContentRating")
+
+
+def edit_originally_available(obj):
+    _test_mixins_field(obj, "originallyAvailableAt", "OriginallyAvailable")
+
+
+def edit_original_title(obj):
+    _test_mixins_field(obj, "originalTitle", "OriginalTitle")
+
+
+def edit_sort_title(obj):
+    _test_mixins_field(obj, "titleSort", "SortTitle")
+
+
+def edit_studio(obj):
+    _test_mixins_field(obj, "studio", "Studio")
+
+
+def edit_summary(obj):
+    _test_mixins_field(obj, "summary", "Summary")
+
+
+def edit_tagline(obj):
+    _test_mixins_field(obj, "tagline", "Tagline")
+
+
+def edit_title(obj):
+    _test_mixins_field(obj, "title", "Title")
+
+
+def edit_track_artist(obj):
+    _test_mixins_field(obj, "originalTitle", "TrackArtist")
+
+
+def edit_track_number(obj):
+    _test_mixins_field(obj, "index", "TrackNumber")
+
+
+def edit_track_disc_number(obj):
+    _test_mixins_field(obj, "parentIndex", "DiscNumber")
+
+
+def edit_photo_captured_time(obj):
+    _test_mixins_field(obj, "originallyAvailableAt", "CapturedTime")
 
 
 def _test_mixins_tag(obj, attr, tag_method):

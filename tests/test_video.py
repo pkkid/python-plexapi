@@ -56,6 +56,17 @@ def test_video_Movie_mixins_rating(movie):
     test_mixins.edit_rating(movie)
 
 
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_content_rating(movie)
+    test_mixins.edit_originally_available(movie)
+    test_mixins.edit_original_title(movie)
+    test_mixins.edit_sort_title(movie)
+    test_mixins.edit_studio(movie)
+    test_mixins.edit_summary(movie)
+    test_mixins.edit_tagline(movie)
+    test_mixins.edit_title(movie)
+
+
 def test_video_Movie_mixins_tags(movie):
     test_mixins.edit_collection(movie)
     test_mixins.edit_country(movie)
@@ -803,6 +814,17 @@ def test_video_Show_mixins_rating(show):
     test_mixins.edit_rating(show)
 
 
+def test_video_Show_mixins_fields(show):
+    test_mixins.edit_content_rating(show)
+    test_mixins.edit_originally_available(show)
+    test_mixins.edit_original_title(show)
+    test_mixins.edit_sort_title(show)
+    test_mixins.edit_studio(show)
+    test_mixins.edit_summary(show)
+    test_mixins.edit_tagline(show)
+    test_mixins.edit_title(show)
+
+
 def test_video_Show_mixins_tags(show):
     test_mixins.edit_collection(show)
     test_mixins.edit_genre(show)
@@ -933,6 +955,12 @@ def test_video_Season_mixins_images(show):
 def test_video_Season_mixins_rating(show):
     season = show.season(season=1)
     test_mixins.edit_rating(season)
+
+
+def test_video_Season_mixins_fields(show):
+    season = show.season(season=1)
+    test_mixins.edit_summary(season)
+    test_mixins.edit_title(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1143,6 +1171,14 @@ def test_video_Episode_mixins_images(episode):
 
 def test_video_Episode_mixins_rating(episode):
     test_mixins.edit_rating(episode)
+
+
+def test_video_Episode_mixins_fields(episode):
+    test_mixins.edit_content_rating(episode)
+    test_mixins.edit_originally_available(episode)
+    test_mixins.edit_sort_title(episode)
+    test_mixins.edit_summary(episode)
+    test_mixins.edit_title(episode)
 
 
 def test_video_Episode_mixins_tags(episode):
