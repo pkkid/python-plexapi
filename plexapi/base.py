@@ -414,6 +414,10 @@ class PlexObject(object):
     def _loadData(self, data):
         raise NotImplementedError('Abstract method not implemented.')
 
+    @property
+    def _searchType(self):
+        return self.TYPE
+
 
 class PlexPartialObject(PlexObject):
     """ Not all objects in the Plex listings return the complete list of elements
@@ -510,10 +514,10 @@ class PlexPartialObject(PlexObject):
         if 'id' not in kwargs:
             kwargs['id'] = self.ratingKey
         if 'type' not in kwargs:
-            kwargs['type'] = utils.searchType(self.type)
+            kwargs['type'] = utils.searchType(self._searchType)
 
-        part = '/library/sections/%s/all?%s' % (self.librarySectionID,
-                                                urlencode(kwargs))
+        part = '/library/sections/%s/all%s' % (self.librarySectionID,
+                                               utils.joinArgs(kwargs))
         self._server.query(part, method=self._server._session.put)
 
     def edit(self, **kwargs):

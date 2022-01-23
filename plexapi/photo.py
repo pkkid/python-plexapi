@@ -42,6 +42,7 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin,
     """
     TAG = 'Directory'
     TYPE = 'photo'
+    _searchType = 'photoalbum'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
