@@ -365,7 +365,7 @@ class EditTagsMixin(object):
 
         value = getattr(self, self._tagPlural(tag))
         existing_tags = [t.tag for t in value if t and remove is False]
-        edits = self._tagHelper(tag, existing_tags + items, locked, remove)
+        edits = self._tagHelper(self._tagSingular(tag), existing_tags + items, locked, remove)
         edits.update(kwargs)
         self._edit(**edits)
 
@@ -376,8 +376,9 @@ class EditTagsMixin(object):
             return 'country'
         elif tag == 'similar':
             return 'similar'
-        else:
+        elif tag[-1] == 's':
             return tag[:-1]
+        return tag
 
     @staticmethod
     def _tagPlural(tag):
@@ -386,8 +387,9 @@ class EditTagsMixin(object):
             return 'countries'
         elif tag == 'similar':
             return 'similar'
-        else:
+        elif tag[-1] != 's':
             return tag + 's'
+        return tag
 
     @staticmethod
     def _tagHelper(tag, items, locked=True, remove=False):
