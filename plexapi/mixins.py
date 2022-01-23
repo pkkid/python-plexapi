@@ -351,7 +351,7 @@ class EditTagsMixin(object):
     def _edit_tags(self, tag, items, locked=True, remove=False):
         return self.editTags(tag, items, locked, remove)
 
-    def editTags(self, tag, items, locked=True, remove=False):
+    def editTags(self, tag, items, locked=True, remove=False, **kwargs):
         """ Edit the tags of a Plex object.
 
             Parameters:
@@ -365,8 +365,9 @@ class EditTagsMixin(object):
 
         value = getattr(self, self._tagPlural(tag))
         existing_tags = [t.tag for t in value if t and remove is False]
-        tag_edits = self._tagHelper(tag, existing_tags + items, locked, remove)
-        self._edit(**tag_edits)
+        edits = self._tagHelper(tag, existing_tags + items, locked, remove)
+        edits.update(kwargs)
+        self._edit(**edits)
 
     @staticmethod
     def _tagSingular(tag):
