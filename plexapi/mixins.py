@@ -348,7 +348,7 @@ class UnmatchMatchMixin(object):
 class EditFieldMixin(object):
     """ Mixin for editing Plex object fields. """
     
-    def editField(self, field, value, locked=True):
+    def editField(self, field, value, locked=True, **kwargs):
         """ Edit the field of a Plex object.
         
             Parameters:
@@ -357,9 +357,10 @@ class EditFieldMixin(object):
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         edits = {
-            '%s.value' % field: value,
+            '%s.value' % field: value or '',
             '%s.locked' % field: 1 if locked else 0
         }
+        edits.update(kwargs)
         self._edit(**edits)
 
 
@@ -466,7 +467,11 @@ class TitleMixin(EditFieldMixin):
                 title (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('title', title, locked=locked)
+        kwargs = {}
+        if self.TYPE == 'album':
+            # Editing album title also requires the artist ratingKey
+            kwargs['artist.id.value'] = self.parentRatingKey
+        self.editField('title', title, locked=locked, **kwargs)
 
 
 class TrackArtistMixin(EditFieldMixin):
