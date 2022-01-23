@@ -519,6 +519,7 @@ class PlexPartialObject(PlexObject):
         part = '/library/sections/%s/all%s' % (self.librarySectionID,
                                                utils.joinArgs(kwargs))
         self._server.query(part, method=self._server._session.put)
+        return self
 
     def edit(self, **kwargs):
         """ Edit an object.
@@ -545,7 +546,7 @@ class PlexPartialObject(PlexObject):
                     movie.edit(**edits)
 
         """
-        self._edit(**kwargs)
+        return self._edit(**kwargs)
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
         """ Helper to edit tags.

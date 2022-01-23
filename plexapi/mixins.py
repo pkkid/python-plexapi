@@ -101,11 +101,11 @@ class ArtMixin(ArtUrlMixin):
 
     def lockArt(self):
         """ Lock the background artwork for a Plex object. """
-        self._edit(**{'art.locked': 1})
+        return self._edit(**{'art.locked': 1})
 
     def unlockArt(self):
         """ Unlock the background artwork for a Plex object. """
-        self._edit(**{'art.locked': 0})
+        return self._edit(**{'art.locked': 0})
 
 
 class BannerUrlMixin(object):
@@ -150,11 +150,11 @@ class BannerMixin(BannerUrlMixin):
 
     def lockBanner(self):
         """ Lock the banner for a Plex object. """
-        self._edit(**{'banner.locked': 1})
+        return self._edit(**{'banner.locked': 1})
 
     def unlockBanner(self):
         """ Unlock the banner for a Plex object. """
-        self._edit(**{'banner.locked': 0})
+        return self._edit(**{'banner.locked': 0})
 
 
 class PosterUrlMixin(object):
@@ -204,11 +204,11 @@ class PosterMixin(PosterUrlMixin):
 
     def lockPoster(self):
         """ Lock the poster for a Plex object. """
-        self._edit(**{'thumb.locked': 1})
+        return self._edit(**{'thumb.locked': 1})
 
     def unlockPoster(self):
         """ Unlock the poster for a Plex object. """
-        self._edit(**{'thumb.locked': 0})
+        return self._edit(**{'thumb.locked': 0})
 
 
 class RatingMixin(object):
@@ -361,7 +361,7 @@ class EditFieldMixin(object):
             '%s.locked' % field: 1 if locked else 0
         }
         edits.update(kwargs)
-        self._edit(**edits)
+        return self._edit(**edits)
 
 
 class ContentRatingMixin(EditFieldMixin):
@@ -374,7 +374,7 @@ class ContentRatingMixin(EditFieldMixin):
                 contentRating (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('contentRating', contentRating, locked=locked)
+        return self.editField('contentRating', contentRating, locked=locked)
 
 
 class OriginallyAvailableMixin(EditFieldMixin):
@@ -389,7 +389,7 @@ class OriginallyAvailableMixin(EditFieldMixin):
         """
         if isinstance(originallyAvailable, datetime):
             originallyAvailable = originallyAvailable.strftime('%Y-%m-%d')
-        self.editField('originallyAvailableAt', originallyAvailable, locked=locked)
+        return self.editField('originallyAvailableAt', originallyAvailable, locked=locked)
 
 
 class OriginalTitleMixin(EditFieldMixin):
@@ -402,7 +402,7 @@ class OriginalTitleMixin(EditFieldMixin):
                 originalTitle (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('originalTitle', originalTitle, locked=locked)
+        return self.editField('originalTitle', originalTitle, locked=locked)
 
 
 class SortTitleMixin(EditFieldMixin):
@@ -415,7 +415,7 @@ class SortTitleMixin(EditFieldMixin):
                 sortTitle (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('titleSort', sortTitle, locked=locked)
+        return self.editField('titleSort', sortTitle, locked=locked)
 
 
 class StudioMixin(EditFieldMixin):
@@ -428,7 +428,7 @@ class StudioMixin(EditFieldMixin):
                 studio (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('studio', studio, locked=locked)
+        return self.editField('studio', studio, locked=locked)
 
 
 class SummaryMixin(EditFieldMixin):
@@ -441,7 +441,7 @@ class SummaryMixin(EditFieldMixin):
                 summary (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('summary', summary, locked=locked)
+        return self.editField('summary', summary, locked=locked)
 
 
 class TaglineMixin(EditFieldMixin):
@@ -454,7 +454,7 @@ class TaglineMixin(EditFieldMixin):
                 tagline (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('tagline', tagline, locked=locked)
+        return self.editField('tagline', tagline, locked=locked)
 
 
 class TitleMixin(EditFieldMixin):
@@ -471,7 +471,7 @@ class TitleMixin(EditFieldMixin):
         if self.TYPE == 'album':
             # Editing album title also requires the artist ratingKey
             kwargs['artist.id.value'] = self.parentRatingKey
-        self.editField('title', title, locked=locked, **kwargs)
+        return self.editField('title', title, locked=locked, **kwargs)
 
 
 class TrackArtistMixin(EditFieldMixin):
@@ -484,7 +484,7 @@ class TrackArtistMixin(EditFieldMixin):
                 trackArtist (str): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('originalTitle', trackArtist, locked=locked)
+        return self.editField('originalTitle', trackArtist, locked=locked)
 
 
 class TrackNumberMixin(EditFieldMixin):
@@ -497,7 +497,7 @@ class TrackNumberMixin(EditFieldMixin):
                 trackNumber (int): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('index', trackNumber, locked=locked)
+        return self.editField('index', trackNumber, locked=locked)
 
 
 class TrackDiscNumberMixin(EditFieldMixin):
@@ -510,7 +510,7 @@ class TrackDiscNumberMixin(EditFieldMixin):
                 discNumber (int): The new value.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editField('parentIndex', discNumber, locked=locked)
+        return self.editField('parentIndex', discNumber, locked=locked)
 
 
 class PhotoCapturedTimeMixin(EditFieldMixin):
@@ -525,7 +525,7 @@ class PhotoCapturedTimeMixin(EditFieldMixin):
         """
         if isinstance(capturedTime, datetime):
             capturedTime = capturedTime.strftime('%Y-%m-%d %H:%M:%S')
-        self.editField('originallyAvailableAt', capturedTime, locked=locked)
+        return self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
 class CollectionMixin(object):
