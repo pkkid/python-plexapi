@@ -424,6 +424,19 @@ def test_library_editAdvanced_default(movies):
         assert str(setting.value) == str(setting.default)
 
 
+def test_library_lockUnlockAllFields(movies):
+    for movie in movies.all():
+        assert 'thumb' not in [f.name for f in movie.fields]
+
+    movies.lockAllField('thumb')
+    for movie in movies.all():
+        assert 'thumb' in [f.name for f in movie.fields]
+
+    movies.unlockAllField('thumb')
+    for movie in movies.all():
+        assert 'thumb' not in [f.name for f in movie.fields]
+
+
 def test_search_with_weird_a(plex, tvshows):
     ep_title = "Coup de Grâce"
     result_root = plex.search(ep_title)

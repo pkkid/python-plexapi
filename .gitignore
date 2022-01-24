@@ -29,4 +29,5 @@ MANIFEST
 venv/
 
 # path for the test lib.
+plex/
 tools/plex
