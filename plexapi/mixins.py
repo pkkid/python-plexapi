@@ -352,13 +352,21 @@ class EditTagsMixin(object):
         return self.editTags(tag, items, locked, remove)
 
     def editTags(self, tag, items, locked=True, remove=False, **kwargs):
-        """ Edit the tags of a Plex object.
+        """ Edit the tags of a Plex object. All tag editing methods can be chained together.
 
             Parameters:
                 tag (str): Name of the tag to edit.
                 items (List<str>): List of tags to add or remove.
                 locked (bool): True (default) to lock the tags, False to unlock the tags.
                 remove (bool): True to remove the tags in items.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Chaining multiple tag edits with reloading
+                    Show.addCollection('New Collection').removeGenre('Action').addLabel('Favorite').reload()
+
         """
         if not isinstance(items, list):
             items = [items]
