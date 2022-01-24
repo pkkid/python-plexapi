@@ -196,7 +196,7 @@ class PlayQueue(PlexObject):
         return c
 
     @classmethod
-    def from_station_key(cls, server, key):
+    def fromStationKey(cls, server, key):
         """Create and return a new :class:`~plexapi.playqueue.PlayQueue`.
 
         This is a convenience method to create a `PlayQueue` for
@@ -216,7 +216,7 @@ class PlayQueue(PlexObject):
                 artist = music.get("Artist Name")
                 station = artist.station()
                 key = station.key  # "/library/metadata/12855/station/8bd39616-dbdb-459e-b8da-f46d0b170af4?type=10"
-                pq = PlayQueue.from_station_key(server, key)
+                pq = PlayQueue.fromStationKey(server, key)
                 client = server.clients()[0]
                 client.playMedia(pq)
         """
