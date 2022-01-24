@@ -349,12 +349,20 @@ class EditFieldMixin(object):
     """ Mixin for editing Plex object fields. """
     
     def editField(self, field, value, locked=True, **kwargs):
-        """ Edit the field of a Plex object.
+        """ Edit the field of a Plex object. All field editing methods can be chained together.
         
             Parameters:
                 field (str): The name of the field to edit.
                 value (str): The value to edit the field to.
                 locked (bool): True (default) to lock the field, False to unlock the field.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Chaining multiple field edits with reloading
+                    Movie.editTitle('A New Title').editSummary('A new summary').editTagline('A new tagline').reload()
+
         """
         edits = {
             '%s.value' % field: value or '',
