@@ -58,6 +58,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
         self.icon = data.attrib.get('icon')
         self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.playlistType = data.attrib.get('playlistType')
