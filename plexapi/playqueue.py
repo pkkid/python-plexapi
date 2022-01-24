@@ -203,6 +203,42 @@ class PlayQueue(PlexObject):
         c._server = server
         return c
 
+    @classmethod
+    def fromStationKey(cls, server, key):
+        """Create and return a new :class:`~plexapi.playqueue.PlayQueue`.
+
+        This is a convenience method to create a `PlayQueue` for
+        radio stations when only the `key` string is available.
+
+        Parameters:
+            server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
+            key (str): A station key as provided by :func:`~plexapi.library.LibrarySection.hubs()`
+                or :func:`~plexapi.audio.Artist.station()`
+
+        Example:
+
+            .. code-block:: python
+
+                from plexapi.playqueue import PlayQueue
+                music = server.library.section("Music")
+                artist = music.get("Artist Name")
+                station = artist.station()
+                key = station.key  # "/library/metadata/12855/station/8bd39616-dbdb-459e-b8da-f46d0b170af4?type=10"
+                pq = PlayQueue.fromStationKey(server, key)
+                client = server.clients()[0]
+                client.playMedia(pq)
+        """
+        args = {
+            "type": "audio",
+            "uri": f"server://{server.machineIdentifier}/{server.library.identifier}{key}"
+        }
+        path = f"/playQueues{utils.joinArgs(args)}"
+        data = server.query(path, method=server._session.post)
+        c = cls(server, data, initpath=path)
+        c.playQueueType = args["type"]
+        c._server = server
+        return c
+
     def addItem(self, item, playNext=False, refresh=True):
         """
         Append the provided item to the "Up Next" section of the PlayQueue.
