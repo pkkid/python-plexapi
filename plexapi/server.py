@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from urllib.parse import urlencode
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode  # python 2.7
 from xml.etree import ElementTree
 
 import requests

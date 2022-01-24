@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 from collections import defaultdict
-from configparser import ConfigParser
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 
 
 class PlexConfig(ConfigParser):

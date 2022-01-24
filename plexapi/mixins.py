@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from urllib.parse import parse_qsl, quote_plus, unquote, urlencode, urlsplit
+try:
+    from urllib.parse import parse_qsl, quote_plus, unquote, urlencode, urlsplit
+except ImportError:
+    from urllib import quote_plus, unquote, urlencode  # python 2.7
+    from urlparse import parse_qsl, urlsplit  # python 2.7
 
 from plexapi import media, settings, utils
 from plexapi.exceptions import BadRequest, NotFound

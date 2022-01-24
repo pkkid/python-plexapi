@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from urllib.parse import quote_plus
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus  # python 2.7
+import sys
 
 from plexapi import utils
 from plexapi.base import PlexObject
@@ -74,7 +78,11 @@ class PlayQueue(PlexObject):
         return self.playQueueTotalCount
 
     def __iter__(self):
-        yield from self.items
+        if sys.version_info.major < 3:
+            for x in self.items:
+                yield x
+        else:
+            yield from self.items
 
     def __contains__(self, media):
         """Returns True if the PlayQueue contains the provided media item."""

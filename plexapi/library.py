@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-from urllib.parse import quote, quote_plus, urlencode
+try:
+    from urllib.parse import quote_plus, unquote, urlencode
+except ImportError:
+    from urllib import quote_plus, unquote, urlencode  # python 2.7
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject

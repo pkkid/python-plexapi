@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-from urllib.parse import quote
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus  # python 2.7
 
 from plexapi import log, utils
 from plexapi.base import PlexObject

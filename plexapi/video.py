@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
-from urllib.parse import quote_plus, urlencode
+try:
+    from urllib.parse import quote_plus, urlencode
+except ImportError:
+    from urllib import quote_plus, urlencode  # python 2.7
 
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject

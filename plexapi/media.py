@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import xml
-from urllib.parse import quote_plus
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus  # python 2.7
 
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
