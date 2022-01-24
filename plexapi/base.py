@@ -515,6 +515,7 @@ class PlexPartialObject(PlexObject):
         part = '/library/sections/%s/all?%s' % (self.librarySectionID,
                                                 urlencode(kwargs))
         self._server.query(part, method=self._server._session.put)
+        return self
 
     def edit(self, **kwargs):
         """ Edit an object.
@@ -528,7 +529,7 @@ class PlexPartialObject(PlexObject):
                  'collection[0].tag.tag': 'Super',
                  'collection.locked': 0}
         """
-        self._edit(**kwargs)
+        return self._edit(**kwargs)
 
     def refresh(self):
         """ Refreshing a Library or individual item causes the metadata for the item to be

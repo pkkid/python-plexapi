@@ -367,7 +367,7 @@ class EditTagsMixin(object):
         existing_tags = [t.tag for t in value if t and remove is False]
         edits = self._tagHelper(self._tagSingular(tag), existing_tags + items, locked, remove)
         edits.update(kwargs)
-        self._edit(**edits)
+        return self._edit(**edits)
 
     @staticmethod
     def _tagSingular(tag):
@@ -422,7 +422,7 @@ class CollectionMixin(EditTagsMixin):
                 collections (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('collection', collections, locked=locked)
+        return self.editTags('collection', collections, locked=locked)
 
     def removeCollection(self, collections, locked=True):
         """ Remove a collection tag(s).
@@ -431,7 +431,7 @@ class CollectionMixin(EditTagsMixin):
                 collections (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('collection', collections, locked=locked, remove=True)
+        return self.editTags('collection', collections, locked=locked, remove=True)
 
 
 class CountryMixin(EditTagsMixin):
@@ -444,7 +444,7 @@ class CountryMixin(EditTagsMixin):
                 countries (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('country', countries, locked=locked)
+        return self.editTags('country', countries, locked=locked)
 
     def removeCountry(self, countries, locked=True):
         """ Remove a country tag(s).
@@ -453,7 +453,7 @@ class CountryMixin(EditTagsMixin):
                 countries (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('country', countries, locked=locked, remove=True)
+        return self.editTags('country', countries, locked=locked, remove=True)
 
 
 class DirectorMixin(EditTagsMixin):
@@ -466,7 +466,7 @@ class DirectorMixin(EditTagsMixin):
                 directors (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('director', directors, locked=locked)
+        return self.editTags('director', directors, locked=locked)
 
     def removeDirector(self, directors, locked=True):
         """ Remove a director tag(s).
@@ -475,7 +475,7 @@ class DirectorMixin(EditTagsMixin):
                 directors (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('director', directors, locked=locked, remove=True)
+        return self.editTags('director', directors, locked=locked, remove=True)
 
 
 class GenreMixin(EditTagsMixin):
@@ -488,7 +488,7 @@ class GenreMixin(EditTagsMixin):
                 genres (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('genre', genres, locked=locked)
+        return self.editTags('genre', genres, locked=locked)
 
     def removeGenre(self, genres, locked=True):
         """ Remove a genre tag(s).
@@ -497,7 +497,7 @@ class GenreMixin(EditTagsMixin):
                 genres (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('genre', genres, locked=locked, remove=True)
+        return self.editTags('genre', genres, locked=locked, remove=True)
 
 
 class LabelMixin(EditTagsMixin):
@@ -510,7 +510,7 @@ class LabelMixin(EditTagsMixin):
                 labels (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('label', labels, locked=locked)
+        return self.editTags('label', labels, locked=locked)
 
     def removeLabel(self, labels, locked=True):
         """ Remove a label tag(s).
@@ -519,7 +519,7 @@ class LabelMixin(EditTagsMixin):
                 labels (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('label', labels, locked=locked, remove=True)
+        return self.editTags('label', labels, locked=locked, remove=True)
 
 
 class MoodMixin(EditTagsMixin):
@@ -532,7 +532,7 @@ class MoodMixin(EditTagsMixin):
                 moods (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('mood', moods, locked=locked)
+        return self.editTags('mood', moods, locked=locked)
 
     def removeMood(self, moods, locked=True):
         """ Remove a mood tag(s).
@@ -541,7 +541,7 @@ class MoodMixin(EditTagsMixin):
                 moods (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('mood', moods, locked=locked, remove=True)
+        return self.editTags('mood', moods, locked=locked, remove=True)
 
 
 class ProducerMixin(EditTagsMixin):
@@ -554,7 +554,7 @@ class ProducerMixin(EditTagsMixin):
                 producers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('producer', producers, locked=locked)
+        return self.editTags('producer', producers, locked=locked)
 
     def removeProducer(self, producers, locked=True):
         """ Remove a producer tag(s).
@@ -563,7 +563,7 @@ class ProducerMixin(EditTagsMixin):
                 producers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('producer', producers, locked=locked, remove=True)
+        return self.editTags('producer', producers, locked=locked, remove=True)
 
 
 class SimilarArtistMixin(EditTagsMixin):
@@ -576,7 +576,7 @@ class SimilarArtistMixin(EditTagsMixin):
                 artists (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('similar', artists, locked=locked)
+        return self.editTags('similar', artists, locked=locked)
 
     def removeSimilarArtist(self, artists, locked=True):
         """ Remove a similar artist tag(s).
@@ -585,7 +585,7 @@ class SimilarArtistMixin(EditTagsMixin):
                 artists (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('similar', artists, locked=locked, remove=True)
+        return self.editTags('similar', artists, locked=locked, remove=True)
 
 
 class StyleMixin(EditTagsMixin):
@@ -598,7 +598,7 @@ class StyleMixin(EditTagsMixin):
                 styles (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('style', styles, locked=locked)
+        return self.editTags('style', styles, locked=locked)
 
     def removeStyle(self, styles, locked=True):
         """ Remove a style tag(s).
@@ -607,7 +607,7 @@ class StyleMixin(EditTagsMixin):
                 styles (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('style', styles, locked=locked, remove=True)
+        return self.editTags('style', styles, locked=locked, remove=True)
 
 
 class TagMixin(EditTagsMixin):
@@ -620,7 +620,7 @@ class TagMixin(EditTagsMixin):
                 tags (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('tag', tags, locked=locked)
+        return self.editTags('tag', tags, locked=locked)
 
     def removeTag(self, tags, locked=True):
         """ Remove a tag(s).
@@ -629,7 +629,7 @@ class TagMixin(EditTagsMixin):
                 tags (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('tag', tags, locked=locked, remove=True)
+        return self.editTags('tag', tags, locked=locked, remove=True)
 
 
 class WriterMixin(EditTagsMixin):
@@ -642,7 +642,7 @@ class WriterMixin(EditTagsMixin):
                 writers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('writer', writers, locked=locked)
+        return self.editTags('writer', writers, locked=locked)
 
     def removeWriter(self, writers, locked=True):
         """ Remove a writer tag(s).
@@ -651,7 +651,7 @@ class WriterMixin(EditTagsMixin):
                 writers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self.editTags('writer', writers, locked=locked, remove=True)
+        return self.editTags('writer', writers, locked=locked, remove=True)
 
 
 class SmartFilterMixin(object):
