@@ -60,6 +60,8 @@ def test_library_section_get_movie(movies):
 def test_library_MovieSection_getGuid(movies, movie):
     result = movies.getGuid(guid=movie.guids[0].id)
     assert result == movie
+    with pytest.raises(NotFound):
+        movies.getGuid(guid='imdb://tt00000000')
 
 
 def test_library_section_movies_all(movies):
