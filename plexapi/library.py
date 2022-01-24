@@ -2216,10 +2216,51 @@ class FilteringType(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
-        # Add additional manual sorts and fields which are available
+        self._librarySectionID = self._parent().key
+
+        # Add additional manual filters, sorts, and fields which are available
         # but not exposed on the Plex server
+        self.filters += self._manualFilters()
         self.sorts += self._manualSorts()
         self.fields += self._manualFields()
+
+    def _manualFilters(self):
+        """ Manually add additional filters which are available
+            but not exposed on the Plex server.
+        """
+        # Filters: (filter, type, title)
+        additionalFilters = [
+        ]
+
+        if self.type == 'season':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'episode':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'artist':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'track':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+
+        manualFilters = []
+        for filterTag, filterType, filterTitle in additionalFilters:
+            filterKey = '/library/sections/%s/%s?type=%s' % (
+                self._librarySectionID, filterTag, utils.searchType(self.type)
+            )
+            filterXML = (
+                '<Filter filter="%s" filterType="%s" key="%s" title="%s" type="filter" />'
+                % (filterTag, filterType, filterKey, filterTitle)
+            )
+            manualFilters.append(self._manuallyLoadXML(filterXML, FilteringFilter))
+
+        return manualFilters
 
     def _manualSorts(self):
         """ Manually add additional sorts which are available
