@@ -631,7 +631,7 @@ class LibrarySection(PlexObject):
     def agents(self):
         """ Returns a list of available :class:`~plexapi.media.Agent` for this library section.
         """
-        return self._server.agents(utils.searchType(self.type))
+        return self._server.agents(self.type)
 
     def settings(self):
         """ Returns a list of all library settings. """
