@@ -2225,7 +2225,7 @@ class FilteringType(PlexObject):
         """ Manually add additional sorts which are available
             but not exposed on the Plex server.
         """
-        # Sorts: key, dir, title
+        # Sorts: (key, dir, title)
         additionalSorts = [
             ('guid', 'asc', 'Guid'),
             ('id', 'asc', 'Rating Key'),
@@ -2255,8 +2255,10 @@ class FilteringType(PlexObject):
 
         manualSorts = []
         for sortField, sortDir, sortTitle in additionalSorts:
-            sortXML = ('<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
-                       % (sortDir, sortField, sortField, sortTitle))
+            sortXML = (
+                '<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
+                % (sortDir, sortField, sortField, sortTitle)
+            )
             manualSorts.append(self._manuallyLoadXML(sortXML, FilteringSort))
 
         return manualSorts
@@ -2265,7 +2267,7 @@ class FilteringType(PlexObject):
         """ Manually add additional fields which are available
             but not exposed on the Plex server.
         """
-        # Fields: key, type, title
+        # Fields: (key, type, title)
         additionalFields = [
             ('guid', 'string', 'Guid'),
             ('id', 'integer', 'Rating Key'),
@@ -2291,19 +2293,26 @@ class FilteringType(PlexObject):
             additionalFields.extend([
                 ('addedAt', 'date', 'Date Season Added'),
                 ('unviewedLeafCount', 'integer', 'Episode Unplayed Count'),
-                ('year', 'integer', 'Season Year')
+                ('year', 'integer', 'Season Year'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'episode':
             additionalFields.extend([
                 ('audienceRating', 'integer', 'Audience Rating'),
                 ('duration', 'integer', 'Duration'),
                 ('rating', 'integer', 'Critic Rating'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
+            ])
+        elif self.type == 'artist':
+            additionalFields.extend([
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'track':
             additionalFields.extend([
                 ('duration', 'integer', 'Duration'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'collection':
             additionalFields.extend([
@@ -2314,8 +2323,10 @@ class FilteringType(PlexObject):
 
         manualFields = []
         for field, fieldType, fieldTitle in additionalFields:
-            fieldXML = ('<Field key="%s%s" title="%s" type="%s"/>'
-                       % (prefix, field, fieldTitle, fieldType))
+            fieldXML = (
+                '<Field key="%s%s" title="%s" type="%s"/>'
+                % (prefix, field, fieldTitle, fieldType)
+            )
             manualFields.append(self._manuallyLoadXML(fieldXML, FilteringField))
 
         return manualFields
