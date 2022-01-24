@@ -185,7 +185,7 @@ class PlayQueue(PlexObject):
         elif items.type == "playlist":
             args["type"] = items.playlistType
             if items.radio:
-                args["uri"] = f"server://{server.machineIdentifier}/{server.library.identifier}{items.key}"
+                args["uri"] = "server://%s/%s%s" % (server.machineIdentifier, server.library.identifier, items.key)
             else:
                 args["playlistID"] = items.ratingKey
         else:
