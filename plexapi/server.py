@@ -3,6 +3,7 @@ try:
     from urllib.parse import urlencode
 except ImportError:
     from urllib import urlencode  # python 2.7
+import sys
 from xml.etree import ElementTree
 
 import requests
@@ -294,7 +295,10 @@ class PlexServer(PlexObject):
         try:
             return next(account for account in self.systemAccounts() if account.id == accountID)
         except StopIteration:
-            raise NotFound('Unknown account with accountID=%s' % accountID) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown account with accountID=%s' % accountID)
+            else:
+                raise NotFound('Unknown account with accountID=%s' % accountID) from None
 
     def systemDevices(self):
         """ Returns a list of :class:`~plexapi.server.SystemDevice` objects this server contains. """
@@ -312,7 +316,10 @@ class PlexServer(PlexObject):
         try:
             return next(device for device in self.systemDevices() if device.id == deviceID)
         except StopIteration:
-            raise NotFound('Unknown device with deviceID=%s' % deviceID) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown device with deviceID=%s' % deviceID)
+            else:
+                raise NotFound('Unknown device with deviceID=%s' % deviceID) from None
 
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
@@ -629,7 +636,10 @@ class PlexServer(PlexObject):
         try:
             return self.playlists(title=title, title__iexact=title)[0]
         except IndexError:
-            raise NotFound('Unable to find playlist with title "%s".' % title) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unable to find playlist with title "%s".' % title)
+            else:
+                raise NotFound('Unable to find playlist with title "%s".' % title) from None
 
     def optimizedItems(self, removeAll=None):
         """ Returns list of all :class:`~plexapi.media.Optimized` objects connected to server. """

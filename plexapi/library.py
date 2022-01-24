@@ -5,6 +5,7 @@ try:
     from urllib.parse import quote_plus, unquote, urlencode
 except ImportError:
     from urllib import quote_plus, unquote, urlencode  # python 2.7
+import sys
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject
@@ -67,7 +68,10 @@ class Library(PlexObject):
         try:
             return self._sectionsByTitle[title.lower()]
         except KeyError:
-            raise NotFound('Invalid library section: %s' % title) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Invalid library section: %s' % title)
+            else:
+                raise NotFound('Invalid library section: %s' % title) from None
 
     def sectionByID(self, sectionID):
         """ Returns the :class:`~plexapi.library.LibrarySection` that matches the specified sectionID.
@@ -83,7 +87,10 @@ class Library(PlexObject):
         try:
             return self._sectionsByID[sectionID]
         except KeyError:
-            raise NotFound('Invalid library sectionID: %s' % sectionID) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Invalid library sectionID: %s' % sectionID)
+            else:
+                raise NotFound('Invalid library sectionID: %s' % sectionID) from None
 
     def hubs(self, sectionID=None, identifier=None, **kwargs):
         """ Returns a list of :class:`~plexapi.library.Hub` across all library sections.
@@ -632,7 +639,10 @@ class LibrarySection(PlexObject):
             match = dummy.matches(agent=self.agent, title=guid.replace('://', '-'))
             return self.search(guid=match[0].guid)[0]
         except IndexError:
-            raise NotFound("Guid '%s' is not found in the library" % guid) from None
+            if sys.version_info.major < 3:
+                raise NotFound("Guid '%s' is not found in the library" % guid)
+            else:
+                raise NotFound("Guid '%s' is not found in the library" % guid) from None
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
@@ -836,9 +846,14 @@ class LibrarySection(PlexObject):
             return next(f for f in self.filterTypes() if f.type == libtype)
         except StopIteration:
             availableLibtypes = [f.type for f in self.filterTypes()]
-            raise NotFound('Unknown libtype "%s" for this library. '
-                           'Available libtypes: %s'
-                           % (libtype, availableLibtypes)) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown libtype "%s" for this library. '
+                               'Available libtypes: %s'
+                               % (libtype, availableLibtypes))
+            else:
+                raise NotFound('Unknown libtype "%s" for this library. '
+                               'Available libtypes: %s'
+                               % (libtype, availableLibtypes)) from None
 
     def fieldTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringFieldType` for this library section. """
@@ -860,9 +875,14 @@ class LibrarySection(PlexObject):
             return next(f for f in self.fieldTypes() if f.type == fieldType)
         except StopIteration:
             availableFieldTypes = [f.type for f in self.fieldTypes()]
-            raise NotFound('Unknown field type "%s" for this library. '
-                           'Available field types: %s'
-                           % (fieldType, availableFieldTypes)) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown field type "%s" for this library. '
+                               'Available field types: %s'
+                               % (fieldType, availableFieldTypes))
+            else:
+                raise NotFound('Unknown field type "%s" for this library. '
+                               'Available field types: %s'
+                               % (fieldType, availableFieldTypes)) from None
 
     def listFilters(self, libtype=None):
         """ Returns a list of available :class:`~plexapi.library.FilteringFilter` for a specified libtype.
@@ -977,9 +997,14 @@ class LibrarySection(PlexObject):
                 field = next(f for f in self.listFilters(libtype) if f.filter == field)
             except StopIteration:
                 availableFilters = [f.filter for f in self.listFilters(libtype)]
-                raise NotFound('Unknown filter field "%s" for libtype "%s". '
-                               'Available filters: %s'
-                               % (field, libtype, availableFilters)) from None
+                if sys.version_info.major < 3:
+                    raise NotFound('Unknown filter field "%s" for libtype "%s". '
+                                   'Available filters: %s'
+                                   % (field, libtype, availableFilters))
+                else:
+                    raise NotFound('Unknown filter field "%s" for libtype "%s". '
+                                   'Available filters: %s'
+                                   % (field, libtype, availableFilters)) from None
                 
         data = self._server.query(field.key)
         return self.findItems(data, FilterChoice)
@@ -1004,9 +1029,14 @@ class LibrarySection(PlexObject):
                         break
             else:
                 availableFields = [f.key for f in self.listFields(libtype)]
-                raise NotFound('Unknown filter field "%s" for libtype "%s". '
-                               'Available filter fields: %s'
-                               % (field, libtype, availableFields)) from None
+                if sys.version_info.major < 3:
+                    raise NotFound('Unknown filter field "%s" for libtype "%s". '
+                                   'Available filter fields: %s'
+                                   % (field, libtype, availableFields))
+                else:
+                    raise NotFound('Unknown filter field "%s" for libtype "%s". '
+                                   'Available filter fields: %s'
+                                   % (field, libtype, availableFields)) from None
 
         field = filterField.key
         operator = self._validateFieldOperator(filterField, operator)
@@ -1037,9 +1067,14 @@ class LibrarySection(PlexObject):
             next(o for o in fieldType.operators if o.key == operator)
         except StopIteration:
             availableOperators = [o.key for o in self.listOperators(filterField.type)]
-            raise NotFound('Unknown operator "%s" for filter field "%s". '
-                           'Available operators: %s'
-                           % (operator, filterField.key, availableOperators)) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown operator "%s" for filter field "%s". '
+                               'Available operators: %s'
+                               % (operator, filterField.key, availableOperators))
+            else:
+                raise NotFound('Unknown operator "%s" for filter field "%s". '
+                               'Available operators: %s'
+                               % (operator, filterField.key, availableOperators)) from None
 
         return '&=' if and_operator else operator
 
@@ -1067,8 +1102,12 @@ class LibrarySection(PlexObject):
                     value = self._validateFieldValueTag(value, filterField, libtype)
                 results.append(str(value))
         except (ValueError, AttributeError):
-            raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
-                             % (value, filterField.key, fieldType.type)) from None
+            if sys.version_info.major < 3:
+                raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
+                                 % (value, filterField.key, fieldType.type))
+            else:
+                raise BadRequest('Invalid value "%s" for filter field "%s", value should be type %s'
+                                 % (value, filterField.key, fieldType.type)) from None
     
         return results
 
@@ -1133,9 +1172,14 @@ class LibrarySection(PlexObject):
             filterSort = next(f for f in self.listSorts(libtype) if f.key == sortField)
         except StopIteration:
             availableSorts = [f.key for f in self.listSorts(libtype)]
-            raise NotFound('Unknown sort field "%s" for libtype "%s". '
-                           'Available sort fields: %s'
-                           % (sortField, libtype, availableSorts)) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown sort field "%s" for libtype "%s". '
+                               'Available sort fields: %s'
+                               % (sortField, libtype, availableSorts))
+            else:
+                raise NotFound('Unknown sort field "%s" for libtype "%s". '
+                               'Available sort fields: %s'
+                               % (sortField, libtype, availableSorts)) from None
 
         sortField = libtype + '.' + filterSort.key
 
@@ -1618,7 +1662,10 @@ class LibrarySection(PlexObject):
         try:
             return self.collections(title=title, title__iexact=title)[0]
         except IndexError:
-            raise NotFound('Unable to find collection with title "%s".' % title) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unable to find collection with title "%s".' % title)
+            else:
+                raise NotFound('Unable to find collection with title "%s".' % title) from None
 
     def collections(self, **kwargs):
         """ Returns a list of collections from this library section.
@@ -1647,7 +1694,10 @@ class LibrarySection(PlexObject):
         try:
             return self.playlists(title=title, title__iexact=title)[0]
         except IndexError:
-            raise NotFound('Unable to find playlist with title "%s".' % title) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unable to find playlist with title "%s".' % title)
+            else:
+                raise NotFound('Unable to find playlist with title "%s".' % title) from None
 
     def playlists(self, sort=None, **kwargs):
         """ Returns a list of playlists from this library section. """

@@ -4,6 +4,7 @@ try:
 except ImportError:
     from urllib import quote_plus, unquote, urlencode  # python 2.7
     from urlparse import parse_qsl, urlsplit  # python 2.7
+import sys
 
 from plexapi import media, settings, utils
 from plexapi.exceptions import BadRequest, NotFound
@@ -28,9 +29,14 @@ class AdvancedSettingsMixin(object):
             return next(p for p in prefs if p.id == pref)
         except StopIteration:
             availablePrefs = [p.id for p in prefs]
-            raise NotFound('Unknown preference "%s" for %s. '
-                           'Available preferences: %s'
-                           % (pref, self.TYPE, availablePrefs)) from None
+            if sys.version_info.major < 3:
+                raise NotFound('Unknown preference "%s" for %s. '
+                               'Available preferences: %s'
+                               % (pref, self.TYPE, availablePrefs))
+            else:
+                raise NotFound('Unknown preference "%s" for %s. '
+                               'Available preferences: %s'
+                               % (pref, self.TYPE, availablePrefs)) from None
 
     def editAdvanced(self, **kwargs):
         """ Edit a Plex object's advanced settings. """
