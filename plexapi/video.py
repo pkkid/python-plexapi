@@ -7,7 +7,7 @@ from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, CollectionMixin, CountryMixin, \
     DirectorMixin, GenreMixin, LabelMixin, PosterUrlMixin, PosterMixin, ProducerMixin, RatingMixin, SplitMergeMixin, \
-    ThemeMixin, UnmatchMatchMixin, WriterMixin
+    ThemeMixin, ThemeUrlMixin, UnmatchMatchMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -577,7 +577,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeUrlMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -713,7 +713,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeMi
 
 @utils.registerPlexObject
 class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, DirectorMixin, WriterMixin,
-              ThemeMixin):
+              ThemeUrlMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
