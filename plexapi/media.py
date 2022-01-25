@@ -39,7 +39,7 @@ class Media(PlexObject):
 
             <Photo_only_attributes>: The following attributes are only available for photos.
 
-                * aperture (str): The apeture used to take the photo.
+                * aperture (str): The aperture used to take the photo.
                 * exposure (str): The exposure used to take the photo.
                 * iso (int): The iso used to take the photo.
                 * lens (str): The lens used to take the photo.
@@ -93,7 +93,7 @@ class Media(PlexObject):
         try:
             return self._server.query(part, method=self._server._session.delete)
         except BadRequest:
-            log.error("Failed to delete %s. This could be because you havn't allowed "
+            log.error("Failed to delete %s. This could be because you haven't allowed "
                       "items to be deleted" % part)
             raise
 
@@ -283,8 +283,8 @@ class VideoStream(MediaPartStream):
             duration (int): The duration of video stream in milliseconds.
             frameRate (float): The frame rate of the video stream (ex: 23.976).
             frameRateMode (str): The frame rate mode of the video stream.
-            hasScallingMatrix (bool): True if video stream has a scaling matrix.
-            height (int): The hight of the video stream in pixels (ex: 1080).
+            hasScalingMatrix (bool): True if video stream has a scaling matrix.
+            height (int): The height of the video stream in pixels (ex: 1080).
             level (int): The codec encoding level of the video stream (ex: 41).
             profile (str): The profile of the video stream (ex: asp).
             pixelAspectRatio (str): The pixel aspect ratio of the video stream.
@@ -323,7 +323,7 @@ class VideoStream(MediaPartStream):
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.frameRate = utils.cast(float, data.attrib.get('frameRate'))
         self.frameRateMode = data.attrib.get('frameRateMode')
-        self.hasScallingMatrix = utils.cast(bool, data.attrib.get('hasScallingMatrix'))
+        self.hasScalingMatrix = utils.cast(bool, data.attrib.get('hasScalingMatrix'))
         self.height = utils.cast(int, data.attrib.get('height'))
         self.level = utils.cast(int, data.attrib.get('level'))
         self.profile = data.attrib.get('profile')
@@ -400,7 +400,7 @@ class SubtitleStream(MediaPartStream):
             container (str): The container of the subtitle stream.
             forced (bool): True if this is a forced subtitle.
             format (str): The format of the subtitle stream (ex: srt).
-            headerCommpression (str): The header compression of the subtitle stream.
+            headerCompression (str): The header compression of the subtitle stream.
             transient (str): Unknown.
     """
     TAG = 'Stream'
@@ -468,7 +468,7 @@ class TranscodeSession(PlexObject):
             audioDecision (str): The transcode decision for the audio stream.
             complete (bool): True if the transcode is complete.
             container (str): The container of the transcoded media.
-            context (str): The context for the transcode sesson.
+            context (str): The context for the transcode session.
             duration (int): The duration of the transcoded media in milliseconds.
             height (int): The height of the transcoded media in pixels.
             key (str): API URL (ex: /transcode/sessions/<id>).

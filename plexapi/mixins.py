@@ -161,7 +161,7 @@ class PosterUrlMixin(object):
     @property
     def thumbUrl(self):
         """ Return the thumb url for the Plex object. """
-        thumb = self.firstAttr('thumb', 'parentThumb', 'granparentThumb')
+        thumb = self.firstAttr('thumb', 'parentThumb', 'grandparentThumb')
         return self._server.url(thumb, includeToken=True) if thumb else None
 
     @property

@@ -48,7 +48,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             title (str): Name of the collection.
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'collection'
-            updatedAt (datatime): Datetime the collection was updated.
+            updatedAt (datetime): Datetime the collection was updated.
             userRating (float): Rating of the collection (0.0 - 10.0) equaling (0 stars - 5 stars).
     """
     TAG = 'Directory'
@@ -216,7 +216,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
 
             Parameters:
                 sort (str): One of the following values:
-                    "realease" (Order Collection by realease dates),
+                    "release" (Order Collection by release dates),
                     "alpha" (Order Collection alphabetically),
                     "custom" (Custom collection order)
 
