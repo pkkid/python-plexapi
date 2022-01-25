@@ -1106,3 +1106,29 @@ class AgentMediaType(Agent):
     @deprecated('use "languageCodes" instead')
     def languageCode(self):
         return self.languageCodes
+
+
+class Theme(PlexObject):
+    """ Class for Theme objects.
+
+        Attributes:
+            TAG (str): 'Track'
+            key (str): API URL (/library/metadata/<ratingKey>/file?url=<themeid>).
+            ratingKey (str): Unique key identifying the theme.
+            selected (bool): True if the theme is currently selected.
+    """
+    TAG = 'Track'
+
+    def _loadData(self, data):
+        self._data = data
+        self.key = data.attrib.get('key')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.selected = utils.cast(bool, data.attrib.get('selected'))
+
+    def select(self):
+        key = self._initpath[:-1]
+        data = '%s?url=%s' % (key, quote_plus(self.ratingKey))
+        try:
+            self._server.query(data, method=self._server._session.put)
+        except xml.etree.ElementTree.ParseError:
+            pass

@@ -5,9 +5,9 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, CollectionMixin, CountryMixin, \
+    DirectorMixin, GenreMixin, LabelMixin, PosterUrlMixin, PosterMixin, ProducerMixin, RatingMixin, SplitMergeMixin, \
+    ThemeMixin, UnmatchMatchMixin, WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -261,8 +261,9 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
+class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin,
+            UnmatchMatchMixin, CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin,
+            WriterMixin, ThemeMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -293,6 +294,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
+            theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
             useOriginalTitle (int): Setting that indicates if the original title is used for the movie
                 (-1 = Library default, 0 = No, 1 = Yes).
             viewOffset (int): View offset in milliseconds.
@@ -331,6 +333,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
+        self.theme = data.attrib.get('theme')
         self.useOriginalTitle = utils.cast(int, data.attrib.get('useOriginalTitle', '-1'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
@@ -377,8 +380,8 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
 
 
 @utils.registerPlexObject
-class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
-        CollectionMixin, GenreMixin, LabelMixin):
+class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin,
+           UnmatchMatchMixin, CollectionMixin, GenreMixin, LabelMixin, ThemeMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -574,7 +577,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -709,8 +712,8 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
-        CollectionMixin, DirectorMixin, WriterMixin):
+class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, DirectorMixin, WriterMixin,
+              ThemeMixin):
     """ Represents a single Shows Episode.
 
         Attributes:

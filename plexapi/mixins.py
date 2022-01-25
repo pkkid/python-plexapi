@@ -209,6 +209,49 @@ class PosterMixin(PosterUrlMixin):
         self._edit(**{'thumb.locked': 0})
 
 
+class ThemeUrlMixin(object):
+    """ Mixin for Plex objects that can have a theme url. """
+
+    @property
+    def themeUrl(self):
+        """ Return the theme url for the Plex object. """
+        theme = self.firstAttr('theme', 'parentTheme', 'grandparentTheme')
+        return self._server.url(theme, includeToken=True) if theme else None
+
+
+class ThemeMixin(ThemeUrlMixin):
+    """ Mixin for Plex objects that can have themes. """
+
+    def themes(self):
+        """ Returns list of available :class:`~plexapi.media.Theme` objects. """
+        return self.fetchItems('/library/metadata/%s/themes' % self.ratingKey, cls=media.Theme)
+
+    def uploadTheme(self, url=None, filepath=None):
+        """ Upload a theme from url or filepath.
+
+            Warning: Themes cannot be deleted using PlexAPI!
+
+            Parameters:
+                url (str): The full URL to the theme to upload.
+                filepath (str): The full file path to the theme to upload.
+        """
+        if url:
+            key = '/library/metadata/%s/themes?url=%s' % (self.ratingKey, quote_plus(url))
+            self._server.query(key, method=self._server._session.post)
+        elif filepath:
+            key = '/library/metadata/%s/themes?' % self.ratingKey
+            data = open(filepath, 'rb').read()
+            self._server.query(key, method=self._server._session.post, data=data)
+
+    def setTheme(self, theme):
+        """ Set the theme for a Plex object.
+
+            Parameters:
+                theme (:class:`~plexapi.media.Theme`): The poster object to select.
+        """
+        theme.select()
+
+
 class RatingMixin(object):
     """ Mixin for Plex objects that can have user star ratings. """
 
