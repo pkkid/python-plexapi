@@ -917,18 +917,18 @@ class Review(PlexObject):
         self.text = data.attrib.get('text')
 
 
-class BaseImage(PlexObject):
-    """ Base class for all Art, Banner, and Poster objects.
+class BaseResource(PlexObject):
+    """ Base class for all Art, Banner, Poster, and Theme objects.
 
         Attributes:
-            TAG (str): 'Photo'
+            TAG (str): 'Photo' or 'Track'
             key (str): API URL (/library/metadata/<ratingkey>).
-            provider (str): The source of the poster or art.
-            ratingKey (str): Unique key identifying the poster or art.
-            selected (bool): True if the poster or art is currently selected.
-            thumb (str): The URL to retrieve the poster or art thumbnail.
+            provider (str): The source of the art or poster, None for Theme objects.
+            ratingKey (str): Unique key identifying the resource.
+            selected (bool): True if the resource is currently selected.
+            thumb (str): The URL to retrieve the resource thumbnail.
     """
-    TAG = 'Photo'
+    TAG = None
 
     def _loadData(self, data):
         self._data = data
@@ -947,16 +947,33 @@ class BaseImage(PlexObject):
             pass
 
 
-class Art(BaseImage):
+class Art(BaseResource):
     """ Represents a single Art object. """
+    TAG = 'Photo'
 
 
-class Banner(BaseImage):
+class Banner(BaseResource):
     """ Represents a single Banner object. """
+    TAG = 'Photo'
 
 
-class Poster(BaseImage):
+class Poster(BaseResource):
     """ Represents a single Poster object. """
+    TAG = 'Photo'
+
+
+class Theme(BaseResource):
+    """ Represents a single Theme object.
+
+        Attributes:
+            TAG (str): 'Track'
+            key (str): API URL (/library/metadata/<ratingKey>/file?url=<themeid>).
+            provider (None): Provider is None for Theme objects.
+            ratingKey (str): Unique key identifying the theme.
+            selected (bool): True if the theme is currently selected.
+            thumb (str): The URL to retrieve the poster or art thumbnail.
+    """
+    TAG = 'Track'
 
 
 @utils.registerPlexObject
@@ -1106,29 +1123,3 @@ class AgentMediaType(Agent):
     @deprecated('use "languageCodes" instead')
     def languageCode(self):
         return self.languageCodes
-
-
-class Theme(PlexObject):
-    """ Class for Theme objects.
-
-        Attributes:
-            TAG (str): 'Track'
-            key (str): API URL (/library/metadata/<ratingKey>/file?url=<themeid>).
-            ratingKey (str): Unique key identifying the theme.
-            selected (bool): True if the theme is currently selected.
-    """
-    TAG = 'Track'
-
-    def _loadData(self, data):
-        self._data = data
-        self.key = data.attrib.get('key')
-        self.ratingKey = data.attrib.get('ratingKey')
-        self.selected = utils.cast(bool, data.attrib.get('selected'))
-
-    def select(self):
-        key = self._initpath[:-1]
-        data = '%s?url=%s' % (key, quote_plus(self.ratingKey))
-        try:
-            self._server.query(data, method=self._server._session.put)
-        except xml.etree.ElementTree.ParseError:
-            pass

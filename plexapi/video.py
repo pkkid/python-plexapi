@@ -5,9 +5,11 @@ from urllib.parse import quote_plus, urlencode
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, CollectionMixin, CountryMixin, \
-    DirectorMixin, GenreMixin, LabelMixin, PosterUrlMixin, PosterMixin, ProducerMixin, RatingMixin, SplitMergeMixin, \
-    ThemeMixin, ThemeUrlMixin, UnmatchMatchMixin, WriterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, \
+    ThemeUrlMixin, ThemeMixin
+from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, \
+    WriterMixin
 
 
 class Video(PlexPartialObject):
@@ -261,9 +263,9 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin,
+class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, RatingMixin, SplitMergeMixin,
             UnmatchMatchMixin, CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin,
-            WriterMixin, ThemeMixin):
+            WriterMixin):
     """ Represents a single Movie.
 
         Attributes:
@@ -380,8 +382,8 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
 
 
 @utils.registerPlexObject
-class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin,
-           UnmatchMatchMixin, CollectionMixin, GenreMixin, LabelMixin, ThemeMixin):
+class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, ThemeMixin, RatingMixin, SplitMergeMixin,
+           UnmatchMatchMixin, CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
         Attributes:
@@ -577,7 +579,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeUrlMixin):
+class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -712,8 +714,8 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, ThemeUr
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin, CollectionMixin, DirectorMixin, WriterMixin,
-              ThemeUrlMixin):
+class Episode(Video, Playable, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin,
+              CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:

@@ -247,7 +247,7 @@ class ThemeMixin(ThemeUrlMixin):
         """ Set the theme for a Plex object.
 
             Parameters:
-                theme (:class:`~plexapi.media.Theme`): The poster object to select.
+                theme (:class:`~plexapi.media.Theme`): The theme object to select.
         """
         theme.select()
 

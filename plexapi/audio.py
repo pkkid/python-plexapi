@@ -5,10 +5,11 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, \
+    ThemeUrlMixin
 from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, \
-    StyleMixin, ThemeMixin, ThemeUrlMixin
+    StyleMixin
 from plexapi.playlist import Playlist
 
 
@@ -126,8 +127,8 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
-             CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin, ThemeMixin):
+class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, RatingMixin, SplitMergeMixin,
+             UnmatchMatchMixin, CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
         Attributes:
@@ -233,8 +234,8 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
 
 
 @utils.registerPlexObject
-class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin, CollectionMixin, GenreMixin, LabelMixin,
-            MoodMixin, StyleMixin, ThemeUrlMixin):
+class Album(Audio, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, UnmatchMatchMixin,
+            CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
     """ Represents a single Album.
 
         Attributes:
@@ -251,7 +252,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin, Collec
             parentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
             parentKey (str): API URL of the album artist (/library/metadata/<parentRatingKey>).
             parentRatingKey (int): Unique key identifying the album artist.
-            parentTheme (str): URL to show theme resource (/library/metadata/<parentRatingkey>/theme/<themeid>).
+            parentTheme (str): URL to artist theme resource (/library/metadata/<parentRatingkey>/theme/<themeid>).
             parentThumb (str): URL to album artist thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the album artist.
             rating (float): Album rating (7.9; 9.8; 8.1).
@@ -355,7 +356,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin, Collectio
             grandparentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
             grandparentKey (str): API URL of the album artist (/library/metadata/<grandparentRatingKey>).
             grandparentRatingKey (int): Unique key identifying the album artist.
-            grandparentTheme (str): URL to show theme resource
+            grandparentTheme (str): URL to artist theme resource  (/library/metadata/<grandparentRatingkey>/theme/<themeid>).
                 (/library/metadata/<grandparentRatingkey>/theme/<themeid>).
             grandparentThumb (str): URL to album artist thumbnail image
                 (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
