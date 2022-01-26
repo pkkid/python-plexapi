@@ -630,7 +630,7 @@ def test_library_MovieSection_search_sort(movies):
 
 
 def test_library_ShowSection_search_sort(tvshows):
-    # Test predefined Plex mult-sort
+    # Test predefined Plex multi-sort
     seasonAsc = "season.index,season.titleSort"
     results = tvshows.search(sort=seasonAsc, libtype="season")
     sortedResults = sorted(results, key=lambda s: (s.index, s.titleSort))
@@ -678,7 +678,7 @@ def test_library_ShowSection_search_sort(tvshows):
 
 
 def test_library_MusicSection_search_sort(music):
-    # Test predefined Plex mult-sort
+    # Test predefined Plex multi-sort
     albumArtistAsc = "artist.titleSort,album.titleSort,album.index,album.id,album.originallyAvailableAt"
     results = music.search(sort=albumArtistAsc, libtype="album")
     sortedResults = sorted(

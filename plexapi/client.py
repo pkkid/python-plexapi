@@ -210,8 +210,8 @@ class PlexClient(PlexObject):
         controller = command.split('/')[0]
         headers = {'X-Plex-Target-Client-Identifier': self.machineIdentifier}
         if controller not in self.protocolCapabilities:
-            log.debug('Client %s doesnt support %s controller.'
-                      'What your trying might not work' % (self.title, controller))
+            log.debug("Client %s doesn't support %s controller."
+                      "What your trying might not work" % (self.title, controller))
 
         proxy = self._proxyThroughServer if proxy is None else proxy
         query = self._server.query if proxy else self.query

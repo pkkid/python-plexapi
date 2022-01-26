@@ -333,7 +333,7 @@ def monkeydownload(request, monkeypatch):
 
 
 def callable_http_patch():
-    """This intended to stop some http requests inside some tests."""
+    """This is intended to stop some http requests inside some tests."""
     return patch(
         "plexapi.server.requests.sessions.Session.send",
         return_value=MagicMock(status_code=200, text="<xml><child></child></xml>"),

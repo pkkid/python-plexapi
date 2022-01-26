@@ -223,7 +223,7 @@ class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixi
         elif self.parentKey:
             return self._server.library.sectionByID(self.photoalbum().librarySectionID)
         else:
-            raise BadRequest('Unable to get section for photo, can`t find librarySectionID')
+            raise BadRequest("Unable to get section for photo, can't find librarySectionID")
 
     @property
     def locations(self):

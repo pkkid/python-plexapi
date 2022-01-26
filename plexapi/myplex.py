@@ -614,7 +614,7 @@ class MyPlexAccount(PlexObject):
                 clientId (str): an identifier of a client to query SyncItems for.
 
             If both `client` and `clientId` provided the client would be preferred.
-            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients's identifier.
         """
         if client:
             clientId = client.clientIdentifier
@@ -635,14 +635,14 @@ class MyPlexAccount(PlexObject):
                 sync_item (:class:`~plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
 
             If both `client` and `clientId` provided the client would be preferred.
-            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients's identifier.
 
             Returns:
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn`t found.
-                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn't found.
+                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn't provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -657,7 +657,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest('Unable to find client by clientId=%s', clientId)
 
         if 'sync-target' not in client.provides:
-            raise BadRequest('Received client doesn`t provides sync-target')
+            raise BadRequest("Received client doesn't provides sync-target")
 
         params = {
             'SyncItem[title]': sync_item.title,

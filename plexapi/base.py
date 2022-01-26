@@ -392,7 +392,7 @@ class PlexObject(object):
         # check were looking for the tag
         if attr.lower() == 'etag':
             return [elem.tag]
-        # loop through attrs so we can perform case-insensative match
+        # loop through attrs so we can perform case-insensitive match
         for _attr, value in elem.attrib.items():
             if attr.lower() == _attr.lower():
                 return [value]
