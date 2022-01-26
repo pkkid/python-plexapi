@@ -21,8 +21,8 @@ def _check_proxy(plex, client, proxy):
 
 @pytest.mark.client
 def test_list_clients(account, plex):
-    assert account.resources(), "MyPlex is not listing any devlices."
-    assert account.devices(), "MyPlex is not listing any devlices."
+    assert account.resources(), "MyPlex is not listing any devices."
+    assert account.devices(), "MyPlex is not listing any devices."
     assert plex.clients(), "PlexServer is not listing any clients."
 
 

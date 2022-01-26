@@ -22,15 +22,15 @@ def test_library_Library_section(plex):
 
 
 def test_library_Library_sectionByID_is_equal_section(plex, movies):
-    # test that sctionmyID refreshes the section if the key is missing
-    # this is needed if there isnt any cached sections
+    # test that sectionByID refreshes the section if the key is missing
+    # this is needed if there isn't any cached sections
     assert plex.library.sectionByID(movies.key).uuid == movies.uuid
 
 
 def test_library_sectionByID_with_attrs(plex, movies):
     assert movies.agent == "tv.plex.agents.movie"
     # This seems to fail for some reason.
-    # my account alloew of sync, didnt find any about settings about the library.
+    # my account allow of sync, didn't find any about settings about the library.
     # assert movies.allowSync is ("sync" in plex.ownerFeatures)
     assert movies.art == "/:/resources/movie-fanart.jpg"
     assert utils.is_metadata(
