@@ -928,8 +928,6 @@ class BaseResource(PlexObject):
             selected (bool): True if the resource is currently selected.
             thumb (str): The URL to retrieve the resource thumbnail.
     """
-    TAG = None
-
     def _loadData(self, data):
         self._data = data
         self.key = data.attrib.get('key')
@@ -963,16 +961,7 @@ class Poster(BaseResource):
 
 
 class Theme(BaseResource):
-    """ Represents a single Theme object.
-
-        Attributes:
-            TAG (str): 'Track'
-            key (str): API URL (/library/metadata/<ratingKey>/file?url=<themeid>).
-            provider (None): Provider is None for Theme objects.
-            ratingKey (str): Unique key identifying the theme.
-            selected (bool): True if the theme is currently selected.
-            thumb (str): The URL to retrieve the poster or art thumbnail.
-    """
+    """ Represents a single Theme object. """
     TAG = 'Track'
 
 
