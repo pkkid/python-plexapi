@@ -9,7 +9,7 @@ def _check_capabilities(client, capabilities):
     for capability in capabilities:
         if capability not in supported:
             pytest.skip(
-                "Client %s doesnt support %s capability support %s"
+                "Client %s doesn't support %s capability support %s"
                 % (client.title, capability, supported)
             )
 

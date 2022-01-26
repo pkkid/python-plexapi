@@ -246,7 +246,7 @@ def test_library_MovieSection_cancelUpdate(movies):
     movies.cancelUpdate()
 
 
-def test_librarty_deleteMediaPreviews(movies):
+def test_library_deleteMediaPreviews(movies):
     movies.deleteMediaPreviews()
 
 
