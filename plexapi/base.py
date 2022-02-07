@@ -169,9 +169,14 @@ class PlexObject(object):
             raise BadRequest('ekey was not provided')
         if isinstance(ekey, int):
             ekey = '/library/metadata/%s' % ekey
-        for elem in self._server.query(ekey):
+        data = self._server.query(ekey)
+        librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        for elem in data:
             if self._checkAttrs(elem, **kwargs):
-                return self._buildItem(elem, cls, ekey)
+                item = self._buildItem(elem, cls, ekey)
+                if librarySectionID:
+                    item.librarySectionID = librarySectionID
+                return item
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
