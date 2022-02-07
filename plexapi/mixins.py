@@ -353,6 +353,7 @@ class EditTagsMixin(object):
 
     def editTags(self, tag, items, locked=True, remove=False, **kwargs):
         """ Edit the tags of a Plex object. All tag editing methods can be chained together.
+            Also see :func:`~plexapi.base.PlexPartialObject.batchEdits` for batch editing tags.
 
             Parameters:
                 tag (str): Name of the tag to edit.
