@@ -350,6 +350,7 @@ class EditFieldMixin(object):
     
     def editField(self, field, value, locked=True, **kwargs):
         """ Edit the field of a Plex object. All field editing methods can be chained together.
+            Also see :func:`~plexapi.base.PlexPartialObject.batchEdits` for batch editing fields.
         
             Parameters:
                 field (str): The name of the field to edit.

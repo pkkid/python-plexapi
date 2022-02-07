@@ -54,6 +54,7 @@ class PlexObject(object):
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
         self._autoReload = False
+        self._edits = None  # Save batch edits for a single API call
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
@@ -511,6 +512,10 @@ class PlexPartialObject(PlexObject):
 
     def _edit(self, **kwargs):
         """ Actually edit an object. """
+        if isinstance(self._edits, dict):
+            self._edits.update(kwargs)
+            return self
+
         if 'id' not in kwargs:
             kwargs['id'] = self.ratingKey
         if 'type' not in kwargs:
@@ -524,7 +529,8 @@ class PlexPartialObject(PlexObject):
     def edit(self, **kwargs):
         """ Edit an object.
             Note: This is a low level method and you need to know all the field/tag keys.
-            See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin` instead.
+            See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin`
+            for individual field and tag editing methods.
 
             Parameters:
                 kwargs (dict): Dict of settings to edit.
@@ -547,6 +553,38 @@ class PlexPartialObject(PlexObject):
 
         """
         return self._edit(**kwargs)
+
+    def batchEdits(self):
+        """ Enable batch editing mode to save API calls.
+            Must call :func:`~plexapi.base.PlexPartialObject.saveEdits` at the end to save all the edits.
+            See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin`
+            for individual field and tag editing methods.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Batch editing multiple fields and tags in a single API call
+                    Movie.batchEdits()
+                    Movie.editTitle('A New Title').editSummary('A new summary').editTagline('A new tagline') \\
+                        .addCollection('New Collection').removeGenre('Action').addLabel('Favorite')
+                    Movie.saveEdits()
+
+        """
+        self._edits = {}
+        return self
+
+    def saveEdits(self):
+        """ Save all the batch edits and automatically reload the object.
+            See :func:`~plexapi.base.PlexPartialObject.batchEdits` for details.
+        """
+        if not isinstance(self._edits, dict):
+            raise BadRequest('Batch editing mode not enabled. Must call `batchEdits()` first.')
+
+        edits = self._edits
+        self._edits = None
+        self._edit(**edits)
+        return self.reload()
 
     def _edit_tags(self, tag, items, locked=True, remove=False):
         """ Helper to edit tags.
