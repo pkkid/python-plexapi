@@ -107,6 +107,15 @@ class Video(PlexPartialObject):
         """ Returns str, default title for a new syncItem. """
         return self.title
 
+    def audioStreams(self):
+        """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
+        streams = []
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.audioStreams()
+        return streams
+
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
         streams = []
