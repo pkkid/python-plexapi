@@ -133,7 +133,7 @@ def test_library_add_edit_delete(plex, movies, photos):
         type="movie",
         agent="com.plexapp.agents.none",
         scanner="Plex Video Files Scanner",
-        language="en",
+        language="xn",
         location=[movie_location, photo_location]
     )
     section = plex.library.section(section_name)
@@ -146,7 +146,7 @@ def test_library_add_edit_delete(plex, movies, photos):
             type="movie",
             agent="com.plexapp.agents.none",
             scanner="Plex Video Files Scanner",
-            language="en",
+            language="xn",
             location=[movie_location, photo_location[:-1]]
         )
     # Create library with no path
@@ -156,7 +156,7 @@ def test_library_add_edit_delete(plex, movies, photos):
             type="movie",
             agent="com.plexapp.agents.none",
             scanner="Plex Video Files Scanner",
-            language="en",
+            language="xn",
         )
     with pytest.raises(NotFound):
         plex.library.section(error_section_name)
