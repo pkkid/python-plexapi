@@ -209,6 +209,26 @@ class PosterMixin(PosterUrlMixin):
         self._edit(**{'thumb.locked': 0})
 
 
+class ExtrasMixin(object):
+    """ Mixin for Plex objects that can have extras. """
+
+    def extras(self):
+        """ Returns a list of :class:`~plexapi.video.Extra` objects. """
+        from plexapi.video import Extra
+        data = self._server.query(self._details_key)
+        return self.findItems(data, Extra, rtag='Extras')
+
+
+class HubsMixin(object):
+    """ Mixin for Plex objects that can have related hubs. """
+
+    def hubs(self):
+        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
+        from plexapi.library import Hub
+        data = self._server.query(self._details_key)
+        return self.findItems(data, Hub, rtag='Related')
+
+
 class RatingMixin(object):
     """ Mixin for Plex objects that can have user star ratings. """
 

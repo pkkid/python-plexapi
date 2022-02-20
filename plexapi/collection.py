@@ -5,14 +5,15 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin
+from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, HubsMixin, RatingMixin
 from plexapi.mixins import LabelMixin, SmartFilterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, LabelMixin, SmartFilterMixin):
+class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, HubsMixin, RatingMixin,
+        LabelMixin, SmartFilterMixin):
     """ Represents a single Collection.
 
         Attributes:

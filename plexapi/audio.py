@@ -2,11 +2,11 @@
 import os
 from urllib.parse import quote_plus
 
-from plexapi import library, media, utils
+from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import ExtrasMixin, HubsMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 from plexapi.playlist import Playlist
 
@@ -125,7 +125,8 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, ExtrasMixin, HubsMixin, RatingMixin,
+        SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
     """ Represents a single Artist.
 
@@ -160,11 +161,6 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
     def __iter__(self):
         for album in self.albums():
             yield album
-
-    def hubs(self):
-        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        data = self._server.query(self._details_key)
-        return self.findItems(data, library.Hub, rtag='Related')
 
     def album(self, title):
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
@@ -337,7 +333,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
+class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, ExtrasMixin, RatingMixin,
         CollectionMixin, MoodMixin):
     """ Represents a single Track.
 

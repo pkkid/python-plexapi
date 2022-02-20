@@ -2,11 +2,11 @@
 import os
 from urllib.parse import quote_plus, urlencode
 
-from plexapi import library, media, utils
+from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
+from plexapi.mixins import ExtrasMixin, HubsMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin
 from plexapi.mixins import CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 
 
@@ -261,7 +261,8 @@ class Video(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, ExtrasMixin, HubsMixin, RatingMixin,
+        SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin):
     """ Represents a single Movie.
 
@@ -365,19 +366,10 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Ratin
         data = self._server.query(self._details_key)
         return self.findItems(data, media.Review, rtag='Video')
 
-    def extras(self):
-        """ Returns a list of :class:`~plexapi.video.Extra` objects. """
-        data = self._server.query(self._details_key)
-        return self.findItems(data, Extra, rtag='Extras')
-
-    def hubs(self):
-        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        data = self._server.query(self._details_key)
-        return self.findItems(data, library.Hub, rtag='Related')
-
 
 @utils.registerPlexObject
-class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, ExtrasMixin, HubsMixin, RatingMixin,
+        SplitMergeMixin, UnmatchMatchMixin,
         CollectionMixin, GenreMixin, LabelMixin):
     """ Represents a single Show (including all seasons and episodes).
 
@@ -483,11 +475,6 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
         """ Returns True if the show is fully watched. """
         return bool(self.viewedLeafCount == self.leafCount)
 
-    def hubs(self):
-        """ Returns a list of :class:`~plexapi.library.Hub` objects. """
-        data = self._server.query(self._details_key)
-        return self.findItems(data, library.Hub, rtag='Related')
-
     def onDeck(self):
         """ Returns show's On Deck :class:`~plexapi.video.Video` object or `None`.
             If show is unwatched, return will likely be the first episode.
@@ -574,7 +561,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, Rat
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, ExtrasMixin, RatingMixin, CollectionMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -709,7 +696,7 @@ class Season(Video, ArtMixin, PosterMixin, RatingMixin, CollectionMixin):
 
 
 @utils.registerPlexObject
-class Episode(Video, Playable, ArtMixin, PosterMixin, RatingMixin,
+class Episode(Video, Playable, ArtMixin, PosterMixin, ExtrasMixin, RatingMixin,
         CollectionMixin, DirectorMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
