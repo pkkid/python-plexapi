@@ -364,6 +364,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
             parentTitle (str): Name of the album for the track.
             primaryExtraKey (str) API URL for the primary extra for the track.
             ratingCount (int): Number of ratings contributing to the rating score.
+            skipCount (int): Number of times the track has been skipped.
             viewOffset (int): View offset in milliseconds.
             year (int): Year the track was released.
     """
@@ -393,6 +394,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
         self.parentTitle = data.attrib.get('parentTitle')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
+        self.skipCount = utils.cast(int, data.attrib.get('skipCount'))
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
 
