@@ -272,10 +272,11 @@ def test_audio_Track_attrs(album):
     assert track.parentTitle == "Layers"
     assert track.playlistItemID is None
     assert track.primaryExtraKey is None
-    # assert utils.is_int(track.ratingCount)
+    assert utils.is_int(track.ratingCount) or track.ratingCount is None
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
     assert track.sessionKey is None
+    assert track.skipCount is None
     assert track.summary == ""
     if track.thumb:
         assert utils.is_thumb(track.thumb)
