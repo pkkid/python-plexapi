@@ -236,7 +236,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         }
         key = mode_dict.get(mode)
         if key is None:
-            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
+            raise BadRequest('Unknown collection mode: %s. Options %s' % (mode, list(mode_dict)))
         self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
@@ -254,6 +254,9 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
 
                     collection.updateSort(mode="alpha")
         """
+        if self.smart:
+            raise BadRequest('Cannot change collection order for a smart collection.')
+
         sort_dict = {
             'release': 0,
             'alpha': 1,
