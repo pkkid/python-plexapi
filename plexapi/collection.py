@@ -186,6 +186,32 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
 
+    def filterUserUpdate(self, user=None):
+        """ Update the collection filtering user advanced setting.
+
+            Parameters:
+                user (str): One of the following values:
+                    "admin" (Always the server admin user),
+                    "user" (User currently viewing the content)
+
+            Example:
+
+                .. code-block:: python
+
+                    collection.updateMode(user="user")
+        """
+        if not self.smart:
+            raise BadRequest('Cannot change collection filtering user for a non-smart collection.')
+
+        user_dict = {
+            'admin': 0,
+            'user': 1
+        }
+        key = user_dict.get(user)
+        if key is None:
+            raise BadRequest('Unknown collection filtering user: %s. Options %s' % (user, list(user_dict)))
+        self.editAdvanced(collectionFilterBasedOnUser=key)
+
     def modeUpdate(self, mode=None):
         """ Update the collection mode advanced setting.
 
