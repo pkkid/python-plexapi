@@ -22,9 +22,10 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
             childCount (int): Number of items in the collection.
-            collectionMode (str): How the items in the collection are displayed.
+            collectionFilterBasedOnUser (int): Which user's activity is used for the collection filtering.
+            collectionMode (int): How the items in the collection are displayed.
             collectionPublished (bool): True if the collection is published to the Plex homepage.
-            collectionSort (str): How to sort the items in the collection.
+            collectionSort (int): How to sort the items in the collection.
             content (str): The filter URI string for smart collections.
             contentRating (str) Content rating (PG-13; NR; TV-G).
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
@@ -60,6 +61,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
+        self.collectionFilterBasedOnUser = utils.cast(int, data.attrib.get('collectionFilterBasedOnUser', '0'))
         self.collectionMode = utils.cast(int, data.attrib.get('collectionMode', '-1'))
         self.collectionPublished = utils.cast(bool, data.attrib.get('collectionPublished', '0'))
         self.collectionSort = utils.cast(int, data.attrib.get('collectionSort', '0'))
