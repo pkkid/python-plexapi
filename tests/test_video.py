@@ -574,6 +574,48 @@ def test_video_Movie_extras(movies):
     assert extra.section() == movies
 
 
+def test_video_Movie_batchEdits(movie):
+    title = movie.title
+    summary = movie.summary
+    tagline = movie.tagline
+    studio = movie.studio
+
+    assert movie._edits is None
+    movie.batchEdits()
+    assert movie._edits == {}
+
+    new_title = "New title"
+    new_summary = "New summary"
+    new_tagline = "New tagline"
+    new_studio = "New studio"
+    movie.editTitle(new_title) \
+        .editSummary(new_summary) \
+        .editTagline(new_tagline) \
+        .editStudio(new_studio)
+    assert movie._edits != {}
+    movie.saveEdits()
+    assert movie._edits is None
+    assert movie.title == new_title
+    assert movie.summary == new_summary
+    assert movie.tagline == new_tagline
+    assert movie.studio == new_studio
+
+    movie.batchEdits() \
+        .editTitle(title, locked=False) \
+        .editSummary(summary, locked=False) \
+        .editTagline(tagline, locked=False) \
+        .editStudio(studio, locked=False) \
+        .saveEdits()
+    assert movie.title == title
+    assert movie.summary == summary
+    assert movie.tagline == tagline
+    assert movie.studio == studio
+    assert not movie.fields
+    
+    with pytest.raises(BadRequest):
+        movie.saveEdits()
+
+
 def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
@@ -626,48 +668,6 @@ def test_video_Movie_media_tags(movie):
     test_media.tag_role(movie)
     test_media.tag_similar(movie)
     test_media.tag_writer(movie)
-
-
-def test_video_Movie_batchEdits(movie):
-    title = movie.title
-    summary = movie.summary
-    tagline = movie.tagline
-    studio = movie.studio
-
-    assert movie._edits is None
-    movie.batchEdits()
-    assert movie._edits == {}
-
-    new_title = "New title"
-    new_summary = "New summary"
-    new_tagline = "New tagline"
-    new_studio = "New studio"
-    movie.editTitle(new_title) \
-        .editSummary(new_summary) \
-        .editTagline(new_tagline) \
-        .editStudio(new_studio)
-    assert movie._edits != {}
-    movie.saveEdits()
-    assert movie._edits is None
-    assert movie.title == new_title
-    assert movie.summary == new_summary
-    assert movie.tagline == new_tagline
-    assert movie.studio == new_studio
-
-    movie.batchEdits() \
-        .editTitle(title, locked=False) \
-        .editSummary(summary, locked=False) \
-        .editTagline(tagline, locked=False) \
-        .editStudio(studio, locked=False) \
-        .saveEdits()
-    assert movie.title == title
-    assert movie.summary == summary
-    assert movie.tagline == tagline
-    assert movie.studio == studio
-    assert not movie.fields
-    
-    with pytest.raises(BadRequest):
-        movie.saveEdits()
 
 
 def test_video_Movie_PlexWebURL(plex, movie):
