@@ -43,7 +43,7 @@ class Library(PlexObject):
                 if elem.attrib.get('type') == cls.TYPE:
                     section = cls(self._server, elem, key)
                     self._sectionsByID[section.key] = section
-                    self._sectionsByTitle[section.title.lower()] = section
+                    self._sectionsByTitle[section.title.lower().strip()] = section
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
@@ -59,10 +59,11 @@ class Library(PlexObject):
             Parameters:
                 title (str): Title of the section to return.
         """
-        if not self._sectionsByTitle or title not in self._sectionsByTitle:
+        normalized_title = title.lower().strip()
+        if not self._sectionsByTitle or normalized_title not in self._sectionsByTitle:
             self._loadSections()
         try:
-            return self._sectionsByTitle[title.lower()]
+            return self._sectionsByTitle[normalized_title]
         except KeyError:
             raise NotFound('Invalid library section: %s' % title) from None
 
@@ -125,7 +126,7 @@ class Library(PlexObject):
     def search(self, title=None, libtype=None, **kwargs):
         """ Searching within a library section is much more powerful. It seems certain
             attributes on the media objects can be targeted to filter this search down
-            a bit, but I havent found the documentation for it.
+            a bit, but I haven't found the documentation for it.
 
             Example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items
             such as actor=<id> seem to work, but require you already know the id of the actor.
@@ -396,7 +397,7 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
-        # Private attrs as we dont want a reload.
+        # Private attrs as we don't want a reload.
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
@@ -1271,7 +1272,7 @@ class LibrarySection(PlexObject):
             * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
             * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
 
-            The following filter fields are just some examples of the possible filters. The list is not exaustive,
+            The following filter fields are just some examples of the possible filters. The list is not exhaustive,
             and not all filters apply to all library types.
 
             * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
@@ -1334,7 +1335,7 @@ class LibrarySection(PlexObject):
             Some filters may be prefixed by the ``libtype`` separated by a ``.`` (e.g. ``show.collection``,
             ``episode.title``, ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not be
             confused with the ``libtype`` parameter. If no ``libtype`` prefix is provided, then the default library
-            type is assumed. For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+            type is assumed. For example, in a TV show library ``viewCount`` is assumed to be ``show.viewCount``.
             If you want to filter using episode view count then you must specify ``episode.viewCount`` explicitly.
             In addition, if the filter does not exist for the default library type it will fallback to the most
             specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
@@ -2236,16 +2237,57 @@ class FilteringType(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
-        # Add additional manual sorts and fields which are available
+        self._librarySectionID = self._parent().key
+
+        # Add additional manual filters, sorts, and fields which are available
         # but not exposed on the Plex server
+        self.filters += self._manualFilters()
         self.sorts += self._manualSorts()
         self.fields += self._manualFields()
+
+    def _manualFilters(self):
+        """ Manually add additional filters which are available
+            but not exposed on the Plex server.
+        """
+        # Filters: (filter, type, title)
+        additionalFilters = [
+        ]
+
+        if self.type == 'season':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'episode':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'artist':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'track':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+
+        manualFilters = []
+        for filterTag, filterType, filterTitle in additionalFilters:
+            filterKey = '/library/sections/%s/%s?type=%s' % (
+                self._librarySectionID, filterTag, utils.searchType(self.type)
+            )
+            filterXML = (
+                '<Filter filter="%s" filterType="%s" key="%s" title="%s" type="filter" />'
+                % (filterTag, filterType, filterKey, filterTitle)
+            )
+            manualFilters.append(self._manuallyLoadXML(filterXML, FilteringFilter))
+
+        return manualFilters
 
     def _manualSorts(self):
         """ Manually add additional sorts which are available
             but not exposed on the Plex server.
         """
-        # Sorts: key, dir, title
+        # Sorts: (key, dir, title)
         additionalSorts = [
             ('guid', 'asc', 'Guid'),
             ('id', 'asc', 'Rating Key'),
@@ -2275,8 +2317,10 @@ class FilteringType(PlexObject):
 
         manualSorts = []
         for sortField, sortDir, sortTitle in additionalSorts:
-            sortXML = ('<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
-                       % (sortDir, sortField, sortField, sortTitle))
+            sortXML = (
+                '<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
+                % (sortDir, sortField, sortField, sortTitle)
+            )
             manualSorts.append(self._manuallyLoadXML(sortXML, FilteringSort))
 
         return manualSorts
@@ -2285,7 +2329,7 @@ class FilteringType(PlexObject):
         """ Manually add additional fields which are available
             but not exposed on the Plex server.
         """
-        # Fields: key, type, title
+        # Fields: (key, type, title)
         additionalFields = [
             ('guid', 'string', 'Guid'),
             ('id', 'integer', 'Rating Key'),
@@ -2311,19 +2355,26 @@ class FilteringType(PlexObject):
             additionalFields.extend([
                 ('addedAt', 'date', 'Date Season Added'),
                 ('unviewedLeafCount', 'integer', 'Episode Unplayed Count'),
-                ('year', 'integer', 'Season Year')
+                ('year', 'integer', 'Season Year'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'episode':
             additionalFields.extend([
                 ('audienceRating', 'integer', 'Audience Rating'),
                 ('duration', 'integer', 'Duration'),
                 ('rating', 'integer', 'Critic Rating'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
+            ])
+        elif self.type == 'artist':
+            additionalFields.extend([
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'track':
             additionalFields.extend([
                 ('duration', 'integer', 'Duration'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'collection':
             additionalFields.extend([
@@ -2334,8 +2385,10 @@ class FilteringType(PlexObject):
 
         manualFields = []
         for field, fieldType, fieldTitle in additionalFields:
-            fieldXML = ('<Field key="%s%s" title="%s" type="%s"/>'
-                       % (prefix, field, fieldTitle, fieldType))
+            fieldXML = (
+                '<Field key="%s%s" title="%s" type="%s"/>'
+                % (prefix, field, fieldTitle, fieldType)
+            )
             manualFields.append(self._manuallyLoadXML(fieldXML, FilteringField))
 
         return manualFields

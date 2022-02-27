@@ -221,7 +221,7 @@ def test_server_Server_query(plex):
 
 
 def test_server_Server_session(account):
-    # Mock Sesstion
+    # Mock Session
     class MySession(Session):
         def __init__(self):
             super(self.__class__, self).__init__()

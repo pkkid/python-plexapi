@@ -116,7 +116,7 @@ def test_modify_playqueue_with_library_media(plex, show):
     assert pq.items[0].ratingKey == episodes[0].ratingKey, "Items not in proper order."
     assert pq.items[2].ratingKey == episodes[1].ratingKey, "Items not in proper order."
     assert pq.items[1].ratingKey == episodes[2].ratingKey, "Items not in proper order."
-    # Test too many mathcing library items
+    # Test too many matching library items
     pq.addItem(episodes[0])
     pq.addItem(episodes[0])
     with pytest.raises(BadRequest):
