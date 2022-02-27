@@ -174,7 +174,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
             Parameters:
                 title (str): Title of the album to return.
         """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f"/library/sections/{self.librarySectionID}/all?artist.id={self.ratingKey}&type=9"
         return self.fetchItem(key, Album, title__iexact=title)
 
     def albums(self, **kwargs):
