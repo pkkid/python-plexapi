@@ -52,7 +52,7 @@ class MyPlexAccount(PlexObject):
             roles: (List<str>) Lit of account roles. Plexpass membership listed here.
             scrobbleTypes (str): Description
             secure (bool): Description
-            subscriptionActive (bool): True if your subsctiption is active.
+            subscriptionActive (bool): True if your subscription is active.
             subscriptionFeatures: (List<str>) List of features allowed on your subscription.
             subscriptionPlan (str): Name of subscription plan.
             subscriptionStatus (str): String representation of `subscriptionActive`.
@@ -614,7 +614,7 @@ class MyPlexAccount(PlexObject):
                 clientId (str): an identifier of a client to query SyncItems for.
 
             If both `client` and `clientId` provided the client would be preferred.
-            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients's identifier.
         """
         if client:
             clientId = client.clientIdentifier
@@ -635,14 +635,14 @@ class MyPlexAccount(PlexObject):
                 sync_item (:class:`~plexapi.sync.SyncItem`): prepared SyncItem object with all fields set.
 
             If both `client` and `clientId` provided the client would be preferred.
-            If neither `client` nor `clientId` provided the clientId would be set to current clients`s identifier.
+            If neither `client` nor `clientId` provided the clientId would be set to current clients's identifier.
 
             Returns:
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn`t found.
-                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: When client with provided clientId wasn't found.
+                :exc:`~plexapi.exceptions.BadRequest`: Provided client doesn't provides `sync-target`.
         """
         if not client and not clientId:
             clientId = X_PLEX_IDENTIFIER
@@ -657,7 +657,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest('Unable to find client by clientId=%s', clientId)
 
         if 'sync-target' not in client.provides:
-            raise BadRequest('Received client doesn`t provides sync-target')
+            raise BadRequest("Received client doesn't provides sync-target")
 
         params = {
             'SyncItem[title]': sync_item.title,
@@ -790,7 +790,7 @@ class MyPlexUser(PlexObject):
             restricted (str): Unknown.
             servers (List<:class:`~plexapi.myplex.<MyPlexServerShare`>)): Servers shared with the user.
             thumb (str): Link to the users avatar.
-            title (str): Seems to be an aliad for username.
+            title (str): Seems to be an alias for username.
             username (str): User's username.
     """
     TAG = 'User'
@@ -1103,7 +1103,7 @@ class MyPlexResource(PlexObject):
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
         connections = self.preferred_connections(ssl, timeout, locations, schemes)
-        # Try connecting to all known resource connections in parellel, but
+        # Try connecting to all known resource connections in parallel, but
         # only return the first server (in order) that provides a response.
         cls = PlexServer if 'server' in self.provides else PlexClient
         listargs = [[cls, url, self.accessToken, timeout] for url in connections]
@@ -1215,7 +1215,7 @@ class MyPlexDevice(PlexObject):
         """ Returns an instance of :class:`~plexapi.sync.SyncList` for current device.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: when the device doesn`t provides `sync-target`.
+                :exc:`~plexapi.exceptions.BadRequest`: when the device doesn't provides `sync-target`.
         """
         if 'sync-target' not in self.provides:
             raise BadRequest('Requested syncList for device which do not provides sync-target')

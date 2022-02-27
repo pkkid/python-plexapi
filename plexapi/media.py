@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
+from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
@@ -38,7 +39,7 @@ class Media(PlexObject):
 
             <Photo_only_attributes>: The following attributes are only available for photos.
 
-                * aperture (str): The apeture used to take the photo.
+                * aperture (str): The aperture used to take the photo.
                 * exposure (str): The exposure used to take the photo.
                 * iso (int): The iso used to take the photo.
                 * lens (str): The lens used to take the photo.
@@ -92,7 +93,7 @@ class Media(PlexObject):
         try:
             return self._server.query(part, method=self._server._session.delete)
         except BadRequest:
-            log.error("Failed to delete %s. This could be because you havn't allowed "
+            log.error("Failed to delete %s. This could be because you haven't allowed "
                       "items to be deleted" % part)
             raise
 
@@ -282,8 +283,8 @@ class VideoStream(MediaPartStream):
             duration (int): The duration of video stream in milliseconds.
             frameRate (float): The frame rate of the video stream (ex: 23.976).
             frameRateMode (str): The frame rate mode of the video stream.
-            hasScallingMatrix (bool): True if video stream has a scaling matrix.
-            height (int): The hight of the video stream in pixels (ex: 1080).
+            hasScalingMatrix (bool): True if video stream has a scaling matrix.
+            height (int): The height of the video stream in pixels (ex: 1080).
             level (int): The codec encoding level of the video stream (ex: 41).
             profile (str): The profile of the video stream (ex: asp).
             pixelAspectRatio (str): The pixel aspect ratio of the video stream.
@@ -322,7 +323,7 @@ class VideoStream(MediaPartStream):
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.frameRate = utils.cast(float, data.attrib.get('frameRate'))
         self.frameRateMode = data.attrib.get('frameRateMode')
-        self.hasScallingMatrix = utils.cast(bool, data.attrib.get('hasScallingMatrix'))
+        self.hasScalingMatrix = utils.cast(bool, data.attrib.get('hasScalingMatrix'))
         self.height = utils.cast(int, data.attrib.get('height'))
         self.level = utils.cast(int, data.attrib.get('level'))
         self.profile = data.attrib.get('profile')
@@ -399,7 +400,7 @@ class SubtitleStream(MediaPartStream):
             container (str): The container of the subtitle stream.
             forced (bool): True if this is a forced subtitle.
             format (str): The format of the subtitle stream (ex: srt).
-            headerCommpression (str): The header compression of the subtitle stream.
+            headerCompression (str): The header compression of the subtitle stream.
             transient (str): Unknown.
     """
     TAG = 'Stream'
@@ -467,7 +468,7 @@ class TranscodeSession(PlexObject):
             audioDecision (str): The transcode decision for the audio stream.
             complete (bool): True if the transcode is complete.
             container (str): The container of the transcoded media.
-            context (str): The context for the transcode sesson.
+            context (str): The context for the transcode session.
             duration (int): The duration of the transcoded media in milliseconds.
             height (int): The height of the transcoded media in pixels.
             key (str): API URL (ex: /transcode/sessions/<id>).
@@ -916,19 +917,17 @@ class Review(PlexObject):
         self.text = data.attrib.get('text')
 
 
-class BaseImage(PlexObject):
-    """ Base class for all Art, Banner, and Poster objects.
+class BaseResource(PlexObject):
+    """ Base class for all Art, Banner, Poster, and Theme objects.
 
         Attributes:
-            TAG (str): 'Photo'
+            TAG (str): 'Photo' or 'Track'
             key (str): API URL (/library/metadata/<ratingkey>).
-            provider (str): The source of the poster or art.
-            ratingKey (str): Unique key identifying the poster or art.
-            selected (bool): True if the poster or art is currently selected.
-            thumb (str): The URL to retrieve the poster or art thumbnail.
+            provider (str): The source of the art or poster, None for Theme objects.
+            ratingKey (str): Unique key identifying the resource.
+            selected (bool): True if the resource is currently selected.
+            thumb (str): The URL to retrieve the resource thumbnail.
     """
-    TAG = 'Photo'
-
     def _loadData(self, data):
         self._data = data
         self.key = data.attrib.get('key')
@@ -946,16 +945,24 @@ class BaseImage(PlexObject):
             pass
 
 
-class Art(BaseImage):
+class Art(BaseResource):
     """ Represents a single Art object. """
+    TAG = 'Photo'
 
 
-class Banner(BaseImage):
+class Banner(BaseResource):
     """ Represents a single Banner object. """
+    TAG = 'Photo'
 
 
-class Poster(BaseImage):
+class Poster(BaseResource):
     """ Represents a single Poster object. """
+    TAG = 'Photo'
+
+
+class Theme(BaseResource):
+    """ Represents a single Theme object. """
+    TAG = 'Track'
 
 
 @utils.registerPlexObject
@@ -1058,31 +1065,50 @@ class Agent(PlexObject):
         self.hasAttribution = data.attrib.get('hasAttribution')
         self.hasPrefs = data.attrib.get('hasPrefs')
         self.identifier = data.attrib.get('identifier')
+        self.name = data.attrib.get('name')
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
-        if 'mediaType' in self._initpath:
-            self.name = data.attrib.get('name')
-            self.languageCode = []
-            for code in data:
-                self.languageCode += [code.attrib.get('code')]
-        else:
-            self.mediaTypes = [AgentMediaType(server=self._server, data=d) for d in data]
 
-    def _settings(self):
+        if 'mediaType' in self._initpath:
+            self.languageCodes = self.listAttrs(data, 'code', etag='Language')
+            self.mediaTypes = []
+        else:
+            self.languageCodes = []
+            self.mediaTypes = self.findItems(data, cls=AgentMediaType)
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes
+
+    def settings(self):
         key = '/:/plugins/%s/prefs' % self.identifier
         data = self._server.query(key)
         return self.findItems(data, cls=settings.Setting)
 
+    @deprecated('use "settings" instead')
+    def _settings(self):
+        return self.settings()
+
 
 class AgentMediaType(Agent):
+    """ Represents a single Agent MediaType.
+
+        Attributes:
+            TAG (str): 'MediaType'
+    """
+    TAG = 'MediaType'
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('name'))
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
 
     def _loadData(self, data):
+        self.languageCodes = self.listAttrs(data, 'code', etag='Language')
         self.mediaType = utils.cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
-        self.languageCode = []
-        for code in data:
-            self.languageCode += [code.attrib.get('code')]
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes

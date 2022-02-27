@@ -6,13 +6,17 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import ArtMixin, PosterMixin, SmartFilterMixin
+from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMixin):
+class Playlist(
+    PlexPartialObject, Playable,
+    SmartFilterMixin,
+    ArtMixin, PosterMixin
+):
     """ Represents a single Playlist.
 
         Attributes:
@@ -29,13 +33,17 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
             icon (str): Icon URI string for smart playlists.
             key (str): API URL (/playlist/<ratingkey>).
             leafCount (int): Number of items in the playlist view.
+            librarySectionID (int): Library section identifier (radio only)
+            librarySectionKey (str): Library section key (radio only)
+            librarySectionTitle (str): Library section title (radio only)
             playlistType (str): 'audio', 'video', or 'photo'
+            radio (bool): If this playlist represents a radio station
             ratingKey (int): Unique key identifying the playlist.
             smart (bool): True if the playlist is a smart playlist.
             summary (str): Summary of the playlist.
             title (str): Name of the playlist.
             type (str): 'playlist'
-            updatedAt (datatime): Datetime the playlist was updated.
+            updatedAt (datetime): Datetime the playlist was updated.
     """
     TAG = 'Playlist'
     TYPE = 'playlist'
@@ -54,7 +62,11 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
         self.icon = data.attrib.get('icon')
         self.key = data.attrib.get('key', '').replace('/items', '')  # FIX_BUG_50
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
+        self.librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+        self.librarySectionKey = data.attrib.get('librarySectionKey')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.playlistType = data.attrib.get('playlistType')
+        self.radio = utils.cast(bool, data.attrib.get('radio', 0))
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.smart = utils.cast(bool, data.attrib.get('smart'))
         self.summary = data.attrib.get('summary')
@@ -169,6 +181,8 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
 
     def items(self):
         """ Returns a list of all items in the playlist. """
+        if self.radio:
+            return []
         if self._items is None:
             key = '%s/items' % self.key
             items = self.fetchItems(key)

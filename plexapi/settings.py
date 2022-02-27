@@ -71,7 +71,7 @@ class Settings(PlexObject):
         return self.groups().get(group, [])
 
     def save(self):
-        """ Save any outstanding settnig changes to the :class:`~plexapi.server.PlexServer`. This
+        """ Save any outstanding setting changes to the :class:`~plexapi.server.PlexServer`. This
             performs a full reload() of Settings after complete.
         """
         params = {}
@@ -100,7 +100,7 @@ class Setting(PlexObject):
             hidden (bool): True if this is a hidden setting.
             advanced (bool): True if this is an advanced setting.
             group (str): Group name this setting is categorized as.
-            enumValues (list,dict): List or dictionary of valis values for this setting.
+            enumValues (list,dict): List or dictionary of valid values for this setting.
     """
     _bool_cast = lambda x: bool(x == 'true' or x == '1')
     _bool_str = lambda x: str(x).lower()
@@ -113,17 +113,19 @@ class Setting(PlexObject):
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
-        self._setValue = None
+        self.type = data.attrib.get('type')
+        self.advanced = utils.cast(bool, data.attrib.get('advanced'))
+        self.default = self._cast(data.attrib.get('default'))
+        self.enumValues = self._getEnumValues(data)
+        self.group = data.attrib.get('group')
+        self.hidden = utils.cast(bool, data.attrib.get('hidden'))
         self.id = data.attrib.get('id')
         self.label = data.attrib.get('label')
+        self.option = data.attrib.get('option')
+        self.secure = utils.cast(bool, data.attrib.get('secure'))
         self.summary = data.attrib.get('summary')
-        self.type = data.attrib.get('type')
-        self.default = self._cast(data.attrib.get('default'))
         self.value = self._cast(data.attrib.get('value'))
-        self.hidden = utils.cast(bool, data.attrib.get('hidden'))
-        self.advanced = utils.cast(bool, data.attrib.get('advanced'))
-        self.group = data.attrib.get('group')
-        self.enumValues = self._getEnumValues(data)
+        self._setValue = None
 
     def _cast(self, value):
         """ Cast the specific value to the type of this setting. """
@@ -132,8 +134,8 @@ class Setting(PlexObject):
         return value
 
     def _getEnumValues(self, data):
-        """ Returns a list of dictionary of valis value for this setting. """
-        enumstr = data.attrib.get('enumValues')
+        """ Returns a list or dictionary of values for this setting. """
+        enumstr = data.attrib.get('enumValues') or data.attrib.get('values')
         if not enumstr:
             return None
         if ':' in enumstr:
@@ -141,7 +143,7 @@ class Setting(PlexObject):
         return enumstr.split('|')
 
     def set(self, value):
-        """ Set a new value for this setitng. NOTE: You must call plex.settings.save() for before
+        """ Set a new value for this setting. NOTE: You must call plex.settings.save() for before
             any changes to setting values are persisted to the :class:`~plexapi.server.PlexServer`.
         """
         # check a few things up front

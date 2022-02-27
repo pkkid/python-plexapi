@@ -43,7 +43,7 @@ class Library(PlexObject):
                 if elem.attrib.get('type') == cls.TYPE:
                     section = cls(self._server, elem, key)
                     self._sectionsByID[section.key] = section
-                    self._sectionsByTitle[section.title.lower()] = section
+                    self._sectionsByTitle[section.title.lower().strip()] = section
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
@@ -59,10 +59,11 @@ class Library(PlexObject):
             Parameters:
                 title (str): Title of the section to return.
         """
-        if not self._sectionsByTitle or title not in self._sectionsByTitle:
+        normalized_title = title.lower().strip()
+        if not self._sectionsByTitle or normalized_title not in self._sectionsByTitle:
             self._loadSections()
         try:
-            return self._sectionsByTitle[title.lower()]
+            return self._sectionsByTitle[normalized_title]
         except KeyError:
             raise NotFound('Invalid library section: %s' % title) from None
 
@@ -81,6 +82,28 @@ class Library(PlexObject):
             return self._sectionsByID[sectionID]
         except KeyError:
             raise NotFound('Invalid library sectionID: %s' % sectionID) from None
+
+    def hubs(self, sectionID=None, identifier=None, **kwargs):
+        """ Returns a list of :class:`~plexapi.library.Hub` across all library sections.
+
+            Parameters:
+                sectionID (int or str or list, optional):
+                    IDs of the sections to limit results or "playlists".
+                identifier (str or list, optional):
+                    Names of identifiers to limit results.
+                    Available on `Hub` instances as the `hubIdentifier` attribute.
+                    Examples: 'home.continue' or 'home.ondeck'
+        """
+        if sectionID:
+            if not isinstance(sectionID, list):
+                sectionID = [sectionID]
+            kwargs['contentDirectoryID'] = ",".join(map(str, sectionID))
+        if identifier:
+            if not isinstance(identifier, list):
+                identifier = [identifier]
+            kwargs['identifier'] = ",".join(identifier)
+        key = '/hubs%s' % utils.joinArgs(kwargs)
+        return self.fetchItems(key)
 
     def all(self, **kwargs):
         """ Returns a list of all media from all library sections.
@@ -103,7 +126,7 @@ class Library(PlexObject):
     def search(self, title=None, libtype=None, **kwargs):
         """ Searching within a library section is much more powerful. It seems certain
             attributes on the media objects can be targeted to filter this search down
-            a bit, but I havent found the documentation for it.
+            a bit, but I haven't found the documentation for it.
 
             Example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items
             such as actor=<id> seem to work, but require you already know the id of the actor.
@@ -374,7 +397,7 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
-        # Private attrs as we dont want a reload.
+        # Private attrs as we don't want a reload.
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
@@ -578,9 +601,7 @@ class LibrarySection(PlexObject):
 
     def getGuid(self, guid):
         """ Returns the media item with the specified external IMDB, TMDB, or TVDB ID.
-            Note: This search uses a PlexAPI operator so performance may be slow. All items from the
-            entire Plex library need to be retrieved for each guid search. It is recommended to create
-            your own lookup dictionary if you are searching for a lot of external guids.
+            Note: Only available for the Plex Movie and Plex TV Series agents.
 
             Parameters:
                 guid (str): The external guid of the item to return.
@@ -593,20 +614,23 @@ class LibrarySection(PlexObject):
 
                 .. code-block:: python
 
-                    # This will retrieve all items in the entire library 3 times
                     result1 = library.getGuid('imdb://tt0944947')
                     result2 = library.getGuid('tmdb://1399')
                     result3 = library.getGuid('tvdb://121361')
 
-                    # This will only retrieve all items in the library once to create a lookup dictionary
+                    # Alternatively, create your own guid lookup dictionary for faster performance
                     guidLookup = {guid.id: item for item in library.all() for guid in item.guids}
                     result1 = guidLookup['imdb://tt0944947']
                     result2 = guidLookup['tmdb://1399']
                     result3 = guidLookup['tvdb://121361']
 
         """
-        key = '/library/sections/%s/all?includeGuids=1' % self.key
-        return self.fetchItem(key, Guid__id__iexact=guid)
+        try:
+            dummy = self.search(maxresults=1)[0]
+            match = dummy.matches(agent=self.agent, title=guid.replace('://', '-'))
+            return self.search(guid=match[0].guid)[0]
+        except IndexError:
+            raise NotFound("Guid '%s' is not found in the library" % guid) from None
 
     def all(self, libtype=None, **kwargs):
         """ Returns a list of all items from this library section.
@@ -624,13 +648,13 @@ class LibrarySection(PlexObject):
     def hubs(self):
         """ Returns a list of available :class:`~plexapi.library.Hub` for this library section.
         """
-        key = '/hubs/sections/%s' % self.key
+        key = '/hubs/sections/%s?includeStations=1' % self.key
         return self.fetchItems(key)
 
     def agents(self):
         """ Returns a list of available :class:`~plexapi.media.Agent` for this library section.
         """
-        return self._server.agents(utils.searchType(self.type))
+        return self._server.agents(self.type)
 
     def settings(self):
         """ Returns a list of all library settings. """
@@ -673,6 +697,36 @@ class LibrarySection(PlexObject):
                 data[key % setting.id] = setting.default
 
         self.edit(**data)
+
+    def _lockUnlockAllField(self, field, libtype=None, locked=True):
+        """ Lock or unlock a field for all items in the library. """
+        libtype = libtype or self.TYPE
+        args = {
+            'type': utils.searchType(libtype),
+            '%s.locked' % field: int(locked)
+        }
+        key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
+        self._server.query(key, method=self._server._session.put)
+
+    def lockAllField(self, field, libtype=None):
+        """ Lock a field for all items in the library.
+        
+            Parameters:
+                field (str): The field to lock (e.g. thumb, rating, collection).
+                libtype (str, optional): The library type to lock (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo). Default is the main library type.
+        """
+        self._lockUnlockAllField(field, libtype=libtype, locked=True)
+
+    def unlockAllField(self, field, libtype=None):
+        """ Unlock a field for all items in the library.
+        
+            Parameters:
+                field (str): The field to unlock (e.g. thumb, rating, collection).
+                libtype (str, optional): The library type to lock (movie, show, season, episode,
+                    artist, album, track, photoalbum, photo). Default is the main library type.
+        """
+        self._lockUnlockAllField(field, libtype=libtype, locked=False)
 
     def timeline(self):
         """ Returns a timeline query for this library section. """
@@ -1218,7 +1272,7 @@ class LibrarySection(PlexObject):
             * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
             * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
 
-            The following filter fields are just some examples of the possible filters. The list is not exaustive,
+            The following filter fields are just some examples of the possible filters. The list is not exhaustive,
             and not all filters apply to all library types.
 
             * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
@@ -1281,7 +1335,7 @@ class LibrarySection(PlexObject):
             Some filters may be prefixed by the ``libtype`` separated by a ``.`` (e.g. ``show.collection``,
             ``episode.title``, ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not be
             confused with the ``libtype`` parameter. If no ``libtype`` prefix is provided, then the default library
-            type is assumed. For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+            type is assumed. For example, in a TV show library ``viewCount`` is assumed to be ``show.viewCount``.
             If you want to filter using episode view count then you must specify ``episode.viewCount`` explicitly.
             In addition, if the filter does not exist for the default library type it will fallback to the most
             specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
@@ -1786,9 +1840,8 @@ class MusicSection(LibrarySection):
         return self.fetchItems(key)
 
     def stations(self):
-        """ Returns a list of :class:`~plexapi.audio.Album` objects in this section. """
-        key = '/hubs/sections/%s?includeStations=1' % self.key
-        return self.fetchItems(key, cls=Station)
+        """ Returns a list of :class:`~plexapi.playlist.Playlist` stations in this section. """
+        return next((hub.items for hub in self.hubs() if hub.context == 'hub.music.stations'), None)
 
     def searchArtists(self, **kwargs):
         """ Search for an artist. See :func:`~plexapi.library.LibrarySection.search` for usage. """
@@ -2002,6 +2055,7 @@ class Hub(PlexObject):
             context (str): The context of the hub.
             hubKey (str): API URL for these specific hub items.
             hubIdentifier (str): The identifier of the hub.
+            items (list): List of items in the hub.
             key (str): API URL for the hub.
             more (bool): True if there are more items to load (call reload() to fetch all items).
             size (int): The number of items in the hub.
@@ -2154,39 +2208,6 @@ class Place(HubMediaTag):
     TAGTYPE = 400
 
 
-@utils.registerPlexObject
-class Station(PlexObject):
-    """ Represents the Station area in the MusicSection.
-
-        Attributes:
-            TITLE (str): 'Stations'
-            TYPE (str): 'station'
-            hubIdentifier (str): Unknown.
-            size (int): Number of items found.
-            title (str): Title of this Hub.
-            type (str): Type of items in the Hub.
-            more (str): Unknown.
-            style (str): Unknown
-            items (str): List of items in the Hub.
-    """
-    TITLE = 'Stations'
-    TYPE = 'station'
-
-    def _loadData(self, data):
-        """ Load attribute values from Plex XML response. """
-        self._data = data
-        self.hubIdentifier = data.attrib.get('hubIdentifier')
-        self.size = utils.cast(int, data.attrib.get('size'))
-        self.title = data.attrib.get('title')
-        self.type = data.attrib.get('type')
-        self.more = data.attrib.get('more')
-        self.style = data.attrib.get('style')
-        self.items = self.findItems(data)
-
-    def __len__(self):
-        return self.size
-
-
 class FilteringType(PlexObject):
     """ Represents a single filtering Type object for a library.
 
@@ -2216,16 +2237,57 @@ class FilteringType(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
-        # Add additional manual sorts and fields which are available
+        self._librarySectionID = self._parent().key
+
+        # Add additional manual filters, sorts, and fields which are available
         # but not exposed on the Plex server
+        self.filters += self._manualFilters()
         self.sorts += self._manualSorts()
         self.fields += self._manualFields()
+
+    def _manualFilters(self):
+        """ Manually add additional filters which are available
+            but not exposed on the Plex server.
+        """
+        # Filters: (filter, type, title)
+        additionalFilters = [
+        ]
+
+        if self.type == 'season':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'episode':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'artist':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+        elif self.type == 'track':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
+
+        manualFilters = []
+        for filterTag, filterType, filterTitle in additionalFilters:
+            filterKey = '/library/sections/%s/%s?type=%s' % (
+                self._librarySectionID, filterTag, utils.searchType(self.type)
+            )
+            filterXML = (
+                '<Filter filter="%s" filterType="%s" key="%s" title="%s" type="filter" />'
+                % (filterTag, filterType, filterKey, filterTitle)
+            )
+            manualFilters.append(self._manuallyLoadXML(filterXML, FilteringFilter))
+
+        return manualFilters
 
     def _manualSorts(self):
         """ Manually add additional sorts which are available
             but not exposed on the Plex server.
         """
-        # Sorts: key, dir, title
+        # Sorts: (key, dir, title)
         additionalSorts = [
             ('guid', 'asc', 'Guid'),
             ('id', 'asc', 'Rating Key'),
@@ -2255,8 +2317,10 @@ class FilteringType(PlexObject):
 
         manualSorts = []
         for sortField, sortDir, sortTitle in additionalSorts:
-            sortXML = ('<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
-                       % (sortDir, sortField, sortField, sortTitle))
+            sortXML = (
+                '<Sort defaultDirection="%s" descKey="%s:desc" key="%s" title="%s" />'
+                % (sortDir, sortField, sortField, sortTitle)
+            )
             manualSorts.append(self._manuallyLoadXML(sortXML, FilteringSort))
 
         return manualSorts
@@ -2265,7 +2329,7 @@ class FilteringType(PlexObject):
         """ Manually add additional fields which are available
             but not exposed on the Plex server.
         """
-        # Fields: key, type, title
+        # Fields: (key, type, title)
         additionalFields = [
             ('guid', 'string', 'Guid'),
             ('id', 'integer', 'Rating Key'),
@@ -2291,19 +2355,26 @@ class FilteringType(PlexObject):
             additionalFields.extend([
                 ('addedAt', 'date', 'Date Season Added'),
                 ('unviewedLeafCount', 'integer', 'Episode Unplayed Count'),
-                ('year', 'integer', 'Season Year')
+                ('year', 'integer', 'Season Year'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'episode':
             additionalFields.extend([
                 ('audienceRating', 'integer', 'Audience Rating'),
                 ('duration', 'integer', 'Duration'),
                 ('rating', 'integer', 'Critic Rating'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
+            ])
+        elif self.type == 'artist':
+            additionalFields.extend([
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'track':
             additionalFields.extend([
                 ('duration', 'integer', 'Duration'),
-                ('viewOffset', 'integer', 'View Offset')
+                ('viewOffset', 'integer', 'View Offset'),
+                ('label', 'tag', 'Label')
             ])
         elif self.type == 'collection':
             additionalFields.extend([
@@ -2314,8 +2385,10 @@ class FilteringType(PlexObject):
 
         manualFields = []
         for field, fieldType, fieldTitle in additionalFields:
-            fieldXML = ('<Field key="%s%s" title="%s" type="%s"/>'
-                       % (prefix, field, fieldTitle, fieldType))
+            fieldXML = (
+                '<Field key="%s%s" title="%s" type="%s"/>'
+                % (prefix, field, fieldTitle, fieldType)
+            )
             manualFields.append(self._manuallyLoadXML(fieldXML, FilteringField))
 
         return manualFields
