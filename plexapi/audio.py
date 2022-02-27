@@ -40,7 +40,7 @@ class Audio(PlexPartialObject):
             title (str): Name of the artist, album, or track (Jason Mraz, We Sing, Lucky, etc.).
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'artist', 'album', or 'track'.
-            updatedAt (datatime): Datetime the item was updated.
+            updatedAt (datetime): Datetime the item was updated.
             userRating (float): Rating of the item (0.0 - 10.0) equaling (0 stars - 5 stars).
             viewCount (int): Count of times the item was played.
     """

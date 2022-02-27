@@ -39,7 +39,7 @@ class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMi
             summary (str): Summary of the playlist.
             title (str): Name of the playlist.
             type (str): 'playlist'
-            updatedAt (datatime): Datetime the playlist was updated.
+            updatedAt (datetime): Datetime the playlist was updated.
     """
     TAG = 'Playlist'
     TYPE = 'playlist'

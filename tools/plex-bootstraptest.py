@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-The script is used to bootstrap a the test enviroment for plexapi
+The script is used to bootstrap a the test environment for plexapi
 with all the libraries required for testing.
 
 By default this uses a docker.
@@ -231,7 +231,7 @@ def get_default_ip():
 
 
 def get_plex_account(opts):
-    """ Authenitcate with Plex using the command line options. """
+    """ Authenticate with Plex using the command line options. """
     if not opts.unclaimed:
         if opts.token:
             return MyPlexAccount(token=opts.token)
@@ -381,7 +381,7 @@ if __name__ == "__main__":
         default="plex-test-docker-%s" % str(uuid4()),
     )  # noqa
     parser.add_argument(
-        "--accept-eula", help="Accept Plex`s EULA", default=False, action="store_true"
+        "--accept-eula", help="Accept Plex's EULA", default=False, action="store_true"
     )  # noqa
     parser.add_argument(
         "--without-movies",
@@ -479,7 +479,7 @@ if __name__ == "__main__":
 
     if not server:
         raise SystemExit(
-            "Server didnt appear in your account after %ss" % opts.bootstrap_timeout
+            "Server didn't appear in your account after %ss" % opts.bootstrap_timeout
         )
 
     print("Plex container started after %ss" % int(runtime))
@@ -498,7 +498,7 @@ if __name__ == "__main__":
 
     sections = []
 
-    # Lets add a check here do somebody dont mess up
+    # Lets add a check here do somebody don't mess up
     # there normal server if they run manual tests.
     # Like i did....
     if len(server.library.sections()) and opts.no_docker is True:

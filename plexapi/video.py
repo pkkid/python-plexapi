@@ -37,7 +37,7 @@ class Video(PlexPartialObject):
             title (str): Name of the movie, show, season, episode, or clip.
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'movie', 'show', 'season', 'episode', or 'clip'.
-            updatedAt (datatime): Datetime the item was updated.
+            updatedAt (datetime): Datetime the item was updated.
             userRating (float): Rating of the item (0.0 - 10.0) equaling (0 stars - 5 stars).
             viewCount (int): Count of times the item was played.
     """
@@ -78,7 +78,7 @@ class Video(PlexPartialObject):
         return self._server.url(part, includeToken=True) if part else None
 
     def markWatched(self):
-        """ Mark the video as palyed. """
+        """ Mark the video as played. """
         key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
         self._server.query(key)
 
@@ -283,7 +283,7 @@ class Movie(Video, Playable, AdvancedSettingsMixin, ArtMixin, PosterMixin, Theme
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
-            languageOverride (str): Setting that indicates if a languge is used to override metadata
+            languageOverride (str): Setting that indicates if a language is used to override metadata
                 (eg. en-CA, None = Library default).
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the movie was released.
@@ -412,7 +412,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, The
             index (int): Plex index number for the show.
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
-            languageOverride (str): Setting that indicates if a languge is used to override metadata
+            languageOverride (str): Setting that indicates if a language is used to override metadata
                 (eg. en-CA, None = Library default).
             leafCount (int): Number of items in the show view.
             locations (List<str>): List of folder paths where the show is found on disk.

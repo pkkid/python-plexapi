@@ -79,7 +79,7 @@ if __name__ == '__main__':
     items = search_for_item(opts.url)
     for item in items:
         for part in item.iterParts():
-            # We do this manually since we dont want to add a progress to Episode etc
+            # We do this manually since we don't want to add a progress to Episode etc
             filename = '%s.%s' % (item._prettyfilename(), part.container)
             url = item._server.url('%s?download=1' % part.key)
             filepath = utils.download(url, token=account.authenticationToken, filename=filename, savepath=os.getcwd(),

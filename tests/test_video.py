@@ -338,7 +338,7 @@ def test_video_Movie_attrs(movies):
     assert video.extendedDisplayTitle == "1080p (H.264)"
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
-    assert video.hasScallingMatrix is None
+    assert video.hasScalingMatrix is False
     assert utils.is_int(video.height, gte=250)
     assert utils.is_int(video.id)
     assert utils.is_int(video.index, gte=0)
@@ -396,7 +396,7 @@ def test_video_Movie_attrs(movies):
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
     assert stream1.frameRateMode is None
-    assert stream1.hasScallingMatrix is None
+    assert stream1.hasScalingMatrix is False
     assert utils.is_int(stream1.height, gte=250)
     assert utils.is_int(stream1.id)
     assert utils.is_int(stream1.index, gte=0)

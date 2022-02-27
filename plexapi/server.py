@@ -314,7 +314,7 @@ class PlexServer(PlexObject):
     def myPlexAccount(self):
         """ Returns a :class:`~plexapi.myplex.MyPlexAccount` object using the same
             token to access this server. If you are not the owner of this PlexServer
-            you're likley to recieve an authentication error calling this.
+            you're likely to receive an authentication error calling this.
         """
         if self._myPlexAccount is None:
             from plexapi.myplex import MyPlexAccount
@@ -323,7 +323,7 @@ class PlexServer(PlexObject):
 
     def _myPlexClientPorts(self):
         """ Sometimes the PlexServer does not properly advertise port numbers required
-            to connect. This attemps to look up device port number from plex.tv.
+            to connect. This attempts to look up device port number from plex.tv.
             See issue #126: Make PlexServer.clients() more user friendly.
               https://github.com/pkkid/python-plexapi/issues/126
         """
@@ -1078,7 +1078,7 @@ class SystemDevice(PlexObject):
         Attributes:
             TAG (str): 'Device'
             clientIdentifier (str): The unique identifier for the device.
-            createdAt (datatime): Datetime the device was created.
+            createdAt (datetime): Datetime the device was created.
             id (int): The ID of the device (not the same as :class:`~plexapi.myplex.MyPlexDevice` ID).
             key (str): API URL (/devices/<id>)
             name (str): The name of the device.
@@ -1102,11 +1102,11 @@ class StatisticsBandwidth(PlexObject):
         Attributes:
             TAG (str): 'StatisticsBandwidth'
             accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
-            at (datatime): Datetime of the bandwidth data.
-            bytes (int): The total number of bytes for the specified timespan.
+            at (datetime): Datetime of the bandwidth data.
+            bytes (int): The total number of bytes for the specified time span.
             deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
-            lan (bool): True or False wheter the bandwidth is local or remote.
-            timespan (int): The timespan for the bandwidth data.
+            lan (bool): True or False whether the bandwidth is local or remote.
+            timespan (int): The time span for the bandwidth data.
                 1: months, 2: weeks, 3: days, 4: hours, 6: seconds.
 
     """
@@ -1143,12 +1143,12 @@ class StatisticsResources(PlexObject):
 
         Attributes:
             TAG (str): 'StatisticsResources'
-            at (datatime): Datetime of the resource data.
+            at (datetime): Datetime of the resource data.
             hostCpuUtilization (float): The system CPU usage %.
             hostMemoryUtilization (float): The Plex Media Server CPU usage %.
             processCpuUtilization (float): The system RAM usage %.
             processMemoryUtilization (float): The Plex Media Server RAM usage %.
-            timespan (int): The timespan for the resource data (6: seconds).
+            timespan (int): The time span for the resource data (6: seconds).
     """
     TAG = 'StatisticsResources'
 

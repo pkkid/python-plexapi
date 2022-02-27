@@ -196,7 +196,7 @@ class PlexObject(object):
             Any XML attribute can be filtered when fetching results. Filtering is done before
             the Python objects are built to help keep things speedy. For example, passing in
             ``viewCount=0`` will only return matching items where the view count is ``0``.
-            Note that case matters when specifying attributes. Attributes futher down in the XML
+            Note that case matters when specifying attributes. Attributes further down in the XML
             tree can be filtered by *prepending* the attribute with each element tag ``Tag__``.
 
             Examples:
@@ -228,12 +228,12 @@ class PlexObject(object):
             * ``__exists`` (*bool*): Value is or is not present in the attrs.
             * ``__gt``: Value is greater than specified arg.
             * ``__gte``: Value is greater than or equal to specified arg.
-            * ``__icontains``: Case insensative value contains specified arg.
-            * ``__iendswith``: Case insensative value ends with specified arg.
-            * ``__iexact``: Case insensative value matches specified arg.
+            * ``__icontains``: Case insensitive value contains specified arg.
+            * ``__iendswith``: Case insensitive value ends with specified arg.
+            * ``__iexact``: Case insensitive value matches specified arg.
             * ``__in``: Value is in a specified list or tuple.
-            * ``__iregex``: Case insensative value matches the specified regular expression.
-            * ``__istartswith``: Case insensative value starts with specified arg.
+            * ``__iregex``: Case insensitive value matches the specified regular expression.
+            * ``__istartswith``: Case insensitive value starts with specified arg.
             * ``__lt``: Value is less than specified arg.
             * ``__lte``: Value is less than or equal to specified arg.
             * ``__regex``: Value matches the specified regular expression.
@@ -392,7 +392,7 @@ class PlexObject(object):
         # check were looking for the tag
         if attr.lower() == 'etag':
             return [elem.tag]
-        # loop through attrs so we can perform case-insensative match
+        # loop through attrs so we can perform case-insensitive match
         for _attr, value in elem.attrib.items():
             if attr.lower() == _attr.lower():
                 return [value]
@@ -455,7 +455,7 @@ class PlexPartialObject(PlexObject):
     def __getattribute__(self, attr):
         # Dragons inside.. :-/
         value = super(PlexPartialObject, self).__getattribute__(attr)
-        # Check a few cases where we dont want to reload
+        # Check a few cases where we don't want to reload
         if attr in _DONT_RELOAD_FOR_KEYS: return value
         if attr in _DONT_OVERWRITE_SESSION_KEYS: return value
         if attr in USER_DONT_RELOAD_FOR_KEYS: return value
@@ -709,7 +709,7 @@ class Playable(object):
                 filename = part.file
 
             if kwargs:
-                # So this seems to be a alot slower but allows transcode.
+                # So this seems to be a a lot slower but allows transcode.
                 download_url = self.getStreamURL(**kwargs)
             else:
                 download_url = self._server.url('%s?download=1' % part.key)
