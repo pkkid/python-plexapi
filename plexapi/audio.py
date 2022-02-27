@@ -5,11 +5,13 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, \
-    ThemeUrlMixin
-from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, \
-    StyleMixin
+from plexapi.mixins import (
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
+    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+)
 from plexapi.playlist import Playlist
 
 
@@ -127,9 +129,13 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, RatingMixin, SplitMergeMixin,
-             UnmatchMatchMixin, CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin,
-             SimilarArtistMixin, StyleMixin):
+class Artist(
+    Audio,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+):
     """ Represents a single Artist.
 
         Attributes:
@@ -237,8 +243,13 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, Ra
 
 
 @utils.registerPlexObject
-class Album(Audio, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, UnmatchMatchMixin,
-            CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
+class Album(
+    Audio,
+    UnmatchMatchMixin, RatingMixin,
+    ArtMixin, PosterMixin, ThemeUrlMixin,
+    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+):
     """ Represents a single Album.
 
         Attributes:
@@ -346,8 +357,13 @@ class Album(Audio, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, UnmatchMat
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin, RatingMixin,
-        CollectionMixin, LabelMixin, MoodMixin):
+class Track(
+    Audio, Playable,
+    RatingMixin,
+    ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
+    TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
+    CollectionMixin, LabelMixin, MoodMixin
+):
     """ Represents a single Track.
 
         Attributes:
@@ -369,7 +385,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin, RatingM
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
-            parentIndex (int): Album index.
+            parentIndex (int): Disc number of the track.
             parentKey (str): API URL of the album (/library/metadata/<parentRatingKey>).
             parentRatingKey (int): Unique key identifying the album.
             parentThumb (str): URL to album thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
@@ -400,7 +416,7 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin, RatingM
         self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
         self.parentGuid = data.attrib.get('parentGuid')
-        self.parentIndex = data.attrib.get('parentIndex')
+        self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
         self.parentThumb = data.attrib.get('parentThumb')

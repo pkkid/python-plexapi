@@ -5,15 +5,24 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, RatingMixin
-from plexapi.mixins import LabelMixin, SmartFilterMixin
+from plexapi.mixins import (
+    AdvancedSettingsMixin, SmartFilterMixin, RatingMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    LabelMixin
+)
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, ThemeMixin, RatingMixin,
-                 LabelMixin, SmartFilterMixin):
+class Collection(
+    PlexPartialObject,
+    AdvancedSettingsMixin, SmartFilterMixin, RatingMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    LabelMixin
+):
     """ Represents a single Collection.
 
         Attributes:
@@ -343,6 +352,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         }))
         self._server.query(key, method=self._server._session.put)
 
+    @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):
         """ Edit the collection.
         
@@ -367,7 +377,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             args['summary.locked'] = 1
 
         args.update(kwargs)
-        super(Collection, self).edit(**args)
+        self._edit(**args)
 
     def delete(self):
         """ Delete the collection. """

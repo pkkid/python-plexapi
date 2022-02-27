@@ -574,6 +574,48 @@ def test_video_Movie_extras(movies):
     assert extra.section() == movies
 
 
+def test_video_Movie_batchEdits(movie):
+    title = movie.title
+    summary = movie.summary
+    tagline = movie.tagline
+    studio = movie.studio
+
+    assert movie._edits is None
+    movie.batchEdits()
+    assert movie._edits == {}
+
+    new_title = "New title"
+    new_summary = "New summary"
+    new_tagline = "New tagline"
+    new_studio = "New studio"
+    movie.editTitle(new_title) \
+        .editSummary(new_summary) \
+        .editTagline(new_tagline) \
+        .editStudio(new_studio)
+    assert movie._edits != {}
+    movie.saveEdits()
+    assert movie._edits is None
+    assert movie.title == new_title
+    assert movie.summary == new_summary
+    assert movie.tagline == new_tagline
+    assert movie.studio == new_studio
+
+    movie.batchEdits() \
+        .editTitle(title, locked=False) \
+        .editSummary(summary, locked=False) \
+        .editTagline(tagline, locked=False) \
+        .editStudio(studio, locked=False) \
+        .saveEdits()
+    assert movie.title == title
+    assert movie.summary == summary
+    assert movie.tagline == tagline
+    assert movie.studio == studio
+    assert not movie.fields
+    
+    with pytest.raises(BadRequest):
+        movie.saveEdits()
+
+
 def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
@@ -592,6 +634,17 @@ def test_video_Movie_mixins_themes(movie):
 
 def test_video_Movie_mixins_rating(movie):
     test_mixins.edit_rating(movie)
+
+
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_content_rating(movie)
+    test_mixins.edit_originally_available(movie)
+    test_mixins.edit_original_title(movie)
+    test_mixins.edit_sort_title(movie)
+    test_mixins.edit_studio(movie)
+    test_mixins.edit_summary(movie)
+    test_mixins.edit_tagline(movie)
+    test_mixins.edit_title(movie)
 
 
 def test_video_Movie_mixins_tags(movie):
@@ -813,6 +866,17 @@ def test_video_Show_mixins_rating(show):
     test_mixins.edit_rating(show)
 
 
+def test_video_Show_mixins_fields(show):
+    test_mixins.edit_content_rating(show)
+    test_mixins.edit_originally_available(show)
+    test_mixins.edit_original_title(show)
+    test_mixins.edit_sort_title(show)
+    test_mixins.edit_studio(show)
+    test_mixins.edit_summary(show)
+    test_mixins.edit_tagline(show)
+    test_mixins.edit_title(show)
+
+
 def test_video_Show_mixins_tags(show):
     test_mixins.edit_collection(show)
     test_mixins.edit_genre(show)
@@ -949,6 +1013,12 @@ def test_video_Season_mixins_themes(show):
 def test_video_Season_mixins_rating(show):
     season = show.season(season=1)
     test_mixins.edit_rating(season)
+
+
+def test_video_Season_mixins_fields(show):
+    season = show.season(season=1)
+    test_mixins.edit_summary(season)
+    test_mixins.edit_title(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1164,6 +1234,14 @@ def test_video_Episode_mixins_themes(episode):
 
 def test_video_Episode_mixins_rating(episode):
     test_mixins.edit_rating(episode)
+
+
+def test_video_Episode_mixins_fields(episode):
+    test_mixins.edit_content_rating(episode)
+    test_mixins.edit_originally_available(episode)
+    test_mixins.edit_sort_title(episode)
+    test_mixins.edit_summary(episode)
+    test_mixins.edit_title(episode)
 
 
 def test_video_Episode_mixins_tags(episode):

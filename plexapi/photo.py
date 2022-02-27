@@ -5,11 +5,21 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, RatingMixin, TagMixin
+from plexapi.mixins import (
+    RatingMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin, PhotoCapturedTimeMixin,
+    TagMixin
+)
 
 
 @utils.registerPlexObject
-class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
+class Photoalbum(
+    PlexPartialObject,
+    RatingMixin,
+    ArtMixin, PosterMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin
+):
     """ Represents a single Photoalbum (collection of photos).
 
         Attributes:
@@ -38,6 +48,7 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
     """
     TAG = 'Directory'
     TYPE = 'photo'
+    _searchType = 'photoalbum'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
@@ -131,7 +142,13 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin):
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin, TagMixin):
+class Photo(
+    PlexPartialObject, Playable,
+    RatingMixin,
+    ArtUrlMixin, PosterUrlMixin,
+    PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    TagMixin
+):
     """ Represents a single Photo.
 
         Attributes:
