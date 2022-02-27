@@ -7,6 +7,7 @@ from . import conftest as utils
 
 TEST_MIXIN_TAG = "Test Tag"
 CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
+AUDIO_STUB_SHA1 = "1abc20d5fdc904201bf8988ca6ef30f96bb73617"
 
 
 def _test_mixins_tag(obj, attr, tag_method):
@@ -178,6 +179,48 @@ def attr_bannerUrl(obj):
 
 def attr_posterUrl(obj):
     _test_mixins_imageUrl(obj, "thumb")
+
+
+def _test_mixins_edit_theme(obj):
+    _fields = lambda: [f.name for f in obj.fields]
+    # Test upload theme from file
+    obj.uploadTheme(filepath=utils.STUB_MP3_PATH)
+    themes = obj.themes()
+    file_theme = [
+        t for t in themes
+        if t.ratingKey.startswith("upload://") and t.ratingKey.endswith(AUDIO_STUB_SHA1)
+    ]
+    assert file_theme
+    obj.reload()
+    assert "theme" in _fields()
+    # Unlock the theme
+    obj.unlockTheme()
+    obj.reload()
+    assert "theme" not in _fields()
+    # Lock the theme
+    obj.lockTheme()
+    obj.reload()
+    assert "theme" in _fields()
+    with pytest.raises(NotImplementedError):
+        obj.setTheme(themes[0])
+
+
+def edit_theme(obj):
+    _test_mixins_edit_theme(obj)
+
+
+def _test_mixins_themeUrl(obj):
+    url = obj.themeUrl
+    if url:
+        assert url.startswith(utils.SERVER_BASEURL)
+        assert "/library/metadata/" in url
+        assert "theme" in url
+    else:
+        assert url is None
+
+
+def attr_themeUrl(obj):
+    _test_mixins_themeUrl(obj)
 
 
 def _test_mixins_editAdvanced(obj):
