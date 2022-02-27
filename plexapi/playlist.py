@@ -6,13 +6,17 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import ArtMixin, PosterMixin, SmartFilterMixin
+from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Playlist(PlexPartialObject, Playable, ArtMixin, PosterMixin, SmartFilterMixin):
+class Playlist(
+    PlexPartialObject, Playable,
+    SmartFilterMixin,
+    ArtMixin, PosterMixin
+):
     """ Represents a single Playlist.
 
         Attributes:

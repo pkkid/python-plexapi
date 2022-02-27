@@ -5,15 +5,21 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, RatingMixin
-from plexapi.mixins import SortTitleMixin, SummaryMixin, TitleMixin
-from plexapi.mixins import PhotoCapturedTimeMixin
-from plexapi.mixins import TagMixin
+from plexapi.mixins import (
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
+    RatingMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin, PhotoCapturedTimeMixin,
+    TagMixin
+)
 
 
 @utils.registerPlexObject
-class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin,
-        SortTitleMixin, SummaryMixin, TitleMixin):
+class Photoalbum(
+    PlexPartialObject,
+    ArtMixin, PosterMixin,
+    RatingMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin
+):
     """ Represents a single Photoalbum (collection of photos).
 
         Attributes:
@@ -136,9 +142,13 @@ class Photoalbum(PlexPartialObject, ArtMixin, PosterMixin, RatingMixin,
 
 
 @utils.registerPlexObject
-class Photo(PlexPartialObject, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
-        PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-        TagMixin):
+class Photo(
+    PlexPartialObject, Playable,
+    ArtUrlMixin, PosterUrlMixin,
+    RatingMixin,
+    PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    TagMixin
+):
     """ Represents a single Photo.
 
         Attributes:

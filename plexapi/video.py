@@ -915,7 +915,10 @@ class Episode(
 
 
 @utils.registerPlexObject
-class Clip(Video, Playable, ArtUrlMixin, PosterUrlMixin):
+class Clip(
+    Video, Playable,
+    ArtUrlMixin, PosterUrlMixin
+):
     """ Represents a single Clip.
 
         Attributes:
