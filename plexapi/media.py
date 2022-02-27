@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
+from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
@@ -916,19 +917,17 @@ class Review(PlexObject):
         self.text = data.attrib.get('text')
 
 
-class BaseImage(PlexObject):
-    """ Base class for all Art, Banner, and Poster objects.
+class BaseResource(PlexObject):
+    """ Base class for all Art, Banner, Poster, and Theme objects.
 
         Attributes:
-            TAG (str): 'Photo'
+            TAG (str): 'Photo' or 'Track'
             key (str): API URL (/library/metadata/<ratingkey>).
-            provider (str): The source of the poster or art.
-            ratingKey (str): Unique key identifying the poster or art.
-            selected (bool): True if the poster or art is currently selected.
-            thumb (str): The URL to retrieve the poster or art thumbnail.
+            provider (str): The source of the art or poster, None for Theme objects.
+            ratingKey (str): Unique key identifying the resource.
+            selected (bool): True if the resource is currently selected.
+            thumb (str): The URL to retrieve the resource thumbnail.
     """
-    TAG = 'Photo'
-
     def _loadData(self, data):
         self._data = data
         self.key = data.attrib.get('key')
@@ -946,16 +945,24 @@ class BaseImage(PlexObject):
             pass
 
 
-class Art(BaseImage):
+class Art(BaseResource):
     """ Represents a single Art object. """
+    TAG = 'Photo'
 
 
-class Banner(BaseImage):
+class Banner(BaseResource):
     """ Represents a single Banner object. """
+    TAG = 'Photo'
 
 
-class Poster(BaseImage):
+class Poster(BaseResource):
     """ Represents a single Poster object. """
+    TAG = 'Photo'
+
+
+class Theme(BaseResource):
+    """ Represents a single Theme object. """
+    TAG = 'Track'
 
 
 @utils.registerPlexObject
@@ -1058,31 +1065,50 @@ class Agent(PlexObject):
         self.hasAttribution = data.attrib.get('hasAttribution')
         self.hasPrefs = data.attrib.get('hasPrefs')
         self.identifier = data.attrib.get('identifier')
+        self.name = data.attrib.get('name')
         self.primary = data.attrib.get('primary')
         self.shortIdentifier = self.identifier.rsplit('.', 1)[1]
-        if 'mediaType' in self._initpath:
-            self.name = data.attrib.get('name')
-            self.languageCode = []
-            for code in data:
-                self.languageCode += [code.attrib.get('code')]
-        else:
-            self.mediaTypes = [AgentMediaType(server=self._server, data=d) for d in data]
 
-    def _settings(self):
+        if 'mediaType' in self._initpath:
+            self.languageCodes = self.listAttrs(data, 'code', etag='Language')
+            self.mediaTypes = []
+        else:
+            self.languageCodes = []
+            self.mediaTypes = self.findItems(data, cls=AgentMediaType)
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes
+
+    def settings(self):
         key = '/:/plugins/%s/prefs' % self.identifier
         data = self._server.query(key)
         return self.findItems(data, cls=settings.Setting)
 
+    @deprecated('use "settings" instead')
+    def _settings(self):
+        return self.settings()
+
 
 class AgentMediaType(Agent):
+    """ Represents a single Agent MediaType.
+
+        Attributes:
+            TAG (str): 'MediaType'
+    """
+    TAG = 'MediaType'
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('name'))
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid] if p])
 
     def _loadData(self, data):
+        self.languageCodes = self.listAttrs(data, 'code', etag='Language')
         self.mediaType = utils.cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
-        self.languageCode = []
-        for code in data:
-            self.languageCode += [code.attrib.get('code')]
+
+    @property
+    @deprecated('use "languageCodes" instead')
+    def languageCode(self):
+        return self.languageCodes

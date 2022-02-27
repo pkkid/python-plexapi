@@ -5,11 +5,15 @@ from urllib.parse import quote_plus
 from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import AdvancedSettingsMixin, ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin
-from plexapi.mixins import RatingMixin, SplitMergeMixin, UnmatchMatchMixin
-from plexapi.mixins import OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin
-from plexapi.mixins import TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin
-from plexapi.mixins import CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+from plexapi.mixins import (
+    AdvancedSettingsMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
+    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+)
+from plexapi.playlist import Playlist
 
 
 class Audio(PlexPartialObject):
@@ -126,9 +130,14 @@ class Audio(PlexPartialObject):
 
 
 @utils.registerPlexObject
-class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
-        SortTitleMixin, SummaryMixin, TitleMixin,
-        CollectionMixin, CountryMixin, GenreMixin, MoodMixin, SimilarArtistMixin, StyleMixin):
+class Artist(
+    Audio,
+    AdvancedSettingsMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+):
     """ Represents a single Artist.
 
         Attributes:
@@ -140,9 +149,11 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
             countries (List<:class:`~plexapi.media.Country`>): List country objects.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             key (str): API URL (/library/metadata/<ratingkey>).
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             locations (List<str>): List of folder paths where the artist is found on disk.
             similar (List<:class:`~plexapi.media.Similar`>): List of similar objects.
             styles (List<:class:`~plexapi.media.Style`>): List of style objects.
+            theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
     """
     TAG = 'Directory'
     TYPE = 'artist'
@@ -155,9 +166,11 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
+        self.labels = self.findItems(data, media.Label)
         self.locations = self.listAttrs(data, 'path', etag='Location')
         self.similar = self.findItems(data, media.Similar)
         self.styles = self.findItems(data, media.Style)
+        self.theme = data.attrib.get('theme')
 
     def __iter__(self):
         for album in self.albums():
@@ -179,7 +192,7 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f"/library/sections/{self.librarySectionID}/all?artist.id={self.ratingKey}&type=9"
         return self.fetchItems(key, Album, **kwargs)
 
     def track(self, title=None, album=None, track=None):
@@ -225,11 +238,20 @@ class Artist(Audio, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin, S
             filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
+    def station(self):
+        """ Returns a :class:`~plexapi.playlist.Playlist` artist radio station or `None`. """
+        key = '%s?includeStations=1' % self.key
+        return next(iter(self.fetchItems(key, cls=Playlist, rtag="Stations")), None)
+
 
 @utils.registerPlexObject
-class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
-        OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
-        CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin):
+class Album(
+    Audio,
+    ArtMixin, PosterMixin, ThemeUrlMixin,
+    RatingMixin, UnmatchMatchMixin,
+    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+):
     """ Represents a single Album.
 
         Attributes:
@@ -246,6 +268,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
             parentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
             parentKey (str): API URL of the album artist (/library/metadata/<parentRatingKey>).
             parentRatingKey (int): Unique key identifying the album artist.
+            parentTheme (str): URL to artist theme resource (/library/metadata/<parentRatingkey>/theme/<themeid>).
             parentThumb (str): URL to album artist thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the album artist.
             rating (float): Album rating (7.9; 9.8; 8.1).
@@ -272,6 +295,7 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
+        self.parentTheme = data.attrib.get('parentTheme')
         self.parentThumb = data.attrib.get('parentThumb')
         self.parentTitle = data.attrib.get('parentTitle')
         self.rating = utils.cast(float, data.attrib.get('rating'))
@@ -335,9 +359,13 @@ class Album(Audio, ArtMixin, PosterMixin, RatingMixin, UnmatchMatchMixin,
 
 
 @utils.registerPlexObject
-class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
-        TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
-        CollectionMixin, MoodMixin):
+class Track(
+    Audio, Playable,
+    ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
+    RatingMixin,
+    TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
+    CollectionMixin, LabelMixin, MoodMixin
+):
     """ Represents a single Track.
 
         Attributes:
@@ -350,9 +378,12 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
             grandparentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
             grandparentKey (str): API URL of the album artist (/library/metadata/<grandparentRatingKey>).
             grandparentRatingKey (int): Unique key identifying the album artist.
+            grandparentTheme (str): URL to artist theme resource  (/library/metadata/<grandparentRatingkey>/theme/<themeid>).
+                (/library/metadata/<grandparentRatingkey>/theme/<themeid>).
             grandparentThumb (str): URL to album artist thumbnail image
                 (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
             grandparentTitle (str): Name of the album artist for the track.
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
@@ -380,8 +411,10 @@ class Track(Audio, Playable, ArtUrlMixin, PosterUrlMixin, RatingMixin,
         self.grandparentGuid = data.attrib.get('grandparentGuid')
         self.grandparentKey = data.attrib.get('grandparentKey')
         self.grandparentRatingKey = utils.cast(int, data.attrib.get('grandparentRatingKey'))
+        self.grandparentTheme = data.attrib.get('grandparentTheme')
         self.grandparentThumb = data.attrib.get('grandparentThumb')
         self.grandparentTitle = data.attrib.get('grandparentTitle')
+        self.labels = self.findItems(data, media.Label)
         self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
         self.parentGuid = data.attrib.get('parentGuid')

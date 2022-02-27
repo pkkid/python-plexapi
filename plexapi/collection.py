@@ -5,17 +5,26 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
-from plexapi.mixins import AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin
-from plexapi.mixins import ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin
-from plexapi.mixins import LabelMixin, SmartFilterMixin
+from plexapi.mixins import (
+    AdvancedSettingsMixin, SmartFilterMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    RatingMixin,
+    ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    LabelMixin
+)
 from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
-class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin, RatingMixin,
-        ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-        LabelMixin, SmartFilterMixin):
+class Collection(
+    PlexPartialObject,
+    AdvancedSettingsMixin, SmartFilterMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    RatingMixin,
+    ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    LabelMixin
+):
     """ Represents a single Collection.
 
         Attributes:
@@ -46,6 +55,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
             smart (bool): True if the collection is a smart collection.
             subtype (str): Media type of the items in the collection (movie, show, artist, or album).
             summary (str): Summary of the collection.
+            theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
             thumbBlurHash (str): BlurHash string for thumbnail image.
             title (str): Name of the collection.
@@ -84,6 +94,7 @@ class Collection(PlexPartialObject, AdvancedSettingsMixin, ArtMixin, PosterMixin
         self.smart = utils.cast(bool, data.attrib.get('smart', '0'))
         self.subtype = data.attrib.get('subtype')
         self.summary = data.attrib.get('summary')
+        self.theme = data.attrib.get('theme')
         self.thumb = data.attrib.get('thumb')
         self.thumbBlurHash = data.attrib.get('thumbBlurHash')
         self.title = data.attrib.get('title')

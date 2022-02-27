@@ -60,6 +60,8 @@ def test_library_section_get_movie(movies):
 def test_library_MovieSection_getGuid(movies, movie):
     result = movies.getGuid(guid=movie.guids[0].id)
     assert result == movie
+    with pytest.raises(NotFound):
+        movies.getGuid(guid='imdb://tt00000000')
 
 
 def test_library_section_movies_all(movies):
@@ -131,7 +133,7 @@ def test_library_add_edit_delete(plex, movies, photos):
         type="movie",
         agent="com.plexapp.agents.none",
         scanner="Plex Video Files Scanner",
-        language="en",
+        language="xn",
         location=[movie_location, photo_location]
     )
     section = plex.library.section(section_name)
@@ -144,7 +146,7 @@ def test_library_add_edit_delete(plex, movies, photos):
             type="movie",
             agent="com.plexapp.agents.none",
             scanner="Plex Video Files Scanner",
-            language="en",
+            language="xn",
             location=[movie_location, photo_location[:-1]]
         )
     # Create library with no path
@@ -154,7 +156,7 @@ def test_library_add_edit_delete(plex, movies, photos):
             type="movie",
             agent="com.plexapp.agents.none",
             scanner="Plex Video Files Scanner",
-            language="en",
+            language="xn",
         )
     with pytest.raises(NotFound):
         plex.library.section(error_section_name)
@@ -360,6 +362,10 @@ def test_library_MusicSection_albums(music):
     assert len(music.albums())
 
 
+def test_library_MusicSection_stations(music):
+    assert len(music.stations())
+
+
 def test_library_MusicSection_searchArtists(music):
     assert len(music.searchArtists(title="Broke for Free"))
 
@@ -422,6 +428,19 @@ def test_library_editAdvanced_default(movies):
     movies.defaultAdvanced()
     for setting in movies.settings():
         assert str(setting.value) == str(setting.default)
+
+
+def test_library_lockUnlockAllFields(movies):
+    for movie in movies.all():
+        assert 'thumb' not in [f.name for f in movie.fields]
+
+    movies.lockAllField('thumb')
+    for movie in movies.all():
+        assert 'thumb' in [f.name for f in movie.fields]
+
+    movies.unlockAllField('thumb')
+    for movie in movies.all():
+        assert 'thumb' not in [f.name for f in movie.fields]
 
 
 def test_search_with_weird_a(plex, tvshows):
