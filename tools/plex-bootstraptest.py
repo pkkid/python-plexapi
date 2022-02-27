@@ -482,7 +482,8 @@ if __name__ == "__main__":
             "Server didnt appear in your account after %ss" % opts.bootstrap_timeout
         )
 
-    print("Plex container started after %ss, setting up content" % int(runtime))
+    print("Plex container started after %ss" % int(runtime))
+    print("Plex server version %s" % server.version)
 
     if opts.accept_eula:
         server.settings.get("acceptedEULA").set(True)

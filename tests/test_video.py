@@ -938,6 +938,7 @@ def test_video_Season_mixins_rating(show):
 def test_video_Season_mixins_tags(show):
     season = show.season(season=1)
     test_mixins.edit_collection(season)
+    test_mixins.edit_label(season)
 
 
 def test_video_Season_PlexWebURL(plex, season):
@@ -1149,6 +1150,7 @@ def test_video_Episode_mixins_tags(episode):
     test_mixins.edit_collection(episode)
     test_mixins.edit_director(episode)
     test_mixins.edit_writer(episode)
+    test_mixins.edit_label(episode)
 
 
 def test_video_Episode_media_tags(episode):

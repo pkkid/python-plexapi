@@ -579,7 +579,7 @@ class Show(Video, AdvancedSettingsMixin, ArtMixin, BannerMixin, PosterMixin, The
 
 
 @utils.registerPlexObject
-class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, CollectionMixin):
+class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, CollectionMixin, LabelMixin):
     """ Represents a single Show Season (including all episodes).
 
         Attributes:
@@ -589,6 +589,7 @@ class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, Collectio
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             index (int): Season number.
             key (str): API URL (/library/metadata/<ratingkey>).
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             leafCount (int): Number of items in the season view.
             parentGuid (str): Plex GUID for the show (plex://show/5d9c086fe9d5a1001f4d9fe6).
             parentIndex (int): Plex index number for the show.
@@ -612,6 +613,7 @@ class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, Collectio
         self.guids = self.findItems(data, media.Guid)
         self.index = utils.cast(int, data.attrib.get('index'))
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
+        self.labels = self.findItems(data, media.Label)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
@@ -715,7 +717,7 @@ class Season(Video, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin, Collectio
 
 @utils.registerPlexObject
 class Episode(Video, Playable, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin,
-              CollectionMixin, DirectorMixin, WriterMixin):
+              CollectionMixin, DirectorMixin, LabelMixin, WriterMixin):
     """ Represents a single Shows Episode.
 
         Attributes:
@@ -738,6 +740,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin
             grandparentTitle (str): Name of the show for the episode.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             index (int): Episode number.
+            labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             markers (List<:class:`~plexapi.media.Marker`>): List of marker objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the episode was released.
@@ -782,6 +785,7 @@ class Episode(Video, Playable, ArtMixin, PosterMixin, ThemeUrlMixin, RatingMixin
         self.grandparentTitle = data.attrib.get('grandparentTitle')
         self.guids = self.findItems(data, media.Guid)
         self.index = utils.cast(int, data.attrib.get('index'))
+        self.labels = self.findItems(data, media.Label)
         self.markers = self.findItems(data, media.Marker)
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
