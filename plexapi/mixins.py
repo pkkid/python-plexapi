@@ -5,6 +5,7 @@ from urllib.parse import parse_qsl, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.utils import deprecated
 
 
 class AdvancedSettingsMixin(object):
@@ -646,243 +647,320 @@ class PhotoCapturedTimeMixin(EditFieldMixin):
         return self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
-class CollectionMixin(object):
+class EditTagsMixin(object):
+    """ Mixin for editing Plex object tags. """
+
+    @deprecated('use "editTags" instead')
+    def _edit_tags(self, tag, items, locked=True, remove=False):
+        return self.editTags(tag, items, locked, remove)
+
+    def editTags(self, tag, items, locked=True, remove=False, **kwargs):
+        """ Edit the tags of a Plex object. All tag editing methods can be chained together.
+            Also see :func:`~plexapi.base.PlexPartialObject.batchEdits` for batch editing tags.
+
+            Parameters:
+                tag (str): Name of the tag to edit.
+                items (List<str>): List of tags to add or remove.
+                locked (bool): True (default) to lock the tags, False to unlock the tags.
+                remove (bool): True to remove the tags in items.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Chaining multiple tag edits with reloading
+                    Show.addCollection('New Collection').removeGenre('Action').addLabel('Favorite').reload()
+
+        """
+        if not isinstance(items, list):
+            items = [items]
+
+        value = getattr(self, self._tagPlural(tag))
+        existing_tags = [t.tag for t in value if t and remove is False]
+        edits = self._tagHelper(self._tagSingular(tag), existing_tags + items, locked, remove)
+        edits.update(kwargs)
+        return self._edit(**edits)
+
+    @staticmethod
+    def _tagSingular(tag):
+        """ Return the singular name of a tag. """
+        if tag == 'countries':
+            return 'country'
+        elif tag == 'similar':
+            return 'similar'
+        elif tag[-1] == 's':
+            return tag[:-1]
+        return tag
+
+    @staticmethod
+    def _tagPlural(tag):
+        """ Return the plural name of a tag. """
+        if tag == 'country':
+            return 'countries'
+        elif tag == 'similar':
+            return 'similar'
+        elif tag[-1] != 's':
+            return tag + 's'
+        return tag
+
+    @staticmethod
+    def _tagHelper(tag, items, locked=True, remove=False):
+        """ Return a dict of the query parameters for editing a tag. """
+        if not isinstance(items, list):
+            items = [items]
+
+        data = {
+            '%s.locked' % tag: 1 if locked else 0
+        }
+
+        if remove:
+            tagname = '%s[].tag.tag-' % tag
+            data[tagname] = ','.join(items)
+        else:
+            for i, item in enumerate(items):
+                tagname = '%s[%s].tag.tag' % (tag, i)
+                data[tagname] = item
+
+        return data
+
+
+class CollectionMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have collections. """
 
     def addCollection(self, collections, locked=True):
         """ Add a collection tag(s).
 
-           Parameters:
+            Parameters:
                 collections (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('collection', collections, locked=locked)
+        return self.editTags('collection', collections, locked=locked)
 
     def removeCollection(self, collections, locked=True):
         """ Remove a collection tag(s).
 
-           Parameters:
+            Parameters:
                 collections (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('collection', collections, locked=locked, remove=True)
+        return self.editTags('collection', collections, locked=locked, remove=True)
 
 
-class CountryMixin(object):
+class CountryMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have countries. """
 
     def addCountry(self, countries, locked=True):
         """ Add a country tag(s).
 
-           Parameters:
+            Parameters:
                 countries (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('country', countries, locked=locked)
+        return self.editTags('country', countries, locked=locked)
 
     def removeCountry(self, countries, locked=True):
         """ Remove a country tag(s).
 
-           Parameters:
+            Parameters:
                 countries (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('country', countries, locked=locked, remove=True)
+        return self.editTags('country', countries, locked=locked, remove=True)
 
 
-class DirectorMixin(object):
+class DirectorMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have directors. """
 
     def addDirector(self, directors, locked=True):
         """ Add a director tag(s).
 
-           Parameters:
+            Parameters:
                 directors (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('director', directors, locked=locked)
+        return self.editTags('director', directors, locked=locked)
 
     def removeDirector(self, directors, locked=True):
         """ Remove a director tag(s).
 
-           Parameters:
+            Parameters:
                 directors (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('director', directors, locked=locked, remove=True)
+        return self.editTags('director', directors, locked=locked, remove=True)
 
 
-class GenreMixin(object):
+class GenreMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have genres. """
 
     def addGenre(self, genres, locked=True):
         """ Add a genre tag(s).
 
-           Parameters:
+            Parameters:
                 genres (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('genre', genres, locked=locked)
+        return self.editTags('genre', genres, locked=locked)
 
     def removeGenre(self, genres, locked=True):
         """ Remove a genre tag(s).
 
-           Parameters:
+            Parameters:
                 genres (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('genre', genres, locked=locked, remove=True)
+        return self.editTags('genre', genres, locked=locked, remove=True)
 
 
-class LabelMixin(object):
+class LabelMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have labels. """
 
     def addLabel(self, labels, locked=True):
         """ Add a label tag(s).
 
-           Parameters:
+            Parameters:
                 labels (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('label', labels, locked=locked)
+        return self.editTags('label', labels, locked=locked)
 
     def removeLabel(self, labels, locked=True):
         """ Remove a label tag(s).
 
-           Parameters:
+            Parameters:
                 labels (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('label', labels, locked=locked, remove=True)
+        return self.editTags('label', labels, locked=locked, remove=True)
 
 
-class MoodMixin(object):
+class MoodMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have moods. """
 
     def addMood(self, moods, locked=True):
         """ Add a mood tag(s).
 
-           Parameters:
+            Parameters:
                 moods (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('mood', moods, locked=locked)
+        return self.editTags('mood', moods, locked=locked)
 
     def removeMood(self, moods, locked=True):
         """ Remove a mood tag(s).
 
-           Parameters:
+            Parameters:
                 moods (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('mood', moods, locked=locked, remove=True)
+        return self.editTags('mood', moods, locked=locked, remove=True)
 
 
-class ProducerMixin(object):
+class ProducerMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have producers. """
 
     def addProducer(self, producers, locked=True):
         """ Add a producer tag(s).
 
-           Parameters:
+            Parameters:
                 producers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('producer', producers, locked=locked)
+        return self.editTags('producer', producers, locked=locked)
 
     def removeProducer(self, producers, locked=True):
         """ Remove a producer tag(s).
 
-           Parameters:
+            Parameters:
                 producers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('producer', producers, locked=locked, remove=True)
+        return self.editTags('producer', producers, locked=locked, remove=True)
 
 
-class SimilarArtistMixin(object):
+class SimilarArtistMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have similar artists. """
 
     def addSimilarArtist(self, artists, locked=True):
         """ Add a similar artist tag(s).
 
-           Parameters:
+            Parameters:
                 artists (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('similar', artists, locked=locked)
+        return self.editTags('similar', artists, locked=locked)
 
     def removeSimilarArtist(self, artists, locked=True):
         """ Remove a similar artist tag(s).
 
-           Parameters:
+            Parameters:
                 artists (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('similar', artists, locked=locked, remove=True)
+        return self.editTags('similar', artists, locked=locked, remove=True)
 
 
-class StyleMixin(object):
+class StyleMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have styles. """
 
     def addStyle(self, styles, locked=True):
         """ Add a style tag(s).
 
-           Parameters:
+            Parameters:
                 styles (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('style', styles, locked=locked)
+        return self.editTags('style', styles, locked=locked)
 
     def removeStyle(self, styles, locked=True):
         """ Remove a style tag(s).
 
-           Parameters:
+            Parameters:
                 styles (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('style', styles, locked=locked, remove=True)
+        return self.editTags('style', styles, locked=locked, remove=True)
 
 
-class TagMixin(object):
+class TagMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have tags. """
 
     def addTag(self, tags, locked=True):
         """ Add a tag(s).
 
-           Parameters:
+            Parameters:
                 tags (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('tag', tags, locked=locked)
+        return self.editTags('tag', tags, locked=locked)
 
     def removeTag(self, tags, locked=True):
         """ Remove a tag(s).
 
-           Parameters:
+            Parameters:
                 tags (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('tag', tags, locked=locked, remove=True)
+        return self.editTags('tag', tags, locked=locked, remove=True)
 
 
-class WriterMixin(object):
+class WriterMixin(EditTagsMixin):
     """ Mixin for Plex objects that can have writers. """
 
     def addWriter(self, writers, locked=True):
         """ Add a writer tag(s).
 
-           Parameters:
+            Parameters:
                 writers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('writer', writers, locked=locked)
+        return self.editTags('writer', writers, locked=locked)
 
     def removeWriter(self, writers, locked=True):
         """ Remove a writer tag(s).
 
-           Parameters:
+            Parameters:
                 writers (list): List of strings.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
-        self._edit_tags('writer', writers, locked=locked, remove=True)
+        return self.editTags('writer', writers, locked=locked, remove=True)

@@ -3,7 +3,6 @@ from datetime import datetime
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.utils import tag_singular
 
 from . import conftest as utils
 
@@ -94,7 +93,7 @@ def edit_photo_captured_time(obj):
 def _test_mixins_tag(obj, attr, tag_method):
     add_tag_method = getattr(obj, "add" + tag_method)
     remove_tag_method = getattr(obj, "remove" + tag_method)
-    field_name = tag_singular(attr)
+    field_name = obj._tagSingular(attr)
     _tags = lambda: [t.tag for t in getattr(obj, attr)]
     _fields = lambda: [f for f in obj.fields if f.name == field_name]
     # Check tag is not present to begin with
