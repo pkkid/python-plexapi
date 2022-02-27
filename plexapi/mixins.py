@@ -59,6 +59,200 @@ class AdvancedSettingsMixin(object):
         self._server.query(url, method=self._server._session.put)
 
 
+class SmartFilterMixin(object):
+    """ Mixing for Plex objects that can have smart filters. """
+
+    def _parseFilters(self, content):
+        """ Parse the content string and returns the filter dict. """
+        content = urlsplit(unquote(content))
+        filters = {}
+        filterOp = 'and'
+        filterGroups = [[]]
+        
+        for key, value in parse_qsl(content.query):
+            # Move = sign to key when operator is ==
+            if value.startswith('='):
+                key += '='
+                value = value[1:]
+
+            if key == 'includeGuids':
+                filters['includeGuids'] = int(value)
+            elif key == 'type':
+                filters['libtype'] = utils.reverseSearchType(value)
+            elif key == 'sort':
+                filters['sort'] = value.split(',')
+            elif key == 'limit':
+                filters['limit'] = int(value)
+            elif key == 'push':
+                filterGroups[-1].append([])
+                filterGroups.append(filterGroups[-1][-1])
+            elif key == 'and':
+                filterOp = 'and'
+            elif key == 'or':
+                filterOp = 'or'
+            elif key == 'pop':
+                filterGroups[-1].insert(0, filterOp)
+                filterGroups.pop()
+            else:
+                filterGroups[-1].append({key: value})
+        
+        if filterGroups:
+            filters['filters'] = self._formatFilterGroups(filterGroups.pop())
+        return filters
+    
+    def _formatFilterGroups(self, groups):
+        """ Formats the filter groups into the advanced search rules. """
+        if len(groups) == 1 and isinstance(groups[0], list):
+            groups = groups.pop()
+
+        filterOp = 'and'
+        rules = []
+
+        for g in groups:
+            if isinstance(g, list):
+                rules.append(self._formatFilterGroups(g))
+            elif isinstance(g, dict):
+                rules.append(g)
+            elif g in {'and', 'or'}:
+                filterOp = g
+
+        return {filterOp: rules}
+
+
+class SplitMergeMixin(object):
+    """ Mixin for Plex objects that can be split and merged. """
+
+    def split(self):
+        """ Split duplicated Plex object into separate objects. """
+        key = '/library/metadata/%s/split' % self.ratingKey
+        return self._server.query(key, method=self._server._session.put)
+
+    def merge(self, ratingKeys):
+        """ Merge other Plex objects into the current object.
+        
+            Parameters:
+                ratingKeys (list): A list of rating keys to merge.
+        """
+        if not isinstance(ratingKeys, list):
+            ratingKeys = str(ratingKeys).split(',')
+
+        key = '%s/merge?ids=%s' % (self.key, ','.join([str(r) for r in ratingKeys]))
+        return self._server.query(key, method=self._server._session.put)
+
+
+class UnmatchMatchMixin(object):
+    """ Mixin for Plex objects that can be unmatched and matched. """
+
+    def unmatch(self):
+        """ Unmatches metadata match from object. """
+        key = '/library/metadata/%s/unmatch' % self.ratingKey
+        self._server.query(key, method=self._server._session.put)
+
+    def matches(self, agent=None, title=None, year=None, language=None):
+        """ Return list of (:class:`~plexapi.media.SearchResult`) metadata matches.
+
+             Parameters:
+                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
+                title (str): Title of item to search for
+                year (str): Year of item to search in
+                language (str) : Language of item to search in
+
+            Examples:
+                1. video.matches()
+                2. video.matches(title="something", year=2020)
+                3. video.matches(title="something")
+                4. video.matches(year=2020)
+                5. video.matches(title="something", year="")
+                6. video.matches(title="", year=2020)
+                7. video.matches(title="", year="")
+
+                1. The default behaviour in Plex Web = no params in plexapi
+                2. Both title and year specified by user
+                3. Year automatically filled in
+                4. Title automatically filled in
+                5. Explicitly searches for title with blank year
+                6. Explicitly searches for blank title with year
+                7. I don't know what the user is thinking... return the same result as 1
+
+                For 2 to 7, the agent and language is automatically filled in
+        """
+        key = '/library/metadata/%s/matches' % self.ratingKey
+        params = {'manual': 1}
+
+        if agent and not any([title, year, language]):
+            params['language'] = self.section().language
+            params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+        else:
+            if any(x is not None for x in [agent, title, year, language]):
+                if title is None:
+                    params['title'] = self.title
+                else:
+                    params['title'] = title
+
+                if year is None:
+                    params['year'] = self.year
+                else:
+                    params['year'] = year
+
+                params['language'] = language or self.section().language
+
+                if agent is None:
+                    params['agent'] = self.section().agent
+                else:
+                    params['agent'] = utils.getAgentIdentifier(self.section(), agent)
+
+        key = key + '?' + urlencode(params)
+        data = self._server.query(key, method=self._server._session.get)
+        return self.findItems(data, initpath=key)
+
+    def fixMatch(self, searchResult=None, auto=False, agent=None):
+        """ Use match result to update show metadata.
+
+            Parameters:
+                auto (bool): True uses first match from matches
+                    False allows user to provide the match
+                searchResult (:class:`~plexapi.media.SearchResult`): Search result from
+                    ~plexapi.base.matches()
+                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
+        """
+        key = '/library/metadata/%s/match' % self.ratingKey
+        if auto:
+            autoMatch = self.matches(agent=agent)
+            if autoMatch:
+                searchResult = autoMatch[0]
+            else:
+                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
+        elif not searchResult:
+            raise NotFound('fixMatch() requires either auto=True or '
+                           'searchResult=:class:`~plexapi.media.SearchResult`.')
+
+        params = {'guid': searchResult.guid,
+                  'name': searchResult.name}
+
+        data = key + '?' + urlencode(params)
+        self._server.query(data, method=self._server._session.put)
+
+
+class RatingMixin(object):
+    """ Mixin for Plex objects that can have user star ratings. """
+
+    def rate(self, rating=None):
+        """ Rate the Plex object. Note: Plex ratings are displayed out of 5 stars (e.g. rating 7.0 = 3.5 stars).
+
+            Parameters:
+                rating (float, optional): Rating from 0 to 10. Exclude to reset the rating.
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: If the rating is invalid.
+        """
+        if rating is None:
+            rating = -1
+        elif not isinstance(rating, (int, float)) or rating < 0 or rating > 10:
+            raise BadRequest('Rating must be between 0 to 10.')
+        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rating)
+        self._server.query(key, method=self._server._session.put)
+
+
 class ArtUrlMixin(object):
     """ Mixin for Plex objects that can have a background artwork url. """
     
@@ -252,140 +446,6 @@ class ThemeMixin(ThemeUrlMixin):
                 theme (:class:`~plexapi.media.Theme`): The theme object to select.
         """
         theme.select()
-
-
-class RatingMixin(object):
-    """ Mixin for Plex objects that can have user star ratings. """
-
-    def rate(self, rating=None):
-        """ Rate the Plex object. Note: Plex ratings are displayed out of 5 stars (e.g. rating 7.0 = 3.5 stars).
-
-            Parameters:
-                rating (float, optional): Rating from 0 to 10. Exclude to reset the rating.
-
-            Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: If the rating is invalid.
-        """
-        if rating is None:
-            rating = -1
-        elif not isinstance(rating, (int, float)) or rating < 0 or rating > 10:
-            raise BadRequest('Rating must be between 0 to 10.')
-        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rating)
-        self._server.query(key, method=self._server._session.put)
-
-
-class SplitMergeMixin(object):
-    """ Mixin for Plex objects that can be split and merged. """
-
-    def split(self):
-        """ Split duplicated Plex object into separate objects. """
-        key = '/library/metadata/%s/split' % self.ratingKey
-        return self._server.query(key, method=self._server._session.put)
-
-    def merge(self, ratingKeys):
-        """ Merge other Plex objects into the current object.
-        
-            Parameters:
-                ratingKeys (list): A list of rating keys to merge.
-        """
-        if not isinstance(ratingKeys, list):
-            ratingKeys = str(ratingKeys).split(',')
-
-        key = '%s/merge?ids=%s' % (self.key, ','.join([str(r) for r in ratingKeys]))
-        return self._server.query(key, method=self._server._session.put)
-
-
-class UnmatchMatchMixin(object):
-    """ Mixin for Plex objects that can be unmatched and matched. """
-
-    def unmatch(self):
-        """ Unmatches metadata match from object. """
-        key = '/library/metadata/%s/unmatch' % self.ratingKey
-        self._server.query(key, method=self._server._session.put)
-
-    def matches(self, agent=None, title=None, year=None, language=None):
-        """ Return list of (:class:`~plexapi.media.SearchResult`) metadata matches.
-
-             Parameters:
-                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
-                title (str): Title of item to search for
-                year (str): Year of item to search in
-                language (str) : Language of item to search in
-
-            Examples:
-                1. video.matches()
-                2. video.matches(title="something", year=2020)
-                3. video.matches(title="something")
-                4. video.matches(year=2020)
-                5. video.matches(title="something", year="")
-                6. video.matches(title="", year=2020)
-                7. video.matches(title="", year="")
-
-                1. The default behaviour in Plex Web = no params in plexapi
-                2. Both title and year specified by user
-                3. Year automatically filled in
-                4. Title automatically filled in
-                5. Explicitly searches for title with blank year
-                6. Explicitly searches for blank title with year
-                7. I don't know what the user is thinking... return the same result as 1
-
-                For 2 to 7, the agent and language is automatically filled in
-        """
-        key = '/library/metadata/%s/matches' % self.ratingKey
-        params = {'manual': 1}
-
-        if agent and not any([title, year, language]):
-            params['language'] = self.section().language
-            params['agent'] = utils.getAgentIdentifier(self.section(), agent)
-        else:
-            if any(x is not None for x in [agent, title, year, language]):
-                if title is None:
-                    params['title'] = self.title
-                else:
-                    params['title'] = title
-
-                if year is None:
-                    params['year'] = self.year
-                else:
-                    params['year'] = year
-
-                params['language'] = language or self.section().language
-
-                if agent is None:
-                    params['agent'] = self.section().agent
-                else:
-                    params['agent'] = utils.getAgentIdentifier(self.section(), agent)
-
-        key = key + '?' + urlencode(params)
-        data = self._server.query(key, method=self._server._session.get)
-        return self.findItems(data, initpath=key)
-
-    def fixMatch(self, searchResult=None, auto=False, agent=None):
-        """ Use match result to update show metadata.
-
-            Parameters:
-                auto (bool): True uses first match from matches
-                    False allows user to provide the match
-                searchResult (:class:`~plexapi.media.SearchResult`): Search result from
-                    ~plexapi.base.matches()
-                agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
-        """
-        key = '/library/metadata/%s/match' % self.ratingKey
-        if auto:
-            autoMatch = self.matches(agent=agent)
-            if autoMatch:
-                searchResult = autoMatch[0]
-            else:
-                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
-        elif not searchResult:
-            raise NotFound('fixMatch() requires either auto=True or '
-                           'searchResult=:class:`~plexapi.media.SearchResult`.')
-
-        params = {'guid': searchResult.guid,
-                  'name': searchResult.name}
-
-        data = key + '?' + urlencode(params)
-        self._server.query(data, method=self._server._session.put)
 
 
 class EditFieldMixin(object):
@@ -820,63 +880,3 @@ class WriterMixin(object):
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         self._edit_tags('writer', writers, locked=locked, remove=True)
-
-
-class SmartFilterMixin(object):
-    """ Mixing for Plex objects that can have smart filters. """
-
-    def _parseFilters(self, content):
-        """ Parse the content string and returns the filter dict. """
-        content = urlsplit(unquote(content))
-        filters = {}
-        filterOp = 'and'
-        filterGroups = [[]]
-        
-        for key, value in parse_qsl(content.query):
-            # Move = sign to key when operator is ==
-            if value.startswith('='):
-                key += '='
-                value = value[1:]
-
-            if key == 'includeGuids':
-                filters['includeGuids'] = int(value)
-            elif key == 'type':
-                filters['libtype'] = utils.reverseSearchType(value)
-            elif key == 'sort':
-                filters['sort'] = value.split(',')
-            elif key == 'limit':
-                filters['limit'] = int(value)
-            elif key == 'push':
-                filterGroups[-1].append([])
-                filterGroups.append(filterGroups[-1][-1])
-            elif key == 'and':
-                filterOp = 'and'
-            elif key == 'or':
-                filterOp = 'or'
-            elif key == 'pop':
-                filterGroups[-1].insert(0, filterOp)
-                filterGroups.pop()
-            else:
-                filterGroups[-1].append({key: value})
-        
-        if filterGroups:
-            filters['filters'] = self._formatFilterGroups(filterGroups.pop())
-        return filters
-    
-    def _formatFilterGroups(self, groups):
-        """ Formats the filter groups into the advanced search rules. """
-        if len(groups) == 1 and isinstance(groups[0], list):
-            groups = groups.pop()
-
-        filterOp = 'and'
-        rules = []
-
-        for g in groups:
-            if isinstance(g, list):
-                rules.append(self._formatFilterGroups(g))
-            elif isinstance(g, dict):
-                rules.append(g)
-            elif g in {'and', 'or'}:
-                filterOp = g
-
-        return {filterOp: rules}

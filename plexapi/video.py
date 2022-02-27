@@ -6,9 +6,8 @@ from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    AdvancedSettingsMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
@@ -268,9 +267,8 @@ class Video(PlexPartialObject):
 @utils.registerPlexObject
 class Movie(
     Video, Playable,
-    AdvancedSettingsMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
@@ -393,9 +391,8 @@ class Movie(
 @utils.registerPlexObject
 class Show(
     Video,
-    AdvancedSettingsMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtMixin, BannerMixin, PosterMixin, ThemeMixin,
-    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, GenreMixin, LabelMixin
@@ -597,8 +594,8 @@ class Show(
 @utils.registerPlexObject
 class Season(
     Video,
-    ArtMixin, PosterMixin, ThemeUrlMixin,
     RatingMixin,
+    ArtMixin, PosterMixin, ThemeUrlMixin,
     SummaryMixin, TitleMixin,
     CollectionMixin, LabelMixin
 ):
@@ -740,8 +737,8 @@ class Season(
 @utils.registerPlexObject
 class Episode(
     Video, Playable,
-    ArtMixin, PosterMixin, ThemeUrlMixin,
     RatingMixin,
+    ArtMixin, PosterMixin, ThemeUrlMixin,
     ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
     CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
 ):

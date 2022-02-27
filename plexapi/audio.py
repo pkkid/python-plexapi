@@ -6,9 +6,8 @@ from plexapi import library, media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    AdvancedSettingsMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
-    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
     OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
     TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
     CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
@@ -132,9 +131,8 @@ class Audio(PlexPartialObject):
 @utils.registerPlexObject
 class Artist(
     Audio,
-    AdvancedSettingsMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    RatingMixin, SplitMergeMixin, UnmatchMatchMixin,
     SortTitleMixin, SummaryMixin, TitleMixin,
     CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 ):
@@ -247,8 +245,8 @@ class Artist(
 @utils.registerPlexObject
 class Album(
     Audio,
+    UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    RatingMixin, UnmatchMatchMixin,
     OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
     CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
 ):
@@ -361,8 +359,8 @@ class Album(
 @utils.registerPlexObject
 class Track(
     Audio, Playable,
-    ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
     RatingMixin,
+    ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
     TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
     CollectionMixin, LabelMixin, MoodMixin
 ):

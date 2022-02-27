@@ -6,8 +6,8 @@ from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
     RatingMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
     SortTitleMixin, SummaryMixin, TitleMixin, PhotoCapturedTimeMixin,
     TagMixin
 )
@@ -16,8 +16,8 @@ from plexapi.mixins import (
 @utils.registerPlexObject
 class Photoalbum(
     PlexPartialObject,
-    ArtMixin, PosterMixin,
     RatingMixin,
+    ArtMixin, PosterMixin,
     SortTitleMixin, SummaryMixin, TitleMixin
 ):
     """ Represents a single Photoalbum (collection of photos).
@@ -144,8 +144,8 @@ class Photoalbum(
 @utils.registerPlexObject
 class Photo(
     PlexPartialObject, Playable,
-    ArtUrlMixin, PosterUrlMixin,
     RatingMixin,
+    ArtUrlMixin, PosterUrlMixin,
     PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
     TagMixin
 ):

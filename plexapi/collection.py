@@ -6,9 +6,8 @@ from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.mixins import (
-    AdvancedSettingsMixin, SmartFilterMixin,
+    AdvancedSettingsMixin, SmartFilterMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    RatingMixin,
     ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
     LabelMixin
 )
@@ -19,9 +18,8 @@ from plexapi.utils import deprecated
 @utils.registerPlexObject
 class Collection(
     PlexPartialObject,
-    AdvancedSettingsMixin, SmartFilterMixin,
+    AdvancedSettingsMixin, SmartFilterMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    RatingMixin,
     ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
     LabelMixin
 ):
