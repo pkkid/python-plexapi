@@ -361,11 +361,16 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
     assert filename in with_resolution[0]
 
 
-def test_video_Movie_subtitlestreams(movie):
+def test_video_Movie_audioStreams(movie):
+    movie.reload()
+    assert movie.audioStreams()
+
+
+def test_video_Movie_subtitleStreams(movie):
     assert not movie.subtitleStreams()
 
 
-def test_video_Episode_subtitlestreams(episode):
+def test_video_Episode_subtitleStreams(episode):
     assert not episode.subtitleStreams()
 
 
