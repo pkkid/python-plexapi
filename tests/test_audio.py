@@ -32,6 +32,7 @@ def test_audio_Artist_attr(artist):
     assert isinstance(artist.similar, list)
     if artist.summary:
         assert "Alias" in artist.summary
+    assert artist.theme is None
     if artist.thumb:
         assert utils.is_thumb(artist.thumb)
     assert artist.title == "Broke For Free"
@@ -95,14 +96,25 @@ def test_audio_Artist_mixins_images(artist):
     test_mixins.attr_posterUrl(artist)
 
 
+def test_audio_Artist_mixins_themes(artist):
+    test_mixins.edit_theme(artist)
+
+
 def test_audio_Artist_mixins_rating(artist):
     test_mixins.edit_rating(artist)
+
+
+def test_audio_Artist_mixins_fields(artist):
+    test_mixins.edit_sort_title(artist)
+    test_mixins.edit_summary(artist)
+    test_mixins.edit_title(artist)
 
 
 def test_audio_Artist_mixins_tags(artist):
     test_mixins.edit_collection(artist)
     test_mixins.edit_country(artist)
     test_mixins.edit_genre(artist)
+    test_mixins.edit_label(artist)
     test_mixins.edit_mood(artist)
     test_mixins.edit_similar_artist(artist)
     test_mixins.edit_style(artist)
@@ -142,6 +154,7 @@ def test_audio_Album_attrs(album):
     assert utils.is_datetime(album.originallyAvailableAt)
     assert utils.is_metadata(album.parentKey)
     assert utils.is_int(album.parentRatingKey)
+    assert album.parentTheme is None or utils.is_metadata(album.parentTheme)
     if album.parentThumb:
         assert utils.is_thumb(album.parentThumb)
     assert album.parentTitle == "Broke For Free"
@@ -205,8 +218,20 @@ def test_audio_Album_mixins_images(album):
     test_mixins.attr_posterUrl(album)
 
 
+def test_audio_Album_mixins_themes(album):
+    test_mixins.attr_themeUrl(album)
+
+
 def test_audio_Album_mixins_rating(album):
     test_mixins.edit_rating(album)
+
+
+def test_audio_Album_mixins_fields(album):
+    test_mixins.edit_originally_available(album)
+    test_mixins.edit_sort_title(album)
+    test_mixins.edit_studio(album)
+    test_mixins.edit_summary(album)
+    test_mixins.edit_title(album)
 
 
 def test_audio_Album_mixins_tags(album):
@@ -245,6 +270,7 @@ def test_audio_Track_attrs(album):
         assert utils.is_art(track.grandparentArt)
     assert utils.is_metadata(track.grandparentKey)
     assert utils.is_int(track.grandparentRatingKey)
+    assert track.grandparentTheme is None or utils.is_metadata(track.grandparentTheme)
     if track.grandparentThumb:
         assert utils.is_thumb(track.grandparentThumb)
     assert track.grandparentTitle == "Broke For Free"
@@ -362,12 +388,24 @@ def test_audio_Track_mixins_images(track):
     test_mixins.attr_posterUrl(track)
 
 
+def test_audio_Track_mixins_themes(track):
+    test_mixins.attr_themeUrl(track)
+
+
 def test_audio_Track_mixins_rating(track):
     test_mixins.edit_rating(track)
 
 
+def test_audio_Track_mixins_fields(track):
+    test_mixins.edit_title(track)
+    test_mixins.edit_track_artist(track)
+    test_mixins.edit_track_number(track)
+    test_mixins.edit_track_disc_number(track)
+
+
 def test_audio_Track_mixins_tags(track):
     test_mixins.edit_collection(track)
+    test_mixins.edit_label(track)
     test_mixins.edit_mood(track)
 
 

@@ -1,18 +1,99 @@
 # -*- coding: utf-8 -*-
-from plexapi.exceptions import BadRequest, NotFound
-from plexapi.utils import tag_singular
+from datetime import datetime
+
 import pytest
+from plexapi.exceptions import BadRequest, NotFound
 
 from . import conftest as utils
 
+TEST_MIXIN_FIELD = "Test Field"
+TEST_MIXIN_DATE = utils.MIN_DATETIME
 TEST_MIXIN_TAG = "Test Tag"
 CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
+AUDIO_STUB_SHA1 = "1abc20d5fdc904201bf8988ca6ef30f96bb73617"
+
+
+def _test_mixins_field(obj, attr, field_method):
+    edit_field_method = getattr(obj, "edit" + field_method)
+    _value = lambda: getattr(obj, attr)
+    _fields = lambda: [f for f in obj.fields if f.name == attr]
+    # Check field does not match to begin with
+    default_value = _value()
+    if isinstance(default_value, datetime):
+        test_value = TEST_MIXIN_DATE
+    elif isinstance(default_value, int):
+        test_value = default_value + 1
+    else:
+        test_value = TEST_MIXIN_FIELD
+    assert default_value != test_value
+    # Edit and lock the field
+    edit_field_method(test_value)
+    obj.reload()
+    value = _value()
+    fields = _fields()
+    assert value == test_value
+    assert fields and fields[0].locked
+    # Reset and unlock the field to restore the clean state
+    edit_field_method(default_value, locked=False)
+    obj.reload()
+    value = _value()
+    fields = _fields()
+    assert value == default_value
+    assert not fields
+
+
+def edit_content_rating(obj):
+    _test_mixins_field(obj, "contentRating", "ContentRating")
+
+
+def edit_originally_available(obj):
+    _test_mixins_field(obj, "originallyAvailableAt", "OriginallyAvailable")
+
+
+def edit_original_title(obj):
+    _test_mixins_field(obj, "originalTitle", "OriginalTitle")
+
+
+def edit_sort_title(obj):
+    _test_mixins_field(obj, "titleSort", "SortTitle")
+
+
+def edit_studio(obj):
+    _test_mixins_field(obj, "studio", "Studio")
+
+
+def edit_summary(obj):
+    _test_mixins_field(obj, "summary", "Summary")
+
+
+def edit_tagline(obj):
+    _test_mixins_field(obj, "tagline", "Tagline")
+
+
+def edit_title(obj):
+    _test_mixins_field(obj, "title", "Title")
+
+
+def edit_track_artist(obj):
+    _test_mixins_field(obj, "originalTitle", "TrackArtist")
+
+
+def edit_track_number(obj):
+    _test_mixins_field(obj, "index", "TrackNumber")
+
+
+def edit_track_disc_number(obj):
+    _test_mixins_field(obj, "parentIndex", "DiscNumber")
+
+
+def edit_photo_captured_time(obj):
+    _test_mixins_field(obj, "originallyAvailableAt", "CapturedTime")
 
 
 def _test_mixins_tag(obj, attr, tag_method):
     add_tag_method = getattr(obj, "add" + tag_method)
     remove_tag_method = getattr(obj, "remove" + tag_method)
-    field_name = tag_singular(attr)
+    field_name = obj._tagSingular(attr)
     _tags = lambda: [t.tag for t in getattr(obj, attr)]
     _fields = lambda: [f for f in obj.fields if f.name == field_name]
     # Check tag is not present to begin with
@@ -178,6 +259,48 @@ def attr_bannerUrl(obj):
 
 def attr_posterUrl(obj):
     _test_mixins_imageUrl(obj, "thumb")
+
+
+def _test_mixins_edit_theme(obj):
+    _fields = lambda: [f.name for f in obj.fields]
+    # Test upload theme from file
+    obj.uploadTheme(filepath=utils.STUB_MP3_PATH)
+    themes = obj.themes()
+    file_theme = [
+        t for t in themes
+        if t.ratingKey.startswith("upload://") and t.ratingKey.endswith(AUDIO_STUB_SHA1)
+    ]
+    assert file_theme
+    obj.reload()
+    assert "theme" in _fields()
+    # Unlock the theme
+    obj.unlockTheme()
+    obj.reload()
+    assert "theme" not in _fields()
+    # Lock the theme
+    obj.lockTheme()
+    obj.reload()
+    assert "theme" in _fields()
+    with pytest.raises(NotImplementedError):
+        obj.setTheme(themes[0])
+
+
+def edit_theme(obj):
+    _test_mixins_edit_theme(obj)
+
+
+def _test_mixins_themeUrl(obj):
+    url = obj.themeUrl
+    if url:
+        assert url.startswith(utils.SERVER_BASEURL)
+        assert "/library/metadata/" in url
+        assert "theme" in url
+    else:
+        assert url is None
+
+
+def attr_themeUrl(obj):
+    _test_mixins_themeUrl(obj)
 
 
 def _test_mixins_editAdvanced(obj):

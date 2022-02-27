@@ -9,7 +9,7 @@ def _check_capabilities(client, capabilities):
     for capability in capabilities:
         if capability not in supported:
             pytest.skip(
-                "Client %s doesnt support %s capability support %s"
+                "Client %s doesn't support %s capability support %s"
                 % (client.title, capability, supported)
             )
 
@@ -21,8 +21,8 @@ def _check_proxy(plex, client, proxy):
 
 @pytest.mark.client
 def test_list_clients(account, plex):
-    assert account.resources(), "MyPlex is not listing any devlices."
-    assert account.devices(), "MyPlex is not listing any devlices."
+    assert account.resources(), "MyPlex is not listing any devices."
+    assert account.devices(), "MyPlex is not listing any devices."
     assert plex.clients(), "PlexServer is not listing any clients."
 
 
