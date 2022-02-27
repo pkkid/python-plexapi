@@ -43,7 +43,7 @@ class Library(PlexObject):
                 if elem.attrib.get('type') == cls.TYPE:
                     section = cls(self._server, elem, key)
                     self._sectionsByID[section.key] = section
-                    self._sectionsByTitle[section.title.lower()] = section
+                    self._sectionsByTitle[section.title.lower().strip()] = section
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
@@ -59,10 +59,11 @@ class Library(PlexObject):
             Parameters:
                 title (str): Title of the section to return.
         """
-        if not self._sectionsByTitle or title not in self._sectionsByTitle:
+        normalized_title = title.lower().strip()
+        if not self._sectionsByTitle or normalized_title not in self._sectionsByTitle:
             self._loadSections()
         try:
-            return self._sectionsByTitle[title.lower()]
+            return self._sectionsByTitle[normalized_title]
         except KeyError:
             raise NotFound('Invalid library section: %s' % title) from None
 
