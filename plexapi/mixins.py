@@ -251,6 +251,14 @@ class ThemeMixin(ThemeUrlMixin):
         """
         theme.select()
 
+    def lockTheme(self):
+        """ Lock the theme for a Plex object. """
+        self._edit(**{'theme.locked': 1})
+
+    def unlockTheme(self):
+        """ Unlock the theme for a Plex object. """
+        self._edit(**{'theme.locked': 0})
+
 
 class RatingMixin(object):
     """ Mixin for Plex objects that can have user star ratings. """
