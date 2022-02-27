@@ -55,7 +55,7 @@ class SecretsFilter(logging.Filter):
 
 def registerPlexObject(cls):
     """ Registry of library types we may come across when parsing XML. This allows us to
-        define a few helper functions to dynamically convery the XML into objects. See
+        define a few helper functions to dynamically convert the XML into objects. See
         buildItem() below for an example.
     """
     etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
@@ -72,7 +72,7 @@ def cast(func, value):
         only support str, int, float, bool. Should be extended if needed.
 
         Parameters:
-            func (func): Calback function to used cast to type (int, bool, float).
+            func (func): Callback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
     if value is not None:
@@ -114,7 +114,7 @@ def lowerFirst(s):
 
 
 def rget(obj, attrstr, default=None, delim='.'):  # pragma: no cover
-    """ Returns the value at the specified attrstr location within a nexted tree of
+    """ Returns the value at the specified attrstr location within a nested tree of
         dicts, lists, tuples, functions, classes, etc. The lookup is done recursively
         for each key in attrstr (split by by the delimiter) This function is heavily
         influenced by the lookups used in Django templates.
@@ -485,7 +485,7 @@ def getAgentIdentifier(section, agent):
         if agent in identifiers:
             return ag.identifier
         agents += identifiers
-    raise NotFound('Couldnt find "%s" in agents list (%s)' %
+    raise NotFound('Could not find "%s" in agents list (%s)' %
                    (agent, ', '.join(agents)))
 
 

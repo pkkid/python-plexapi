@@ -43,7 +43,7 @@ class Photoalbum(
             title (str): Name of the photo album. (Trip to Disney World)
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'photo'
-            updatedAt (datatime): Datetime the photo album was updated.
+            updatedAt (datetime): Datetime the photo album was updated.
             userRating (float): Rating of the photo album (0.0 - 10.0) equaling (0 stars - 5 stars).
     """
     TAG = 'Directory'
@@ -120,7 +120,7 @@ class Photoalbum(
         return self.episode(title)
 
     def download(self, savepath=None, keep_original_name=False, subfolders=False):
-        """ Download all photos and clips from the photo ablum. See :func:`~plexapi.base.Playable.download` for details.
+        """ Download all photos and clips from the photo album. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
@@ -181,7 +181,7 @@ class Photo(
             title (str): Name of the photo.
             titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'photo'
-            updatedAt (datatime): Datetime the photo was updated.
+            updatedAt (datetime): Datetime the photo was updated.
             userRating (float): Rating of the photo (0.0 - 10.0) equaling (0 stars - 5 stars).
             year (int): Year the photo was taken.
     """
@@ -240,7 +240,7 @@ class Photo(
         elif self.parentKey:
             return self._server.library.sectionByID(self.photoalbum().librarySectionID)
         else:
-            raise BadRequest('Unable to get section for photo, can`t find librarySectionID')
+            raise BadRequest("Unable to get section for photo, can't find librarySectionID")
 
     @property
     def locations(self):

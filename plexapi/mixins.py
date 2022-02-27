@@ -440,12 +440,18 @@ class ThemeMixin(ThemeUrlMixin):
             self._server.query(key, method=self._server._session.post, data=data)
 
     def setTheme(self, theme):
-        """ Set the theme for a Plex object.
+        raise NotImplementedError(
+            'Themes cannot be set through the API. '
+            'Re-upload the theme using "uploadTheme" to set it.'
+        )
 
-            Parameters:
-                theme (:class:`~plexapi.media.Theme`): The theme object to select.
-        """
-        theme.select()
+    def lockTheme(self):
+        """ Lock the theme for a Plex object. """
+        self._edit(**{'theme.locked': 1})
+
+    def unlockTheme(self):
+        """ Unlock the theme for a Plex object. """
+        self._edit(**{'theme.locked': 0})
 
 
 class EditFieldMixin(object):

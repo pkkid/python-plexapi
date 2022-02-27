@@ -40,101 +40,259 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
-def test_video_Movie_mixins_edit_advanced_settings(movie):
-    test_mixins.edit_advanced_settings(movie)
-
-
-@pytest.mark.xfail(reason="Changing images fails randomly")
-def test_video_Movie_mixins_images(movie):
-    test_mixins.lock_art(movie)
-    test_mixins.lock_poster(movie)
-    test_mixins.edit_art(movie)
-    test_mixins.edit_poster(movie)
-
-
-def test_video_Movie_mixins_rating(movie):
-    test_mixins.edit_rating(movie)
-
-
-def test_video_Movie_mixins_fields(movie):
-    test_mixins.edit_content_rating(movie)
-    test_mixins.edit_originally_available(movie)
-    test_mixins.edit_original_title(movie)
-    test_mixins.edit_sort_title(movie)
-    test_mixins.edit_studio(movie)
-    test_mixins.edit_summary(movie)
-    test_mixins.edit_tagline(movie)
-    test_mixins.edit_title(movie)
-
-
-def test_video_Movie_mixins_tags(movie):
-    test_mixins.edit_collection(movie)
-    test_mixins.edit_country(movie)
-    test_mixins.edit_director(movie)
-    test_mixins.edit_genre(movie)
-    test_mixins.edit_label(movie)
-    test_mixins.edit_producer(movie)
-    test_mixins.edit_writer(movie)
-
-
-def test_video_Movie_media_tags(movie):
-    movie.reload()
-    test_media.tag_collection(movie)
-    test_media.tag_country(movie)
-    test_media.tag_director(movie)
-    test_media.tag_genre(movie)
-    test_media.tag_label(movie)
-    test_media.tag_producer(movie)
-    test_media.tag_role(movie)
-    test_media.tag_similar(movie)
-    test_media.tag_writer(movie)
+def test_video_Movie_attrs(movies):
+    movie = movies.get("Sita Sings the Blues")
+    assert len(movie.locations) == 1
+    assert len(movie.locations[0]) >= 10
+    assert utils.is_datetime(movie.addedAt)
+    if movie.art:
+        assert utils.is_art(movie.art)
+    assert utils.is_float(movie.rating)
+    assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
+    assert utils.is_float(movie.audienceRating)
+    assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
+    movie.reload()  # RELOAD
+    assert movie.chapterSource is None
+    assert not movie.collections
+    assert movie.contentRating in utils.CONTENTRATINGS
+    if movie.countries:
+        assert "United States of America" in [i.tag for i in movie.countries]
+    if movie.producers:
+        assert "Nina Paley" in [i.tag for i in movie.producers]
+    if movie.directors:
+        assert "Nina Paley" in [i.tag for i in movie.directors]
+    if movie.roles:
+        assert "Reena Shah" in [i.tag for i in movie.roles]
+        assert movie.actors == movie.roles
+    if movie.writers:
+        assert "Nina Paley" in [i.tag for i in movie.writers]
+    assert movie.duration >= 160000
+    assert not movie.fields
+    assert movie.posters()
+    assert "Animation" in [i.tag for i in movie.genres]
+    assert "imdb://tt1172203" in [i.id for i in movie.guids]
+    assert movie.guid == "plex://movie/5d776846880197001ec967c6"
+    assert movie.hasPreviewThumbnails is False
+    assert utils.is_metadata(movie._initpath)
+    assert utils.is_metadata(movie.key)
+    assert movie.languageOverride is None
+    assert utils.is_datetime(movie.lastRatedAt)
+    assert utils.is_datetime(movie.lastViewedAt)
+    assert int(movie.librarySectionID) >= 1
+    assert movie.listType == "video"
+    assert movie.originalTitle is None
+    assert utils.is_datetime(movie.originallyAvailableAt)
+    assert movie.playlistItemID is None
+    if movie.primaryExtraKey:
+        assert utils.is_metadata(movie.primaryExtraKey)
+    assert movie.ratingKey >= 1
+    assert movie._server._baseurl == utils.SERVER_BASEURL
+    assert movie.sessionKey is None
+    assert movie.studio == "Nina Paley"
+    assert utils.is_string(movie.summary, gte=100)
+    assert movie.tagline == "The Greatest Break-Up Story Ever Told"
+    assert movie.theme is None
+    if movie.thumb:
+        assert utils.is_thumb(movie.thumb)
+    assert movie.title == "Sita Sings the Blues"
+    assert movie.titleSort == "Sita Sings the Blues"
+    assert not movie.transcodeSessions
+    assert movie.type == "movie"
+    assert movie.updatedAt > datetime(2017, 1, 1)
+    assert movie.useOriginalTitle == -1
+    assert movie.userRating is None
+    assert movie.viewCount == 0
+    assert utils.is_int(movie.viewOffset, gte=0)
+    assert movie.viewedAt is None
+    assert movie.year == 2008
+    # Audio
+    audio = movie.media[0].parts[0].audioStreams()[0]
+    if audio.audioChannelLayout:
+        assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
+    assert audio.bitDepth is None
+    assert utils.is_int(audio.bitrate)
+    assert audio.bitrateMode is None
+    assert audio.channels in utils.AUDIOCHANNELS
+    assert audio.codec in utils.CODECS
+    assert audio.default is True
+    assert audio.displayTitle == "Unknown (AAC Stereo)"
+    assert audio.duration is None
+    assert audio.extendedDisplayTitle == "Unknown (AAC Stereo)"
+    assert audio.id >= 1
+    assert audio.index == 1
+    assert utils.is_metadata(audio._initpath)
+    assert audio.language is None
+    assert audio.languageCode is None
+    assert audio.profile == "lc"
+    assert audio.requiredBandwidths is None or audio.requiredBandwidths
+    assert audio.samplingRate == 44100
+    assert audio.selected is True
+    assert audio.streamIdentifier == 2
+    assert audio.streamType == 2
+    assert audio._server._baseurl == utils.SERVER_BASEURL
+    assert audio.title is None
+    assert audio.type == 2
+    with pytest.raises(AttributeError):
+        assert audio.albumGain is None  # Check track only attributes are not available
+    # Media
+    media = movie.media[0]
+    assert media.aspectRatio >= 1.3
+    assert media.audioChannels in utils.AUDIOCHANNELS
+    assert media.audioCodec in utils.CODECS
+    assert media.audioProfile == "lc"
+    assert utils.is_int(media.bitrate)
+    assert media.container in utils.CONTAINERS
+    assert utils.is_int(media.duration, gte=160000)
+    assert utils.is_int(media.height)
+    assert utils.is_int(media.id)
+    assert utils.is_metadata(media._initpath)
+    assert media.has64bitOffsets is False
+    assert media.optimizedForStreaming in [None, False, True]
+    assert media.proxyType is None
+    assert media._server._baseurl == utils.SERVER_BASEURL
+    assert media.target is None
+    assert media.title is None
+    assert media.videoCodec in utils.CODECS
+    assert media.videoFrameRate in utils.FRAMERATES
+    assert media.videoProfile == "main"
+    assert media.videoResolution in utils.RESOLUTIONS
+    assert utils.is_int(media.width, gte=200)
+    with pytest.raises(AttributeError):
+        assert media.aperture is None  # Check photo only attributes are not available
+    # Video
+    video = movie.media[0].parts[0].videoStreams()[0]
+    assert video.anamorphic is None
+    assert video.bitDepth in (
+        8,
+        None,
+    )  # Different versions of Plex Server return different values
+    assert utils.is_int(video.bitrate)
+    assert video.cabac is None
+    assert video.chromaLocation == "left"
+    assert video.chromaSubsampling in ("4:2:0", None)
+    assert video.codec in utils.CODECS
+    assert video.codecID is None
+    assert utils.is_int(video.codedHeight, gte=1080)
+    assert utils.is_int(video.codedWidth, gte=1920)
+    assert video.colorPrimaries is None
+    assert video.colorRange is None
+    assert video.colorSpace is None
+    assert video.colorTrc is None
+    assert video.default is True
+    assert video.displayTitle == "1080p (H.264)"
+    assert video.DOVIBLCompatID is None
+    assert video.DOVIBLPresent is None
+    assert video.DOVIELPresent is None
+    assert video.DOVILevel is None
+    assert video.DOVIPresent is None
+    assert video.DOVIProfile is None
+    assert video.DOVIRPUPresent is None
+    assert video.DOVIVersion is None
+    assert video.duration is None
+    assert video.extendedDisplayTitle == "1080p (H.264)"
+    assert utils.is_float(video.frameRate, gte=20.0)
+    assert video.frameRateMode is None
+    assert video.hasScalingMatrix is False
+    assert utils.is_int(video.height, gte=250)
+    assert utils.is_int(video.id)
+    assert utils.is_int(video.index, gte=0)
+    assert utils.is_metadata(video._initpath)
+    assert video.language is None
+    assert video.languageCode is None
+    assert utils.is_int(video.level)
+    assert video.profile in utils.PROFILES
+    assert video.pixelAspectRatio is None
+    assert video.pixelFormat is None
+    assert utils.is_int(video.refFrames)
+    assert video.requiredBandwidths is None or video.requiredBandwidths
+    assert video.scanType in ("progressive", None)
+    assert video.selected is False
+    assert video.streamType == 1
+    assert video.streamIdentifier == 1
+    assert video._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(video.streamType)
+    assert video.title is None
+    assert video.type == 1
+    assert utils.is_int(video.width, gte=400)
+    # Part
+    part = media.parts[0]
+    assert part.accessible
+    assert part.audioProfile == "lc"
+    assert part.container in utils.CONTAINERS
+    assert part.decision is None
+    assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
+    assert utils.is_int(part.duration, gte=160000)
+    assert part.exists
+    assert len(part.file) >= 10
+    assert part.has64bitOffsets is False
+    assert part.hasPreviewThumbnails is False
+    assert part.hasThumbnail is None
+    assert utils.is_int(part.id)
+    assert part.indexes is None
+    assert utils.is_metadata(part._initpath)
+    assert len(part.key) >= 10
+    assert part.optimizedForStreaming is True
+    assert part.packetLength is None
+    assert part.requiredBandwidths is None or part.requiredBandwidths
+    assert utils.is_int(part.size, gte=1000000)
+    assert part.syncItemId is None
+    assert part.syncState is None
+    assert part._server._baseurl == utils.SERVER_BASEURL
+    assert part.videoProfile == "main"
+    # Stream 1
+    stream1 = part.streams[0]
+    assert stream1.bitDepth in (8, None)
+    assert utils.is_int(stream1.bitrate)
+    assert stream1.cabac is None
+    assert stream1.chromaSubsampling in ("4:2:0", None)
+    assert stream1.codec in utils.CODECS
+    assert stream1.colorSpace is None
+    assert stream1.duration is None
+    assert utils.is_float(stream1.frameRate, gte=20.0)
+    assert stream1.frameRateMode is None
+    assert stream1.hasScalingMatrix is False
+    assert utils.is_int(stream1.height, gte=250)
+    assert utils.is_int(stream1.id)
+    assert utils.is_int(stream1.index, gte=0)
+    assert utils.is_metadata(stream1._initpath)
+    assert stream1.language is None
+    assert stream1.languageCode is None
+    assert utils.is_int(stream1.level)
+    assert stream1.profile in utils.PROFILES
+    assert utils.is_int(stream1.refFrames)
+    assert stream1.scanType in ("progressive", None)
+    assert stream1.selected is False
+    assert stream1._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(stream1.streamType)
+    assert stream1.title is None
+    assert stream1.type == 1
+    assert utils.is_int(stream1.width, gte=400)
+    # Stream 2
+    stream2 = part.streams[1]
+    if stream2.audioChannelLayout:
+        assert stream2.audioChannelLayout in utils.AUDIOLAYOUTS
+    assert stream2.bitDepth is None
+    assert utils.is_int(stream2.bitrate)
+    assert stream2.bitrateMode is None
+    assert stream2.channels in utils.AUDIOCHANNELS
+    assert stream2.codec in utils.CODECS
+    assert stream2.duration is None
+    assert utils.is_int(stream2.id)
+    assert utils.is_int(stream2.index)
+    assert utils.is_metadata(stream2._initpath)
+    assert stream2.language is None
+    assert stream2.languageCode is None
+    assert utils.is_int(stream2.samplingRate)
+    assert stream2.selected is True
+    assert stream2._server._baseurl == utils.SERVER_BASEURL
+    assert stream2.streamType == 2
+    assert stream2.title is None
+    assert stream2.type == 2
 
 
 def test_video_Movie_media_tags_Exception(movie):
     with pytest.raises(BadRequest):
         movie.genres[0].items()
-
-
-def test_video_Movie_batchEdits(movie):
-    title = movie.title
-    summary = movie.summary
-    tagline = movie.tagline
-    studio = movie.studio
-
-    assert movie._edits is None
-    movie.batchEdits()
-    assert movie._edits == {}
-
-    new_title = "New title"
-    new_summary = "New summary"
-    new_tagline = "New tagline"
-    new_studio = "New studio"
-    movie.editTitle(new_title) \
-        .editSummary(new_summary) \
-        .editTagline(new_tagline) \
-        .editStudio(new_studio)
-    assert movie._edits != {}
-    movie.saveEdits()
-    assert movie._edits is None
-    assert movie.title == new_title
-    assert movie.summary == new_summary
-    assert movie.tagline == new_tagline
-    assert movie.studio == new_studio
-
-    movie.batchEdits() \
-        .editTitle(title, locked=False) \
-        .editSummary(summary, locked=False) \
-        .editTagline(tagline, locked=False) \
-        .editStudio(studio, locked=False) \
-        .saveEdits()
-    assert movie.title == title
-    assert movie.summary == summary
-    assert movie.tagline == tagline
-    assert movie.studio == studio
-    assert not movie.fields
-    
-    with pytest.raises(BadRequest):
-        movie.saveEdits()
 
 
 def test_video_Movie_media_tags_collection(movie, collection):
@@ -238,255 +396,6 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
         os.remove(filepath)
     except:
         pass
-
-
-def test_video_Movie_attrs(movies):
-    movie = movies.get("Sita Sings the Blues")
-    assert len(movie.locations) == 1
-    assert len(movie.locations[0]) >= 10
-    assert utils.is_datetime(movie.addedAt)
-    if movie.art:
-        assert utils.is_art(movie.art)
-    assert utils.is_float(movie.rating)
-    assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
-    assert utils.is_float(movie.audienceRating)
-    assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
-    movie.reload()  # RELOAD
-    assert movie.chapterSource is None
-    assert not movie.collections
-    assert movie.contentRating in utils.CONTENTRATINGS
-    if movie.countries:
-        assert "United States of America" in [i.tag for i in movie.countries]
-    if movie.producers:
-        assert "Nina Paley" in [i.tag for i in movie.producers]
-    if movie.directors:
-        assert "Nina Paley" in [i.tag for i in movie.directors]
-    if movie.roles:
-        assert "Reena Shah" in [i.tag for i in movie.roles]
-        assert movie.actors == movie.roles
-    if movie.writers:
-        assert "Nina Paley" in [i.tag for i in movie.writers]
-    assert movie.duration >= 160000
-    assert not movie.fields
-    assert movie.posters()
-    assert "Animation" in [i.tag for i in movie.genres]
-    assert "imdb://tt1172203" in [i.id for i in movie.guids]
-    assert movie.guid == "plex://movie/5d776846880197001ec967c6"
-    assert movie.hasPreviewThumbnails is False
-    assert utils.is_metadata(movie._initpath)
-    assert utils.is_metadata(movie.key)
-    assert movie.languageOverride is None
-    assert utils.is_datetime(movie.lastRatedAt)
-    assert utils.is_datetime(movie.lastViewedAt)
-    assert int(movie.librarySectionID) >= 1
-    assert movie.listType == "video"
-    assert movie.originalTitle is None
-    assert utils.is_datetime(movie.originallyAvailableAt)
-    assert movie.playlistItemID is None
-    if movie.primaryExtraKey:
-        assert utils.is_metadata(movie.primaryExtraKey)
-    assert movie.ratingKey >= 1
-    assert movie._server._baseurl == utils.SERVER_BASEURL
-    assert movie.sessionKey is None
-    assert movie.studio == "Nina Paley"
-    assert utils.is_string(movie.summary, gte=100)
-    assert movie.tagline == "The Greatest Break-Up Story Ever Told"
-    if movie.thumb:
-        assert utils.is_thumb(movie.thumb)
-    assert movie.title == "Sita Sings the Blues"
-    assert movie.titleSort == "Sita Sings the Blues"
-    assert not movie.transcodeSessions
-    assert movie.type == "movie"
-    assert movie.updatedAt > datetime(2017, 1, 1)
-    assert movie.useOriginalTitle == -1
-    assert movie.userRating is None
-    assert movie.viewCount == 0
-    assert utils.is_int(movie.viewOffset, gte=0)
-    assert movie.viewedAt is None
-    assert movie.year == 2008
-    # Audio
-    audio = movie.media[0].parts[0].audioStreams()[0]
-    if audio.audioChannelLayout:
-        assert audio.audioChannelLayout in utils.AUDIOLAYOUTS
-    assert audio.bitDepth is None
-    assert utils.is_int(audio.bitrate)
-    assert audio.bitrateMode is None
-    assert audio.channels in utils.AUDIOCHANNELS
-    assert audio.codec in utils.CODECS
-    assert audio.default is True
-    assert audio.displayTitle == "Unknown (AAC Stereo)"
-    assert audio.duration is None
-    assert audio.extendedDisplayTitle == "Unknown (AAC Stereo)"
-    assert audio.id >= 1
-    assert audio.index == 1
-    assert utils.is_metadata(audio._initpath)
-    assert audio.language is None
-    assert audio.languageCode is None
-    assert audio.profile == "lc"
-    assert audio.requiredBandwidths is None or audio.requiredBandwidths
-    assert audio.samplingRate == 44100
-    assert audio.selected is True
-    assert audio.streamIdentifier == 2
-    assert audio.streamType == 2
-    assert audio._server._baseurl == utils.SERVER_BASEURL
-    assert audio.title is None
-    assert audio.type == 2
-    with pytest.raises(AttributeError):
-        assert audio.albumGain is None  # Check track only attributes are not available
-    # Media
-    media = movie.media[0]
-    assert media.aspectRatio >= 1.3
-    assert media.audioChannels in utils.AUDIOCHANNELS
-    assert media.audioCodec in utils.CODECS
-    assert media.audioProfile == "lc"
-    assert utils.is_int(media.bitrate)
-    assert media.container in utils.CONTAINERS
-    assert utils.is_int(media.duration, gte=160000)
-    assert utils.is_int(media.height)
-    assert utils.is_int(media.id)
-    assert utils.is_metadata(media._initpath)
-    assert media.has64bitOffsets is False
-    assert media.optimizedForStreaming in [None, False, True]
-    assert media.proxyType is None
-    assert media._server._baseurl == utils.SERVER_BASEURL
-    assert media.target is None
-    assert media.title is None
-    assert media.videoCodec in utils.CODECS
-    assert media.videoFrameRate in utils.FRAMERATES
-    assert media.videoProfile == "main"
-    assert media.videoResolution in utils.RESOLUTIONS
-    assert utils.is_int(media.width, gte=200)
-    with pytest.raises(AttributeError):
-        assert media.aperture is None  # Check photo only attributes are not available
-    # Video
-    video = movie.media[0].parts[0].videoStreams()[0]
-    assert video.anamorphic is None
-    assert video.bitDepth in (
-        8,
-        None,
-    )  # Different versions of Plex Server return different values
-    assert utils.is_int(video.bitrate)
-    assert video.cabac is None
-    assert video.chromaLocation == "left"
-    assert video.chromaSubsampling in ("4:2:0", None)
-    assert video.codec in utils.CODECS
-    assert video.codecID is None
-    assert utils.is_int(video.codedHeight, gte=1080)
-    assert utils.is_int(video.codedWidth, gte=1920)
-    assert video.colorPrimaries is None
-    assert video.colorRange is None
-    assert video.colorSpace is None
-    assert video.colorTrc is None
-    assert video.default is True
-    assert video.displayTitle == "1080p (H.264)"
-    assert video.DOVIBLCompatID is None
-    assert video.DOVIBLPresent is None
-    assert video.DOVIELPresent is None
-    assert video.DOVILevel is None
-    assert video.DOVIPresent is None
-    assert video.DOVIProfile is None
-    assert video.DOVIRPUPresent is None
-    assert video.DOVIVersion is None
-    assert video.duration is None
-    assert video.extendedDisplayTitle == "1080p (H.264)"
-    assert utils.is_float(video.frameRate, gte=20.0)
-    assert video.frameRateMode is None
-    assert video.hasScallingMatrix is None
-    assert utils.is_int(video.height, gte=250)
-    assert utils.is_int(video.id)
-    assert utils.is_int(video.index, gte=0)
-    assert utils.is_metadata(video._initpath)
-    assert video.language is None
-    assert video.languageCode is None
-    assert utils.is_int(video.level)
-    assert video.profile in utils.PROFILES
-    assert video.pixelAspectRatio is None
-    assert video.pixelFormat is None
-    assert utils.is_int(video.refFrames)
-    assert video.requiredBandwidths is None or video.requiredBandwidths
-    assert video.scanType in ("progressive", None)
-    assert video.selected is False
-    assert video.streamType == 1
-    assert video.streamIdentifier == 1
-    assert video._server._baseurl == utils.SERVER_BASEURL
-    assert utils.is_int(video.streamType)
-    assert video.title is None
-    assert video.type == 1
-    assert utils.is_int(video.width, gte=400)
-    # Part
-    part = media.parts[0]
-    assert part.accessible
-    assert part.audioProfile == "lc"
-    assert part.container in utils.CONTAINERS
-    assert part.decision is None
-    assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
-    assert utils.is_int(part.duration, gte=160000)
-    assert part.exists
-    assert len(part.file) >= 10
-    assert part.has64bitOffsets is False
-    assert part.hasPreviewThumbnails is False
-    assert part.hasThumbnail is None
-    assert utils.is_int(part.id)
-    assert part.indexes is None
-    assert utils.is_metadata(part._initpath)
-    assert len(part.key) >= 10
-    assert part.optimizedForStreaming is True
-    assert part.packetLength is None
-    assert part.requiredBandwidths is None or part.requiredBandwidths
-    assert utils.is_int(part.size, gte=1000000)
-    assert part.syncItemId is None
-    assert part.syncState is None
-    assert part._server._baseurl == utils.SERVER_BASEURL
-    assert part.videoProfile == "main"
-    # Stream 1
-    stream1 = part.streams[0]
-    assert stream1.bitDepth in (8, None)
-    assert utils.is_int(stream1.bitrate)
-    assert stream1.cabac is None
-    assert stream1.chromaSubsampling in ("4:2:0", None)
-    assert stream1.codec in utils.CODECS
-    assert stream1.colorSpace is None
-    assert stream1.duration is None
-    assert utils.is_float(stream1.frameRate, gte=20.0)
-    assert stream1.frameRateMode is None
-    assert stream1.hasScallingMatrix is None
-    assert utils.is_int(stream1.height, gte=250)
-    assert utils.is_int(stream1.id)
-    assert utils.is_int(stream1.index, gte=0)
-    assert utils.is_metadata(stream1._initpath)
-    assert stream1.language is None
-    assert stream1.languageCode is None
-    assert utils.is_int(stream1.level)
-    assert stream1.profile in utils.PROFILES
-    assert utils.is_int(stream1.refFrames)
-    assert stream1.scanType in ("progressive", None)
-    assert stream1.selected is False
-    assert stream1._server._baseurl == utils.SERVER_BASEURL
-    assert utils.is_int(stream1.streamType)
-    assert stream1.title is None
-    assert stream1.type == 1
-    assert utils.is_int(stream1.width, gte=400)
-    # Stream 2
-    stream2 = part.streams[1]
-    if stream2.audioChannelLayout:
-        assert stream2.audioChannelLayout in utils.AUDIOLAYOUTS
-    assert stream2.bitDepth is None
-    assert utils.is_int(stream2.bitrate)
-    assert stream2.bitrateMode is None
-    assert stream2.channels in utils.AUDIOCHANNELS
-    assert stream2.codec in utils.CODECS
-    assert stream2.duration is None
-    assert utils.is_int(stream2.id)
-    assert utils.is_int(stream2.index)
-    assert utils.is_metadata(stream2._initpath)
-    assert stream2.language is None
-    assert stream2.languageCode is None
-    assert utils.is_int(stream2.samplingRate)
-    assert stream2.selected is True
-    assert stream2._server._baseurl == utils.SERVER_BASEURL
-    assert stream2.streamType == 2
-    assert stream2.title is None
-    assert stream2.type == 2
 
 
 def test_video_Movie_history(movie):
@@ -663,6 +572,103 @@ def test_video_Movie_extras(movies):
     extra = extras[0]
     assert extra.type == 'clip'
     assert extra.section() == movies
+
+
+def test_video_Movie_mixins_edit_advanced_settings(movie):
+    test_mixins.edit_advanced_settings(movie)
+
+
+@pytest.mark.xfail(reason="Changing images fails randomly")
+def test_video_Movie_mixins_images(movie):
+    test_mixins.lock_art(movie)
+    test_mixins.lock_poster(movie)
+    test_mixins.edit_art(movie)
+    test_mixins.edit_poster(movie)
+
+
+def test_video_Movie_mixins_themes(movie):
+    test_mixins.edit_theme(movie)
+
+
+def test_video_Movie_mixins_rating(movie):
+    test_mixins.edit_rating(movie)
+
+
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_content_rating(movie)
+    test_mixins.edit_originally_available(movie)
+    test_mixins.edit_original_title(movie)
+    test_mixins.edit_sort_title(movie)
+    test_mixins.edit_studio(movie)
+    test_mixins.edit_summary(movie)
+    test_mixins.edit_tagline(movie)
+    test_mixins.edit_title(movie)
+
+
+def test_video_Movie_mixins_tags(movie):
+    test_mixins.edit_collection(movie)
+    test_mixins.edit_country(movie)
+    test_mixins.edit_director(movie)
+    test_mixins.edit_genre(movie)
+    test_mixins.edit_label(movie)
+    test_mixins.edit_producer(movie)
+    test_mixins.edit_writer(movie)
+
+
+def test_video_Movie_media_tags(movie):
+    movie.reload()
+    test_media.tag_collection(movie)
+    test_media.tag_country(movie)
+    test_media.tag_director(movie)
+    test_media.tag_genre(movie)
+    test_media.tag_label(movie)
+    test_media.tag_producer(movie)
+    test_media.tag_role(movie)
+    test_media.tag_similar(movie)
+    test_media.tag_writer(movie)
+
+
+def test_video_Movie_batchEdits(movie):
+    title = movie.title
+    summary = movie.summary
+    tagline = movie.tagline
+    studio = movie.studio
+
+    assert movie._edits is None
+    movie.batchEdits()
+    assert movie._edits == {}
+
+    new_title = "New title"
+    new_summary = "New summary"
+    new_tagline = "New tagline"
+    new_studio = "New studio"
+    movie.editTitle(new_title) \
+        .editSummary(new_summary) \
+        .editTagline(new_tagline) \
+        .editStudio(new_studio)
+    assert movie._edits != {}
+    movie.saveEdits()
+    assert movie._edits is None
+    assert movie.title == new_title
+    assert movie.summary == new_summary
+    assert movie.tagline == new_tagline
+    assert movie.studio == new_studio
+
+    movie.batchEdits() \
+        .editTitle(title, locked=False) \
+        .editSummary(summary, locked=False) \
+        .editTagline(tagline, locked=False) \
+        .editStudio(studio, locked=False) \
+        .saveEdits()
+    assert movie.title == title
+    assert movie.summary == summary
+    assert movie.tagline == tagline
+    assert movie.studio == studio
+    assert not movie.fields
+    
+    with pytest.raises(BadRequest):
+        movie.saveEdits()
+
 
 def test_video_Movie_PlexWebURL(plex, movie):
     url = movie.getWebURL()
@@ -852,6 +858,10 @@ def test_video_Show_mixins_images(show):
     test_mixins.attr_posterUrl(show)
 
 
+def test_video_Show_mixins_themes(show):
+    test_mixins.edit_theme(show)
+
+
 def test_video_Show_mixins_rating(show):
     test_mixins.edit_rating(show)
 
@@ -924,6 +934,7 @@ def test_video_Season_attrs(show):
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
     assert season.parentStudio == "Revolution Sun Studios"
+    assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)
     assert season.parentTitle == "Game of Thrones"
@@ -992,6 +1003,11 @@ def test_video_Season_mixins_images(show):
     test_mixins.edit_poster(season)
     test_mixins.attr_artUrl(season)
     test_mixins.attr_posterUrl(season)
+
+
+def test_video_Season_mixins_themes(show):
+    season = show.season(season=1)
+    test_mixins.attr_themeUrl(season)
 
 
 def test_video_Season_mixins_rating(show):
@@ -1210,6 +1226,10 @@ def test_video_Episode_mixins_images(episode):
     test_mixins.edit_poster(episode)
     test_mixins.attr_artUrl(episode)
     test_mixins.attr_posterUrl(episode)
+
+
+def test_video_Episode_mixins_themes(episode):
+    test_mixins.attr_themeUrl(episode)
 
 
 def test_video_Episode_mixins_rating(episode):

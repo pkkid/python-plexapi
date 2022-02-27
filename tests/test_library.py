@@ -22,15 +22,15 @@ def test_library_Library_section(plex):
 
 
 def test_library_Library_sectionByID_is_equal_section(plex, movies):
-    # test that sctionmyID refreshes the section if the key is missing
-    # this is needed if there isnt any cached sections
+    # test that sectionByID refreshes the section if the key is missing
+    # this is needed if there isn't any cached sections
     assert plex.library.sectionByID(movies.key).uuid == movies.uuid
 
 
 def test_library_sectionByID_with_attrs(plex, movies):
     assert movies.agent == "tv.plex.agents.movie"
     # This seems to fail for some reason.
-    # my account alloew of sync, didnt find any about settings about the library.
+    # my account allow of sync, didn't find any about settings about the library.
     # assert movies.allowSync is ("sync" in plex.ownerFeatures)
     assert movies.art == "/:/resources/movie-fanart.jpg"
     assert utils.is_metadata(
@@ -246,7 +246,7 @@ def test_library_MovieSection_cancelUpdate(movies):
     movies.cancelUpdate()
 
 
-def test_librarty_deleteMediaPreviews(movies):
+def test_library_deleteMediaPreviews(movies):
     movies.deleteMediaPreviews()
 
 
@@ -630,7 +630,7 @@ def test_library_MovieSection_search_sort(movies):
 
 
 def test_library_ShowSection_search_sort(tvshows):
-    # Test predefined Plex mult-sort
+    # Test predefined Plex multi-sort
     seasonAsc = "season.index,season.titleSort"
     results = tvshows.search(sort=seasonAsc, libtype="season")
     sortedResults = sorted(results, key=lambda s: (s.index, s.titleSort))
@@ -678,7 +678,7 @@ def test_library_ShowSection_search_sort(tvshows):
 
 
 def test_library_MusicSection_search_sort(music):
-    # Test predefined Plex mult-sort
+    # Test predefined Plex multi-sort
     albumArtistAsc = "artist.titleSort,album.titleSort,album.index,album.id,album.originallyAvailableAt"
     results = music.search(sort=albumArtistAsc, libtype="album")
     sortedResults = sorted(

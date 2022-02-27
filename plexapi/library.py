@@ -43,7 +43,7 @@ class Library(PlexObject):
                 if elem.attrib.get('type') == cls.TYPE:
                     section = cls(self._server, elem, key)
                     self._sectionsByID[section.key] = section
-                    self._sectionsByTitle[section.title.lower()] = section
+                    self._sectionsByTitle[section.title.lower().strip()] = section
 
     def sections(self):
         """ Returns a list of all media sections in this library. Library sections may be any of
@@ -59,10 +59,11 @@ class Library(PlexObject):
             Parameters:
                 title (str): Title of the section to return.
         """
-        if not self._sectionsByTitle or title not in self._sectionsByTitle:
+        normalized_title = title.lower().strip()
+        if not self._sectionsByTitle or normalized_title not in self._sectionsByTitle:
             self._loadSections()
         try:
-            return self._sectionsByTitle[title.lower()]
+            return self._sectionsByTitle[normalized_title]
         except KeyError:
             raise NotFound('Invalid library section: %s' % title) from None
 
@@ -125,7 +126,7 @@ class Library(PlexObject):
     def search(self, title=None, libtype=None, **kwargs):
         """ Searching within a library section is much more powerful. It seems certain
             attributes on the media objects can be targeted to filter this search down
-            a bit, but I havent found the documentation for it.
+            a bit, but I haven't found the documentation for it.
 
             Example: "studio=Comedy%20Central" or "year=1999" "title=Kung Fu" all work. Other items
             such as actor=<id> seem to work, but require you already know the id of the actor.
@@ -396,7 +397,7 @@ class LibrarySection(PlexObject):
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self.uuid = data.attrib.get('uuid')
-        # Private attrs as we dont want a reload.
+        # Private attrs as we don't want a reload.
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
@@ -1271,7 +1272,7 @@ class LibrarySection(PlexObject):
             * See :func:`~plexapi.library.LibrarySection.listOperators` to get a list of all available operators.
             * See :func:`~plexapi.library.LibrarySection.listFilterChoices` to get a list of all available filter values.
 
-            The following filter fields are just some examples of the possible filters. The list is not exaustive,
+            The following filter fields are just some examples of the possible filters. The list is not exhaustive,
             and not all filters apply to all library types.
 
             * **actor** (:class:`~plexapi.media.MediaTag`): Search for the name of an actor.
@@ -1334,7 +1335,7 @@ class LibrarySection(PlexObject):
             Some filters may be prefixed by the ``libtype`` separated by a ``.`` (e.g. ``show.collection``,
             ``episode.title``, ``artist.style``, ``album.genre``, ``track.userRating``, etc.). This should not be
             confused with the ``libtype`` parameter. If no ``libtype`` prefix is provided, then the default library
-            type is assumed. For example, in a TV show library ``viewCout`` is assumed to be ``show.viewCount``.
+            type is assumed. For example, in a TV show library ``viewCount`` is assumed to be ``show.viewCount``.
             If you want to filter using episode view count then you must specify ``episode.viewCount`` explicitly.
             In addition, if the filter does not exist for the default library type it will fallback to the most
             specific ``libtype`` available. For example, ``show.unwatched`` does not exists so it will fallback to
