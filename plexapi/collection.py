@@ -32,9 +32,10 @@ class Collection(
             art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
             childCount (int): Number of items in the collection.
-            collectionMode (str): How the items in the collection are displayed.
+            collectionFilterBasedOnUser (int): Which user's activity is used for the collection filtering.
+            collectionMode (int): How the items in the collection are displayed.
             collectionPublished (bool): True if the collection is published to the Plex homepage.
-            collectionSort (str): How to sort the items in the collection.
+            collectionSort (int): How to sort the items in the collection.
             content (str): The filter URI string for smart collections.
             contentRating (str) Content rating (PG-13; NR; TV-G).
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
@@ -71,6 +72,7 @@ class Collection(
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
+        self.collectionFilterBasedOnUser = utils.cast(int, data.attrib.get('collectionFilterBasedOnUser', '0'))
         self.collectionMode = utils.cast(int, data.attrib.get('collectionMode', '-1'))
         self.collectionPublished = utils.cast(bool, data.attrib.get('collectionPublished', '0'))
         self.collectionSort = utils.cast(int, data.attrib.get('collectionSort', '0'))
@@ -196,6 +198,32 @@ class Collection(
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
 
+    def filterUserUpdate(self, user=None):
+        """ Update the collection filtering user advanced setting.
+
+            Parameters:
+                user (str): One of the following values:
+                    "admin" (Always the server admin user),
+                    "user" (User currently viewing the content)
+
+            Example:
+
+                .. code-block:: python
+
+                    collection.updateMode(user="user")
+        """
+        if not self.smart:
+            raise BadRequest('Cannot change collection filtering user for a non-smart collection.')
+
+        user_dict = {
+            'admin': 0,
+            'user': 1
+        }
+        key = user_dict.get(user)
+        if key is None:
+            raise BadRequest('Unknown collection filtering user: %s. Options %s' % (user, list(user_dict)))
+        self.editAdvanced(collectionFilterBasedOnUser=key)
+
     def modeUpdate(self, mode=None):
         """ Update the collection mode advanced setting.
 
@@ -220,7 +248,7 @@ class Collection(
         }
         key = mode_dict.get(mode)
         if key is None:
-            raise BadRequest('Unknown collection mode : %s. Options %s' % (mode, list(mode_dict)))
+            raise BadRequest('Unknown collection mode: %s. Options %s' % (mode, list(mode_dict)))
         self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
@@ -238,6 +266,9 @@ class Collection(
 
                     collection.updateSort(mode="alpha")
         """
+        if self.smart:
+            raise BadRequest('Cannot change collection order for a smart collection.')
+
         sort_dict = {
             'release': 0,
             'alpha': 1,
