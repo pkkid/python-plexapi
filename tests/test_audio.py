@@ -103,6 +103,7 @@ def test_audio_Artist_mixins_tags(artist):
     test_mixins.edit_collection(artist)
     test_mixins.edit_country(artist)
     test_mixins.edit_genre(artist)
+    test_mixins.edit_label(artist)
     test_mixins.edit_mood(artist)
     test_mixins.edit_similar_artist(artist)
     test_mixins.edit_style(artist)
@@ -368,6 +369,7 @@ def test_audio_Track_mixins_rating(track):
 
 def test_audio_Track_mixins_tags(track):
     test_mixins.edit_collection(track)
+    test_mixins.edit_label(track)
     test_mixins.edit_mood(track)
 
 
