@@ -318,21 +318,21 @@ class PlexClient(PlexObject):
             Parameters:
                 media (:class:`~plexapi.media.Media`): Media object to navigate to.
                 **params (dict): Additional GET parameters to include with the command.
-
-            Raises:
-                :exc:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
-        if not self._server:
-            raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
-        self.sendCommand('mirror/details', **dict({
-            'machineIdentifier': self._server.machineIdentifier,
+        command = {
+            'machineIdentifier': media._server.machineIdentifier,
             'address': server_url[1].strip('/'),
             'port': server_url[-1],
             'key': media.key,
             'protocol': server_url[0],
-            'token': media._server.createToken()
-        }, **params))
+            **params,
+        }
+        token = media._server.createToken()
+        if token:
+            command["token"] = token
+
+        self.sendCommand("mirror/details", **command)
 
     # -------------------
     # Playback Commands
@@ -488,12 +488,7 @@ class PlexClient(PlexObject):
                     representing the beginning (default 0).
                 **params (dict): Optional additional parameters to include in the playback request. See
                     also: https://github.com/plexinc/plex-media-player/wiki/Remote-control-API#modified-commands
-
-            Raises:
-                :exc:`~plexapi.exceptions.Unsupported`: When no PlexServer specified in this object.
         """
-        if not self._server:
-            raise Unsupported('A server must be specified before using this command.')
         server_url = media._server._baseurl.split(':')
         server_port = server_url[-1].strip('/')
 
@@ -509,19 +504,24 @@ class PlexClient(PlexObject):
         if mediatype == "audio":
             mediatype = "music"
 
-        playqueue = media if isinstance(media, PlayQueue) else self._server.createPlayQueue(media)
-        self.sendCommand('playback/playMedia', **dict({
+        playqueue = media if isinstance(media, PlayQueue) else media._server.createPlayQueue(media)
+        command = {
             'providerIdentifier': 'com.plexapp.plugins.library',
-            'machineIdentifier': self._server.machineIdentifier,
+            'machineIdentifier': media._server.machineIdentifier,
             'protocol': server_url[0],
             'address': server_url[1].strip('/'),
             'port': server_port,
             'offset': offset,
             'key': media.key or playqueue.selectedItem.key,
-            'token': media._server.createToken(),
             'type': mediatype,
             'containerKey': '/playQueues/%s?window=100&own=1' % playqueue.playQueueID,
-        }, **params))
+            **params,
+        }
+        token = media._server.createToken()
+        if token:
+            command["token"] = token
+
+        self.sendCommand("playback/playMedia", **command)
 
     def setParameters(self, volume=None, shuffle=None, repeat=None, mtype=DEFAULT_MTYPE):
         """ Set multiple playback parameters at once.
