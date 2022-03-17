@@ -565,7 +565,7 @@ class MyPlexAccount(PlexObject):
         """ Converts friend filters to a string representation for transport. """
         values = []
         for key, vals in filterDict.items():
-            if key not in ('contentRating', 'label'):
+            if key not in ('contentRating', 'label', 'contentRating!', 'label!'):
                 raise BadRequest('Unknown filter key: %s', key)
             values.append('%s=%s' % (key, '%2C'.join(vals)))
         return '|'.join(values)
