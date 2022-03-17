@@ -23,7 +23,7 @@ jobs:
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
@@ -82,7 +82,7 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -218,7 +218,7 @@ jobs:
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
