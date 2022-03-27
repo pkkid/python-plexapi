@@ -282,9 +282,9 @@ class PlexObject(object):
             kwargs['etag'] = cls.TAG
         if cls and cls.TYPE and 'type' not in kwargs:
             kwargs['type'] = cls.TYPE
-        # rtag to iter on a specific root tag
+        # rtag to iter on a specific root tag using breadth-first search
         if rtag:
-            data = next(data.iter(rtag), [])
+            data = next(utils.iterXMLBFS(data, rtag), [])
         # loop through all data elements to find matches
         items = []
         for elem in data:
@@ -304,9 +304,9 @@ class PlexObject(object):
     def listAttrs(self, data, attr, rtag=None, **kwargs):
         """ Return a list of values from matching attribute. """
         results = []
-        # rtag to iter on a specific root tag
+        # rtag to iter on a specific root tag using breadth-first search
         if rtag:
-            data = next(data.iter(rtag), [])
+            data = next(utils.iterXMLBFS(data, rtag), [])
         for elem in data:
             kwargs['%s__exists' % attr] = True
             if self._checkAttrs(elem, **kwargs):
