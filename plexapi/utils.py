@@ -194,7 +194,7 @@ def threaded(callback, listargs):
         args += [results, len(results)]
         results.append(None)
         threads.append(Thread(target=callback, args=args, kwargs=dict(job_is_done_event=job_is_done_event)))
-        threads[-1].setDaemon(True)
+        threads[-1].daemon = True
         threads[-1].start()
     while not job_is_done_event.is_set():
         if all(not t.is_alive() for t in threads):
