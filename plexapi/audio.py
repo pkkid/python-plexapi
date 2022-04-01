@@ -313,10 +313,14 @@ class Album(
                 :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
         key = '/library/metadata/%s/children' % self.ratingKey
-        if title is not None:
+        if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Track, title__iexact=title)
-        elif track is not None:
-            return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=track)
+        elif track is not None or isinstance(title, int):
+            if isinstance(title, int):
+                index = title
+            else:
+                index = track
+            return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=index)
         raise BadRequest('Missing argument: title or track is required')
 
     def tracks(self, **kwargs):
