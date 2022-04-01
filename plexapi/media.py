@@ -871,7 +871,7 @@ class GuidTag(PlexObject):
     """ Base class for guid tags used only for Guids, as they contain only a string identifier
 
         Attributes:
-            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB).
+            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB, MBID).
     """
 
     def _loadData(self, data):
