@@ -188,19 +188,20 @@ def test_audio_Album_tracks(album):
     assert len(tracks) == 1
 
 
-def test_audio_Album_track(album, track=None):
-    # this is not reloaded. its not that much info missing.
-    track = track or album.track("As Colourful As Ever")
-    track2 = album.track(track=1)
-    assert track == track2
+def test_audio_Album_track(album):
+    track = album.track("As Colourful as Ever")
+    assert track.title == "As Colourful as Ever"
+    track = album.track(track=1)
+    assert track.index == 1
+    track = album.track(1)
+    assert track.index == 1
     with pytest.raises(BadRequest):
         album.track()
 
 
 def test_audio_Album_get(album):
-    # alias for album.track()
-    track = album.get("As Colourful As Ever")
-    test_audio_Album_track(album, track=track)
+    track = album.get("As Colourful as Ever")
+    assert track.title == "As Colourful as Ever"
 
 
 def test_audio_Album_artist(album):

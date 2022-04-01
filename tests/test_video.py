@@ -744,6 +744,15 @@ def test_video_Show_attrs(show):
     assert show.url(None) is None
 
 
+def test_video_Show_episode(show):
+    episode = show.episode("Winter Is Coming")
+    assert episode == show.episode(season=1, episode=1)
+    with pytest.raises(BadRequest):
+        show.episode()
+    with pytest.raises(NotFound):
+        show.episode(season=1337, episode=1337)
+
+
 def test_video_Show_history(show):
     show.markWatched()
     history = show.history()
@@ -985,13 +994,15 @@ def test_video_Season_get(show):
 
 
 def test_video_Season_episode(show):
-    episode = show.season("Season 1").get("Winter Is Coming")
+    season = show.season("Season 1")
+    episode = season.get("Winter Is Coming")
     assert episode.title == "Winter Is Coming"
-
-
-def test_video_Season_episode_by_index(show):
-    episode = show.season(season=1).episode(episode=1)
+    episode = season.episode(episode=1)
     assert episode.index == 1
+    episode = season.episode(1)
+    assert episode.index == 1
+    with pytest.raises(BadRequest):
+        season.episode()
 
 
 def test_video_Season_episodes(show):
@@ -1055,15 +1066,6 @@ def test_video_Episode_stop(episode, mocker, patched_http_call):
         episode, "session", return_value=list(mocker.MagicMock(id="hello"))
     )
     episode.stop(reason="It's past bedtime!")
-
-
-def test_video_Episode(show):
-    episode = show.episode("Winter Is Coming")
-    assert episode == show.episode(season=1, episode=1)
-    with pytest.raises(BadRequest):
-        show.episode()
-    with pytest.raises(NotFound):
-        show.episode(season=1337, episode=1337)
 
 
 def test_video_Episode_history(episode):
