@@ -989,8 +989,16 @@ class WriterMixin(EditTagsMixin):
 class WatchlistMixin(object):
     """ Mixin for Plex objects that can be added to a user's watchlist. """
 
+    def onWatchlist(self, account):
+        """ Returns True if the item is on the user's watchlist.
+
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to check item on the watchlist.
+        """
+        return account.onWatchlist(self)
+
     def addToWatchlist(self, account):
-        """ Add this item to the specified :class:`~plexapi.myplex.MyPlexAccount`'s watchlist.
+        """ Add this item to the specified user's watchlist.
 
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`): Account to add item to the watchlist.
@@ -998,7 +1006,7 @@ class WatchlistMixin(object):
         account.addToWatchlist(self)
 
     def removeFromWatchlist(self, account):
-        """ Remove this item from the specified :class:`~plexapi.myplex.MyPlexAccount`'s watchlist.
+        """ Remove this item from the specified user's watchlist.
 
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`): Account to remove item from the watchlist.

@@ -782,6 +782,17 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
         return self.findItems(data)
 
+    def onWatchlist(self, item):
+        """ Returns True if the item is on the user's watchlist.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`): Item to check
+                    if it is on the user's watchlist.
+        """
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
+        return bool(data.find('UserState').attrib.get('watchlistedAt'))
+
     def addToWatchlist(self, items):
         """ Add media items to the user's watchlist
 
