@@ -79,6 +79,7 @@ class MyPlexAccount(PlexObject):
     WEBSHOWS = 'https://webshows.provider.plex.tv'                                              # get
     PODCASTS = 'https://podcasts.provider.plex.tv'                                              # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
+    METADATA = 'https://metadata.provider.plex.tv'
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -697,6 +698,7 @@ class MyPlexAccount(PlexObject):
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get Play History for all library sections on all servers for the owner.
+
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
                 mindate (datetime): Min datetime to return results from.
@@ -738,6 +740,47 @@ class MyPlexAccount(PlexObject):
         """
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
+
+    def watchlist(self):
+        """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist
+        """
+        data = self.query(f'{self.METADATA}/library/sections/watchlist/all?includeCollections=1&includeExternalMedia=1')
+        items = self.findItems(data)
+        for item in items:
+            # ratingKey for metadata.provider.plex.tv is the guid hash
+            item.ratingKey = item.guid.rsplit('/', 1)[-1]
+        return items
+
+    def addToWatchlist(self, items):
+        """ Add media items to the user's watchlist
+
+            Parameters:
+                items (List): List of :class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`
+                    objects to be added to the watchlist.
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: When trying to add invalid media to the watchlist.
+        """
+        if not isinstance(items, list):
+            items = [items]
+        
+        for item in items:
+            ratingKey = item.ratingKey if isinstance(item.ratingKey, str) else item.guid.rsplit('/', 1)[-1]
+            self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
+
+    def removeFromWatchlist(self, items):
+        """ Remove media items from the user's watchlist
+
+            Parameters:
+                items (List): List of :class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`
+                    objects to be added to the watchlist.
+        """
+        if not isinstance(items, list):
+            items = [items]
+        
+        for item in items:
+            ratingKey = item.ratingKey if isinstance(item.ratingKey, str) else item.guid.rsplit('/', 1)[-1]
+            self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
