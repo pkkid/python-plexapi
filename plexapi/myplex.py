@@ -741,10 +741,45 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self):
-        """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist
+    def watchlist(self, filter=None, sort=None, libtype=None):
+        """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
+            Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
+            search for the media using the guid.
+
+            Parameters:
+                filter (str, optional): 'available' or 'released' to only return items that are available or released,
+                    otherwise return all items.
+                sort (str, optional): In the format ``field:dir``. Available fields are ``watchlistedAt`` (Added At),
+                    ``titleSort`` (Title), ``originallyAvailableAt`` (Release Date), or ``rating`` (Critic Rating).
+                    ``dir`` can be ``asc`` or ``desc``.
+                libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
+
+
+            Example:
+
+                .. code-block:: python
+
+                    # Watchlist for released movies sorted by critic rating in descending order
+                    watchlist = account.watchlist(filter='released', sort='rating:desc', libtype='movie')
+                    item = watchlist[0]  # First item in the watchlist
+
+                    # Search for the item on a Plex server
+                    result = plex.library.search(guid=item.guid, libtype=item.type)
+
         """
-        data = self.query(f'{self.METADATA}/library/sections/watchlist/all?includeCollections=1&includeExternalMedia=1')
+        params = {
+            'includeCollections': 1,
+            'includeExternalMedia': 1
+        }
+
+        if not filter:
+            filter = 'all'
+        if sort:
+            params['sort'] = sort
+        if libtype:
+            params['type'] = utils.searchType(libtype)
+
+        data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
         return self.findItems(data)
 
     def addToWatchlist(self, items):
