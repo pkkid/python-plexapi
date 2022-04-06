@@ -745,11 +745,7 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist
         """
         data = self.query(f'{self.METADATA}/library/sections/watchlist/all?includeCollections=1&includeExternalMedia=1')
-        items = self.findItems(data)
-        for item in items:
-            # ratingKey for metadata.provider.plex.tv is the guid hash
-            item.ratingKey = item.guid.rsplit('/', 1)[-1]
-        return items
+        return self.findItems(data)
 
     def addToWatchlist(self, items):
         """ Add media items to the user's watchlist
@@ -765,7 +761,7 @@ class MyPlexAccount(PlexObject):
             items = [items]
         
         for item in items:
-            ratingKey = item.ratingKey if isinstance(item.ratingKey, str) else item.guid.rsplit('/', 1)[-1]
+            ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
     def removeFromWatchlist(self, items):
@@ -779,7 +775,7 @@ class MyPlexAccount(PlexObject):
             items = [items]
         
         for item in items:
-            ratingKey = item.ratingKey if isinstance(item.ratingKey, str) else item.guid.rsplit('/', 1)[-1]
+            ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
     def link(self, pin):
