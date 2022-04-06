@@ -77,7 +77,6 @@ class MyPlexAccount(PlexObject):
     # Hub sections
     VOD = 'https://vod.provider.plex.tv/'                                                       # get
     WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
-    NEWS = 'https://news.provider.plex.tv/'                                                     # get
     PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
     MUSIC = 'https://music.provider.plex.tv/'                                                   # get
     # Key may someday switch to the following url. For now the current value works.
@@ -720,13 +719,6 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
         """
         req = requests.get(self.WEBSHOWS + 'hubs/', headers={'X-Plex-Token': self._token})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem)
-
-    def news(self):
-        """ Returns a list of News Hub items :class:`~plexapi.library.Hub`
-        """
-        req = requests.get(self.NEWS + 'hubs/sections/all', headers={'X-Plex-Token': self._token})
         elem = ElementTree.fromstring(req.text)
         return self.findItems(elem)
 
