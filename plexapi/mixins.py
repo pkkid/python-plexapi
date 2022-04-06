@@ -1004,3 +1004,16 @@ class WatchlistMixin(object):
                 account (:class:`~plexapi.myplex.MyPlexAccount`): Account to remove item from the watchlist.
         """
         account.removeFromWatchlist(self)
+
+    def streamingServices(self, account=None):
+        """ Return a list of :class:`~plexapi.media.Availability`
+            objects for the available streaming services for this item.
+
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account used to retrieve availability.
+                   Note: This is required if you are not connected to a Plex server instance using the admin account.
+        """
+        account = account or self._server.myPlexAccount()
+        ratingKey = self.guid.rsplit('/', 1)[-1]
+        data = account.query(f"{account.METADATA}/library/metadata/{ratingKey}/availabilities")
+        return self.findItems(data)
