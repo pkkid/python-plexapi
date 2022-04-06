@@ -984,3 +984,23 @@ class WriterMixin(EditTagsMixin):
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('writer', writers, locked=locked, remove=True)
+
+
+class WatchlistMixin(object):
+    """ Mixin for Plex objects that can be added to a user's watchlist. """
+
+    def addToWatchlist(self, account):
+        """ Add this item to the specified :class:`~plexapi.myplex.MyPlexAccount`'s watchlist.
+
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to add item to the watchlist.
+        """
+        account.addToWatchlist(self)
+
+    def removeFromWatchlist(self, account):
+        """ Remove this item from the specified :class:`~plexapi.myplex.MyPlexAccount`'s watchlist.
+
+            Parameters:
+                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to remove item from the watchlist.
+        """
+        account.removeFromWatchlist(self)
