@@ -259,3 +259,36 @@ def test_myplex_plexpass_attributes(account_plexpass):
 
 def test_myplex_claimToken(account):
     assert account.claimToken().startswith("claim-")
+
+
+def test_myplex_watchlist(account, movie, show, artist):
+    assert not account.watchlist()
+
+    # Add to watchlist from account
+    account.addToWatchlist(movie)
+    assert movie in account.watchlist()
+
+    # Add to watchlist from object
+    show.addToWatchlist(account)
+    assert show in account.watchlist()
+
+    # Remove from watchlist from account
+    account.removeFromWatchlist(show)
+    assert show not in account.watchlist()
+
+    # Remove from watchlist from object
+    movie.removeFromWatchlist(account)
+    assert movie not in account.watchlist()
+
+    # Add multiple items to watchlist
+    account.addToWatchlist([movie, show])
+    watchlist = account.watchlist()
+    assert movie in watchlist and show in watchlist
+
+    # Remove multiple items from watchlist
+    account.removeFromWatchlist([movie, show])
+    watchlist = account.watchlist()
+    assert movie not in watchlist and show not in watchlist
+
+    with pytest.raises(BadRequest):
+        account.addToWatchlist(artist)
