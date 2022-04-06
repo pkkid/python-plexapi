@@ -72,13 +72,13 @@ class MyPlexAccount(PlexObject):
     REMOVEHOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                  # delete
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
-    OPTOUTS = 'https://plex.tv/api/v2/user/%(userUUID)s/settings/opt_outs'                      # get
+    OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
-    VOD = 'https://vod.provider.plex.tv/'                                                       # get
-    WEBSHOWS = 'https://webshows.provider.plex.tv/'                                             # get
-    PODCASTS = 'https://podcasts.provider.plex.tv/'                                             # get
-    MUSIC = 'https://music.provider.plex.tv/'                                                   # get
+    VOD = 'https://vod.provider.plex.tv'                                                        # get
+    WEBSHOWS = 'https://webshows.provider.plex.tv'                                              # get
+    PODCASTS = 'https://podcasts.provider.plex.tv'                                              # get
+    MUSIC = 'https://music.provider.plex.tv'                                                    # get
     # Key may someday switch to the following url. For now the current value works.
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
@@ -708,40 +708,36 @@ class MyPlexAccount(PlexObject):
             hist.extend(conn.history(maxresults=maxresults, mindate=mindate, accountID=1))
         return hist
 
+    def onlineMediaSources(self):
+        """ Returns a list of user account Online Media Sources settings :class:`~plexapi.myplex.AccountOptOut`
+        """
+        url = self.OPTOUTS.format(userUUID=self.uuid)
+        elem = self.query(url)
+        return self.findItems(elem, cls=AccountOptOut, etag='optOut')
+
     def videoOnDemand(self):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.VOD + 'hubs/', headers={'X-Plex-Token': self._token})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem)
+        data = self.query(f'{self.VOD}/hubs')
+        return self.findItems(data)
 
     def webShows(self):
         """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.WEBSHOWS + 'hubs/', headers={'X-Plex-Token': self._token})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem)
+        data = self.query(f'{self.WEBSHOWS}/hubs')
+        return self.findItems(data)
 
     def podcasts(self):
         """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.PODCASTS + 'hubs/', headers={'X-Plex-Token': self._token})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem)
+        data = self.query(f'{self.PODCASTS}/hubs')
+        return self.findItems(data)
 
     def tidal(self):
         """ Returns a list of tidal Hub items :class:`~plexapi.library.Hub`
         """
-        req = requests.get(self.MUSIC + 'hubs/', headers={'X-Plex-Token': self._token})
-        elem = ElementTree.fromstring(req.text)
-        return self.findItems(elem)
-
-    def onlineMediaSources(self):
-        """ Returns a list of user account Online Media Sources settings :class:`~plexapi.myplex.AccountOptOut`
-        """
-        url = self.OPTOUTS % {'userUUID': self.uuid}
-        elem = self.query(url)
-        return self.findItems(elem, cls=AccountOptOut, etag='optOut')
+        data = self.query(f'{self.MUSIC}/hubs')
+        return self.findItems(data)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
