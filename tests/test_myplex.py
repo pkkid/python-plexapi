@@ -262,33 +262,41 @@ def test_myplex_claimToken(account):
 
 
 def test_myplex_watchlist(account, movie, show, artist):
+    # Need to match using guid because ratingKey is different
+    watchlist_guids = lambda: [i.guid for i in account.watchlist()]
+
     assert not account.watchlist()
 
     # Add to watchlist from account
     account.addToWatchlist(movie)
-    assert movie in account.watchlist()
+    assert movie.guid in watchlist_guids()
 
     # Add to watchlist from object
     show.addToWatchlist(account)
-    assert show in account.watchlist()
+    assert show.guid in watchlist_guids()
 
     # Remove from watchlist from account
     account.removeFromWatchlist(show)
-    assert show not in account.watchlist()
+    assert show.guid not in watchlist_guids()
 
     # Remove from watchlist from object
     movie.removeFromWatchlist(account)
-    assert movie not in account.watchlist()
+    assert movie.guid not in watchlist_guids()
 
     # Add multiple items to watchlist
     account.addToWatchlist([movie, show])
-    watchlist = account.watchlist()
-    assert movie in watchlist and show in watchlist
+    guids = watchlist_guids()
+    assert movie.guid in guids and show.guid in guids
+
+    # Filter and sort watchlist
+    watchlist = account.watchlist(filter='released', sort='titleSort', libtype='movie')
+    guids = [i.guid for i in watchlist]
+    assert movie.guid in guids and show.guid not in guids
 
     # Remove multiple items from watchlist
     account.removeFromWatchlist([movie, show])
-    watchlist = account.watchlist()
-    assert movie not in watchlist and show not in watchlist
+    guids = watchlist_guids()
+    assert movie.guid not in guids and show.guid not in guids
 
     with pytest.raises(BadRequest):
         account.addToWatchlist(artist)
