@@ -600,12 +600,13 @@ class LibrarySection(PlexObject):
         return self.fetchItem(key, title__iexact=title)
 
     def getGuid(self, guid):
-        """ Returns the media item with the specified external IMDB, TMDB, or TVDB ID.
+        """ Returns the media item with the specified external Plex, IMDB, TMDB, or TVDB ID.
             Note: Only available for the Plex Movie and Plex TV Series agents.
 
             Parameters:
                 guid (str): The external guid of the item to return.
-                    Examples: IMDB ``imdb://tt0944947``, TMDB ``tmdb://1399``, TVDB ``tvdb://121361``.
+                    Examples: Plex ``plex://show/5d9c086c46115600200aa2fe``
+                    IMDB ``imdb://tt0944947``, TMDB ``tmdb://1399``, TVDB ``tvdb://121361``.
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: The guid is not found in the library.
@@ -614,21 +615,32 @@ class LibrarySection(PlexObject):
 
                 .. code-block:: python
 
-                    result1 = library.getGuid('imdb://tt0944947')
-                    result2 = library.getGuid('tmdb://1399')
-                    result3 = library.getGuid('tvdb://121361')
+                    result1 = library.getGuid('plex://show/5d9c086c46115600200aa2fe')
+                    result2 = library.getGuid('imdb://tt0944947')
+                    result3 = library.getGuid('tmdb://1399')
+                    result4 = library.getGuid('tvdb://121361')
 
                     # Alternatively, create your own guid lookup dictionary for faster performance
-                    guidLookup = {guid.id: item for item in library.all() for guid in item.guids}
-                    result1 = guidLookup['imdb://tt0944947']
-                    result2 = guidLookup['tmdb://1399']
-                    result3 = guidLookup['tvdb://121361']
+                    guidLookup = {}
+                    for item in library.all():
+                        guidLookup[item.guid] = item
+                        guidLookup.update({guid.id for guid in item.guids}}
+
+                    result1 = guidLookup['plex://show/5d9c086c46115600200aa2fe']
+                    result2 = guidLookup['imdb://tt0944947']
+                    result4 = guidLookup['tmdb://1399']
+                    result5 = guidLookup['tvdb://121361']
 
         """
+
         try:
-            dummy = self.search(maxresults=1)[0]
-            match = dummy.matches(agent=self.agent, title=guid.replace('://', '-'))
-            return self.search(guid=match[0].guid)[0]
+            if guid.startswith('plex://'):
+                result = self.search(guid=guid)[0]
+                return result
+            else:
+                dummy = self.search(maxresults=1)[0]
+                match = dummy.matches(agent=self.agent, title=guid.replace('://', '-'))
+                return self.search(guid=match[0].guid)[0]
         except IndexError:
             raise NotFound("Guid '%s' is not found in the library" % guid) from None
 
