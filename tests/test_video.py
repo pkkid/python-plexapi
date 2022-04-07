@@ -90,7 +90,7 @@ def test_video_Movie_attrs(movies):
     assert movie.sessionKey is None
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
-    assert movie.tagline == "The Greatest Break-Up Story Ever Told"
+    assert movie.tagline == "The Greatest Break-Up Story Ever Told."
     assert movie.theme is None
     if movie.thumb:
         assert utils.is_thumb(movie.thumb)
