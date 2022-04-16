@@ -989,28 +989,34 @@ class WriterMixin(EditTagsMixin):
 class WatchlistMixin(object):
     """ Mixin for Plex objects that can be added to a user's watchlist. """
 
-    def onWatchlist(self, account):
+    def onWatchlist(self, account=None):
         """ Returns True if the item is on the user's watchlist.
 
             Parameters:
-                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to check item on the watchlist.
+                account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to check item on the watchlist.
+                   Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
+        account = account or self._server.myPlexAccount()
         return account.onWatchlist(self)
 
-    def addToWatchlist(self, account):
+    def addToWatchlist(self, account=None):
         """ Add this item to the specified user's watchlist.
 
             Parameters:
-                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to add item to the watchlist.
+                account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to add item to the watchlist.
+                   Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
+        account = account or self._server.myPlexAccount()
         account.addToWatchlist(self)
 
-    def removeFromWatchlist(self, account):
+    def removeFromWatchlist(self, account=None):
         """ Remove this item from the specified user's watchlist.
 
             Parameters:
-                account (:class:`~plexapi.myplex.MyPlexAccount`): Account to remove item from the watchlist.
+                account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to remove item from the watchlist.
+                   Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
+        account = account or self._server.myPlexAccount()
         account.removeFromWatchlist(self)
 
     def streamingServices(self, account=None):
