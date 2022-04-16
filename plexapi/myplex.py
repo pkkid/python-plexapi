@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
+import html
 import threading
 import time
 from xml.etree import ElementTree
@@ -182,6 +183,8 @@ class MyPlexAccount(PlexObject):
                 raise NotFound(message)
             else:
                 raise BadRequest(message)
+        if headers.get('Accept') == 'application/json':
+            return response.json()
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -741,7 +744,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self, filter=None, sort=None, libtype=None):
+    def watchlist(self, filter=None, sort=None, libtype=None, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
             Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
             search for the media using the guid.
@@ -753,6 +756,7 @@ class MyPlexAccount(PlexObject):
                     ``titleSort`` (Title), ``originallyAvailableAt`` (Release Date), or ``rating`` (Critic Rating).
                     ``dir`` can be ``asc`` or ``desc``.
                 libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
+                **kwargs (dict): Additional custom filters to apply to the search results.
 
 
             Example:
@@ -779,6 +783,7 @@ class MyPlexAccount(PlexObject):
         if libtype:
             params['type'] = utils.searchType(libtype)
 
+        params.update(kwargs)
         data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
         return self.findItems(data)
 
@@ -823,6 +828,47 @@ class MyPlexAccount(PlexObject):
         for item in items:
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
+
+    def searchDiscover(self, query, limit=30):
+        """ Search for movies and TV shows in Discover.
+            Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
+
+            Parameters:
+                query (str): Search query.
+                limit (int, optional): Limit to the specified number of results. Default 30.
+        """
+        headers = {
+            'Accept': 'application/json'
+        }
+        params = {
+            'query': query,
+            'limit ': limit,
+            'searchTypes': 'movies,tv',
+            'includeMetadata': 1
+        }
+
+        data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
+        searchResults = data['MediaContainer'].get('SearchResult', [])
+
+        if not searchResults:
+            return []
+
+        xml = ['<MediaContainer>']
+        for result in searchResults:
+            metadata = result['Metadata']
+            type = metadata['type']
+            if type == 'movie':
+                tag = 'Video'
+            elif type == 'show':
+                tag = 'Directory'
+            else:
+                continue
+            attrs = ''.join(f'{k}="{html.escape(str(v))}" ' for k, v in metadata.items())
+            xml.append(f'<{tag} {attrs}/>')
+
+        xml.append('</MediaContainer>')
+        data = ElementTree.fromstring(''.join(xml))
+        return self.findItems(data)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
