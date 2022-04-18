@@ -136,12 +136,15 @@ class PlexClient(PlexObject):
         # Add this in next breaking release.
         # if self._initpath == 'status/sessions':
         self.device = data.attrib.get('device')         # session
+        self.profile = data.attrib.get('profile')       # session
         self.model = data.attrib.get('model')           # session
         self.state = data.attrib.get('state')           # session
         self.vendor = data.attrib.get('vendor')         # session
         self.version = data.attrib.get('version')       # session
-        self.local = utils.cast(bool, data.attrib.get('local', 0))
-        self.address = data.attrib.get('address')        # session
+        self.local = utils.cast(bool, data.attrib.get('local', 0))  # session
+        self.relayed = utils.cast(bool, data.attrib.get('relayed', 0))  # session
+        self.secure = utils.cast(bool, data.attrib.get('secure', 0))  # session
+        self.address = data.attrib.get('address')       # session
         self.remotePublicAddress = data.attrib.get('remotePublicAddress')
         self.userID = data.attrib.get('userID')
 
