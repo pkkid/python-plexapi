@@ -850,10 +850,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
         searchResults = data['MediaContainer'].get('SearchResult', [])
 
-        if not searchResults:
-            return []
-
-        xml = ['<MediaContainer>']
+        results = []
         for result in searchResults:
             metadata = result['Metadata']
             type = metadata['type']
@@ -864,11 +861,10 @@ class MyPlexAccount(PlexObject):
             else:
                 continue
             attrs = ''.join(f'{k}="{html.escape(str(v))}" ' for k, v in metadata.items())
-            xml.append(f'<{tag} {attrs}/>')
+            xml = f'<{tag} {attrs}/>'
+            results.append(self._manuallyLoadXML(xml))
 
-        xml.append('</MediaContainer>')
-        data = ElementTree.fromstring(''.join(xml))
-        return self.findItems(data)
+        return results
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
