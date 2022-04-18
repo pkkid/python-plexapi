@@ -171,14 +171,16 @@ class PlexObject:
             raise BadRequest('ekey was not provided')
         if isinstance(ekey, int):
             ekey = '/library/metadata/%s' % ekey
+
         data = self._server.query(ekey)
-        librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
-        for elem in data:
-            if self._checkAttrs(elem, **kwargs):
-                item = self._buildItem(elem, cls, ekey)
-                if librarySectionID:
-                    item.librarySectionID = librarySectionID
-                return item
+        item = self.findItem(data, cls, ekey, **kwargs)
+
+        if item:
+            librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+            if librarySectionID:
+                item.librarySectionID = librarySectionID
+            return item
+
         clsname = cls.__name__ if cls else 'None'
         raise NotFound('Unable to find elem: cls=%s, attrs=%s' % (clsname, kwargs))
 
@@ -256,15 +258,16 @@ class PlexObject:
                     fetchItem(ekey, Media__Part__file__startswith="D:\\Movies")
 
         """
-        url_kw = {}
-        if container_start is not None:
-            url_kw["X-Plex-Container-Start"] = container_start
-        if container_size is not None:
-            url_kw["X-Plex-Container-Size"] = container_size
-
         if ekey is None:
             raise BadRequest('ekey was not provided')
-        data = self._server.query(ekey, params=url_kw)
+
+        params = {}
+        if container_start is not None:
+            params["X-Plex-Container-Start"] = container_start
+        if container_size is not None:
+            params["X-Plex-Container-Size"] = container_size
+
+        data = self._server.query(ekey, params=params)
         items = self.findItems(data, cls, ekey, **kwargs)
 
         librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
@@ -272,6 +275,25 @@ class PlexObject:
             for item in items:
                 item.librarySectionID = librarySectionID
         return items
+
+    def findItem(self, data, cls=None, initpath=None, rtag=None, **kwargs):
+        """ Load the specified data to find and build the first items with the specified tag
+            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
+            on how this is used.
+        """
+        # filter on cls attrs if specified
+        if cls and cls.TAG and 'tag' not in kwargs:
+            kwargs['etag'] = cls.TAG
+        if cls and cls.TYPE and 'type' not in kwargs:
+            kwargs['type'] = cls.TYPE
+        # rtag to iter on a specific root tag
+        if rtag:
+            data = next(data.iter(rtag), [])
+        # loop through all data elements to find matches
+        for elem in data:
+            if self._checkAttrs(elem, **kwargs):
+                item = self._buildItemOrNone(elem, cls, initpath)
+                return item
 
     def findItems(self, data, cls=None, initpath=None, rtag=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
