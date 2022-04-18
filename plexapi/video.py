@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus, urlencode
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
@@ -980,3 +980,42 @@ class Extra(Clip):
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
         return '%s (%s)' % (self.title, self.subtype)
+
+
+@utils.registerPlexObject
+class MovieSession(PlexSession, Movie):
+    """ Represents a single Movie session
+        loaded from :func:`~plexapi.server.PlexServer.sessions`.
+    """
+    _SESSIONTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Movie._loadData(self, data)
+        PlexSession._loadData(self, data)
+
+
+@utils.registerPlexObject
+class EpisodeSession(PlexSession, Episode):
+    """ Represents a single Episode session
+        loaded from :func:`~plexapi.server.PlexServer.sessions`.
+    """
+    _SESSIONTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Episode._loadData(self, data)
+        PlexSession._loadData(self, data)
+
+
+@utils.registerPlexObject
+class ClipSession(PlexSession, Clip):
+    """ Represents a single Clip session
+        loaded from :func:`~plexapi.server.PlexServer.sessions`.
+    """
+    _SESSIONTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Clip._loadData(self, data)
+        PlexSession._loadData(self, data)

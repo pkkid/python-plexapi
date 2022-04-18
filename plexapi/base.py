@@ -9,7 +9,7 @@ from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
 USER_DONT_RELOAD_FOR_KEYS = set()
 _DONT_RELOAD_FOR_KEYS = {'key', 'session'}
-_DONT_OVERWRITE_SESSION_KEYS = {'usernames', 'players', 'transcodeSessions', 'session'}
+_DONT_OVERWRITE_SESSION_KEYS = {'player', 'session', 'transcodeSession', 'username'}
 OPERATORS = {
     'exact': lambda v, q: v == q,
     'iexact': lambda v, q: v.lower() == q.lower(),
@@ -90,6 +90,8 @@ class PlexObject:
         # cls is not specified, try looking it up in PLEXOBJECTS
         etype = elem.attrib.get('streamType', elem.attrib.get('tagType', elem.attrib.get('type')))
         ehash = '%s.%s' % (elem.tag, etype) if etype else elem.tag
+        if initpath == '/status/sessions':
+            ehash = '%s.%s' % (ehash, 'session')
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
         # log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
@@ -677,12 +679,6 @@ class Playable:
         Albums which are all not playable.
 
         Attributes:
-            sessionKey (int): Active session key.
-            usernames (str): Username of the person playing this item (for active sessions).
-            players (:class:`~plexapi.client.PlexClient`): Client objects playing this item (for active sessions).
-            session (:class:`~plexapi.media.Session`): Session object, for a playing media file.
-            transcodeSessions (:class:`~plexapi.media.TranscodeSession`): Transcode Session object
-                if item is being transcoded (None otherwise).
             viewedAt (datetime): Datetime item was last viewed (history).
             accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
             deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
@@ -691,11 +687,6 @@ class Playable:
     """
 
     def _loadData(self, data):
-        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))            # session
-        self.usernames = self.listAttrs(data, 'title', etag='User')                 # session
-        self.players = self.findItems(data, etag='Player')                          # session
-        self.transcodeSessions = self.findItems(data, etag='TranscodeSession')      # session
-        self.session = self.findItems(data, etag='Session')                         # session
         self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
         self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
         self.deviceID = utils.cast(int, data.attrib.get('deviceID'))                # history
@@ -834,6 +825,63 @@ class Playable:
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
         self._reload(_overwriteNone=False)
+
+
+class PlexSession(object):
+    """ This is a general place to store functions specific to media that is a Plex Session.
+
+        Attributes:
+            live (bool): True if this is a live tv session.
+            player (:class:`~plexapi.client.PlexClient`): PlexClient object for the session.
+            session (:class:`~plexapi.media.Session`): Session object for the session
+                if the session is using bandwidth (None otherwise).
+            sessionKey (int): The session key for the session.
+            transcodeSession (:class:`~plexapi.media.TranscodeSession`): TranscodeSession object
+                if item is being transcoded (None otherwise).
+            user (:class:`~plexapi.myplex.MyPlexAccount` or :class:`~plexapi.myplex.MyPlexUser`):
+                MyPlexAccount (for admin) or MyPlexUser (for users) object for the session.
+    """
+
+    def _loadData(self, data):
+        self.live = utils.cast(bool, data.attrib.get('live', '0'))
+        self.player = self.findItem(data, etag='Player')
+        self.session = self.findItem(data, etag='Session')
+        self.sessionKey = utils.cast(int, data.attrib.get('sessionKey'))
+        self.transcodeSession = self.findItem(data, etag='TranscodeSession')
+
+        user = data.find('User')
+        self._username = user.attrib.get('title')
+        self._userId = utils.cast(int, user.attrib.get('id'))
+        self._myPlexAccount = self._server.myPlexAccount()
+        if self._userId == 1:
+            self.user = self._myPlexAccount
+        else:
+            self.user = self._myPlexAccount.user(self._username)
+
+        # For backwards compatibility
+        self.players = [self.player] if self.player else []
+        self.sessions = [self.session] if self.session else []
+        self.transcodeSessions = [self.transcodeSession] if self.transcodeSession else []
+        self.username = [self._username] if self._username else []
+
+    def reload(self):
+        """ Reload the data for the session.
+            Note: This will return the object as-is if the session is no longer active.
+        """
+        key = self._initpath
+        data = self._server.query(key)
+        session = next((
+            elem for elem in data
+            if utils.cast(int, elem.attrib.get('sessionKey')) == self.sessionKey),
+            None
+        )
+        if session:
+            self._loadData(session)
+        return self
+
+    def source(self):
+        """ Return the source media object for the session. """
+        return self.fetchItem(self._details_key)
 
 
 class MediaContainer(PlexObject):
