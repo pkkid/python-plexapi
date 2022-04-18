@@ -838,8 +838,6 @@ class PlexSession(object):
             sessionKey (int): The session key for the session.
             transcodeSession (:class:`~plexapi.media.TranscodeSession`): TranscodeSession object
                 if item is being transcoded (None otherwise).
-            user (:class:`~plexapi.myplex.MyPlexAccount` or :class:`~plexapi.myplex.MyPlexUser`):
-                MyPlexAccount (for admin) or MyPlexUser (for users) object for the session.
     """
 
     def _loadData(self, data):
@@ -852,17 +850,26 @@ class PlexSession(object):
         user = data.find('User')
         self._username = user.attrib.get('title')
         self._userId = utils.cast(int, user.attrib.get('id'))
-        self._myPlexAccount = self._server.myPlexAccount()
-        if self._userId == 1:
-            self.user = self._myPlexAccount
-        else:
-            self.user = self._myPlexAccount.user(self._username)
+        self._user = None  # Cache for user object
 
         # For backwards compatibility
         self.players = [self.player] if self.player else []
         self.sessions = [self.session] if self.session else []
         self.transcodeSessions = [self.transcodeSession] if self.transcodeSession else []
         self.username = [self._username] if self._username else []
+
+    @property
+    def user(self):
+        """ Returns the :class:`~plexapi.myplex.MyPlexAccount` object (for admin)
+            or :class:`~plexapi.myplex.MyPlexUser` object (for users) for this session.
+        """
+        if self._user is None:
+            self._myPlexAccount = self._server.myPlexAccount()
+            if self._userId == 1:
+                self._user = self._myPlexAccount
+            else:
+                self._user = self._myPlexAccount.user(self._username)
+        return self._user
 
     def reload(self):
         """ Reload the data for the session.
