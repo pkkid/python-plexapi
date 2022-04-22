@@ -859,11 +859,11 @@ class PlexSession(object):
             or :class:`~plexapi.myplex.MyPlexUser` object (for users) for this session.
         """
         if self._user is None:
-            self._myPlexAccount = self._server.myPlexAccount()
+            myPlexAccount = self._server.myPlexAccount()
             if self._userId == 1:
-                self._user = self._myPlexAccount
+                self._user = myPlexAccount
             else:
-                self._user = self._myPlexAccount.user(self._username)
+                self._user = myPlexAccount.user(self._username)
         return self._user
 
     def reload(self):
