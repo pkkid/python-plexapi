@@ -851,7 +851,7 @@ class PlexSession(object):
         self.players = [self.player] if self.player else []
         self.sessions = [self.session] if self.session else []
         self.transcodeSessions = [self.transcodeSession] if self.transcodeSession else []
-        self.username = [self._username] if self._username else []
+        self.usernames = [self._username] if self._username else []
 
     @property
     def user(self):
