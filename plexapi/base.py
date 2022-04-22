@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import weakref
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 from plexapi import log, utils
@@ -782,11 +782,6 @@ class Playable:
 
         return filepaths
 
-    def stop(self, reason=''):
-        """ Stop playback for a media item. """
-        key = '/status/sessions/terminate?sessionId=%s&reason=%s' % (self.session[0].id, quote_plus(reason))
-        return self._server.query(key)
-
     def updateProgress(self, time, state='stopped'):
         """ Set the watched progress for this video.
 
@@ -889,6 +884,19 @@ class PlexSession(object):
     def source(self):
         """ Return the source media object for the session. """
         return self.fetchItem(self._details_key)
+
+    def stop(self, reason=''):
+        """ Stop playback for the session.
+        
+            Parameters:
+                reason (str): Message displayed to the user for stopping playback.
+        """
+        params = {
+            'sessionId': self.session.id,
+            'reason': reason,
+        }
+        key = '/status/sessions/terminate'
+        return self._server.query(key, params=params)
 
 
 class MediaContainer(PlexObject):
