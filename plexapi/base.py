@@ -39,9 +39,6 @@ class PlexObject(object):
             data (ElementTree): Response from PlexServer used to build this object (optional).
             initpath (str): Relative path requested when retrieving specified `data` (optional).
             parent (:class:`~plexapi.base.PlexObject`): The parent object that this object is built from (optional).
-
-        Attributes:
-            autoReload (bool): Automatically reload the object when accessing a missing attribute. Default True.
     """
     TAG = None      # xml element tag
     TYPE = None     # xml element type
@@ -58,7 +55,7 @@ class PlexObject(object):
         self._details_key = self._buildDetailsKey()
         self._overwriteNone = True
         self._edits = None  # Save batch edits for a single API call
-        self.autoReload = True  # Automatically reload the object when accessing a missing attribute
+        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
@@ -476,7 +473,7 @@ class PlexPartialObject(PlexObject):
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
-        if self.autoReload is False: return value
+        if self._autoReload is False: return value
         # Log the reload.
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
