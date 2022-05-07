@@ -2269,6 +2269,10 @@ class FilteringType(PlexObject):
             additionalFilters.extend([
                 ('label', 'string', 'Labels')
             ])
+        elif self.type == 'collection':
+            additionalFilters.extend([
+                ('label', 'string', 'Labels')
+            ])
 
         manualFilters = []
         for filterTag, filterType, filterTitle in additionalFilters:
@@ -2378,7 +2382,8 @@ class FilteringType(PlexObject):
             ])
         elif self.type == 'collection':
             additionalFields.extend([
-                ('addedAt', 'date', 'Date Added')
+                ('addedAt', 'date', 'Date Added'),
+                ('label', 'tag', 'Label')
             ])
 
         prefix = '' if self.type == 'movie' else self.type + '.'
