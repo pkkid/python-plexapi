@@ -94,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', default=CONFIG.get('auth.myplex_password'), help='Plex password')
     parser.add_argument('-s', '--servername', help='Plex server name')
     parser.add_argument('-w', '--watchedonly', default=False, action='store_true', help='Only backup or restore watched items.')
-    parser.add_argument('-l', '--libraries', help='Only backup or restore the specified libraries (comma seperated).')
+    parser.add_argument('-l', '--libraries', help='Only backup or restore the specified libraries (comma separated).')
     opts = parser.parse_args()
     account = utils.getMyPlexAccount(opts)
     plex = _find_server(account, opts.servername)

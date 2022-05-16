@@ -131,7 +131,7 @@ class PlexClient(PlexObject):
         self.platformVersion = data.attrib.get('platformVersion')
         self.title = data.attrib.get('title') or data.attrib.get('name')
         # Active session details
-        # Since protocolCapabilities is missing from /sessions we cant really control this player without
+        # Since protocolCapabilities is missing from /sessions we can't really control this player without
         # creating a client manually.
         # Add this in next breaking release.
         # if self._initpath == 'status/sessions':

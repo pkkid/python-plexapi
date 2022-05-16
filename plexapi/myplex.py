@@ -228,7 +228,7 @@ class MyPlexAccount(PlexObject):
                     of the user to be added.
                 server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
                     containing the library sections to share.
-                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objects, or names
                     to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
@@ -268,7 +268,7 @@ class MyPlexAccount(PlexObject):
                     of the user to be added.
                 server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
                     containing the library sections to share.
-                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objects, or names
                     to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
@@ -317,7 +317,7 @@ class MyPlexAccount(PlexObject):
                     of the user to be added.
                 server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
                     containing the library sections to share.
-                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objects, or names
                     to be shared (default None). `sections` must be defined in order to update shared libraries.
                 allowSync (Bool): Set True to allow user to sync content.
                 allowCameraUpload (Bool): Set True to allow user to upload photos.
@@ -420,7 +420,7 @@ class MyPlexAccount(PlexObject):
                     of the user to be updated.
                 server (:class:`~plexapi.server.PlexServer`): `PlexServer` object, or machineIdentifier
                     containing the library sections to share.
-                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objecs, or names
+                sections (List<:class:`~plexapi.library.LibrarySection`>): List of `LibrarySection` objects, or names
                     to be shared (default None). `sections` must be defined in order to update shared libraries.
                 removeSections (Bool): Set True to remove all shares. Supersedes sections.
                 allowSync (Bool): Set True to allow user to sync content.

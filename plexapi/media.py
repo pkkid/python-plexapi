@@ -224,7 +224,7 @@ class MediaPartStream(PlexObject):
             id (int): The unique ID for this stream on the server.
             index (int): The index of the stream.
             language (str): The language of the stream (ex: English, ไทย).
-            languageCode (str): The Ascii language code of the stream (ex: eng, tha).
+            languageCode (str): The ASCII language code of the stream (ex: eng, tha).
             requiredBandwidths (str): The required bandwidths to stream the file.
             selected (bool): True if this stream is selected.
             streamType (int): The stream type (1= :class:`~plexapi.media.VideoStream`,
@@ -572,7 +572,7 @@ class Optimized(PlexObject):
         """
         key = '%s/%s/items' % (self._initpath, self.id)
         return self.fetchItems(key)
-        
+
     def remove(self):
         """ Remove an Optimized item"""
         key = '%s/%s' % (self._initpath, self.id)
@@ -893,7 +893,7 @@ class Guid(GuidTag):
 @utils.registerPlexObject
 class Review(PlexObject):
     """ Represents a single Review for a Movie.
-    
+
         Attributes:
             TAG (str): 'Review'
             filter (str): filter for reviews?

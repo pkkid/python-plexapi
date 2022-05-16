@@ -304,7 +304,7 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
             filename (str): Filename of the downloaded file, default None.
             savepath (str): Defaults to current working dir.
             chunksize (int): What chunksize read/write at the time.
-            mocked (bool): Helper to do evertything except write the file.
+            mocked (bool): Helper to do everything except write the file.
             unpack (bool): Unpack the zip file.
             showstatus(bool): Display a progressbar.
 

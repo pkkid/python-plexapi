@@ -14,7 +14,7 @@ from plexapi import const
 # Get README.rst contents
 readme = open('README.rst', 'r').read()
 
-# Get requirments
+# Get requirements
 requirements = []
 with open('requirements.txt') as handle:
     for line in handle.readlines():
