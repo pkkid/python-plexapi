@@ -193,7 +193,7 @@ jobs:
         python -u tools/plex-teardowntest.py
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-${{ matrix.plex }}-${{ matrix.python-version }}
         path: .coverage
