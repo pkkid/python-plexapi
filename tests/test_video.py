@@ -1165,7 +1165,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
     if episode.writers:
-        assert "D. B. Weiss" in [i.tag for i in episode.writers]
+        assert "David Benioff" in [i.tag for i in episode.writers]
     assert episode.year is None
     assert episode.isWatched in [True, False]
     assert len(episode.locations) == 1
