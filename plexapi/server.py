@@ -393,7 +393,6 @@ class PlexServer(PlexObject):
         """
         if isinstance(path, Path):
             path = path.path
-        path = os.path.normpath(path)
         paths = [p.path for p in self.browse(os.path.dirname(path), includeFiles=False)]
         return path in paths
 
