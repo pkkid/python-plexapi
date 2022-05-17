@@ -77,8 +77,6 @@ class MyPlexAccount(PlexObject):
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv'                                                        # get
-    WEBSHOWS = 'https://webshows.provider.plex.tv'                                              # get
-    PODCASTS = 'https://podcasts.provider.plex.tv'                                              # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
     METADATA = 'https://metadata.provider.plex.tv'
     # Key may someday switch to the following url. For now the current value works.
@@ -724,18 +722,6 @@ class MyPlexAccount(PlexObject):
         """ Returns a list of VOD Hub items :class:`~plexapi.library.Hub`
         """
         data = self.query(f'{self.VOD}/hubs')
-        return self.findItems(data)
-
-    def webShows(self):
-        """ Returns a list of Webshow Hub items :class:`~plexapi.library.Hub`
-        """
-        data = self.query(f'{self.WEBSHOWS}/hubs')
-        return self.findItems(data)
-
-    def podcasts(self):
-        """ Returns a list of Podcasts Hub items :class:`~plexapi.library.Hub`
-        """
-        data = self.query(f'{self.PODCASTS}/hubs')
         return self.findItems(data)
 
     def tidal(self):
