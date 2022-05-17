@@ -524,14 +524,39 @@ class PlexServer(PlexObject):
         filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
         return filepath
 
+    def butlerTasks(self):
+        """ Return a list of :class:`~plexapi.base.ButlerTask` objects. """
+        return self.fetchItems('/butler')
+
+    def runButlerTask(self, task):
+        """ Manually run a butler task immediately instead of waiting for the scheduled task to run.
+            Note: The butler task is run asynchronously. Check Plex Web to monitor activity.
+        
+            Parameters:
+                task (str): The name of the task to run. (e.g. 'BackupDatabase')
+
+            Example:
+
+                .. code-block:: python
+
+                    availableTasks = [task.name for task in plex.butlerTasks()]
+                    print("Available butler tasks:", availableTasks)
+        """
+        validTasks = [task.name for task in self.butlerTasks()]
+        if task not in validTasks:
+            raise BadRequest(
+                f'Invalid butler task: {task}. Available tasks are: {validTasks}'
+            )
+        self.query(f'/butler/{task}', method=self._session.post)
+
     @deprecated('use "checkForUpdate" instead')
     def check_for_update(self, force=True, download=False):
-        return self.checkForUpdate()
+        return self.checkForUpdate(force=force, download=download)
 
     def checkForUpdate(self, force=True, download=False):
         """ Returns a :class:`~plexapi.base.Release` object containing release info.
 
-           Parameters:
+            Parameters:
                 force (bool): Force server to check for new releases
                 download (bool): Download if a update is available.
         """
@@ -1166,3 +1191,28 @@ class StatisticsResources(PlexObject):
             self.__class__.__name__,
             self._clean(int(self.at.timestamp()))
         ] if p])
+
+
+@utils.registerPlexObject
+class ButlerTask(PlexObject):
+    """ Represents a single scheduled butler task.
+    
+        Attributes:
+            TAG (str): 'ButlerTask'
+            description (str): The description of the task.
+            enabled (bool): Whether the task is enabled.
+            interval (int): The interval the task is run in days.
+            name (str): The name of the task.
+            scheduleRandomized (bool): Whether the task schedule is randomized.
+            title (str): The title of the task.
+    """
+    TAG = 'ButlerTask'
+
+    def _loadData(self, data):
+        self._data = data
+        self.description = data.attrib.get('description')
+        self.enabled = utils.cast(bool, data.attrib.get('enabled'))
+        self.interval = utils.cast(int, data.attrib.get('interval'))
+        self.name = data.attrib.get('name')
+        self.scheduleRandomized = utils.cast(bool, data.attrib.get('scheduleRandomized'))
+        self.title = data.attrib.get('title')
