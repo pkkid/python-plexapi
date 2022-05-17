@@ -53,8 +53,9 @@ class PlexObject(object):
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
-        self._autoReload = False
+        self._overwriteNone = True
         self._edits = None  # Save batch edits for a single API call
+        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
@@ -66,9 +67,9 @@ class PlexObject(object):
         if attr in _DONT_OVERWRITE_SESSION_KEYS and value == []:
             value = getattr(self, attr, [])
 
-        autoReload = self.__dict__.get('_autoReload')
-        # Don't overwrite an attr with None unless it's a private variable or not auto reload
-        if value is not None or attr.startswith('_') or attr not in self.__dict__ or not autoReload:
+        overwriteNone = self.__dict__.get('_overwriteNone')
+        # Don't overwrite an attr with None unless it's a private variable or overwrite None is True
+        if value is not None or attr.startswith('_') or attr not in self.__dict__ or overwriteNone:
             self.__dict__[attr] = value
 
     def _clean(self, value):
@@ -346,7 +347,7 @@ class PlexObject(object):
         """
         return self._reload(key=key, **kwargs)
 
-    def _reload(self, key=None, _autoReload=False, **kwargs):
+    def _reload(self, key=None, _overwriteNone=True, **kwargs):
         """ Perform the actual reload. """
         details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
         key = key or details_key or self.key
@@ -354,9 +355,9 @@ class PlexObject(object):
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
         data = self._server.query(key)
-        self._autoReload = _autoReload
+        self._overwriteNone = _overwriteNone
         self._loadData(data[0])
-        self._autoReload = False
+        self._overwriteNone = True
         return self
 
     def _checkAttrs(self, elem, **kwargs):
@@ -472,13 +473,14 @@ class PlexPartialObject(PlexObject):
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
+        if self._autoReload is False: return value
         # Log the reload.
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
         objname = "%s '%s'" % (clsname, title) if title else clsname
         log.debug("Reloading %s for attr '%s'", objname, attr)
         # Reload and return the value
-        self._reload(_autoReload=True)
+        self._reload()
         return super(PlexPartialObject, self).__getattribute__(attr)
 
     def analyze(self):
@@ -791,7 +793,7 @@ class Playable(object):
         key = '/:/progress?key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s' % (self.ratingKey,
                                                                                               time, state)
         self._server.query(key)
-        self._reload(_autoReload=True)
+        self._reload(_overwriteNone=False)
 
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
@@ -809,7 +811,7 @@ class Playable(object):
         key = '/:/timeline?ratingKey=%s&key=%s&identifier=com.plexapp.plugins.library&time=%d&state=%s%s'
         key %= (self.ratingKey, self.key, time, state, durationStr)
         self._server.query(key)
-        self._reload(_autoReload=True)
+        self._reload(_overwriteNone=False)
 
 
 class MediaContainer(PlexObject):

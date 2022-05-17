@@ -339,6 +339,10 @@ def test_video_Movie_isFullObject_and_reload(plex):
 
 def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
+    movie._autoReload = False
+    assert movie.originalTitle is None
+    assert movie.isPartialObject()
+    movie._autoReload = True
 
 
 def test_video_Movie_media_delete(movie, patched_http_call):
