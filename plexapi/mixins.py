@@ -996,7 +996,10 @@ class WatchlistMixin(object):
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to check item on the watchlist.
                    Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
-        account = account or self._server.myPlexAccount()
+        try:
+            account = account or self._server.myPlexAccount()
+        except AttributeError:
+            account = self._server
         return account.onWatchlist(self)
 
     def addToWatchlist(self, account=None):
@@ -1006,7 +1009,10 @@ class WatchlistMixin(object):
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to add item to the watchlist.
                    Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
-        account = account or self._server.myPlexAccount()
+        try:
+            account = account or self._server.myPlexAccount()
+        except AttributeError:
+            account = self._server
         account.addToWatchlist(self)
 
     def removeFromWatchlist(self, account=None):
@@ -1016,7 +1022,10 @@ class WatchlistMixin(object):
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to remove item from the watchlist.
                    Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
-        account = account or self._server.myPlexAccount()
+        try:
+            account = account or self._server.myPlexAccount()
+        except AttributeError:
+            account = self._server
         account.removeFromWatchlist(self)
 
     def streamingServices(self, account=None):
@@ -1027,7 +1036,10 @@ class WatchlistMixin(object):
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account used to retrieve availability.
                    Note: This is required if you are not connected to a Plex server instance using the admin account.
         """
-        account = account or self._server.myPlexAccount()
+        try:
+            account = account or self._server.myPlexAccount()
+        except AttributeError:
+            account = self._server
         ratingKey = self.guid.rsplit('/', 1)[-1]
         data = account.query(f"{account.METADATA}/library/metadata/{ratingKey}/availabilities")
         return self.findItems(data)
