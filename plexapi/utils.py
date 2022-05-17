@@ -9,6 +9,7 @@ import time
 import unicodedata
 import warnings
 import zipfile
+from collections import deque
 from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
@@ -472,3 +473,15 @@ def deprecated(message, stacklevel=2):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def iterXMLBFS(root, tag=None):
+    """ Iterate through an XML tree using a breadth-first search.
+        If tag is specified, only return nodes with that tag.
+    """
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if tag is None or node.tag == tag:
+            yield node
+        queue.extend(list(node))
