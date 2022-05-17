@@ -798,6 +798,8 @@ class MyPlexAccount(PlexObject):
             items = [items]
         
         for item in items:
+            if self.onWatchlist(item):
+                raise BadRequest('"%s" is already on the watchlist' % item.title)
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
@@ -812,6 +814,8 @@ class MyPlexAccount(PlexObject):
             items = [items]
         
         for item in items:
+            if not self.onWatchlist(item):
+                raise BadRequest('"%s" is not on the watchlist' % item.title)
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
