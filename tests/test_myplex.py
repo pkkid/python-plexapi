@@ -289,9 +289,17 @@ def test_myplex_watchlist(account, movie, show, artist):
     guids = [i.guid for i in watchlist]
     assert movie.guid in guids and show.guid not in guids
 
+    # Test adding existing item to watchlist
+    with pytest.raises(BadRequest):
+        account.addToWatchlist(movie)
+
     # Remove multiple items from watchlist
     account.removeFromWatchlist([movie, show])
     assert not movie.onWatchlist(account) and not show.onWatchlist(account)
+
+    # Test removing non-existing item from watchlist
+    with pytest.raises(BadRequest):
+        account.removeFromWatchlist(movie)
 
     # Test adding invalid item to watchlist
     with pytest.raises(BadRequest):
