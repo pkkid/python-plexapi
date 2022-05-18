@@ -10,7 +10,8 @@ from plexapi.mixins import (
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
+    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    WatchlistMixin
 )
 
 
@@ -280,7 +281,8 @@ class Movie(
     ArtMixin, PosterMixin, ThemeMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
+    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    WatchlistMixin
 ):
     """ Represents a single Movie.
 
@@ -394,7 +396,8 @@ class Show(
     ArtMixin, BannerMixin, PosterMixin, ThemeMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, GenreMixin, LabelMixin
+    CollectionMixin, GenreMixin, LabelMixin,
+    WatchlistMixin
 ):
     """ Represents a single Show (including all seasons and episodes).
 

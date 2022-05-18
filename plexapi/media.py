@@ -1112,3 +1112,41 @@ class AgentMediaType(Agent):
     @deprecated('use "languageCodes" instead')
     def languageCode(self):
         return self.languageCodes
+
+
+@utils.registerPlexObject
+class Availability(PlexObject):
+    """ Represents a single online streaming service Availability.
+
+        Attributes:
+            TAG (str): 'Availability'
+            country (str): The streaming service country.
+            offerType (str): Subscription, buy, or rent from the streaming service.
+            platform (str): The platform slug for the streaming service.
+            platformColorThumb (str): Thumbnail icon for the streaming service.
+            platformInfo (str): The streaming service platform info.
+            platformUrl (str): The URL to the media on the streaming service.
+            price (float): The price to buy or rent from the streaming service.
+            priceDescription (str): The display price to buy or rent from the streaming service.
+            quality (str): The video quality on the streaming service.
+            title (str): The title of the streaming service.
+            url (str): The Plex availability URL.
+    """
+    TAG = 'Availability'
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}:{self.platform}:{self.offerType}>'
+
+    def _loadData(self, data):
+        self._data = data
+        self.country = data.attrib.get('country')
+        self.offerType = data.attrib.get('offerType')
+        self.platform = data.attrib.get('platform')
+        self.platformColorThumb = data.attrib.get('platformColorThumb')
+        self.platformInfo = data.attrib.get('platformInfo')
+        self.platformUrl = data.attrib.get('platformUrl')
+        self.price = utils.cast(float, data.attrib.get('price'))
+        self.priceDescription = data.attrib.get('priceDescription')
+        self.quality = data.attrib.get('quality')
+        self.title = data.attrib.get('title')
+        self.url = data.attrib.get('url')

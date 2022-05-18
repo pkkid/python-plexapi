@@ -918,6 +918,11 @@ def test_video_Show_PlexWebURL(plex, show):
     assert quote_plus(show.key) in url
 
 
+@pytest.mark.authenticated
+def test_video_Show_streamingServices(show):
+    assert show.streamingServices()
+
+
 def test_video_Season(show):
     seasons = show.seasons()
     assert len(seasons) == 2
