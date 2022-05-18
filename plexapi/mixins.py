@@ -991,6 +991,7 @@ class WatchlistMixin(object):
 
     def onWatchlist(self, account=None):
         """ Returns True if the item is on the user's watchlist.
+            Also see :func:`~plexapi.myplex.MyPlexAccount.onWatchlist`.
 
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to check item on the watchlist.
@@ -1004,6 +1005,7 @@ class WatchlistMixin(object):
 
     def addToWatchlist(self, account=None):
         """ Add this item to the specified user's watchlist.
+            Also see :func:`~plexapi.myplex.MyPlexAccount.addToWatchlist`.
 
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to add item to the watchlist.
@@ -1017,6 +1019,7 @@ class WatchlistMixin(object):
 
     def removeFromWatchlist(self, account=None):
         """ Remove this item from the specified user's watchlist.
+            Also see :func:`~plexapi.myplex.MyPlexAccount.removeFromWatchlist`.
 
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`, optional): Account to remove item from the watchlist.

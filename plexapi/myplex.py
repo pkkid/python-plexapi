@@ -792,7 +792,8 @@ class MyPlexAccount(PlexObject):
                     objects to be added to the watchlist.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When trying to add invalid media to the watchlist.
+                :exc:`~plexapi.exceptions.BadRequest`: When trying to add invalid or existing
+                    media to the watchlist.
         """
         if not isinstance(items, list):
             items = [items]
@@ -809,6 +810,10 @@ class MyPlexAccount(PlexObject):
             Parameters:
                 items (List): List of :class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`
                     objects to be added to the watchlist.
+
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: When trying to remove invalid or non-existing
+                    media to the watchlist.
         """
         if not isinstance(items, list):
             items = [items]
