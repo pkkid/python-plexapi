@@ -16,7 +16,7 @@ def type_finder(s):
     return ''
 
 
-class AttDS(object):
+class AttDS:
     """ Helper that prints docstring attrs. """
 
     def __init__(self, o, keys=None, style='google'):
