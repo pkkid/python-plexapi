@@ -40,153 +40,6 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
-def test_video_Movie_mixins_edit_advanced_settings(movie):
-    test_mixins.edit_advanced_settings(movie)
-
-
-@pytest.mark.xfail(reason="Changing images fails randomly")
-def test_video_Movie_mixins_images(movie):
-    test_mixins.lock_art(movie)
-    test_mixins.lock_poster(movie)
-    test_mixins.edit_art(movie)
-    test_mixins.edit_poster(movie)
-
-
-def test_video_Movie_mixins_rating(movie):
-    test_mixins.edit_rating(movie)
-
-
-def test_video_Movie_mixins_tags(movie):
-    test_mixins.edit_collection(movie)
-    test_mixins.edit_country(movie)
-    test_mixins.edit_director(movie)
-    test_mixins.edit_genre(movie)
-    test_mixins.edit_label(movie)
-    test_mixins.edit_producer(movie)
-    test_mixins.edit_writer(movie)
-
-
-def test_video_Movie_media_tags(movie):
-    movie.reload()
-    test_media.tag_collection(movie)
-    test_media.tag_country(movie)
-    test_media.tag_director(movie)
-    test_media.tag_genre(movie)
-    test_media.tag_label(movie)
-    test_media.tag_producer(movie)
-    test_media.tag_role(movie)
-    test_media.tag_similar(movie)
-    test_media.tag_writer(movie)
-
-
-def test_video_Movie_media_tags_Exception(movie):
-    with pytest.raises(BadRequest):
-        movie.genres[0].items()
-
-
-def test_video_Movie_media_tags_collection(movie, collection):
-    movie.reload()
-    collection_tag = next(c for c in movie.collections if c.tag == "Test Collection")
-    assert collection == collection_tag.collection()
-
-
-def test_video_Movie_getStreamURL(movie, account):
-    key = movie.ratingKey
-    assert movie.getStreamURL() == (
-        "{0}/video/:/transcode/universal/start.m3u8?"
-        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
-        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}").format(
-        utils.SERVER_BASEURL, key, account.authenticationToken
-    )  # noqa
-    assert movie.getStreamURL(
-        videoResolution="800x600"
-    ) == ("{0}/video/:/transcode/universal/start.m3u8?"
-        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
-        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}").format(
-        utils.SERVER_BASEURL, key, account.authenticationToken
-    )  # noqa
-
-
-def test_video_Movie_isFullObject_and_reload(plex):
-    movie = plex.library.section("Movies").get("Sita Sings the Blues")
-    assert movie.isFullObject() is False
-    movie.reload(checkFiles=False)
-    assert movie.isFullObject() is False
-    movie.reload()
-    assert movie.isFullObject() is True
-    movie_via_search = plex.library.search(movie.title)[0]
-    assert movie_via_search.isFullObject() is False
-    movie_via_search.reload()
-    assert movie_via_search.isFullObject() is True
-    movie_via_section_search = plex.library.section("Movies").search(movie.title)[0]
-    assert movie_via_section_search.isFullObject() is False
-    movie_via_section_search.reload()
-    assert movie_via_section_search.isFullObject() is True
-    # If the verify that the object has been reloaded. xml from search only returns 3 actors.
-    assert len(movie_via_section_search.roles) >= 3
-
-
-def test_video_Movie_isPartialObject(movie):
-    assert movie.isPartialObject()
-
-
-def test_video_Movie_media_delete(movie, patched_http_call):
-    for media in movie.media:
-        media.delete()
-
-
-def test_video_Movie_iterParts(movie):
-    assert len(list(movie.iterParts())) >= 1
-
-
-def test_video_Movie_download(monkeydownload, tmpdir, movie):
-    filepaths = movie.download(savepath=str(tmpdir))
-    assert len(filepaths) == 1
-    with_resolution = movie.download(
-        savepath=str(tmpdir), keep_original_filename=True, videoResolution="500x300"
-    )
-    assert len(with_resolution) == 1
-    filename = os.path.basename(movie.media[0].parts[0].file)
-    assert filename in with_resolution[0]
-
-
-def test_video_Movie_subtitlestreams(movie):
-    assert not movie.subtitleStreams()
-
-
-def test_video_Episode_subtitlestreams(episode):
-    assert not episode.subtitleStreams()
-
-
-def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
-
-    filepath = os.path.realpath(subtitle.name)
-
-    movie.uploadSubtitles(filepath)
-    movie.reload()
-    subtitles = [sub.title for sub in movie.subtitleStreams()]
-    subname = subtitle.name.rsplit(".", 1)[0]
-    assert subname in subtitles
-
-    subtitleSelection = movie.subtitleStreams()[0]
-    parts = list(movie.iterParts())
-    parts[0].setDefaultSubtitleStream(subtitleSelection)
-    movie.reload()
-
-    subtitleSelection = movie.subtitleStreams()[0]
-    assert subtitleSelection.selected
-
-    movie.removeSubtitles(streamTitle=subname)
-    movie.reload()
-    subtitles = [sub.title for sub in movie.subtitleStreams()]
-    assert subname not in subtitles
-
-    try:
-        os.remove(filepath)
-    except:
-        pass
-
-
 def test_video_Movie_attrs(movies):
     movie = movies.get("Sita Sings the Blues")
     assert len(movie.locations) == 1
@@ -237,7 +90,8 @@ def test_video_Movie_attrs(movies):
     assert movie.sessionKey is None
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
-    assert movie.tagline == "The Greatest Break-Up Story Ever Told"
+    assert movie.tagline == "The Greatest Break-Up Story Ever Told."
+    assert movie.theme is None
     if movie.thumb:
         assert utils.is_thumb(movie.thumb)
     assert movie.title == "Sita Sings the Blues"
@@ -338,7 +192,7 @@ def test_video_Movie_attrs(movies):
     assert video.extendedDisplayTitle == "1080p (H.264)"
     assert utils.is_float(video.frameRate, gte=20.0)
     assert video.frameRateMode is None
-    assert video.hasScallingMatrix is None
+    assert video.hasScalingMatrix is False
     assert utils.is_int(video.height, gte=250)
     assert utils.is_int(video.id)
     assert utils.is_int(video.index, gte=0)
@@ -396,7 +250,7 @@ def test_video_Movie_attrs(movies):
     assert stream1.duration is None
     assert utils.is_float(stream1.frameRate, gte=20.0)
     assert stream1.frameRateMode is None
-    assert stream1.hasScallingMatrix is None
+    assert stream1.hasScalingMatrix is False
     assert utils.is_int(stream1.height, gte=250)
     assert utils.is_int(stream1.id)
     assert utils.is_int(stream1.index, gte=0)
@@ -434,6 +288,123 @@ def test_video_Movie_attrs(movies):
     assert stream2.streamType == 2
     assert stream2.title is None
     assert stream2.type == 2
+
+
+def test_video_Movie_media_tags_Exception(movie):
+    with pytest.raises(BadRequest):
+        movie.genres[0].items()
+
+
+def test_video_Movie_media_tags_collection(movie, collection):
+    movie.reload()
+    collection_tag = next(c for c in movie.collections if c.tag == "Test Collection")
+    assert collection == collection_tag.collection()
+
+
+def test_video_Movie_getStreamURL(movie, account):
+    key = movie.ratingKey
+    assert movie.getStreamURL() == (
+        "{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}").format(
+        utils.SERVER_BASEURL, key, account.authenticationToken
+    )  # noqa
+    assert movie.getStreamURL(
+        videoResolution="800x600"
+    ) == ("{0}/video/:/transcode/universal/start.m3u8?"
+        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
+        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}").format(
+        utils.SERVER_BASEURL, key, account.authenticationToken
+    )  # noqa
+
+
+def test_video_Movie_isFullObject_and_reload(plex):
+    movie = plex.library.section("Movies").get("Sita Sings the Blues")
+    assert movie.isFullObject() is False
+    movie.reload(checkFiles=False)
+    assert movie.isFullObject() is False
+    movie.reload()
+    assert movie.isFullObject() is True
+    movie_via_search = plex.library.search(movie.title)[0]
+    assert movie_via_search.isFullObject() is False
+    movie_via_search.reload()
+    assert movie_via_search.isFullObject() is True
+    movie_via_section_search = plex.library.section("Movies").search(movie.title)[0]
+    assert movie_via_section_search.isFullObject() is False
+    movie_via_section_search.reload()
+    assert movie_via_section_search.isFullObject() is True
+    # If the verify that the object has been reloaded. xml from search only returns 3 actors.
+    assert len(movie_via_section_search.roles) >= 3
+
+
+def test_video_Movie_isPartialObject(movie):
+    assert movie.isPartialObject()
+    movie._autoReload = False
+    assert movie.originalTitle is None
+    assert movie.isPartialObject()
+    movie._autoReload = True
+
+
+def test_video_Movie_media_delete(movie, patched_http_call):
+    for media in movie.media:
+        media.delete()
+
+
+def test_video_Movie_iterParts(movie):
+    assert len(list(movie.iterParts())) >= 1
+
+
+def test_video_Movie_download(monkeydownload, tmpdir, movie):
+    filepaths = movie.download(savepath=str(tmpdir))
+    assert len(filepaths) == 1
+    with_resolution = movie.download(
+        savepath=str(tmpdir), keep_original_filename=True, videoResolution="500x300"
+    )
+    assert len(with_resolution) == 1
+    filename = os.path.basename(movie.media[0].parts[0].file)
+    assert filename in with_resolution[0]
+
+
+def test_video_Movie_audioStreams(movie):
+    movie.reload()
+    assert movie.audioStreams()
+
+
+def test_video_Movie_subtitleStreams(movie):
+    assert not movie.subtitleStreams()
+
+
+def test_video_Episode_subtitleStreams(episode):
+    assert not episode.subtitleStreams()
+
+
+def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
+
+    filepath = os.path.realpath(subtitle.name)
+
+    movie.uploadSubtitles(filepath)
+    movie.reload()
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    subname = subtitle.name.rsplit(".", 1)[0]
+    assert subname in subtitles
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    parts = list(movie.iterParts())
+    parts[0].setDefaultSubtitleStream(subtitleSelection)
+    movie.reload()
+
+    subtitleSelection = movie.subtitleStreams()[0]
+    assert subtitleSelection.selected
+
+    movie.removeSubtitles(streamTitle=subname)
+    movie.reload()
+    subtitles = [sub.title for sub in movie.subtitleStreams()]
+    assert subname not in subtitles
+
+    try:
+        os.remove(filepath)
+    except:
+        pass
 
 
 def test_video_Movie_history(movie):
@@ -611,6 +582,103 @@ def test_video_Movie_extras(movies):
     assert extra.type == 'clip'
     assert extra.section() == movies
 
+
+def test_video_Movie_batchEdits(movie):
+    title = movie.title
+    summary = movie.summary
+    tagline = movie.tagline
+    studio = movie.studio
+
+    assert movie._edits is None
+    movie.batchEdits()
+    assert movie._edits == {}
+
+    new_title = "New title"
+    new_summary = "New summary"
+    new_tagline = "New tagline"
+    new_studio = "New studio"
+    movie.editTitle(new_title) \
+        .editSummary(new_summary) \
+        .editTagline(new_tagline) \
+        .editStudio(new_studio)
+    assert movie._edits != {}
+    movie.saveEdits()
+    assert movie._edits is None
+    assert movie.title == new_title
+    assert movie.summary == new_summary
+    assert movie.tagline == new_tagline
+    assert movie.studio == new_studio
+
+    movie.batchEdits() \
+        .editTitle(title, locked=False) \
+        .editSummary(summary, locked=False) \
+        .editTagline(tagline, locked=False) \
+        .editStudio(studio, locked=False) \
+        .saveEdits()
+    assert movie.title == title
+    assert movie.summary == summary
+    assert movie.tagline == tagline
+    assert movie.studio == studio
+    assert not movie.fields
+    
+    with pytest.raises(BadRequest):
+        movie.saveEdits()
+
+
+def test_video_Movie_mixins_edit_advanced_settings(movie):
+    test_mixins.edit_advanced_settings(movie)
+
+
+@pytest.mark.xfail(reason="Changing images fails randomly")
+def test_video_Movie_mixins_images(movie):
+    test_mixins.lock_art(movie)
+    test_mixins.lock_poster(movie)
+    test_mixins.edit_art(movie)
+    test_mixins.edit_poster(movie)
+
+
+def test_video_Movie_mixins_themes(movie):
+    test_mixins.edit_theme(movie)
+
+
+def test_video_Movie_mixins_rating(movie):
+    test_mixins.edit_rating(movie)
+
+
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_content_rating(movie)
+    test_mixins.edit_originally_available(movie)
+    test_mixins.edit_original_title(movie)
+    test_mixins.edit_sort_title(movie)
+    test_mixins.edit_studio(movie)
+    test_mixins.edit_summary(movie)
+    test_mixins.edit_tagline(movie)
+    test_mixins.edit_title(movie)
+
+
+def test_video_Movie_mixins_tags(movie):
+    test_mixins.edit_collection(movie)
+    test_mixins.edit_country(movie)
+    test_mixins.edit_director(movie)
+    test_mixins.edit_genre(movie)
+    test_mixins.edit_label(movie)
+    test_mixins.edit_producer(movie)
+    test_mixins.edit_writer(movie)
+
+
+def test_video_Movie_media_tags(movie):
+    movie.reload()
+    test_media.tag_collection(movie)
+    test_media.tag_country(movie)
+    test_media.tag_director(movie)
+    test_media.tag_genre(movie)
+    test_media.tag_label(movie)
+    test_media.tag_producer(movie)
+    test_media.tag_role(movie)
+    test_media.tag_similar(movie)
+    test_media.tag_writer(movie)
+
+
 def test_video_Movie_PlexWebURL(plex, movie):
     url = movie.getWebURL()
     assert url.startswith('https://app.plex.tv/desktop')
@@ -678,6 +746,15 @@ def test_video_Show_attrs(show):
     assert utils.is_int(show.viewedLeafCount, gte=0)
     assert show.year == 2011
     assert show.url(None) is None
+
+
+def test_video_Show_episode(show):
+    episode = show.episode("Winter Is Coming")
+    assert episode == show.episode(season=1, episode=1)
+    with pytest.raises(BadRequest):
+        show.episode()
+    with pytest.raises(NotFound):
+        show.episode(season=1337, episode=1337)
 
 
 def test_video_Show_history(show):
@@ -799,8 +876,23 @@ def test_video_Show_mixins_images(show):
     test_mixins.attr_posterUrl(show)
 
 
+def test_video_Show_mixins_themes(show):
+    test_mixins.edit_theme(show)
+
+
 def test_video_Show_mixins_rating(show):
     test_mixins.edit_rating(show)
+
+
+def test_video_Show_mixins_fields(show):
+    test_mixins.edit_content_rating(show)
+    test_mixins.edit_originally_available(show)
+    test_mixins.edit_original_title(show)
+    test_mixins.edit_sort_title(show)
+    test_mixins.edit_studio(show)
+    test_mixins.edit_summary(show)
+    test_mixins.edit_tagline(show)
+    test_mixins.edit_title(show)
 
 
 def test_video_Show_mixins_tags(show):
@@ -824,6 +916,11 @@ def test_video_Show_PlexWebURL(plex, show):
     assert plex.machineIdentifier in url
     assert 'details' in url
     assert quote_plus(show.key) in url
+
+
+@pytest.mark.authenticated
+def test_video_Show_streamingServices(show):
+    assert show.streamingServices()
 
 
 def test_video_Season(show):
@@ -860,6 +957,7 @@ def test_video_Season_attrs(show):
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
     assert season.parentStudio == "Revolution Sun Studios"
+    assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)
     assert season.parentTitle == "Game of Thrones"
@@ -905,13 +1003,15 @@ def test_video_Season_get(show):
 
 
 def test_video_Season_episode(show):
-    episode = show.season("Season 1").get("Winter Is Coming")
+    season = show.season("Season 1")
+    episode = season.get("Winter Is Coming")
     assert episode.title == "Winter Is Coming"
-
-
-def test_video_Season_episode_by_index(show):
-    episode = show.season(season=1).episode(episode=1)
+    episode = season.episode(episode=1)
     assert episode.index == 1
+    episode = season.episode(1)
+    assert episode.index == 1
+    with pytest.raises(BadRequest):
+        season.episode()
 
 
 def test_video_Season_episodes(show):
@@ -930,14 +1030,26 @@ def test_video_Season_mixins_images(show):
     test_mixins.attr_posterUrl(season)
 
 
+def test_video_Season_mixins_themes(show):
+    season = show.season(season=1)
+    test_mixins.attr_themeUrl(season)
+
+
 def test_video_Season_mixins_rating(show):
     season = show.season(season=1)
     test_mixins.edit_rating(season)
 
 
+def test_video_Season_mixins_fields(show):
+    season = show.season(season=1)
+    test_mixins.edit_summary(season)
+    test_mixins.edit_title(season)
+
+
 def test_video_Season_mixins_tags(show):
     season = show.season(season=1)
     test_mixins.edit_collection(season)
+    test_mixins.edit_label(season)
 
 
 def test_video_Season_PlexWebURL(plex, season):
@@ -963,15 +1075,6 @@ def test_video_Episode_stop(episode, mocker, patched_http_call):
         episode, "session", return_value=list(mocker.MagicMock(id="hello"))
     )
     episode.stop(reason="It's past bedtime!")
-
-
-def test_video_Episode(show):
-    episode = show.episode("Winter Is Coming")
-    assert episode == show.episode(season=1, episode=1)
-    with pytest.raises(BadRequest):
-        show.episode()
-    with pytest.raises(NotFound):
-        show.episode(season=1337, episode=1337)
 
 
 def test_video_Episode_history(episode):
@@ -1073,7 +1176,7 @@ def test_video_Episode_attrs(episode):
     assert utils.is_int(episode.viewCount, gte=0)
     assert episode.viewOffset == 0
     if episode.writers:
-        assert "D. B. Weiss" in [i.tag for i in episode.writers]
+        assert "David Benioff" in [i.tag for i in episode.writers]
     assert episode.year is None
     assert episode.isWatched in [True, False]
     assert len(episode.locations) == 1
@@ -1141,14 +1244,27 @@ def test_video_Episode_mixins_images(episode):
     test_mixins.attr_posterUrl(episode)
 
 
+def test_video_Episode_mixins_themes(episode):
+    test_mixins.attr_themeUrl(episode)
+
+
 def test_video_Episode_mixins_rating(episode):
     test_mixins.edit_rating(episode)
+
+
+def test_video_Episode_mixins_fields(episode):
+    test_mixins.edit_content_rating(episode)
+    test_mixins.edit_originally_available(episode)
+    test_mixins.edit_sort_title(episode)
+    test_mixins.edit_summary(episode)
+    test_mixins.edit_title(episode)
 
 
 def test_video_Episode_mixins_tags(episode):
     test_mixins.edit_collection(episode)
     test_mixins.edit_director(episode)
     test_mixins.edit_writer(episode)
+    test_mixins.edit_label(episode)
 
 
 def test_video_Episode_media_tags(episode):

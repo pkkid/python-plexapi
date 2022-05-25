@@ -34,7 +34,7 @@ are optional. An example config.ini file may look like the following with all po
     level = INFO
     path = ~/.config/plexapi/plexapi.log
     rotate_bytes = 512000
-    secrets = false
+    show_secrets = false
     
 
 Environment Variables
@@ -167,7 +167,7 @@ Section [log] Options
 **rotate_bytes**
     Max size of the log file before rotating logs to a backup file (default: 512000 equals 0.5MB).
 
-**secrets**
+**show_secrets**
     By default Plex will hide all passwords and token values when logging. Set this to 'true' to enable
     logging these secrets. This should only be done on a private server and only enabled when needed
     (default: false).

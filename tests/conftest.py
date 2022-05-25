@@ -320,7 +320,7 @@ def shared_username(account):
             in (user.username.lower(), user.email.lower(), str(user.id))
         ):
             return username
-    pytest.skip("Shared user %s wasn`t found in your MyPlex account" % username)
+    pytest.skip("Shared user %s wasn't found in your MyPlex account" % username)
 
 
 @pytest.fixture()
@@ -333,7 +333,7 @@ def monkeydownload(request, monkeypatch):
 
 
 def callable_http_patch():
-    """This intented to stop some http requests inside some tests."""
+    """This is intended to stop some http requests inside some tests."""
     return patch(
         "plexapi.server.requests.sessions.Session.send",
         return_value=MagicMock(status_code=200, text="<xml><child></child></xml>"),

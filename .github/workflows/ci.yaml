@@ -19,17 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code from Github
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
     - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
       id: cache-venv
-      uses: actions/cache@v2
+      uses: actions/cache@v3.0.2
       with:
         path: venv
         key: >-
@@ -78,17 +78,17 @@ jobs:
             plex: claimed
     steps:
     - name: Check out code from Github
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Restore Python ${{ matrix.python-version }} virtual environment
       id: cache-venv
-      uses: actions/cache@v2
+      uses: actions/cache@v3.0.2
       with:
         path: venv
         key: >-
@@ -128,7 +128,7 @@ jobs:
 
     - name: Cache PMS Docker image
       id: docker-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3.0.2
       with:
         path: ~/.cache/docker/plexinc
         key: ${{ runner.os }}-docker-pms-${{ steps.docker-digest.outputs.digest }}
@@ -193,7 +193,7 @@ jobs:
         python -u tools/plex-teardowntest.py
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: coverage-${{ matrix.plex }}-${{ matrix.python-version }}
         path: .coverage
@@ -214,17 +214,17 @@ jobs:
             plex: claimed
     steps:
     - name: Check out code from GitHub
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
     - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
       id: cache-venv
-      uses: actions/cache@v2
+      uses: actions/cache@v3.0.2
       with:
         path: venv
         key: >-
@@ -241,7 +241,7 @@ jobs:
         exit 1
 
     - name: Download all coverage artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Combine ${{ matrix.plex }} coverage results
       run: |
@@ -251,6 +251,6 @@ jobs:
         coverage xml
 
     - name: Upload ${{ matrix.plex }} coverage to Codecov
-      uses: codecov/codecov-action@v2.1.0
+      uses: codecov/codecov-action@v3.1.0
       with:
         flags: ${{ matrix.plex }}

@@ -221,7 +221,7 @@ def test_server_Server_query(plex):
 
 
 def test_server_Server_session(account):
-    # Mock Sesstion
+    # Mock Session
     class MySession(Session):
         def __init__(self):
             super(self.__class__, self).__init__()
@@ -257,6 +257,16 @@ def test_server_sessions(plex):
     assert len(plex.sessions()) >= 0
 
 
+def test_server_butlerTasks(plex):
+    assert len(plex.butlerTasks())
+
+
+def test_server_runButlerTask(plex):
+    assert plex.runButlerTask("CleanOldBundles") is None
+    with pytest.raises(BadRequest):
+        plex.runButlerTask("<This-task-should-not-exist>")
+
+
 def test_server_isLatest(plex, mocker):
     from os import environ
 
@@ -271,12 +281,12 @@ def test_server_isLatest(plex, mocker):
 
 def test_server_installUpdate(plex, mocker):
     m = mocker.MagicMock(release="aa")
-    with utils.patch('plexapi.server.PlexServer.check_for_update', return_value=m):
+    with utils.patch('plexapi.server.PlexServer.checkForUpdate', return_value=m):
         with utils.callable_http_patch():
             plex.installUpdate()
 
 
-def test_server_check_for_update(plex, mocker):
+def test_server_checkForUpdate(plex, mocker):
     class R:
         def __init__(self, **kwargs):
             self.download_key = "plex.tv/release/1337"
@@ -286,8 +296,8 @@ def test_server_check_for_update(plex, mocker):
             self.downloadURL = "http://path-to-update"
             self.state = "downloaded"
 
-    with utils.patch('plexapi.server.PlexServer.check_for_update', return_value=R()):
-        rel = plex.check_for_update(force=False, download=True)
+    with utils.patch('plexapi.server.PlexServer.checkForUpdate', return_value=R()):
+        rel = plex.checkForUpdate(force=False, download=True)
         assert rel.download_key == "plex.tv/release/1337"
         assert rel.version == "1337"
         assert rel.added == "gpu transcode"

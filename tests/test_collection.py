@@ -13,6 +13,7 @@ def test_Collection_attrs(collection):
     assert collection.art is None
     assert collection.artBlurHash is None
     assert collection.childCount == 1
+    assert collection.collectionFilterBasedOnUser == 0
     assert collection.collectionMode == -1
     assert collection.collectionPublished is False
     assert collection.collectionSort == 0
@@ -33,6 +34,7 @@ def test_Collection_attrs(collection):
     assert collection.smart is False
     assert collection.subtype == "movie"
     assert collection.summary == ""
+    assert collection.theme is None
     assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
     assert collection.thumbBlurHash is None
     assert collection.title == "Test Collection"
@@ -63,6 +65,27 @@ def test_Collection_item(collection):
 def test_Collection_items(collection):
     items = collection.items()
     assert len(items) == 1
+
+
+def test_Collection_filterUserUpdate(plex, movies):
+    title = "test_Collection_filterUserUpdate"
+    try:
+        collection = plex.createCollection(
+            title=title,
+            section=movies,
+            smart=True
+        )
+
+        mode_dict = {"admin": 0, "user": 1}
+        for key, value in mode_dict.items():
+            collection.filterUserUpdate(user=key)
+            collection.reload()
+            assert collection.collectionFilterBasedOnUser == value
+        with pytest.raises(BadRequest):
+            collection.filterUserUpdate(user="bad-user")
+        collection.filterUserUpdate("admin")
+    finally:
+        collection.delete()
 
 
 def test_Collection_modeUpdate(collection):
@@ -119,6 +142,7 @@ def test_Collection_add_move_remove(collection, movies):
     collection.sortUpdate("release")
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_Collection_edit(collection, movies):
     fields = {"title", "titleSort", "contentRating", "summary"}
     title = collection.title
@@ -242,6 +266,8 @@ def test_Collection_exceptions(plex, movies, movie, artist):
             collection.updateFilters()
         with pytest.raises(BadRequest):
             collection.addItems(artist)
+        with pytest.raises(BadRequest):
+            collection.filterUserUpdate("user")
     finally:
         collection.delete()
 
@@ -258,6 +284,8 @@ def test_Collection_exceptions(plex, movies, movie, artist):
             collection.removeItems(movie)
         with pytest.raises(BadRequest):
             collection.moveItem(movie)
+        with pytest.raises(BadRequest):
+            collection.sortUpdate("custom")
     finally:
         collection.delete()
 
@@ -282,8 +310,19 @@ def test_Collection_mixins_images(collection):
     test_mixins.attr_posterUrl(collection)
 
 
+def test_Collection_mixins_themes(collection):
+    test_mixins.edit_theme(collection)
+
+
 def test_Collection_mixins_rating(collection):
     test_mixins.edit_rating(collection)
+
+
+def test_Collection_mixins_fields(collection):
+    test_mixins.edit_content_rating(collection)
+    test_mixins.edit_sort_title(collection)
+    test_mixins.edit_summary(collection)
+    test_mixins.edit_title(collection)
 
 
 def test_Collection_mixins_tags(collection):

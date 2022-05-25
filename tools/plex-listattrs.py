@@ -4,7 +4,7 @@
 Plex-ListAttrs is used during development of PlexAPI and loops through all media
 items to build a collection of attributes on each media type. The resulting list
 can be compared with the current object implementation in python-plexapi to track
-new attributes and depricate old ones.
+new attributes and deprecate old ones.
 """
 import argparse, copy, pickle, plexapi, os, re, sys, time
 from os.path import abspath, dirname, join
@@ -49,7 +49,7 @@ DONT_RELOAD = (
     'myplex.MyPlexDevice',
     'photo.Photoalbum',
     'server.Account',
-    'client.PlexClient',  # we dont have the token to reload.
+    'client.PlexClient',  # we don't have the token to reload.
 )
 TAGATTRS = {
     'Media': 'media',
