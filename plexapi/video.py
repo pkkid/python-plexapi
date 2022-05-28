@@ -872,7 +872,7 @@ class Episode(
     def seasonNumber(self):
         """ Returns the episode's season number. """
         if self._seasonNumber is None:
-            self._seasonNumber = self.parentIndex if self.parentIndex else self.season().seasonNumber
+            self._seasonNumber = self.parentIndex if isinstance(self.parentIndex, int) else self.season().seasonNumber
         return utils.cast(int, self._seasonNumber)
 
     @property
