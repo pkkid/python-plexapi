@@ -50,12 +50,12 @@ class PlexObject(object):
         self._initpath = initpath or self.key
         self._parent = weakref.ref(parent) if parent is not None else None
         self._details_key = None
+        self._overwriteNone = True  # Allow overwriting previous attribute values with `None` when manually reloading
+        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
+        self._edits = None  # Save batch edits for a single API call
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
-        self._overwriteNone = True
-        self._edits = None  # Save batch edits for a single API call
-        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
 
     def __repr__(self):
         uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
