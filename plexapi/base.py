@@ -31,7 +31,7 @@ OPERATORS = {
 }
 
 
-class PlexObject(object):
+class PlexObject:
     """ Base class for all Plex objects.
 
         Parameters:
@@ -649,7 +649,7 @@ class PlexPartialObject(PlexObject):
         return self._getWebURL(base=base)
 
 
-class Playable(object):
+class Playable:
     """ This is a general place to store functions specific to media that is Playable.
         Things were getting mixed up a bit when dealing with Shows, Season, Artists,
         Albums which are all not playable.
