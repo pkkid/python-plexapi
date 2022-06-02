@@ -390,7 +390,7 @@ class Track(
             parentThumb (str): URL to album thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the album for the track.
             primaryExtraKey (str) API URL for the primary extra for the track.
-            ratingCount (int): Number of ratings contributing to the rating score.
+            ratingCount (int): Number of listeners who have scrobbled this track, as reported by Last.fm.
             skipCount (int): Number of times the track has been skipped.
             viewOffset (int): View offset in milliseconds.
             year (int): Year the track was released.
