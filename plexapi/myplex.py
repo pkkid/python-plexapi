@@ -65,6 +65,7 @@ class MyPlexAccount(PlexObject):
             _session (obj): Requests session object used to access this client.
     """
     FRIENDINVITE = 'https://plex.tv/api/servers/{machineId}/shared_servers'                     # post with data
+    HOMEUSERS = 'https://plex.tv/api/home/users'
     HOMEUSERCREATE = 'https://plex.tv/api/home/users?title={title}'                             # post with data
     EXISTINGUSER = 'https://plex.tv/api/home/users?invitedEmail={username}'                     # post with data
     FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data
@@ -381,6 +382,29 @@ class MyPlexAccount(PlexObject):
         user = user if isinstance(user, MyPlexUser) else self.user(user)
         url = self.REMOVEHOMEUSER.format(userId=user.id)
         return self.query(url, self._session.delete)
+
+    def switchHomeUser(self, user):
+        """ Returns a new :class:`~plexapi.myplex.MyPlexAccount` object switched to the given home user.
+
+            Parameters:
+                user (str): :class:`~plexapi.myplex.MyPlexUser`, username, or email of the home user to switch to.
+
+            Example:
+
+                .. code-block:: python
+
+                    from plexapi.myplex import MyPlexAccount
+                    # Login to a Plex Home account
+                    account = MyPlexAccount('<USERNAME>', '<PASSWORD>')
+                    # Switch to a different Plex Home user
+                    userAccount = account.switchHomeUser('Username')
+
+        """
+        user = user if isinstance(user, MyPlexUser) else self.user(user)
+        url = f'{self.HOMEUSERS}/{user.id}/switch'
+        data = self.query(url, self._session.post)
+        userToken = data.attrib.get('authenticationToken')
+        return MyPlexAccount(token=userToken)
 
     def acceptInvite(self, user):
         """ Accept a pending firend invite from the specified user.
