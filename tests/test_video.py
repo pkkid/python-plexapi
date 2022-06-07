@@ -123,6 +123,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(audio._initpath)
     assert audio.language is None
     assert audio.languageCode is None
+    assert audio.languageTag is None
     assert audio.profile == "lc"
     assert audio.requiredBandwidths is None or audio.requiredBandwidths
     assert audio.samplingRate == 44100
@@ -199,6 +200,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(video._initpath)
     assert video.language is None
     assert video.languageCode is None
+    assert video.languageTag is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert video.pixelAspectRatio is None
@@ -257,6 +259,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream1._initpath)
     assert stream1.language is None
     assert stream1.languageCode is None
+    assert stream1.languageTag is None
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
@@ -282,6 +285,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream2._initpath)
     assert stream2.language is None
     assert stream2.languageCode is None
+    assert stream2.languageTag is None
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
