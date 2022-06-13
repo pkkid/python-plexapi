@@ -367,7 +367,8 @@ class MyPlexAccount(PlexObject):
         """ Remove the specified user from your friends.
 
             Parameters:
-                user (str): :class:`~plexapi.myplex.MyPlexUser`, username, or email of the user to be removed.
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`,
+                    username, or email of the user to be removed.
         """
         user = user if isinstance(user, MyPlexUser) else self.user(user)
         url = self.FRIENDUPDATE.format(userId=user.id)
@@ -377,7 +378,8 @@ class MyPlexAccount(PlexObject):
         """ Remove the specified user from your home users.
 
             Parameters:
-                user (str): :class:`~plexapi.myplex.MyPlexUser`, username, or email of the user to be removed.
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`,
+                    username, or email of the user to be removed.
         """
         user = user if isinstance(user, MyPlexUser) else self.user(user)
         url = self.REMOVEHOMEUSER.format(userId=user.id)
@@ -387,7 +389,8 @@ class MyPlexAccount(PlexObject):
         """ Returns a new :class:`~plexapi.myplex.MyPlexAccount` object switched to the given home user.
 
             Parameters:
-                user (str): :class:`~plexapi.myplex.MyPlexUser`, username, or email of the home user to switch to.
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`,
+                    username, or email of the home user to switch to.
 
             Example:
 
@@ -410,7 +413,8 @@ class MyPlexAccount(PlexObject):
         """ Accept a pending firend invite from the specified user.
 
             Parameters:
-                user (str): :class:`~plexapi.myplex.MyPlexInvite`, username, or email of the friend invite to accept.
+                user (:class:`~plexapi.myplex.MyPlexInvite` or str): :class:`~plexapi.myplex.MyPlexInvite`,
+                    username, or email of the friend invite to accept.
         """
         invite = user if isinstance(user, MyPlexInvite) else self.pendingInvite(user, includeSent=False)
         params = {
@@ -425,7 +429,8 @@ class MyPlexAccount(PlexObject):
         """ Cancel a pending firend invite for the specified user.
 
             Parameters:
-                user (str): :class:`~plexapi.myplex.MyPlexInvite`, username, or email of the friend invite to cancel.
+                user (:class:`~plexapi.myplex.MyPlexInvite` or str): :class:`~plexapi.myplex.MyPlexInvite`,
+                    username, or email of the friend invite to cancel.
         """
         invite = user if isinstance(user, MyPlexInvite) else self.pendingInvite(user, includeReceived=False)
         params = {
