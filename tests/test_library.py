@@ -229,6 +229,13 @@ def test_library_Library_search(plex):
     assert len(plex.library.search(libtype="episode"))
 
 
+def test_library_Library_tags(plex):
+    tags = plex.library.tags('genre')
+    assert len(tags)
+    with pytest.raises(NotFound):
+        plex.library.tags('unknown')
+
+
 def test_library_MovieSection_update(movies):
     movies.update()
 
