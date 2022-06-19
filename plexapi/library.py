@@ -356,6 +356,16 @@ class Library(PlexObject):
             hist.extend(section.history(maxresults=maxresults, mindate=mindate))
         return hist
 
+    def tags(self, tag):
+        """ Returns a list of :class:`~plexapi.library.LibraryMediaTag` objects for the specified tag.
+
+            Parameters:
+                tag (str): Tag name (see :data:`~plexapi.utils.TAGTYPES`).
+        """
+        tagType = utils.tagType(tag)
+        data = self._server.query(f'/library/tags?type={tagType}')
+        return self.findItems(data)
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
