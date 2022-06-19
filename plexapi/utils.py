@@ -26,10 +26,66 @@ except ImportError:
 log = logging.getLogger('plexapi')
 
 # Search Types - Plex uses these to filter specific media types when searching.
-# Library Types - Populated at runtime
-SEARCHTYPES = {'movie': 1, 'show': 2, 'season': 3, 'episode': 4, 'trailer': 5, 'comic': 6, 'person': 7,
-               'artist': 8, 'album': 9, 'track': 10, 'picture': 11, 'clip': 12, 'photo': 13, 'photoalbum': 14,
-               'playlist': 15, 'playlistFolder': 16, 'collection': 18, 'optimizedVersion': 42, 'userPlaylistItem': 1001}
+SEARCHTYPES = {
+    'movie': 1,
+    'show': 2,
+    'season': 3,
+    'episode': 4,
+    'trailer': 5,
+    'comic': 6,
+    'person': 7,
+    'artist': 8,
+    'album': 9,
+    'track': 10,
+    'picture': 11,
+    'clip': 12,
+    'photo': 13,
+    'photoalbum': 14,
+    'playlist': 15,
+    'playlistFolder': 16,
+    'collection': 18,
+    'optimizedVersion': 42,
+    'userPlaylistItem': 1001,
+}
+# Tag Types - Plex uses these to filter specific tags when searching.
+TAGTYPES = {
+    'tag': 0,
+    'genre': 1,
+    'collection': 2,
+    'director': 4,
+    'writer': 5,
+    'role': 6,
+    'producer': 7,
+    'country': 8,
+    'chapter': 9,
+    'review': 10,
+    'label': 11,
+    'marker': 12,
+    'mediaProcessingTarget': 42,
+    'make': 200,
+    'model': 201,
+    'aperture': 202,
+    'exposure': 203,
+    'iso': 204,
+    'lens': 205,
+    'device': 206,
+    'autotag': 207,
+    'mood': 300,
+    'style': 301,
+    'format': 302,
+    'similar': 305,
+    'concert': 306,
+    'banner': 311,
+    'poster': 312,
+    'art': 313,
+    'guid': 314,
+    'ratingImage': 316,
+    'theme': 317,
+    'studio': 318,
+    'network': 319,
+    'place': 400,
+}
+# Plex Objects - Populated at runtime
 PLEXOBJECTS = {}
 
 
@@ -59,7 +115,18 @@ def registerPlexObject(cls):
         define a few helper functions to dynamically convert the XML into objects. See
         buildItem() below for an example.
     """
-    etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
+    streamtype = getattr(cls, 'STREAMTYPE', None)
+    tagtype = getattr(cls, 'TAGNAME', None)
+    if tagtype is not None:
+        tagtype = tagType(tagtype)
+
+    if streamtype is not None:
+        etype = streamtype
+    elif tagtype is not None:
+        etype = tagtype
+    else:
+        etype = cls.TYPE
+
     ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
     if ehash in PLEXOBJECTS:
         raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
@@ -149,8 +216,7 @@ def searchType(libtype):
     """ Returns the integer value of the library string type.
 
         Parameters:
-            libtype (str): LibType to lookup (movie, show, season, episode, artist, album, track,
-                                              collection)
+            libtype (str): LibType to lookup (See :data:`~plexapi.utils.SEARCHTYPES`)
 
         Raises:
             :exc:`~plexapi.exceptions.NotFound`: Unknown libtype
@@ -179,6 +245,41 @@ def reverseSearchType(libtype):
         if libtype == v:
             return k
     raise NotFound('Unknown libtype: %s' % libtype)
+
+
+def tagType(tag):
+    """ Returns the integer value of the library tag type.
+
+        Parameters:
+            tag (str): Tag to lookup (See :data:`~plexapi.utils.TAGTYPES`)
+
+        Raises:
+            :exc:`~plexapi.exceptions.NotFound`: Unknown tag
+    """
+    tag = str(tag)
+    if tag in [str(v) for v in TAGTYPES.values()]:
+        return tag
+    if TAGTYPES.get(tag) is not None:
+        return TAGTYPES[tag]
+    raise NotFound('Unknown tag: %s' % tag)
+
+
+def reverseTagType(tag):
+    """ Returns the string value of the library tag type.
+
+        Parameters:
+            tag (int): Integer value of the library tag type.
+
+        Raises:
+            :exc:`~plexapi.exceptions.NotFound`: Unknown tag
+    """
+    if tag in TAGTYPES:
+        return tag
+    tag = int(tag)
+    for k, v in TAGTYPES.items():
+        if tag == v:
+            return k
+    raise NotFound('Unknown tag: %s' % tag)
 
 
 def threaded(callback, listargs):
