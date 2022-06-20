@@ -8,8 +8,7 @@ from plexapi import log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
 USER_DONT_RELOAD_FOR_KEYS = set()
-_DONT_RELOAD_FOR_KEYS = {'key', 'session'}
-_DONT_OVERWRITE_SESSION_KEYS = {'player', 'session', 'transcodeSession', 'username'}
+_DONT_RELOAD_FOR_KEYS = {'key'}
 OPERATORS = {
     'exact': lambda v, q: v == q,
     'iexact': lambda v, q: v.lower() == q.lower(),
@@ -63,10 +62,6 @@ class PlexObject:
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 
     def __setattr__(self, attr, value):
-        # Don't overwrite session specific attr with []
-        if attr in _DONT_OVERWRITE_SESSION_KEYS and value == []:
-            value = getattr(self, attr, [])
-
         overwriteNone = self.__dict__.get('_overwriteNone')
         # Don't overwrite an attr with None unless it's a private variable or overwrite None is True
         if value is not None or attr.startswith('_') or attr not in self.__dict__ or overwriteNone:
@@ -492,11 +487,11 @@ class PlexPartialObject(PlexObject):
         value = super(PlexPartialObject, self).__getattribute__(attr)
         # Check a few cases where we don't want to reload
         if attr in _DONT_RELOAD_FOR_KEYS: return value
-        if attr in _DONT_OVERWRITE_SESSION_KEYS: return value
         if attr in USER_DONT_RELOAD_FOR_KEYS: return value
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
+        if isinstance(self, PlexSession): return value
         if self._autoReload is False: return value
         # Log the reload.
         clsname = self.__class__.__name__
@@ -875,15 +870,20 @@ class PlexSession(object):
         """ Reload the data for the session.
             Note: This will return the object as-is if the session is no longer active.
         """
+        return self._reload()
+
+    def _reload(self, _autoReload=False, **kwargs):
+        """ Perform the actual reload. """
+        # Do not auto reload sessions
+        if _autoReload:
+            return self
+
         key = self._initpath
         data = self._server.query(key)
-        session = next((
-            elem for elem in data
-            if utils.cast(int, elem.attrib.get('sessionKey')) == self.sessionKey),
-            None
-        )
-        if session:
-            self._loadData(session)
+        for elem in data:
+            if elem.attrib.get('sessionKey') == str(self.sessionKey):
+                self._loadData(elem)
+                break
         return self
 
     def source(self):
