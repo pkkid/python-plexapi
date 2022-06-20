@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p
 
 from . import conftest as utils
 from . import test_media, test_mixins
@@ -1377,12 +1378,12 @@ def test_video_edits_locked(movie, episode):
     episode.edit(**{'titleSort.value': episodeTitleSort, 'titleSort.locked': 0})
 
 
-@pytest.mark.skip(
+@pytest.mark.xfail(
     reason="broken? assert len(plex.conversions()) == 1 may fail on some builds"
 )
-def test_video_optimize(movie, plex):
+def test_video_optimize(plex, movie, tvshows, show):
     plex.optimizedItems(removeAll=True)
-    movie.optimize(targetTagID=1)
+    movie.optimize(target="mobile")
     plex.conversions(pause=True)
     sleep(1)
     assert len(plex.optimizedItems()) == 1
@@ -1396,3 +1397,20 @@ def test_video_optimize(movie, plex):
     assert movie in videos
     plex.optimizedItems(removeAll=True)
     assert len(plex.optimizedItems()) == 0
+
+    locations = tvshows._locations()
+    show.optimize(
+        deviceProfile="Universal TV",
+        videoQuality=VIDEO_QUALITY_3_MBPS_720p,
+        locationID=locations[0].id,
+        limit=1,
+        unwatched=True
+    )
+    assert len(plex.optimizedItems()) == 1
+    plex.optimizedItems(removeAll=True)
+    assert len(plex.optimizedItems()) == 0
+
+    with pytest.raises(BadRequest):
+        movie.optimize()
+    with pytest.raises(BadRequest):
+        movie.optimize(target="mobile", locationID=-100)
