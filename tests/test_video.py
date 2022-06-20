@@ -104,7 +104,7 @@ def test_video_Movie_attrs(movies):
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
-    assert movie.year == 2008
+    assert movie.year == 2009
     # Audio
     audio = movie.media[0].parts[0].audioStreams()[0]
     if audio.audioChannelLayout:
