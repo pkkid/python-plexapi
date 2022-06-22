@@ -1110,7 +1110,7 @@ class LibrarySection(PlexObject):
         """
         if isinstance(value, FilterChoice):
             return value.key
-        if isinstance(value, media.MediaTag):
+        if isinstance(value, (media.MediaTag, LibraryMediaTag)):
             value = str(value.id or value.tag)
         else:
             value = str(value)
