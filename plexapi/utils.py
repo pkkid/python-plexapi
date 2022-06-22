@@ -115,18 +115,7 @@ def registerPlexObject(cls):
         define a few helper functions to dynamically convert the XML into objects. See
         buildItem() below for an example.
     """
-    streamtype = getattr(cls, 'STREAMTYPE', None)
-    tagtype = getattr(cls, 'TAGNAME', None)
-    if tagtype is not None:
-        tagtype = tagType(tagtype)
-
-    if streamtype is not None:
-        etype = streamtype
-    elif tagtype is not None:
-        etype = tagtype
-    else:
-        etype = cls.TYPE
-
+    etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
     ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
     if ehash in PLEXOBJECTS:
         raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
