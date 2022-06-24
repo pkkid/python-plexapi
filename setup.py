@@ -3,7 +3,6 @@
 """
 Install PlexAPI
 """
-import re
 try:
     from setuptools import setup
 except ImportError:
