@@ -843,10 +843,11 @@ class MyPlexAccount(PlexObject):
         }
 
         data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
-        searchResults = data['MediaContainer'].get('SearchResult', [])
+        searchResults = data['MediaContainer'].get('SearchResults', [])
+        searchResult = next((s['SearchResult'] for s in searchResults if s.get('id') == 'external'), [])
 
         results = []
-        for result in searchResults:
+        for result in searchResult:
             metadata = result['Metadata']
             type = metadata['type']
             if type == 'movie':
