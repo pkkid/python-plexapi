@@ -199,7 +199,7 @@ class Artist(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or album and track parameters are missing.
         """
-        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        key = f'{self.key}/allLeaves'
         if title is not None:
             return self.fetchItem(key, Track, title__iexact=title)
         elif album is not None and track is not None:
@@ -208,7 +208,7 @@ class Artist(
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
-        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        key = f'{self.key}/allLeaves'
         return self.fetchItems(key, Track, **kwargs)
 
     def get(self, title=None, album=None, track=None):
@@ -312,7 +312,7 @@ class Album(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f'{self.key}/children'
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Track, title__iexact=title)
         elif track is not None or isinstance(title, int):
@@ -325,7 +325,7 @@ class Album(
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in the album. """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f'{self.key}/children'
         return self.fetchItems(key, Track, **kwargs)
 
     def get(self, title=None, track=None):
