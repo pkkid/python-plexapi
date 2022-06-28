@@ -771,7 +771,7 @@ class MyPlexAccount(PlexObject):
 
         params.update(kwargs)
         data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
-        return self.findItems(data)
+        return self._toOnlineMetadata(self.findItems(data))
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
@@ -860,7 +860,7 @@ class MyPlexAccount(PlexObject):
             xml = f'<{tag} {attrs}/>'
             results.append(self._manuallyLoadXML(xml))
 
-        return results
+        return self._toOnlineMetadata(results)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
@@ -874,6 +874,17 @@ class MyPlexAccount(PlexObject):
         }
         data = {'code': pin}
         self.query(self.LINK, self._session.put, headers=headers, data=data)
+
+    def _toOnlineMetadata(self, objs):
+        """ Convert a list of media objects to online metadata objects. """
+        # TODO: Add proper support for metadata.provider.plex.tv
+        # Temporary workaround to allow reloading and browsing of online media objects
+        if not isinstance(objs, list):
+            objs = [objs]
+        for obj in objs:
+            obj._server = PlexServer(self.METADATA, self._token)
+            obj._details_key = obj._details_key.replace('&includeFields=thumbBlurHash%2CartBlurHash', '')
+        return objs
 
 
 class MyPlexUser(PlexObject):
