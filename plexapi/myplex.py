@@ -824,21 +824,25 @@ class MyPlexAccount(PlexObject):
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
-    def searchDiscover(self, query, limit=30):
+    def searchDiscover(self, query, limit=30, libtype=None):
         """ Search for movies and TV shows in Discover.
             Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
 
             Parameters:
                 query (str): Search query.
                 limit (int, optional): Limit to the specified number of results. Default 30.
+                libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
         """
+        libtypes = {'movie': 'movies', 'show': 'tv'}
+        libtype = libtypes.get(libtype, 'movies,tv')
+
         headers = {
             'Accept': 'application/json'
         }
         params = {
             'query': query,
             'limit ': limit,
-            'searchTypes': 'movies,tv',
+            'searchTypes': libtype,
             'includeMetadata': 1
         }
 
