@@ -250,8 +250,9 @@ class HubsMixin:
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         from plexapi.library import Hub
-        data = self._server.query(self._details_key)
-        return self.findItems(data, Hub, rtag='Related')
+        key = f'{self.key}/related'
+        data = self._server.query(key)
+        return self.findItems(data, Hub)
 
 
 class RatingMixin:
