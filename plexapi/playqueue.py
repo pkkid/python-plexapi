@@ -3,7 +3,7 @@ from urllib.parse import quote_plus
 
 from plexapi import utils
 from plexapi.base import PlexObject
-from plexapi.exceptions import BadRequest, Unsupported
+from plexapi.exceptions import BadRequest
 
 
 class PlayQueue(PlexObject):
@@ -191,7 +191,6 @@ class PlayQueue(PlexObject):
         path = "/playQueues{args}".format(args=utils.joinArgs(args))
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
-        c.playQueueType = args["type"]
         c._server = server
         return c
 
@@ -227,7 +226,6 @@ class PlayQueue(PlexObject):
         path = f"/playQueues{utils.joinArgs(args)}"
         data = server.query(path, method=server._session.post)
         c = cls(server, data, initpath=path)
-        c.playQueueType = args["type"]
         c._server = server
         return c
 
@@ -250,14 +248,9 @@ class PlayQueue(PlexObject):
         args = {}
         if item.type == "playlist":
             args["playlistID"] = item.ratingKey
-            itemType = item.playlistType
         else:
             uuid = item.section().uuid
-            itemType = item.listType
             args["uri"] = "library://{uuid}/item{key}".format(uuid=uuid, key=item.key)
-
-        if itemType != self.playQueueType:
-            raise Unsupported("Item type does not match PlayQueue type")
 
         if playNext:
             args["next"] = 1
