@@ -13,7 +13,7 @@ class PlayQueue(PlexObject):
         TAG (str): 'PlayQueue'
         TYPE (str): 'playqueue'
         identifier (str): com.plexapp.plugins.library
-        items (list): List of :class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`
+        items (list): List of :class:`~plexapi.base.Playable` or :class:`~plexapi.playlist.Playlist`
         mediaTagPrefix (str): Fx /system/bundle/media/flags/
         mediaTagVersion (int): Fx 1485957738
         playQueueID (int): ID of the PlayQueue.
@@ -27,7 +27,7 @@ class PlayQueue(PlexObject):
         playQueueSourceURI (str): Original URI used to create the PlayQueue.
         playQueueTotalCount (int): How many items in the PlayQueue.
         playQueueVersion (int): Version of the PlayQueue. Increments every time a change is made to the PlayQueue.
-        selectedItem (:class:`~plexapi.media.Media`): Media object for the currently selected item.
+        selectedItem (:class:`~plexapi.base.Playable`): Media object for the currently selected item.
         _server (:class:`~plexapi.server.PlexServer`): PlexServer associated with the PlayQueue.
         size (int): Alias for playQueueTotalCount.
     """
@@ -150,9 +150,9 @@ class PlayQueue(PlexObject):
 
         Parameters:
             server (:class:`~plexapi.server.PlexServer`): Server you are connected to.
-            items (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`):
+            items (:class:`~plexapi.base.Playable` or :class:`~plexapi.playlist.Playlist`):
                 A media item, list of media items, or Playlist.
-            startItem (:class:`~plexapi.media.Media`, optional):
+            startItem (:class:`~plexapi.base.Playable`, optional):
                 Media item in the PlayQueue where playback should begin.
             shuffle (int, optional): Start the playqueue shuffled.
             repeat (int, optional): Start the playqueue shuffled.
@@ -235,7 +235,7 @@ class PlayQueue(PlexObject):
         Items can only be added to the section immediately following the current playing item.
 
         Parameters:
-            item (:class:`~plexapi.media.Media` or :class:`~plexapi.playlist.Playlist`): Single media item or Playlist.
+            item (:class:`~plexapi.base.Playable` or :class:`~plexapi.playlist.Playlist`): Single media item or Playlist.
             playNext (bool, optional): If True, add this item to the front of the "Up Next" section.
                 If False, the item will be appended to the end of the "Up Next" section.
                 Only has an effect if an item has already been added to the "Up Next" section.
