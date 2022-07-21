@@ -225,6 +225,7 @@ class MediaPartStream(PlexObject):
             index (int): The index of the stream.
             language (str): The language of the stream (ex: English, ไทย).
             languageCode (str): The ASCII language code of the stream (ex: eng, tha).
+            languageTag (str): The two letter language tag of the stream (ex: en, fr).
             requiredBandwidths (str): The required bandwidths to stream the file.
             selected (bool): True if this stream is selected.
             streamType (int): The stream type (1= :class:`~plexapi.media.VideoStream`,
@@ -246,6 +247,7 @@ class MediaPartStream(PlexObject):
         self.index = utils.cast(int, data.attrib.get('index', '-1'))
         self.language = data.attrib.get('language')
         self.languageCode = data.attrib.get('languageCode')
+        self.languageTag = data.attrib.get('languageTag')
         self.requiredBandwidths = data.attrib.get('requiredBandwidths')
         self.selected = utils.cast(bool, data.attrib.get('selected', '0'))
         self.streamType = utils.cast(int, data.attrib.get('streamType'))
@@ -871,7 +873,7 @@ class GuidTag(PlexObject):
     """ Base class for guid tags used only for Guids, as they contain only a string identifier
 
         Attributes:
-            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB).
+            id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB, MBID).
     """
 
     def _loadData(self, data):
