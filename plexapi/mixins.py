@@ -275,6 +275,22 @@ class PlayedUnplayedMixin:
         params = {'key': self.ratingKey, 'identifier': 'com.plexapp.plugins.library'}
         self._server.query(key, params=params)
 
+    @property
+    @deprecated('use "isPlayed" instead', stacklevel=3)
+    def isWatched(self):
+        """ Returns True if the show is watched. """
+        return self.isPlayed
+
+    @deprecated('use "markPlayed" instead')
+    def markWatched(self):
+        """ Mark the video as played. """
+        self.markPlayed()
+
+    @deprecated('use "markUnplayed" instead')
+    def markUnwatched(self):
+        """ Mark the video as unplayed. """
+        self.markUnplayed()
+
 
 class RatingMixin:
     """ Mixin for Plex objects that can have user star ratings. """
