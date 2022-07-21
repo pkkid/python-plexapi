@@ -860,8 +860,7 @@ class MyPlexAccount(PlexObject):
         """
         ratingKey = item.guid.rsplit('/', 1)[-1]
         data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
-        # TODO: change to findItem after PR#931 is merged
-        return self.findItems(data, cls=UserState)[0]
+        return self.findItem(data, cls=UserState)
 
     def searchDiscover(self, query, limit=30, libtype=None):
         """ Search for movies and TV shows in Discover.
