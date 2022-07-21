@@ -781,9 +781,7 @@ class MyPlexAccount(PlexObject):
                 item (:class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`): Item to check
                     if it is on the user's watchlist.
         """
-        ratingKey = item.guid.rsplit('/', 1)[-1]
-        data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
-        return bool(data.find('UserState').attrib.get('watchlistedAt'))
+        return bool(self.userState(item).watchlistedAt)
 
     def addToWatchlist(self, items):
         """ Add media items to the user's watchlist
@@ -824,6 +822,17 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest('"%s" is not on the watchlist' % item.title)
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
+
+    def userState(self, item):
+        """ Returns a :class:`~plexapi.myplex.UserState` object for the specified item.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie` or :class:`~plexapi.video.Show`): Item to return the user state.
+        """
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
+        # TODO: change to findItem after PR#931 is merged
+        return self.findItems(data, cls=UserState)[0]
 
     def searchDiscover(self, query, limit=30, libtype=None):
         """ Search for movies and TV shows in Discover.
@@ -1640,3 +1649,33 @@ class AccountOptOut(PlexObject):
         if self.key == 'tv.plex.provider.music':
             raise BadRequest('%s does not have the option to opt out managed users.' % self.key)
         self._updateOptOut('opt_out_managed')
+
+
+class UserState(PlexObject):
+    """ Represents a single UserState
+
+        Attributes:
+            TAG (str): UserState
+            lastViewedAt (datetime): Datetime the item was last played.
+            ratingKey (str): Unique key identifying the item.
+            type (str): The media type of the item.
+            viewCount (int): Count of times the item was played.
+            viewedLeafCount (int): Number of items marked as played in the show/season.
+            viewOffset (int): Time offset in milliseconds from the start of the content
+            viewState (bool): True or False if the item has been played.
+            watchlistedAt (datetime): Datetime the item was added to the watchlist.
+    """
+    TAG = 'UserState'
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}:{self.ratingKey}>'
+
+    def _loadData(self, data):
+        self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.type = data.attrib.get('type')
+        self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
+        self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount', 0))
+        self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
+        self.viewState = data.attrib.get('viewState') == 'complete'
+        self.watchlistedAt = utils.toDatetime(data.attrib.get('watchlistedAt'))
