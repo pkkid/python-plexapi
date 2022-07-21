@@ -146,6 +146,7 @@ class Artist(
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             countries (List<:class:`~plexapi.media.Country`>): List country objects.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
+            guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             locations (List<str>): List of folder paths where the artist is found on disk.
@@ -163,6 +164,7 @@ class Artist(
         self.collections = self.findItems(data, media.Collection)
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
+        self.guids = self.findItems(data, media.Guid)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
         self.locations = self.listAttrs(data, 'path', etag='Location')
@@ -253,6 +255,7 @@ class Album(
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             formats (List<:class:`~plexapi.media.Format`>): List of format objects.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
+            guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             key (str): API URL (/library/metadata/<ratingkey>).
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             leafCount (int): Number of items in the album view.
@@ -280,6 +283,7 @@ class Album(
         self.collections = self.findItems(data, media.Collection)
         self.formats = self.findItems(data, media.Format)
         self.genres = self.findItems(data, media.Genre)
+        self.guids = self.findItems(data, media.Guid)
         self.key = self.key.replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
@@ -380,6 +384,7 @@ class Track(
             grandparentThumb (str): URL to album artist thumbnail image
                 (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
             grandparentTitle (str): Name of the album artist for the track.
+            guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originalTitle (str): The artist for the track.
@@ -412,6 +417,7 @@ class Track(
         self.grandparentTheme = data.attrib.get('grandparentTheme')
         self.grandparentThumb = data.attrib.get('grandparentThumb')
         self.grandparentTitle = data.attrib.get('grandparentTitle')
+        self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
         self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
