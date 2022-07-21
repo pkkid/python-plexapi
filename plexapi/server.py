@@ -763,6 +763,10 @@ class PlexServer(PlexObject):
 
             Parameters:
                 callback (func): Callback function to call on received messages.
+                callbackError (func): Callback function to call on errors.
+                
+                Both arguments match the ones passed to AlertListener (see that class
+                for details).
 
             Raises:
                 :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
