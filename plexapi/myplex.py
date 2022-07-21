@@ -831,6 +831,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest('"%s" is already on the watchlist' % item.title)
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
+        return self
 
     def removeFromWatchlist(self, items):
         """ Remove media items from the user's watchlist
@@ -851,6 +852,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest('"%s" is not on the watchlist' % item.title)
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
+        return self
 
     def userState(self, item):
         """ Returns a :class:`~plexapi.myplex.UserState` object for the specified item.

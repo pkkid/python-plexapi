@@ -49,6 +49,7 @@ class AdvancedSettingsMixin:
                 raise NotFound('%s not found in %s' % (value, list(enumValues)))
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
+        return self
 
     def defaultAdvanced(self):
         """ Edit all of a Plex object's advanced settings to default. """
@@ -58,6 +59,7 @@ class AdvancedSettingsMixin:
             data[preference.id] = preference.default
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
+        return self
 
 
 class SmartFilterMixin:
@@ -126,7 +128,8 @@ class SplitMergeMixin:
     def split(self):
         """ Split duplicated Plex object into separate objects. """
         key = f'{self.key}/split'
-        return self._server.query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put)
+        return self
 
     def merge(self, ratingKeys):
         """ Merge other Plex objects into the current object.
@@ -138,7 +141,8 @@ class SplitMergeMixin:
             ratingKeys = str(ratingKeys).split(',')
 
         key = '%s/merge?ids=%s' % (self.key, ','.join([str(r) for r in ratingKeys]))
-        return self._server.query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put)
+        return self
 
 
 class UnmatchMatchMixin:
@@ -232,6 +236,7 @@ class UnmatchMatchMixin:
 
         data = key + '?' + urlencode(params)
         self._server.query(data, method=self._server._session.put)
+        return self
 
 
 class ExtrasMixin:
@@ -273,6 +278,7 @@ class RatingMixin:
             raise BadRequest('Rating must be between 0 to 10.')
         key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rating)
         self._server.query(key, method=self._server._session.put)
+        return self
 
 
 class ArtUrlMixin:
@@ -306,6 +312,7 @@ class ArtMixin(ArtUrlMixin):
             key = f'{self.key}/arts'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setArt(self, art):
         """ Set the background artwork for a Plex object.
@@ -314,6 +321,7 @@ class ArtMixin(ArtUrlMixin):
                 art (:class:`~plexapi.media.Art`): The art object to select.
         """
         art.select()
+        return self
 
     def lockArt(self):
         """ Lock the background artwork for a Plex object. """
@@ -355,6 +363,7 @@ class BannerMixin(BannerUrlMixin):
             key = f'{self.key}/banners'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setBanner(self, banner):
         """ Set the banner for a Plex object.
@@ -363,6 +372,7 @@ class BannerMixin(BannerUrlMixin):
                 banner (:class:`~plexapi.media.Banner`): The banner object to select.
         """
         banner.select()
+        return self
 
     def lockBanner(self):
         """ Lock the banner for a Plex object. """
@@ -409,6 +419,7 @@ class PosterMixin(PosterUrlMixin):
             key = f'{self.key}/posters'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setPoster(self, poster):
         """ Set the poster for a Plex object.
@@ -417,6 +428,7 @@ class PosterMixin(PosterUrlMixin):
                 poster (:class:`~plexapi.media.Poster`): The poster object to select.
         """
         poster.select()
+        return self
 
     def lockPoster(self):
         """ Lock the poster for a Plex object. """
@@ -460,6 +472,7 @@ class ThemeMixin(ThemeUrlMixin):
             key = f'{self.key}/themes'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setTheme(self, theme):
         raise NotImplementedError(
@@ -469,11 +482,11 @@ class ThemeMixin(ThemeUrlMixin):
 
     def lockTheme(self):
         """ Lock the theme for a Plex object. """
-        self._edit(**{'theme.locked': 1})
+        return self._edit(**{'theme.locked': 1})
 
     def unlockTheme(self):
         """ Unlock the theme for a Plex object. """
-        self._edit(**{'theme.locked': 0})
+        return self._edit(**{'theme.locked': 0})
 
 
 class EditFieldMixin:
@@ -1017,6 +1030,7 @@ class WatchlistMixin:
         except AttributeError:
             account = self._server
         account.addToWatchlist(self)
+        return self
 
     def removeFromWatchlist(self, account=None):
         """ Remove this item from the specified user's watchlist.
@@ -1031,6 +1045,7 @@ class WatchlistMixin:
         except AttributeError:
             account = self._server
         account.removeFromWatchlist(self)
+        return self
 
     def streamingServices(self, account=None):
         """ Return a list of :class:`~plexapi.media.Availability`

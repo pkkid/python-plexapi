@@ -222,7 +222,7 @@ class Collection(
         key = user_dict.get(user)
         if key is None:
             raise BadRequest('Unknown collection filtering user: %s. Options %s' % (user, list(user_dict)))
-        self.editAdvanced(collectionFilterBasedOnUser=key)
+        return self.editAdvanced(collectionFilterBasedOnUser=key)
 
     def modeUpdate(self, mode=None):
         """ Update the collection mode advanced setting.
@@ -249,7 +249,7 @@ class Collection(
         key = mode_dict.get(mode)
         if key is None:
             raise BadRequest('Unknown collection mode: %s. Options %s' % (mode, list(mode_dict)))
-        self.editAdvanced(collectionMode=key)
+        return self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
         """ Update the collection order advanced setting.
@@ -277,7 +277,7 @@ class Collection(
         key = sort_dict.get(sort)
         if key is None:
             raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
-        self.editAdvanced(collectionSort=key)
+        return self.editAdvanced(collectionSort=key)
 
     def addItems(self, items):
         """ Add items to the collection.
@@ -309,6 +309,7 @@ class Collection(
             'uri': uri
         }))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def removeItems(self, items):
         """ Remove items from the collection.
@@ -329,6 +330,7 @@ class Collection(
         for item in items:
             key = '%s/items/%s' % (self.key, item.ratingKey)
             self._server.query(key, method=self._server._session.delete)
+        return self
 
     def moveItem(self, item, after=None):
         """ Move an item to a new position in the collection.
@@ -351,6 +353,7 @@ class Collection(
             key += '?after=%s' % after.ratingKey
 
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def updateFilters(self, libtype=None, limit=None, sort=None, filters=None, **kwargs):
         """ Update the filters for a smart collection.
@@ -382,6 +385,7 @@ class Collection(
             'uri': uri
         }))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):

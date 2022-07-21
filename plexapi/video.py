@@ -141,6 +141,7 @@ class Video(PlexPartialObject):
                       }
             headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+        return self
 
     def removeSubtitles(self, streamID=None, streamTitle=None):
         """ Remove Subtitle from movie's subtitles listing.
@@ -151,6 +152,7 @@ class Video(PlexPartialObject):
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
+        return self
 
     def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
                  locationID=-1, limit=None, unwatched=False):
@@ -259,6 +261,7 @@ class Video(PlexPartialObject):
 
         url = key + utils.joinArgs(params)
         self._server.query(url, method=self._server._session.put)
+        return self
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
