@@ -1417,11 +1417,12 @@ class MyPlexPinLogin:
             session (requests.Session, optional): Use your own session object if you want to
                 cache the http responses from PMS
             requestTimeout (int): timeout in seconds on initial connect to plex.tv (default config.TIMEOUT).
+            headers (dict): A dict of X-Plex headers to send with requests.
+            oauth (bool): True to use Plex OAuth instead of PIN login.
 
         Attributes:
             PINS (str): 'https://plex.tv/api/v2/pins'
             CHECKPINS (str): 'https://plex.tv/api/v2/pins/{pinid}'
-            LINK (str): 'https://plex.tv/api/v2/pins/link'
             POLLINTERVAL (int): 1
             finished (bool): Whether the pin login has finished or not.
             expired (bool): Whether the pin login has expired or not.
@@ -1432,12 +1433,13 @@ class MyPlexPinLogin:
     CHECKPINS = 'https://plex.tv/api/v2/pins/{pinid}'  # get
     POLLINTERVAL = 1
 
-    def __init__(self, session=None, requestTimeout=None, headers=None):
+    def __init__(self, session=None, requestTimeout=None, headers=None, oauth=False):
         super(MyPlexPinLogin, self).__init__()
         self._session = session or requests.Session()
         self._requestTimeout = requestTimeout or TIMEOUT
         self.headers = headers
 
+        self._oauth = oauth
         self._loginTimeout = None
         self._callback = None
         self._thread = None
@@ -1452,7 +1454,35 @@ class MyPlexPinLogin:
 
     @property
     def pin(self):
+        """ Return the 4 character PIN used for linking a device at https://plex.tv/link. """
+        if self._oauth:
+            raise BadRequest('Cannot use PIN for Plex OAuth login')
         return self._code
+
+    def oauthUrl(self, forwardUrl=None):
+        """ Return the Plex OAuth url for login.
+
+            Parameters:
+                forwardUrl (str, optional): The url to redirect the client to after login.
+        """
+        if not self._oauth:
+            raise BadRequest('Must use "MyPlexPinLogin(oauth=True)" for Plex OAuth login.')
+
+        headers = self._headers()
+        params = {
+            'clientID': headers['X-Plex-Client-Identifier'],
+            'context[device][product]': headers['X-Plex-Product'],
+            'context[device][version]': headers['X-Plex-Version'],
+            'context[device][platform]': headers['X-Plex-Platform'],
+            'context[device][platformVersion]': headers['X-Plex-Platform-Version'],
+            'context[device][device]': headers['X-Plex-Device'],
+            'context[device][deviceName]': headers['X-Plex-Device-Name'],
+            'code': self._code
+        }
+        if forwardUrl:
+            params['forwardUrl'] = forwardUrl
+
+        return f'https://app.plex.tv/auth/#!?{urlencode(params)}'
 
     def run(self, callback=None, timeout=None):
         """ Starts the thread which monitors the PIN login state.
@@ -1517,7 +1547,13 @@ class MyPlexPinLogin:
 
     def _getCode(self):
         url = self.PINS
-        response = self._query(url, self._session.post)
+
+        if self._oauth:
+            params = {'strong': True}
+        else:
+            params = None
+
+        response = self._query(url, self._session.post, params=params)
         if not response:
             return None
 
