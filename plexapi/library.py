@@ -356,6 +356,16 @@ class Library(PlexObject):
             hist.extend(section.history(maxresults=maxresults, mindate=mindate))
         return hist
 
+    def tags(self, tag):
+        """ Returns a list of :class:`~plexapi.library.LibraryMediaTag` objects for the specified tag.
+
+            Parameters:
+                tag (str): Tag name (see :data:`~plexapi.utils.TAGTYPES`).
+        """
+        tagType = utils.tagType(tag)
+        data = self._server.query(f'/library/tags?type={tagType}')
+        return self.findItems(data)
+
 
 class LibrarySection(PlexObject):
     """ Base class for a single library section.
@@ -1100,7 +1110,7 @@ class LibrarySection(PlexObject):
         """
         if isinstance(value, FilterChoice):
             return value.key
-        if isinstance(value, media.MediaTag):
+        if isinstance(value, (media.MediaTag, LibraryMediaTag)):
             value = str(value.id or value.tag)
         else:
             value = str(value)
@@ -2110,10 +2120,11 @@ class Hub(PlexObject):
         return self._section
 
 
-class HubMediaTag(PlexObject):
-    """ Base class of hub media tag search results.
+class LibraryMediaTag(PlexObject):
+    """ Base class of library media tags.
 
         Attributes:
+            TAG (str): 'Directory'
             count (int): The number of items where this tag is found.
             filter (str): The URL filter for the tag.
             id (int): The id of the tag.
@@ -2161,48 +2172,28 @@ class HubMediaTag(PlexObject):
 
 
 @utils.registerPlexObject
-class Tag(HubMediaTag):
-    """ Represents a single Tag hub search media tag.
+class Aperture(LibraryMediaTag):
+    """ Represents a single Aperture library media tag.
 
         Attributes:
-            TAGTYPE (int): 0
+            TAGTYPE (int): 202
     """
-    TAGTYPE = 0
+    TAGTYPE = 202
 
 
 @utils.registerPlexObject
-class Genre(HubMediaTag):
-    """ Represents a single Genre hub search media tag.
+class Art(LibraryMediaTag):
+    """ Represents a single Art library media tag.
 
         Attributes:
-            TAGTYPE (int): 1
+            TAGTYPE (int): 313
     """
-    TAGTYPE = 1
+    TAGTYPE = 313
 
 
 @utils.registerPlexObject
-class Director(HubMediaTag):
-    """ Represents a single Director hub search media tag.
-
-        Attributes:
-            TAGTYPE (int): 4
-    """
-    TAGTYPE = 4
-
-
-@utils.registerPlexObject
-class Actor(HubMediaTag):
-    """ Represents a single Actor hub search media tag.
-
-        Attributes:
-            TAGTYPE (int): 6
-    """
-    TAGTYPE = 6
-
-
-@utils.registerPlexObject
-class AutoTag(HubMediaTag):
-    """ Represents a single AutoTag hub search media tag.
+class Autotag(LibraryMediaTag):
+    """ Represents a single Autotag library media tag.
 
         Attributes:
             TAGTYPE (int): 207
@@ -2211,13 +2202,325 @@ class AutoTag(HubMediaTag):
 
 
 @utils.registerPlexObject
-class Place(HubMediaTag):
-    """ Represents a single Place hub search media tag.
+class Banner(LibraryMediaTag):
+    """ Represents a single Banner library media tag.
+
+        Attributes:
+            TAGTYPE (int): 311
+    """
+    TAGTYPE = 311
+
+
+@utils.registerPlexObject
+class Chapter(LibraryMediaTag):
+    """ Represents a single Chapter library media tag.
+
+        Attributes:
+            TAGTYPE (int): 9
+    """
+    TAGTYPE = 9
+
+
+@utils.registerPlexObject
+class Collection(LibraryMediaTag):
+    """ Represents a single Collection library media tag.
+
+        Attributes:
+            TAGTYPE (int): 2
+    """
+    TAGTYPE = 2
+
+
+@utils.registerPlexObject
+class Concert(LibraryMediaTag):
+    """ Represents a single Concert library media tag.
+
+        Attributes:
+            TAGTYPE (int): 306
+    """
+    TAGTYPE = 306
+
+
+@utils.registerPlexObject
+class Country(LibraryMediaTag):
+    """ Represents a single Country library media tag.
+
+        Attributes:
+            TAGTYPE (int): 8
+    """
+    TAGTYPE = 8
+
+
+@utils.registerPlexObject
+class Device(LibraryMediaTag):
+    """ Represents a single Device library media tag.
+
+        Attributes:
+            TAGTYPE (int): 206
+    """
+    TAGTYPE = 206
+
+
+@utils.registerPlexObject
+class Director(LibraryMediaTag):
+    """ Represents a single Director library media tag.
+
+        Attributes:
+            TAGTYPE (int): 4
+    """
+    TAGTYPE = 4
+
+
+@utils.registerPlexObject
+class Exposure(LibraryMediaTag):
+    """ Represents a single Exposure library media tag.
+
+        Attributes:
+            TAGTYPE (int): 203
+    """
+    TAGTYPE = 203
+
+
+@utils.registerPlexObject
+class Format(LibraryMediaTag):
+    """ Represents a single Format library media tag.
+
+        Attributes:
+            TAGTYPE (int): 302
+    """
+    TAGTYPE = 302
+
+
+@utils.registerPlexObject
+class Genre(LibraryMediaTag):
+    """ Represents a single Genre library media tag.
+
+        Attributes:
+            TAGTYPE (int): 1
+    """
+    TAGTYPE = 1
+
+
+@utils.registerPlexObject
+class Guid(LibraryMediaTag):
+    """ Represents a single Guid library media tag.
+
+        Attributes:
+            TAGTYPE (int): 314
+    """
+    TAGTYPE = 314
+
+
+@utils.registerPlexObject
+class ISO(LibraryMediaTag):
+    """ Represents a single ISO library media tag.
+
+        Attributes:
+            TAGTYPE (int): 204
+    """
+    TAGTYPE = 204
+
+
+@utils.registerPlexObject
+class Label(LibraryMediaTag):
+    """ Represents a single Label library media tag.
+
+        Attributes:
+            TAGTYPE (int): 11
+    """
+    TAGTYPE = 11
+
+
+@utils.registerPlexObject
+class Lens(LibraryMediaTag):
+    """ Represents a single Lens library media tag.
+
+        Attributes:
+            TAGTYPE (int): 205
+    """
+    TAGTYPE = 205
+
+
+@utils.registerPlexObject
+class Make(LibraryMediaTag):
+    """ Represents a single Make library media tag.
+
+        Attributes:
+            TAGTYPE (int): 200
+    """
+    TAGTYPE = 200
+
+
+@utils.registerPlexObject
+class Marker(LibraryMediaTag):
+    """ Represents a single Marker library media tag.
+
+        Attributes:
+            TAGTYPE (int): 12
+    """
+    TAGTYPE = 12
+
+
+@utils.registerPlexObject
+class MediaProcessingTarget(LibraryMediaTag):
+    """ Represents a single MediaProcessingTarget library media tag.
+
+        Attributes:
+            TAG (str): 'Tag'
+            TAGTYPE (int): 42
+    """
+    TAG = 'Tag'
+    TAGTYPE = 42
+
+
+@utils.registerPlexObject
+class Model(LibraryMediaTag):
+    """ Represents a single Model library media tag.
+
+        Attributes:
+            TAGTYPE (int): 201
+    """
+    TAGTYPE = 201
+
+
+@utils.registerPlexObject
+class Mood(LibraryMediaTag):
+    """ Represents a single Mood library media tag.
+
+        Attributes:
+            TAGTYPE (int): 300
+    """
+    TAGTYPE = 300
+
+
+@utils.registerPlexObject
+class Network(LibraryMediaTag):
+    """ Represents a single Network library media tag.
+
+        Attributes:
+            TAGTYPE (int): 319
+    """
+    TAGTYPE = 319
+
+
+@utils.registerPlexObject
+class Place(LibraryMediaTag):
+    """ Represents a single Place library media tag.
 
         Attributes:
             TAGTYPE (int): 400
     """
     TAGTYPE = 400
+
+
+@utils.registerPlexObject
+class Poster(LibraryMediaTag):
+    """ Represents a single Poster library media tag.
+
+        Attributes:
+            TAGTYPE (int): 312
+    """
+    TAGTYPE = 312
+
+
+@utils.registerPlexObject
+class Producer(LibraryMediaTag):
+    """ Represents a single Producer library media tag.
+
+        Attributes:
+            TAGTYPE (int): 7
+    """
+    TAGTYPE = 7
+
+
+@utils.registerPlexObject
+class RatingImage(LibraryMediaTag):
+    """ Represents a single RatingImage library media tag.
+
+        Attributes:
+            TAGTYPE (int): 316
+    """
+    TAGTYPE = 316
+
+
+@utils.registerPlexObject
+class Review(LibraryMediaTag):
+    """ Represents a single Review library media tag.
+
+        Attributes:
+            TAGTYPE (int): 10
+    """
+    TAGTYPE = 10
+
+
+@utils.registerPlexObject
+class Role(LibraryMediaTag):
+    """ Represents a single Role library media tag.
+
+        Attributes:
+            TAGTYPE (int): 6
+    """
+    TAGTYPE = 6
+
+
+@utils.registerPlexObject
+class Similar(LibraryMediaTag):
+    """ Represents a single Similar library media tag.
+
+        Attributes:
+            TAGTYPE (int): 305
+    """
+    TAGTYPE = 305
+
+
+@utils.registerPlexObject
+class Studio(LibraryMediaTag):
+    """ Represents a single Studio library media tag.
+
+        Attributes:
+            TAGTYPE (int): 318
+    """
+    TAGTYPE = 318
+
+
+@utils.registerPlexObject
+class Style(LibraryMediaTag):
+    """ Represents a single Style library media tag.
+
+        Attributes:
+            TAGTYPE (int): 301
+    """
+    TAGTYPE = 301
+
+
+@utils.registerPlexObject
+class Tag(LibraryMediaTag):
+    """ Represents a single Tag library media tag.
+
+        Attributes:
+            TAGTYPE (int): 0
+    """
+    TAGTYPE = 0
+
+
+@utils.registerPlexObject
+class Theme(LibraryMediaTag):
+    """ Represents a single Theme library media tag.
+
+        Attributes:
+            TAGTYPE (int): 317
+    """
+    TAGTYPE = 317
+
+
+@utils.registerPlexObject
+class Writer(LibraryMediaTag):
+    """ Represents a single Writer library media tag.
+
+        Attributes:
+            TAGTYPE (int): 5
+    """
+    TAGTYPE = 5
 
 
 class FilteringType(PlexObject):

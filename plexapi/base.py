@@ -57,7 +57,7 @@ class PlexObject:
         self._details_key = self._buildDetailsKey()
 
     def __repr__(self):
-        uid = self._clean(self.firstAttr('_baseurl', 'key', 'id', 'playQueueID', 'uri'))
+        uid = self._clean(self.firstAttr('_baseurl', 'ratingKey', 'id', 'key', 'playQueueID', 'uri'))
         name = self._clean(self.firstAttr('title', 'name', 'username', 'product', 'tag', 'value'))
         return '<%s>' % ':'.join([p for p in [self.__class__.__name__, uid, name] if p])
 

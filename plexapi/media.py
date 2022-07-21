@@ -975,7 +975,7 @@ class Theme(BaseResource):
 
 @utils.registerPlexObject
 class Chapter(PlexObject):
-    """ Represents a single Writer media tag.
+    """ Represents a single Chapter media tag.
 
         Attributes:
             TAG (str): 'Chapter'

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import quote_plus
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexSession
@@ -152,73 +152,101 @@ class Video(PlexPartialObject):
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
 
-    def optimize(self, title=None, target="", targetTagID=None, locationID=-1, policyScope='all',
-                 policyValue="", policyUnwatched=0, videoQuality=None, deviceProfile=None):
-        """ Optimize item
+    def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
+                 locationID=-1, limit=None, unwatched=False):
+        """ Create an optimized version of the video.
 
-            locationID (int): -1 in folder with original items
-                               2 library path id
-                                 library path id is found in library.locations[i].id
+            Parameters:
+                title (str, optional): Title of the optimized video.
+                target (str, optional): Target quality profile:
+                    "Optimized for Mobile" ("mobile"), "Optimized for TV" ("tv"), "Original Quality" ("original"),
+                    or custom quality profile name (default  "Custom: {deviceProfile}").
+                deviceProfile (str, optional): Custom quality device profile:
+                    "Android", "iOS", "Universal Mobile", "Universal TV", "Windows Phone", "Windows", "Xbox One".
+                    Required if ``target`` is custom.
+                videoQuality (int, optional): Index of the quality profile, one of ``VIDEO_QUALITY_*``
+                    values defined in the :mod:`~plexapi.sync` module. Only used if ``target`` is custom.
+                locationID (int or :class:`~plexapi.library.Location`, optional): Default -1 for
+                    "In folder with original items", otherwise a :class:`~plexapi.library.Location` object or ID.
+                    See examples below.
+                limit (int, optional): Maximum count of items to optimize, unlimited if ``None``.
+                unwatched (bool, optional): ``True`` to only optimized unwatched videos.
 
-            target (str): custom quality name.
-                          if none provided use "Custom: {deviceProfile}"
-
-            targetTagID (int):  Default quality settings
-                                1 Mobile
-                                2 TV
-                                3 Original Quality
-
-            deviceProfile (str): Android, IOS, Universal TV, Universal Mobile, Windows Phone,
-                                    Windows, Xbox One
+            Raises:
+                :exc:`~plexapi.exceptions.BadRequest`: Unknown quality profile target
+                    or missing deviceProfile and videoQuality.
+                :exc:`~plexapi.exceptions.BadRequest`: Unknown location ID.
 
             Example:
-                Optimize for Mobile
-                   item.optimize(targetTagID="Mobile") or item.optimize(targetTagID=1")
-                Optimize for Android 10 MBPS 1080p
-                   item.optimize(deviceProfile="Android", videoQuality=10)
-                Optimize for IOS Original Quality
-                   item.optimize(deviceProfile="IOS", videoQuality=-1)
 
-            * see sync.py VIDEO_QUALITIES for additional information for using videoQuality
+                .. code-block:: python
+                
+                # Optimize for mobile using defaults
+                video.optimize(target="mobile")
+
+                # Optimize for Android at 10 Mbps 1080p
+                from plexapi.sync import VIDEO_QUALITY_10_MBPS_1080p
+                video.optimize(deviceProfile="Android", videoQuality=sync.VIDEO_QUALITY_10_MBPS_1080p)
+
+                # Optimize for iOS at original quality in library location
+                from plexapi.sync import VIDEO_QUALITY_ORIGINAL
+                locations = plex.library.section("Movies")._locations()
+                video.optimize(deviceProfile="iOS", videoQuality=VIDEO_QUALITY_ORIGINAL, locationID=locations[0])
+
+                # Optimize for tv the next 5 unwatched episodes
+                show.optimize(target="tv", limit=5, unwatched=True)
+
         """
-        tagValues = [1, 2, 3]
-        tagKeys = ["Mobile", "TV", "Original Quality"]
-        tagIDs = tagKeys + tagValues
-
-        if targetTagID not in tagIDs and (deviceProfile is None or videoQuality is None):
-            raise BadRequest('Unexpected or missing quality profile.')
-
-        libraryLocationIDs = [location.id for location in self.section()._locations()]
-        libraryLocationIDs.append(-1)
-
-        if locationID not in libraryLocationIDs:
-            raise BadRequest('Unexpected library path ID. %s not in %s' %
-                             (locationID, libraryLocationIDs))
-
-        if isinstance(targetTagID, str):
-            tagIndex = tagKeys.index(targetTagID)
-            targetTagID = tagValues[tagIndex]
-
-        if title is None:
-            title = self.title
+        from plexapi.library import Location
+        from plexapi.sync import Policy, MediaSettings
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
-        key = '%s/items?' % backgroundProcessing.key
+        key = '%s/items' % backgroundProcessing.key
+
+        tags = {t.tag.lower(): t.id for t in self._server.library.tags('mediaProcessingTarget')}
+        # Additional keys for shorthand values
+        tags['mobile'] = tags['optimized for mobile']
+        tags['tv'] = tags['optimized for tv']
+        tags['original'] = tags['original quality']
+
+        targetTagID = tags.get(target.lower(), '')
+        if not targetTagID and (not deviceProfile or videoQuality is None):
+            raise BadRequest('Unknown quality profile target or missing deviceProfile and videoQuality.')
+        if targetTagID:
+            target = ''
+        elif deviceProfile and not target:
+            target = f'Custom: {deviceProfile}'
+
+        section = self.section()
+        libraryLocationIDs = [-1] + [location.id for location in section._locations()]
+        if isinstance(locationID, Location):
+            locationID = locationID.id
+        if locationID not in libraryLocationIDs:
+            raise BadRequest(f'Unknown location ID "{locationID}" not in {libraryLocationIDs}')
+
+        if isinstance(self, (Show, Season)):
+            uri = f'library:///directory/{quote_plus(f"{self.key}/children")}'
+        else:
+            uri = f'library://{section.uuid}/item/{quote_plus(self.key)}'
+
+        policy = Policy.create(limit, unwatched)
+
         params = {
             'Item[type]': 42,
+            'Item[title]': title or self._defaultSyncTitle(),
             'Item[target]': target,
-            'Item[targetTagID]': targetTagID if targetTagID else '',
+            'Item[targetTagID]': targetTagID,
             'Item[locationID]': locationID,
-            'Item[Policy][scope]': policyScope,
-            'Item[Policy][value]': policyValue,
-            'Item[Policy][unwatched]': policyUnwatched
+            'Item[Location][uri]': uri,
+            'Item[Policy][scope]': policy.scope,
+            'Item[Policy][value]': str(policy.value),
+            'Item[Policy][unwatched]': str(int(policy.unwatched)),
         }
 
         if deviceProfile:
             params['Item[Device][profile]'] = deviceProfile
 
         if videoQuality:
-            from plexapi.sync import MediaSettings
             mediaSettings = MediaSettings.createVideo(videoQuality)
             params['Item[MediaSettings][videoQuality]'] = mediaSettings.videoQuality
             params['Item[MediaSettings][videoResolution]'] = mediaSettings.videoResolution
@@ -227,14 +255,10 @@ class Video(PlexPartialObject):
             params['Item[MediaSettings][subtitleSize]'] = ''
             params['Item[MediaSettings][musicBitrate]'] = ''
             params['Item[MediaSettings][photoQuality]'] = ''
+            params['Item[MediaSettings][photoResolution]'] = ''
 
-        titleParam = {'Item[title]': title}
-        section = self._server.library.sectionByID(self.librarySectionID)
-        params['Item[Location][uri]'] = 'library://' + section.uuid + '/item/' + \
-                                        quote_plus(self.key + '?includeExternalMedia=1')
-
-        data = key + urlencode(params) + '&' + urlencode(titleParam)
-        return self._server.query(data, method=self._server._session.put)
+        url = key + utils.joinArgs(params)
+        self._server.query(url, method=self._server._session.put)
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
