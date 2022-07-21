@@ -3,6 +3,7 @@ import copy
 import html
 import threading
 import time
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
 
 import requests
@@ -887,7 +888,14 @@ class MyPlexAccount(PlexObject):
             objs = [objs]
         for obj in objs:
             obj._server = PlexServer(self.METADATA, self._token)
-            obj._details_key = obj._details_key.replace('&includeFields=thumbBlurHash%2CartBlurHash', '')
+
+            # Parse details key to modify query string
+            url = urlsplit(obj._details_key)
+            query = dict(parse_qsl(url.query))
+            query['includeUserState'] = 1
+            query.pop('includeFields', None)
+            obj._details_key = urlunsplit((url.scheme, url.netloc, url.path, urlencode(query), url.fragment))
+
         return objs
 
 
