@@ -753,7 +753,7 @@ class PlexServer(PlexObject):
         """ Returns a list of all active :class:`~plexapi.media.TranscodeSession` objects. """
         return self.fetchItems('/transcode/sessions')
 
-    def startAlertListener(self, callback=None):
+    def startAlertListener(self, callback=None, callbackError=None):
         """ Creates a websocket connection to the Plex Server to optionally receive
             notifications. These often include messages from Plex about media scans
             as well as updates to currently running Transcode Sessions.
@@ -767,7 +767,7 @@ class PlexServer(PlexObject):
             Raises:
                 :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
-        notifier = AlertListener(self, callback)
+        notifier = AlertListener(self, callback, callbackError)
         notifier.start()
         return notifier
 
