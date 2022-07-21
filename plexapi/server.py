@@ -758,15 +758,17 @@ class PlexServer(PlexObject):
             notifications. These often include messages from Plex about media scans
             as well as updates to currently running Transcode Sessions.
 
-            NOTE: You need websocket-client installed in order to use this feature.
-            >> pip install websocket-client
+            Returns a new :class:`~plexapi.alert.AlertListener` object.
+
+            Note: ``websocket-client`` must be installed in order to use this feature.
+
+            .. code-block:: python
+
+                >> pip install websocket-client
 
             Parameters:
                 callback (func): Callback function to call on received messages.
                 callbackError (func): Callback function to call on errors.
-                
-                Both arguments match the ones passed to AlertListener (see that class
-                for details).
 
             Raises:
                 :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
