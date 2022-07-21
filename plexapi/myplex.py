@@ -1219,7 +1219,6 @@ class MyPlexResource(PlexObject):
     def preferred_connections(
         self,
         ssl=None,
-        timeout=None,
         locations=DEFAULT_LOCATION_ORDER,
         schemes=DEFAULT_SCHEME_ORDER,
     ):
@@ -1231,7 +1230,6 @@ class MyPlexResource(PlexObject):
                 ssl (bool, optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
-                timeout (int, optional): The timeout in seconds to attempt each connection.
         """
         connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
         for connection in self.connections:
