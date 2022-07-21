@@ -208,10 +208,10 @@ def test_server_playlists(plex, show):
 
 
 def test_server_history(plex, movie):
-    movie.markWatched()
+    movie.markPlayed()
     history = plex.history()
     assert len(history)
-    movie.markUnwatched()
+    movie.markUnplayed()
 
 
 def test_server_Server_query(plex):

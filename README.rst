@@ -81,8 +81,8 @@ Usage Examples
 
 .. code-block:: python
 
-    # Example 2: Mark all Game of Thrones episodes watched.
-    plex.library.section('TV Shows').get('Game of Thrones').markWatched()
+    # Example 2: Mark all Game of Thrones episodes as played.
+    plex.library.section('TV Shows').get('Game of Thrones').markPlayed()
 
 
 .. code-block:: python

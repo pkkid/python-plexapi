@@ -411,10 +411,10 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
 
 def test_video_Movie_history(movie):
-    movie.markWatched()
+    movie.markPlayed()
     history = movie.history()
     assert len(history)
-    movie.markUnwatched()
+    movie.markUnplayed()
 
 
 def test_video_Movie_match(movies):
@@ -761,29 +761,29 @@ def test_video_Show_episode(show):
 
 
 def test_video_Show_history(show):
-    show.markWatched()
+    show.markPlayed()
     history = show.history()
     assert len(history)
-    show.markUnwatched()
+    show.markUnplayed()
 
 
 def test_video_Show_watched(tvshows):
     show = tvshows.get("The 100")
     episode = show.episodes()[0]
-    episode.markWatched()
+    episode.markPlayed()
     watched = show.watched()
     assert len(watched) == 1 and watched[0].title == "Pilot"
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Show_unwatched(tvshows):
     show = tvshows.get("The 100")
     episodes = show.episodes()
     episode = episodes[0]
-    episode.markWatched()
+    episode.markPlayed()
     unwatched = show.unwatched()
     assert len(unwatched) == len(episodes) - 1
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Show_settings(show):
@@ -803,7 +803,7 @@ def test_video_Show_reload(plex):
 def test_video_Show_episodes(tvshows):
     show = tvshows.get("The 100")
     episodes = show.episodes()
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     unwatched = show.episodes(viewCount=0)
     assert len(unwatched) == len(episodes) - 1
 
@@ -836,16 +836,16 @@ def test_video_Show_analyze(show):
     show = show.analyze()
 
 
-def test_video_Show_markWatched(show):
-    show.markWatched()
+def test_video_Show_markPlayed(show):
+    show.markPlayed()
     show.reload()
-    assert show.isWatched
+    assert show.isPlayed
 
 
-def test_video_Show_markUnwatched(show):
-    show.markUnwatched()
+def test_video_Show_markUnplayed(show):
+    show.markUnplayed()
     show.reload()
-    assert not show.isWatched
+    assert not show.isPlayed
 
 
 def test_video_Show_refresh(show):
@@ -856,8 +856,8 @@ def test_video_Show_get(show):
     assert show.get("Winter Is Coming").title == "Winter Is Coming"
 
 
-def test_video_Show_isWatched(show):
-    assert not show.isWatched
+def test_video_Show_isPlayed(show):
+    assert not show.isPlayed
 
 
 def test_video_Show_section(show):
@@ -935,10 +935,10 @@ def test_video_Season(show):
 
 def test_video_Season_history(show):
     season = show.season("Season 1")
-    season.markWatched()
+    season.markPlayed()
     history = season.history()
     assert len(history)
-    season.markUnwatched()
+    season.markUnplayed()
 
 
 def test_video_Season_attrs(show):
@@ -988,16 +988,16 @@ def test_video_Season_show(show):
 
 def test_video_Season_watched(show):
     season = show.season("Season 1")
-    season.markWatched()
+    season.markPlayed()
     season.reload()
-    assert season.isWatched
+    assert season.isPlayed
 
 
 def test_video_Season_unwatched(show):
     season = show.season("Season 1")
-    season.markUnwatched()
+    season.markUnplayed()
     season.reload()
-    assert not season.isWatched
+    assert not season.isPlayed
 
 
 def test_video_Season_get(show):
@@ -1083,10 +1083,10 @@ def test_video_Episode(show):
 
 
 def test_video_Episode_history(episode):
-    episode.markWatched()
+    episode.markPlayed()
     history = episode.history()
     assert len(history)
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Episode_hidden_season(episode):
@@ -1182,7 +1182,7 @@ def test_video_Episode_attrs(episode):
     if episode.writers:
         assert "David Benioff" in [i.tag for i in episode.writers]
     assert episode.year is None
-    assert episode.isWatched in [True, False]
+    assert episode.isPlayed in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
     assert episode.seasonEpisode == "s01e01"
@@ -1222,20 +1222,20 @@ def test_video_Episode_attrs(episode):
 def test_video_Episode_watched(tvshows):
     season = tvshows.get("The 100").season(1)
     episode = season.episode(1)
-    episode.markWatched()
+    episode.markPlayed()
     watched = season.watched()
     assert len(watched) == 1 and watched[0].title == "Pilot"
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Episode_unwatched(tvshows):
     season = tvshows.get("The 100").season(1)
     episodes = season.episodes()
     episode = episodes[0]
-    episode.markWatched()
+    episode.markPlayed()
     unwatched = season.unwatched()
     assert len(unwatched) == len(episodes) - 1
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 @pytest.mark.xfail(reason="Changing images fails randomly")
