@@ -77,6 +77,7 @@ class MyPlexAccount(PlexObject):
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
+    VIEWSTATESYNC = 'https://plex.tv/api/v2/user/view_state_sync'                               # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv'                                                        # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
@@ -903,6 +904,32 @@ class MyPlexAccount(PlexObject):
             results.append(self._manuallyLoadXML(xml))
 
         return self._toOnlineMetadata(results)
+
+    @property
+    def viewStateSync(self):
+        """ Returns True or False if syncing of watch state and ratings
+            is enabled or disabled, respectively, for the account.
+        """
+        headers = {'Accept': 'application/json'}
+        data = self.query(self.VIEWSTATESYNC, headers=headers)
+        return data.get('consent')
+
+    def enableViewStateSync(self):
+        """ Enable syncing of watch state and ratings for the account. """
+        self._updateViewStateSync(True)
+
+    def disableViewStateSync(self):
+        """ Disable syncing of watch state and ratings for the account. """
+        self._updateViewStateSync(False)
+
+    def _updateViewStateSync(self, consent):
+        """ Enable or disable syncing of watch state and ratings for the account.
+
+            Parameters:
+                consent (bool): True to enable, False to disable.
+        """
+        params = {'consent': consent}
+        self.query(self.VIEWSTATESYNC, method=self._session.put, params=params)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
