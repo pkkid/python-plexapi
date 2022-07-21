@@ -268,12 +268,14 @@ class PlayedUnplayedMixin:
         key = '/:/scrobble'
         params = {'key': self.ratingKey, 'identifier': 'com.plexapp.plugins.library'}
         self._server.query(key, params=params)
+        return self
 
     def markUnplayed(self):
         """ Mark the Plex object as unplayed. """
         key = '/:/unscrobble'
         params = {'key': self.ratingKey, 'identifier': 'com.plexapp.plugins.library'}
         self._server.query(key, params=params)
+        return self
 
     @property
     @deprecated('use "isPlayed" instead', stacklevel=3)
