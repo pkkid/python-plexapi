@@ -306,14 +306,12 @@ def test_audio_Track_attrs(album):
     assert track.ratingCount is None or utils.is_int(track.ratingCount)
     assert utils.is_int(track.ratingKey)
     assert track._server._baseurl == utils.SERVER_BASEURL
-    assert track.sessionKey is None
     assert track.skipCount is None
     assert track.summary == ""
     if track.thumb:
         assert utils.is_thumb(track.thumb)
     assert track.title == "As Colourful as Ever"
     assert track.titleSort == "As Colourful as Ever"
-    assert not track.transcodeSessions
     assert track.type == "track"
     assert utils.is_datetime(track.updatedAt)
     assert utils.is_int(track.viewCount, gte=0)

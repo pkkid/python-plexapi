@@ -87,7 +87,6 @@ def test_video_Movie_attrs(movies):
         assert utils.is_metadata(movie.primaryExtraKey)
     assert movie.ratingKey >= 1
     assert movie._server._baseurl == utils.SERVER_BASEURL
-    assert movie.sessionKey is None
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == "The Greatest Break-Up Story Ever Told."
@@ -96,7 +95,6 @@ def test_video_Movie_attrs(movies):
         assert utils.is_thumb(movie.thumb)
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
-    assert not movie.transcodeSessions
     assert movie.type == "movie"
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.useOriginalTitle == -1
@@ -1074,11 +1072,13 @@ def test_video_Episode_updateTimeline(episode, patched_http_call):
     )  # 2 minutes.
 
 
-def test_video_Episode_stop(episode, mocker, patched_http_call):
-    mocker.patch.object(
-        episode, "session", return_value=list(mocker.MagicMock(id="hello"))
-    )
-    episode.stop(reason="It's past bedtime!")
+def test_video_Episode(show):
+    episode = show.episode("Winter Is Coming")
+    assert episode == show.episode(season=1, episode=1)
+    with pytest.raises(BadRequest):
+        show.episode()
+    with pytest.raises(NotFound):
+        show.episode(season=1337, episode=1337)
 
 
 def test_video_Episode_history(episode):
@@ -1173,7 +1173,6 @@ def test_video_Episode_attrs(episode):
         assert utils.is_thumb(episode.thumb)
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
-    assert not episode.transcodeSessions
     assert episode.type == "episode"
     assert utils.is_datetime(episode.updatedAt)
     assert episode.userRating is None

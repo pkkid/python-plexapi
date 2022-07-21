@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus
 
 from plexapi import media, utils, video
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     RatingMixin,
@@ -291,3 +291,16 @@ class Photo(
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey, legacy=1)
+
+
+@utils.registerPlexObject
+class PhotoSession(PlexSession, Photo):
+    """ Represents a single Photo session
+        loaded from :func:`~plexapi.server.PlexServer.sessions`.
+    """
+    _SESSIONTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Photo._loadData(self, data)
+        PlexSession._loadData(self, data)

@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
@@ -46,7 +46,6 @@ class Audio(PlexPartialObject):
             userRating (float): Rating of the item (0.0 - 10.0) equaling (0 stars - 5 stars).
             viewCount (int): Count of times the item was played.
     """
-
     METADATA_TYPE = 'track'
 
     def _loadData(self, data):
@@ -468,3 +467,16 @@ class Track(
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey)
+
+
+@utils.registerPlexObject
+class TrackSession(PlexSession, Track):
+    """ Represents a single Track session
+        loaded from :func:`~plexapi.server.PlexServer.sessions`.
+    """
+    _SESSIONTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Track._loadData(self, data)
+        PlexSession._loadData(self, data)
