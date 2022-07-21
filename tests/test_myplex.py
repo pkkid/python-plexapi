@@ -304,3 +304,17 @@ def test_myplex_watchlist(account, movie, show, artist):
     # Test adding invalid item to watchlist
     with pytest.raises(BadRequest):
         account.addToWatchlist(artist)
+
+
+def test_myplex_searchDiscover(account, movie, show):
+    guids = lambda x: [r.guid for r in x]
+
+    results = account.searchDiscover(movie.title)
+    assert movie.guid in guids(results)
+    results = account.searchDiscover(movie.title, libtype="show")
+    assert movie.guid not in guids(results)
+
+    results = account.searchDiscover(show.title)
+    assert show.guid in [r.guid for r in results]
+    results = account.searchDiscover(show.title, libtype="movie")
+    assert show.guid not in guids(results)
