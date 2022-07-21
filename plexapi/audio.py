@@ -6,7 +6,7 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
     OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
     TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
@@ -15,7 +15,7 @@ from plexapi.mixins import (
 from plexapi.playlist import Playlist
 
 
-class Audio(PlexPartialObject):
+class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all audio objects including :class:`~plexapi.audio.Artist`,
         :class:`~plexapi.audio.Album`, and :class:`~plexapi.audio.Track`.
 
