@@ -121,6 +121,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(audio._initpath)
     assert audio.language is None
     assert audio.languageCode is None
+    assert audio.languageTag is None
     assert audio.profile == "lc"
     assert audio.requiredBandwidths is None or audio.requiredBandwidths
     assert audio.samplingRate == 44100
@@ -197,6 +198,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(video._initpath)
     assert video.language is None
     assert video.languageCode is None
+    assert video.languageTag is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert video.pixelAspectRatio is None
@@ -255,6 +257,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream1._initpath)
     assert stream1.language is None
     assert stream1.languageCode is None
+    assert stream1.languageTag is None
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
@@ -280,6 +283,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream2._initpath)
     assert stream2.language is None
     assert stream2.languageCode is None
+    assert stream2.languageTag is None
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
@@ -728,7 +732,7 @@ def test_video_Show_attrs(show):
         assert show.actors == show.roles
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.showOrdering in (None, 'aired')
-    assert show.studio == "Revolution Sun Studios"
+    assert show.studio == "Generator Entertainment"
     assert utils.is_string(show.summary, gte=100)
     assert show.tagline == "Winter is coming."
     assert utils.is_metadata(show.theme, contains="/theme/")
@@ -954,7 +958,7 @@ def test_video_Season_attrs(show):
     assert season.parentIndex == 1
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
-    assert season.parentStudio == "Revolution Sun Studios"
+    assert season.parentStudio == "Generator Entertainment"
     assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)

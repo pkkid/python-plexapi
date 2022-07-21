@@ -520,7 +520,7 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
-        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
+        key = f'{self.key}/children?excludeAllLeaves=1'
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Season, title__iexact=title)
         elif season is not None or isinstance(title, int):
@@ -533,7 +533,7 @@ class Show(
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
-        key = '/library/metadata/%s/children?excludeAllLeaves=1' % self.ratingKey
+        key = f'{self.key}/children?excludeAllLeaves=1'
         return self.fetchItems(key, Season, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
@@ -547,7 +547,7 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season and episode parameters are missing.
         """
-        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        key = f'{self.key}/allLeaves'
         if title is not None:
             return self.fetchItem(key, Episode, title__iexact=title)
         elif season is not None and episode is not None:
@@ -556,7 +556,7 @@ class Show(
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
-        key = '/library/metadata/%s/allLeaves' % self.ratingKey
+        key = f'{self.key}/allLeaves'
         return self.fetchItems(key, Episode, **kwargs)
 
     def get(self, title=None, season=None, episode=None):
@@ -665,7 +665,7 @@ class Season(
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f'{self.key}/children'
         return self.fetchItems(key, Episode, **kwargs)
 
     def episode(self, title=None, episode=None):
@@ -678,7 +678,7 @@ class Season(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
-        key = '/library/metadata/%s/children' % self.ratingKey
+        key = f'{self.key}/children'
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Episode, title__iexact=title)
         elif episode is not None or isinstance(title, int):

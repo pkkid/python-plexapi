@@ -396,7 +396,7 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
 
 
 def createMyPlexDevice(headers, account, timeout=10):  # pragma: no cover
-    """ Helper function to create a new MyPlexDevice.
+    """ Helper function to create a new MyPlexDevice. Returns a new MyPlexDevice instance.
 
         Parameters:
             headers (dict): Provide the X-Plex- headers for the new device.
@@ -417,6 +417,33 @@ def createMyPlexDevice(headers, account, timeout=10):  # pragma: no cover
     pinlogin.waitForLogin()
 
     return account.device(clientId=clientIdentifier)
+
+
+def plexOAuth(headers, forwardUrl=None, timeout=120):  # pragma: no cover
+    """ Helper function for Plex OAuth login. Returns a new MyPlexAccount instance.
+
+        Parameters:
+            headers (dict): Provide the X-Plex- headers for the new device.
+                A unique X-Plex-Client-Identifier is required.
+            forwardUrl (str, optional): The url to redirect the client to after login.
+            timeout (int, optional): Timeout in seconds to wait for device login. Default 120 seconds.
+    """
+    from plexapi.myplex import MyPlexAccount, MyPlexPinLogin
+
+    if 'X-Plex-Client-Identifier' not in headers:
+        raise BadRequest('The X-Plex-Client-Identifier header is required.')
+
+    pinlogin = MyPlexPinLogin(headers=headers, oauth=True)
+    print('Login to Plex at the following url:')
+    print(pinlogin.oauthUrl(forwardUrl))
+    pinlogin.run(timeout=timeout)
+    pinlogin.waitForLogin()
+
+    if pinlogin.token:
+        print('Login successful!')
+        return MyPlexAccount(token=pinlogin.token)
+    else:
+        print('Login failed.')
 
 
 def choose(msg, items, attr):  # pragma: no cover

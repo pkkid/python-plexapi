@@ -125,7 +125,7 @@ class SplitMergeMixin:
 
     def split(self):
         """ Split duplicated Plex object into separate objects. """
-        key = '/library/metadata/%s/split' % self.ratingKey
+        key = f'{self.key}/split'
         return self._server.query(key, method=self._server._session.put)
 
     def merge(self, ratingKeys):
@@ -146,7 +146,7 @@ class UnmatchMatchMixin:
 
     def unmatch(self):
         """ Unmatches metadata match from object. """
-        key = '/library/metadata/%s/unmatch' % self.ratingKey
+        key = f'{self.key}/unmatch'
         self._server.query(key, method=self._server._session.put)
 
     def matches(self, agent=None, title=None, year=None, language=None):
@@ -177,7 +177,7 @@ class UnmatchMatchMixin:
 
                 For 2 to 7, the agent and language is automatically filled in
         """
-        key = '/library/metadata/%s/matches' % self.ratingKey
+        key = f'{self.key}/matches'
         params = {'manual': 1}
 
         if agent and not any([title, year, language]):
@@ -216,7 +216,7 @@ class UnmatchMatchMixin:
                     ~plexapi.base.matches()
                 agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
         """
-        key = '/library/metadata/%s/match' % self.ratingKey
+        key = f'{self.key}/match'
         if auto:
             autoMatch = self.matches(agent=agent)
             if autoMatch:
@@ -250,8 +250,9 @@ class HubsMixin:
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         from plexapi.library import Hub
-        data = self._server.query(self._details_key)
-        return self.findItems(data, Hub, rtag='Related')
+        key = f'{self.key}/related'
+        data = self._server.query(key)
+        return self.findItems(data, Hub)
 
 
 class RatingMixin:
@@ -289,7 +290,7 @@ class ArtMixin(ArtUrlMixin):
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
-        return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=media.Art)
+        return self.fetchItems(f'{self.key}/arts', cls=media.Art)
 
     def uploadArt(self, url=None, filepath=None):
         """ Upload a background artwork from a url or filepath.
@@ -299,10 +300,10 @@ class ArtMixin(ArtUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'{self.key}/arts?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/arts?' % self.ratingKey
+            key = f'{self.key}/arts'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -338,7 +339,7 @@ class BannerMixin(BannerUrlMixin):
 
     def banners(self):
         """ Returns list of available :class:`~plexapi.media.Banner` objects. """
-        return self.fetchItems('/library/metadata/%s/banners' % self.ratingKey, cls=media.Banner)
+        return self.fetchItems(f'{self.key}/banners', cls=media.Banner)
 
     def uploadBanner(self, url=None, filepath=None):
         """ Upload a banner from a url or filepath.
@@ -348,10 +349,10 @@ class BannerMixin(BannerUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/banners?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'{self.key}/banners?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/banners?' % self.ratingKey
+            key = f'{self.key}/banners'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -392,7 +393,7 @@ class PosterMixin(PosterUrlMixin):
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
-        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=media.Poster)
+        return self.fetchItems(f'{self.key}/posters', cls=media.Poster)
 
     def uploadPoster(self, url=None, filepath=None):
         """ Upload a poster from a url or filepath.
@@ -402,10 +403,10 @@ class PosterMixin(PosterUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'{self.key}/posters?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/posters?' % self.ratingKey
+            key = f'{self.key}/posters'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -441,7 +442,7 @@ class ThemeMixin(ThemeUrlMixin):
 
     def themes(self):
         """ Returns list of available :class:`~plexapi.media.Theme` objects. """
-        return self.fetchItems('/library/metadata/%s/themes' % self.ratingKey, cls=media.Theme)
+        return self.fetchItems(f'{self.key}/themes', cls=media.Theme)
 
     def uploadTheme(self, url=None, filepath=None):
         """ Upload a theme from url or filepath.
@@ -453,10 +454,10 @@ class ThemeMixin(ThemeUrlMixin):
                 filepath (str): The full file path to the theme to upload.
         """
         if url:
-            key = '/library/metadata/%s/themes?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'{self.key}/themes?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/themes?' % self.ratingKey
+            key = f'{self.key}/themes'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
