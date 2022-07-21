@@ -191,7 +191,7 @@ class UnmatchMatchMixin:
                     params['title'] = title
 
                 if year is None:
-                    params['year'] = self.year
+                    params['year'] = getattr(self, 'year', '')
                 else:
                     params['year'] = year
 
