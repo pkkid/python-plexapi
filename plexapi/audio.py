@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexSession
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
@@ -181,13 +181,14 @@ class Artist(
             Parameters:
                 title (str): Title of the album to return.
         """
-        key = f"/library/sections/{self.librarySectionID}/all?artist.id={self.ratingKey}&type=9"
-        return self.fetchItem(key, Album, title__iexact=title)
+        try:
+            return self.section().search(title, libtype='album', filters={'artist.id': self.ratingKey})[0]
+        except IndexError:
+            raise NotFound(f"Unable to find album '{title}'") from None
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        key = f"/library/sections/{self.librarySectionID}/all?artist.id={self.ratingKey}&type=9"
-        return self.fetchItems(key, Album, **kwargs)
+        return self.section().search(libtype='album', filters={'artist.id': self.ratingKey}, **kwargs)
 
     def track(self, title=None, album=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
