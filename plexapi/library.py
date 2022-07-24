@@ -1384,48 +1384,47 @@ class LibrarySection(PlexObject):
 
             **Using Plex Operators**
 
-            Operators can be appended to the filter field to narrow down results with more granularity. If no
-            operator is specified, the default operator is assumed to be ``=``. The following is a list of
-            possible operators depending on the data type of the filter being applied. A special ``&`` operator
-            can also be used to ``AND`` together a list of values.
+            Operators can be appended to the filter field to narrow down results with more granularity.
+            The following is a list of possible operators depending on the data type of the filter being applied.
+            A special ``&`` operator can also be used to ``AND`` together a list of values.
 
             Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
 
-            * ``=``: ``is``
-            * ``!=``: ``is not``
+            * no operator: ``is``
+            * ``!``: ``is not``
 
             Type: *int*
 
-            * ``=``: ``is``
-            * ``!=``: ``is not``
-            * ``>>=``: ``is greater than``
-            * ``<<=``: ``is less than``
+            * no operator: ``is``
+            * ``!``: ``is not``
+            * ``>>``: ``is greater than``
+            * ``<<``: ``is less than``
 
             Type: *str*
 
-            * ``=``: ``contains``
-            * ``!=``: ``does not contain``
-            * ``==``: ``is``
-            * ``!==``: ``is not``
-            * ``<=``: ``begins with``
-            * ``>=``: ``ends with``
+            * no operator: ``contains``
+            * ``!``: ``does not contain``
+            * ``=``: ``is``
+            * ``!=``: ``is not``
+            * ``<``: ``begins with``
+            * ``>``: ``ends with``
 
             Type: *bool*
 
-            * ``=``: ``is true``
-            * ``!=``: ``is false``
+            * no operator: ``is true``
+            * ``!``: ``is false``
 
             Type: *datetime*
 
-            * ``<<=``: ``is before``
-            * ``>>=``: ``is after``
+            * ``<<``: ``is before``
+            * ``>>``: ``is after``
 
             Type: *resolution*
 
-            * ``=``: ``is``
+            * no operator: ``is``
 
             Operators cannot be included directly in the function parameters so the filters
-            must be provided as a filters dictionary. The trailing ``=`` on the operator may be excluded.
+            must be provided as a filters dictionary.
 
             Examples:
 
