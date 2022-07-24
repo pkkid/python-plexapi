@@ -673,6 +673,10 @@ class MediaTag(PlexObject):
             thumb (str): URL to thumbnail image for :class:`~plexapi.media.Role` only.
     """
 
+    def __str__(self):
+        """ Returns the tag name. """
+        return self.tag
+
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
