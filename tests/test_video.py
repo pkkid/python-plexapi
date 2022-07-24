@@ -340,6 +340,16 @@ def test_video_Movie_isFullObject_and_reload(plex):
     assert len(movie_via_section_search.roles) >= 3
 
 
+def test_video_movie_watched(movie):
+    movie.markUnplayed()
+    movie.markPlayed()
+    movie.reload()
+    assert movie.viewCount == 1
+    movie.markUnplayed()
+    movie.reload()
+    assert movie.viewCount == 0
+
+
 def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
     movie._autoReload = False
@@ -408,13 +418,6 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
         os.remove(filepath)
     except:
         pass
-
-
-def test_video_Movie_history(movie):
-    movie.markPlayed()
-    history = movie.history()
-    assert len(history)
-    movie.markUnplayed()
 
 
 def test_video_Movie_match(movies):
@@ -760,13 +763,6 @@ def test_video_Show_episode(show):
         show.episode(season=1337, episode=1337)
 
 
-def test_video_Show_history(show):
-    show.markPlayed()
-    history = show.history()
-    assert len(history)
-    show.markUnplayed()
-
-
 def test_video_Show_watched(tvshows):
     show = tvshows.get("The 100")
     episode = show.episodes()[0]
@@ -933,14 +929,6 @@ def test_video_Season(show):
     assert show.season("Season 1") == seasons[0]
 
 
-def test_video_Season_history(show):
-    season = show.season("Season 1")
-    season.markPlayed()
-    history = season.history()
-    assert len(history)
-    season.markUnplayed()
-
-
 def test_video_Season_attrs(show):
     season = show.season("Season 1")
     assert utils.is_datetime(season.addedAt)
@@ -1080,13 +1068,6 @@ def test_video_Episode(show):
         show.episode()
     with pytest.raises(NotFound):
         show.episode(season=1337, episode=1337)
-
-
-def test_video_Episode_history(episode):
-    episode.markPlayed()
-    history = episode.history()
-    assert len(history)
-    episode.markUnplayed()
 
 
 def test_video_Episode_hidden_season(episode):

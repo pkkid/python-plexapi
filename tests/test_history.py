@@ -31,15 +31,24 @@ def test_history_Episode(episode):
 
 
 def test_history_Artist(artist):
+    artist.markPlayed()
     history = artist.history()
+    assert len(history)
+    artist.markUnplayed()
 
 
 def test_history_Album(album):
+    album.markPlayed()
     history = album.history()
+    assert len(history)
+    album.markUnplayed()
 
 
 def test_history_Track(track):
+    track.markPlayed()
     history = track.history()
+    assert len(history)
+    track.markUnplayed()
 
 
 def test_history_MyAccount(account, movie, show):
