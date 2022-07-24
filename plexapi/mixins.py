@@ -290,7 +290,7 @@ class ArtMixin(ArtUrlMixin):
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
-        return self.fetchItems(f'{self.key}/arts', cls=media.Art)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/arts', cls=media.Art)
 
     def uploadArt(self, url=None, filepath=None):
         """ Upload a background artwork from a url or filepath.
@@ -300,10 +300,10 @@ class ArtMixin(ArtUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = f'{self.key}/arts?url={quote_plus(url)}'
+            key = f'/library/metadata/{self.ratingKey}/arts?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = f'{self.key}/arts'
+            key = f'/library/metadata/{self.ratingKey}/arts'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -339,7 +339,7 @@ class BannerMixin(BannerUrlMixin):
 
     def banners(self):
         """ Returns list of available :class:`~plexapi.media.Banner` objects. """
-        return self.fetchItems(f'{self.key}/banners', cls=media.Banner)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/banners', cls=media.Banner)
 
     def uploadBanner(self, url=None, filepath=None):
         """ Upload a banner from a url or filepath.
@@ -349,10 +349,10 @@ class BannerMixin(BannerUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = f'{self.key}/banners?url={quote_plus(url)}'
+            key = f'/library/metadata/{self.ratingKey}/banners?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = f'{self.key}/banners'
+            key = f'/library/metadata/{self.ratingKey}/banners'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -393,7 +393,7 @@ class PosterMixin(PosterUrlMixin):
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
-        return self.fetchItems(f'{self.key}/posters', cls=media.Poster)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/posters', cls=media.Poster)
 
     def uploadPoster(self, url=None, filepath=None):
         """ Upload a poster from a url or filepath.
@@ -403,10 +403,10 @@ class PosterMixin(PosterUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = f'{self.key}/posters?url={quote_plus(url)}'
+            key = f'/library/metadata/{self.ratingKey}/posters?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = f'{self.key}/posters'
+            key = f'/library/metadata/{self.ratingKey}/posters'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
@@ -442,7 +442,7 @@ class ThemeMixin(ThemeUrlMixin):
 
     def themes(self):
         """ Returns list of available :class:`~plexapi.media.Theme` objects. """
-        return self.fetchItems(f'{self.key}/themes', cls=media.Theme)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/themes', cls=media.Theme)
 
     def uploadTheme(self, url=None, filepath=None):
         """ Upload a theme from url or filepath.
@@ -454,10 +454,10 @@ class ThemeMixin(ThemeUrlMixin):
                 filepath (str): The full file path to the theme to upload.
         """
         if url:
-            key = f'{self.key}/themes?url={quote_plus(url)}'
+            key = f'/library/metadata/{self.ratingKey}/themes?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = f'{self.key}/themes'
+            key = f'/library/metadata/{self.ratingKey}/themes'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
 
