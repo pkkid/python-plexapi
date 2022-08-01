@@ -184,12 +184,12 @@ class Collection(
         for item in self.items():
             if item.title.lower() == title.lower():
                 return item
-        raise NotFound('Item with title "%s" not found in the collection' % title)
+        raise NotFound(f'Item with title "{title}" not found in the collection')
 
     def items(self):
         """ Returns a list of all items in the collection. """
         if self._items is None:
-            key = '%s/children' % self.key
+            key = f'{self.key}/children'
             items = self.fetchItems(key)
             self._items = items
         return self._items
@@ -221,7 +221,7 @@ class Collection(
         }
         key = user_dict.get(user)
         if key is None:
-            raise BadRequest('Unknown collection filtering user: %s. Options %s' % (user, list(user_dict)))
+            raise BadRequest(f'Unknown collection filtering user: {user}. Options {list(user_dict)}')
         self.editAdvanced(collectionFilterBasedOnUser=key)
 
     def modeUpdate(self, mode=None):
@@ -248,7 +248,7 @@ class Collection(
         }
         key = mode_dict.get(mode)
         if key is None:
-            raise BadRequest('Unknown collection mode: %s. Options %s' % (mode, list(mode_dict)))
+            raise BadRequest(f'Unknown collection mode: {mode}. Options {list(mode_dict)}')
         self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
@@ -276,7 +276,7 @@ class Collection(
         }
         key = sort_dict.get(sort)
         if key is None:
-            raise BadRequest('Unknown sort dir: %s. Options: %s' % (sort, list(sort_dict)))
+            raise BadRequest(f'Unknown sort dir: {sort}. Options: {list(sort_dict)}')
         self.editAdvanced(collectionSort=key)
 
     def addItems(self, items):
@@ -298,16 +298,14 @@ class Collection(
         ratingKeys = []
         for item in items:
             if item.type != self.subtype:  # pragma: no cover
-                raise BadRequest('Can not mix media types when building a collection: %s and %s' %
-                    (self.subtype, item.type))
+                raise BadRequest(f'Can not mix media types when building a collection: {self.subtype} and {item.type}')
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (self._server._uriRoot(), ratingKeys)
+        uri = f'{self._server._uriRoot()}/library/metadata/{ratingKeys}'
 
-        key = '%s/items%s' % (self.key, utils.joinArgs({
-            'uri': uri
-        }))
+        args = {'uri': uri}
+        key = f"{self.key}/items{utils.joinArgs(args)}"
         self._server.query(key, method=self._server._session.put)
 
     def removeItems(self, items):
@@ -327,7 +325,7 @@ class Collection(
             items = [items]
 
         for item in items:
-            key = '%s/items/%s' % (self.key, item.ratingKey)
+            key = f'{self.key}/items/{item.ratingKey}'
             self._server.query(key, method=self._server._session.delete)
 
     def moveItem(self, item, after=None):
@@ -345,10 +343,10 @@ class Collection(
         if self.smart:
             raise BadRequest('Cannot move items in a smart collection.')
 
-        key = '%s/items/%s/move' % (self.key, item.ratingKey)
+        key = f'{self.key}/items/{item.ratingKey}/move'
 
         if after:
-            key += '?after=%s' % after.ratingKey
+            key += f'?after={after.ratingKey}'
 
         self._server.query(key, method=self._server._session.put)
 
@@ -376,11 +374,10 @@ class Collection(
         section = self.section()
         searchKey = section._buildSearchKey(
             sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (self._server._uriRoot(), searchKey)
+        uri = f'{self._server._uriRoot()}{searchKey}'
 
-        key = '%s/items%s' % (self.key, utils.joinArgs({
-            'uri': uri
-        }))
+        args = {'uri': uri}
+        key = f"{self.key}/items{utils.joinArgs(args)}"
         self._server.query(key, method=self._server._session.put)
 
     @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
@@ -438,15 +435,10 @@ class Collection(
             ratingKeys.append(str(item.ratingKey))
 
         ratingKeys = ','.join(ratingKeys)
-        uri = '%s/library/metadata/%s' % (server._uriRoot(), ratingKeys)
+        uri = f'{server._uriRoot()}/library/metadata/{ratingKeys}'
 
-        key = '/library/collections%s' % utils.joinArgs({
-            'uri': uri,
-            'type': utils.searchType(itemType),
-            'title': title,
-            'smart': 0,
-            'sectionId': section.key
-        })
+        args = {'uri': uri, 'type': utils.searchType(itemType), 'title': title, 'smart': 0, 'sectionId': section.key}
+        key = f"/library/collections{utils.joinArgs(args)}"
         data = server.query(key, method=server._session.post)[0]
         return cls(server, data, initpath=key)
 
@@ -460,15 +452,10 @@ class Collection(
 
         searchKey = section._buildSearchKey(
             sort=sort, libtype=libtype, limit=limit, filters=filters, **kwargs)
-        uri = '%s%s' % (server._uriRoot(), searchKey)
+        uri = f'{server._uriRoot()}{searchKey}'
 
-        key = '/library/collections%s' % utils.joinArgs({
-            'uri': uri,
-            'type': utils.searchType(libtype),
-            'title': title,
-            'smart': 1,
-            'sectionId': section.key
-        })
+        args = {'uri': uri, 'type': utils.searchType(libtype), 'title': title, 'smart': 1, 'sectionId': section.key}
+        key = f"/library/collections{utils.joinArgs(args)}"
         data = server.query(key, method=server._session.post)[0]
         return cls(server, data, initpath=key)
 

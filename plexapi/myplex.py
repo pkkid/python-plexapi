@@ -152,7 +152,7 @@ class MyPlexAccount(PlexObject):
         for device in self.devices():
             if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientId):
                 return device
-        raise NotFound('Unable to find device %s' % name)
+        raise NotFound(f'Unable to find device {name}')
 
     def devices(self):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
@@ -176,7 +176,7 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            message = '(%s) %s; %s %s' % (response.status_code, codename, response.url, errtext)
+            message = f'({response.status_code}) {codename}; {response.url} {errtext}'
             if response.status_code == 401:
                 raise Unauthorized(message)
             elif response.status_code == 404:
@@ -197,7 +197,7 @@ class MyPlexAccount(PlexObject):
         for resource in self.resources():
             if resource.name.lower() == name.lower():
                 return resource
-        raise NotFound('Unable to find resource %s' % name)
+        raise NotFound(f'Unable to find resource {name}')
 
     def resources(self):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexResource` objects connected to the server. """
@@ -423,7 +423,7 @@ class MyPlexAccount(PlexObject):
             'home': int(invite.home),
             'server': int(invite.server)
         }
-        url = MyPlexInvite.REQUESTS + '/%s' % invite.id + utils.joinArgs(params)
+        url = MyPlexInvite.REQUESTS + f'/{invite.id}' + utils.joinArgs(params)
         return self.query(url, self._session.put)
 
     def cancelInvite(self, user):
@@ -439,7 +439,7 @@ class MyPlexAccount(PlexObject):
             'home': int(invite.home),
             'server': int(invite.server)
         }
-        url = MyPlexInvite.REQUESTED + '/%s' % invite.id + utils.joinArgs(params)
+        url = MyPlexInvite.REQUESTED + f'/{invite.id}' + utils.joinArgs(params)
         return self.query(url, self._session.delete)
 
     def updateFriend(self, user, server, sections=None, removeSections=False, allowSync=None, allowCameraUpload=None,
@@ -527,7 +527,7 @@ class MyPlexAccount(PlexObject):
                     (user.username.lower(), user.email.lower(), str(user.id))):
                 return user
 
-        raise NotFound('Unable to find user %s' % username)
+        raise NotFound(f'Unable to find user {username}')
 
     def users(self):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexUser` objects connected to your account.
@@ -550,7 +550,7 @@ class MyPlexAccount(PlexObject):
                     (invite.username.lower(), invite.email.lower(), str(invite.id))):
                 return invite
         
-        raise NotFound('Unable to find invite %s' % username)
+        raise NotFound(f'Unable to find invite {username}')
 
     def pendingInvites(self, includeSent=True, includeReceived=True):
         """ Returns a list of all :class:`~plexapi.myplex.MyPlexInvite` objects connected to your account.
@@ -575,7 +575,7 @@ class MyPlexAccount(PlexObject):
         # Get a list of all section ids for looking up each section.
         allSectionIds = {}
         machineIdentifier = server.machineIdentifier if isinstance(server, PlexServer) else server
-        url = self.PLEXSERVERS.replace('{machineId}', machineIdentifier)
+        url = self.PLEXSERVERS.format(machineId=machineIdentifier)
         data = self.query(url, self._session.get)
         for elem in data[0]:
             _id = utils.cast(int, elem.attrib.get('id'))
@@ -598,7 +598,7 @@ class MyPlexAccount(PlexObject):
         for key, vals in filterDict.items():
             if key not in ('contentRating', 'label', 'contentRating!', 'label!'):
                 raise BadRequest('Unknown filter key: %s', key)
-            values.append('%s=%s' % (key, '%2C'.join(vals)))
+            values.append(f"{key}={'%2C'.join(vals)}")
         return '|'.join(values)
 
     def addWebhook(self, url):
@@ -609,12 +609,12 @@ class MyPlexAccount(PlexObject):
     def deleteWebhook(self, url):
         urls = copy.copy(self._webhooks)
         if url not in urls:
-            raise BadRequest('Webhook does not exist: %s' % url)
+            raise BadRequest(f'Webhook does not exist: {url}')
         urls.remove(url)
         return self.setWebhooks(urls)
 
     def setWebhooks(self, urls):
-        log.info('Setting webhooks: %s' % urls)
+        log.info(f'Setting webhooks: {urls}')
         data = {'urls[]': urls} if len(urls) else {'urls': ''}
         data = self.query(self.WEBHOOKS, self._session.post, data=data)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
@@ -724,7 +724,7 @@ class MyPlexAccount(PlexObject):
         if response.status_code not in (200, 201, 204):  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            raise BadRequest(f'({response.status_code}) {codename} {response.url}; {errtext}')
         return response.json()['token']
 
     def history(self, maxresults=9999999, mindate=None):
@@ -828,7 +828,7 @@ class MyPlexAccount(PlexObject):
         
         for item in items:
             if self.onWatchlist(item):
-                raise BadRequest('"%s" is already on the watchlist' % item.title)
+                raise BadRequest(f'"{item.title}" is already on the watchlist')
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
@@ -848,7 +848,7 @@ class MyPlexAccount(PlexObject):
         
         for item in items:
             if not self.onWatchlist(item):
-                raise BadRequest('"%s" is not on the watchlist' % item.title)
+                raise BadRequest(f'"{item.title}" is not on the watchlist')
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
 
@@ -998,7 +998,7 @@ class MyPlexUser(PlexObject):
                 if utils.cast(int, item.attrib.get('userID')) == self.id:
                     return item.attrib.get('accessToken')
         except Exception:
-            log.exception('Failed to get access token for %s' % self.title)
+            log.exception(f'Failed to get access token for {self.title}')
 
     def server(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexServerShare` that matches the name specified.
@@ -1010,7 +1010,7 @@ class MyPlexUser(PlexObject):
             if name.lower() == server.name.lower():
                 return server
 
-        raise NotFound('Unable to find server %s' % name)
+        raise NotFound(f'Unable to find server {name}')
 
     def history(self, maxresults=9999999, mindate=None):
         """ Get all Play History for a user in all shared servers.
@@ -1138,7 +1138,7 @@ class MyPlexServerShare(PlexObject):
             if name.lower() == section.title.lower():
                 return section
 
-        raise NotFound('Unable to find section %s' % name)
+        raise NotFound(f'Unable to find section {name}')
 
     def sections(self):
         """ Returns a list of all :class:`~plexapi.myplex.Section` objects shared with this user.
@@ -1305,7 +1305,7 @@ class ResourceConnection(PlexObject):
         self.port = utils.cast(int, data.attrib.get('port'))
         self.uri = data.attrib.get('uri')
         self.local = utils.cast(bool, data.attrib.get('local'))
-        self.httpuri = 'http://%s:%s' % (self.address, self.port)
+        self.httpuri = f'http://{self.address}:{self.port}'
         self.relay = utils.cast(bool, data.attrib.get('relay'))
 
 
@@ -1379,7 +1379,7 @@ class MyPlexDevice(PlexObject):
 
     def delete(self):
         """ Remove this device from your account. """
-        key = 'https://plex.tv/devices/%s.xml' % self.id
+        key = f'https://plex.tv/devices/{self.id}.xml'
         self._server.query(key, self._server._session.delete)
 
     def syncItems(self):
@@ -1617,7 +1617,7 @@ class MyPlexPinLogin:
         if not response.ok:  # pragma: no cover
             codename = codes.get(response.status_code)[0]
             errtext = response.text.replace('\n', ' ')
-            raise BadRequest('(%s) %s %s; %s' % (response.status_code, codename, response.url, errtext))
+            raise BadRequest(f'({response.status_code}) {codename} {response.url}; {errtext}')
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -1661,7 +1661,7 @@ def _chooseConnection(ctype, name, results):
     if results:
         log.debug('Connecting to %s: %s?X-Plex-Token=%s', ctype, results[0]._baseurl, results[0]._token)
         return results[0]
-    raise NotFound('Unable to connect to %s: %s' % (ctype.lower(), name))
+    raise NotFound(f'Unable to connect to {ctype.lower()}: {name}')
 
 
 class AccountOptOut(PlexObject):
@@ -1690,8 +1690,8 @@ class AccountOptOut(PlexObject):
                 :exc:`~plexapi.exceptions.NotFound`: ``option`` str not found in CHOICES.
         """
         if option not in self.CHOICES:
-            raise NotFound('%s not found in available choices: %s' % (option, self.CHOICES))
-        url = self._server.OPTOUTS % {'userUUID': self._server.uuid}
+            raise NotFound(f'{option} not found in available choices: {self.CHOICES}')
+        url = self._server.OPTOUTS.format(userUUID=self._server.uuid)
         params = {'key': self.key, 'value': option}
         self._server.query(url, method=self._server._session.post, params=params)
         self.value = option  # assume query successful and set the value to option
@@ -1711,7 +1711,7 @@ class AccountOptOut(PlexObject):
                 :exc:`~plexapi.exceptions.BadRequest`: When trying to opt out music.
         """
         if self.key == 'tv.plex.provider.music':
-            raise BadRequest('%s does not have the option to opt out managed users.' % self.key)
+            raise BadRequest(f'{self.key} does not have the option to opt out managed users.')
         self._updateOptOut('opt_out_managed')
 
 

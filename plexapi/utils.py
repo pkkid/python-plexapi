@@ -116,12 +116,12 @@ def registerPlexObject(cls):
         buildItem() below for an example.
     """
     etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
-    ehash = '%s.%s' % (cls.TAG, etype) if etype else cls.TAG
+    ehash = f'{cls.TAG}.{etype}' if etype else cls.TAG
     if getattr(cls, '_SESSIONTYPE', None):
-        ehash = '%s.%s' % (ehash, 'session')
+        ehash = f"{ehash}.{'session'}"
     if ehash in PLEXOBJECTS:
-        raise Exception('Ambiguous PlexObject definition %s(tag=%s, type=%s) with %s' %
-            (cls.__name__, cls.TAG, etype, PLEXOBJECTS[ehash].__name__))
+        raise Exception(f'Ambiguous PlexObject definition {cls.__name__}(tag={cls.TAG}, type={etype}) '
+                        f'with {PLEXOBJECTS[ehash].__name__}')
     PLEXOBJECTS[ehash] = cls
     return cls
 
@@ -164,8 +164,8 @@ def joinArgs(args):
     arglist = []
     for key in sorted(args, key=lambda x: x.lower()):
         value = str(args[key])
-        arglist.append('%s=%s' % (key, quote(value, safe='')))
-    return '?%s' % '&'.join(arglist)
+        arglist.append(f"{key}={quote(value, safe='')}")
+    return f"?{'&'.join(arglist)}"
 
 
 def lowerFirst(s):
@@ -217,7 +217,7 @@ def searchType(libtype):
         return libtype
     if SEARCHTYPES.get(libtype) is not None:
         return SEARCHTYPES[libtype]
-    raise NotFound('Unknown libtype: %s' % libtype)
+    raise NotFound(f'Unknown libtype: {libtype}')
 
 
 def reverseSearchType(libtype):
@@ -235,7 +235,7 @@ def reverseSearchType(libtype):
     for k, v in SEARCHTYPES.items():
         if libtype == v:
             return k
-    raise NotFound('Unknown libtype: %s' % libtype)
+    raise NotFound(f'Unknown libtype: {libtype}')
 
 
 def tagType(tag):
@@ -252,7 +252,7 @@ def tagType(tag):
         return tag
     if TAGTYPES.get(tag) is not None:
         return TAGTYPES[tag]
-    raise NotFound('Unknown tag: %s' % tag)
+    raise NotFound(f'Unknown tag: {tag}')
 
 
 def reverseTagType(tag):
@@ -270,7 +270,7 @@ def reverseTagType(tag):
     for k, v in TAGTYPES.items():
         if tag == v:
             return k
-    raise NotFound('Unknown tag: %s' % tag)
+    raise NotFound(f'Unknown tag: {tag}')
 
 
 def threaded(callback, listargs):
@@ -347,7 +347,7 @@ def toList(value, itemcast=None, delim=','):
 
 
 def cleanFilename(filename, replace='_'):
-    whitelist = "-_.()[] {}{}".format(string.ascii_letters, string.digits)
+    whitelist = f"-_.()[] {string.ascii_letters}{string.digits}"
     cleaned_filename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode()
     cleaned_filename = ''.join(c if c in whitelist else replace for c in cleaned_filename)
     return cleaned_filename
@@ -375,11 +375,11 @@ def downloadSessionImages(server, filename=None, height=150, width=150,
             if media.thumb:
                 url = media.thumb
             if part.indexes:  # always use bif images if available.
-                url = '/library/parts/%s/indexes/%s/%s' % (part.id, part.indexes.lower(), media.viewOffset)
+                url = f'/library/parts/{part.id}/indexes/{part.indexes.lower()}/{media.viewOffset}'
         if url:
             if filename is None:
                 prettyname = media._prettyfilename()
-                filename = 'session_transcode_%s_%s_%s' % (media.usernames[0], prettyname, int(time.time()))
+                filename = f'session_transcode_{media.usernames[0]}_{prettyname}_{int(time.time())}'
             url = server.transcodeImage(url, height, width, opacity, saturation)
             filepath = download(url, filename=filename)
             info['username'] = {'filepath': filepath, 'url': url}
@@ -466,13 +466,13 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     from plexapi.myplex import MyPlexAccount
     # 1. Check command-line options
     if opts and opts.username and opts.password:
-        print('Authenticating with Plex.tv as %s..' % opts.username)
+        print(f'Authenticating with Plex.tv as {opts.username}..')
         return MyPlexAccount(opts.username, opts.password)
     # 2. Check Plexconfig (environment variables and config.ini)
     config_username = CONFIG.get('auth.myplex_username')
     config_password = CONFIG.get('auth.myplex_password')
     if config_username and config_password:
-        print('Authenticating with Plex.tv as %s..' % config_username)
+        print(f'Authenticating with Plex.tv as {config_username}..')
         return MyPlexAccount(config_username, config_password)
     config_token = CONFIG.get('auth.server_token')
     if config_token:
@@ -481,7 +481,7 @@ def getMyPlexAccount(opts=None):  # pragma: no cover
     # 3. Prompt for username and password on the command line
     username = input('What is your plex.tv username: ')
     password = getpass('What is your plex.tv password: ')
-    print('Authenticating with Plex.tv as %s..' % username)
+    print(f'Authenticating with Plex.tv as {username}..')
     return MyPlexAccount(username, password)
 
 
@@ -547,12 +547,12 @@ def choose(msg, items, attr):  # pragma: no cover
     print()
     for index, i in enumerate(items):
         name = attr(i) if callable(attr) else getattr(i, attr)
-        print('  %s: %s' % (index, name))
+        print(f'  {index}: {name}')
     print()
     # Request choice from the user
     while True:
         try:
-            inp = input('%s: ' % msg)
+            inp = input(f'{msg}: ')
             if any(s in inp for s in (':', '::', '-')):
                 idx = slice(*map(lambda x: int(x.strip()) if x.strip() else None, inp.split(':')))
                 return items[idx]
@@ -571,8 +571,7 @@ def getAgentIdentifier(section, agent):
         if agent in identifiers:
             return ag.identifier
         agents += identifiers
-    raise NotFound('Could not find "%s" in agents list (%s)' %
-                   (agent, ', '.join(agents)))
+    raise NotFound(f"Could not find \"{agent}\" in agents list ({', '.join(agents)})")
 
 
 def base64str(text):
@@ -586,7 +585,7 @@ def deprecated(message, stacklevel=2):
         when the function is used."""
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            msg = 'Call to deprecated function or method "%s", %s.' % (func.__name__, message)
+            msg = f'Call to deprecated function or method "{func.__name__}", {message}.'
             warnings.warn(msg, category=DeprecationWarning, stacklevel=stacklevel)
             log.warning(msg)
             return func(*args, **kwargs)

@@ -27,33 +27,32 @@ class AdvancedSettingsMixin:
             return next(p for p in prefs if p.id == pref)
         except StopIteration:
             availablePrefs = [p.id for p in prefs]
-            raise NotFound('Unknown preference "%s" for %s. '
-                           'Available preferences: %s'
-                           % (pref, self.TYPE, availablePrefs)) from None
+            raise NotFound(f'Unknown preference "{pref}" for {self.TYPE}. '
+                           f'Available preferences: {availablePrefs}') from None
 
     def editAdvanced(self, **kwargs):
         """ Edit a Plex object's advanced settings. """
         data = {}
-        key = '%s/prefs?' % self.key
+        key = f'{self.key}/prefs?'
         preferences = {pref.id: pref for pref in self.preferences() if pref.enumValues}
         for settingID, value in kwargs.items():
             try:
                 pref = preferences[settingID]
             except KeyError:
-                raise NotFound('%s not found in %s' % (value, list(preferences.keys())))
+                raise NotFound(f'{value} not found in {list(preferences.keys())}')
             
             enumValues = pref.enumValues
             if enumValues.get(value, enumValues.get(str(value))):
                 data[settingID] = value
             else:
-                raise NotFound('%s not found in %s' % (value, list(enumValues)))
+                raise NotFound(f'{value} not found in {list(enumValues)}')
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
 
     def defaultAdvanced(self):
         """ Edit all of a Plex object's advanced settings to default. """
         data = {}
-        key = '%s/prefs?' % self.key
+        key = f'{self.key}/prefs?'
         for preference in self.preferences():
             data[preference.id] = preference.default
         url = key + urlencode(data)
@@ -137,7 +136,7 @@ class SplitMergeMixin:
         if not isinstance(ratingKeys, list):
             ratingKeys = str(ratingKeys).split(',')
 
-        key = '%s/merge?ids=%s' % (self.key, ','.join([str(r) for r in ratingKeys]))
+        key = f"{self.key}/merge?ids={','.join([str(r) for r in ratingKeys])}"
         return self._server.query(key, method=self._server._session.put)
 
 
@@ -222,7 +221,7 @@ class UnmatchMatchMixin:
             if autoMatch:
                 searchResult = autoMatch[0]
             else:
-                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
+                raise NotFound(f'No matches found using this agent: ({agent}:{autoMatch})')
         elif not searchResult:
             raise NotFound('fixMatch() requires either auto=True or '
                            'searchResult=:class:`~plexapi.media.SearchResult`.')
@@ -271,7 +270,7 @@ class RatingMixin:
             rating = -1
         elif not isinstance(rating, (int, float)) or rating < 0 or rating > 10:
             raise BadRequest('Rating must be between 0 to 10.')
-        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rating)
+        key = f'/:/rate?key={self.ratingKey}&identifier=com.plexapp.plugins.library&rating={rating}'
         self._server.query(key, method=self._server._session.put)
 
 
@@ -497,8 +496,8 @@ class EditFieldMixin:
 
         """
         edits = {
-            '%s.value' % field: value or '',
-            '%s.locked' % field: 1 if locked else 0
+            f'{field}.value': value or '',
+            f'{field}.locked': 1 if locked else 0
         }
         edits.update(kwargs)
         return self._edit(**edits)
@@ -731,15 +730,15 @@ class EditTagsMixin:
             items = [items]
 
         data = {
-            '%s.locked' % tag: 1 if locked else 0
+            f'{tag}.locked': 1 if locked else 0
         }
 
         if remove:
-            tagname = '%s[].tag.tag-' % tag
+            tagname = f'{tag}[].tag.tag-'
             data[tagname] = ','.join(items)
         else:
             for i, item in enumerate(items):
-                tagname = '%s[%s].tag.tag' % (tag, i)
+                tagname = f'{tag}[{i}].tag.tag'
                 data[tagname] = item
 
         return data

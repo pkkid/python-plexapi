@@ -120,7 +120,7 @@ class Audio(PlexPartialObject):
 
         section = self._server.library.sectionByID(self.librarySectionID)
 
-        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.location = f'library://{section.uuid}/item/{quote_plus(self.key)}'
         sync_item.policy = Policy.create(limit)
         sync_item.mediaSettings = MediaSettings.createMusic(bitrate)
 
@@ -234,7 +234,7 @@ class Artist(
 
     def station(self):
         """ Returns a :class:`~plexapi.playlist.Playlist` artist radio station or `None`. """
-        key = '%s?includeStations=1' % self.key
+        key = f'{self.key}?includeStations=1'
         return next(iter(self.fetchItems(key, cls=Playlist, rtag="Stations")), None)
 
 
@@ -355,7 +355,7 @@ class Album(
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
-        return '%s - %s' % (self.parentTitle, self.title)
+        return f'{self.parentTitle} - {self.title}'
 
 
 @utils.registerPlexObject
@@ -434,8 +434,7 @@ class Track(
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
-        return '%s - %s - %s - %s' % (
-            self.grandparentTitle, self.parentTitle, str(self.trackNumber).zfill(2), self.title)
+        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
 
     def album(self):
         """ Return the track's :class:`~plexapi.audio.Album`. """
@@ -462,7 +461,7 @@ class Track(
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
-        return '%s - %s - %s' % (self.grandparentTitle, self.parentTitle, self.title)
+        return f'{self.grandparentTitle} - {self.parentTitle} - {self.title}'
 
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """

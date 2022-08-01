@@ -82,12 +82,12 @@ class Video(PlexPartialObject):
 
     def markWatched(self):
         """ Mark the video as played. """
-        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
+        key = f'/:/scrobble?key={self.ratingKey}&identifier=com.plexapp.plugins.library'
         self._server.query(key)
 
     def markUnwatched(self):
         """ Mark the video as unplayed. """
-        key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
+        key = f'/:/unscrobble?key={self.ratingKey}&identifier=com.plexapp.plugins.library'
         self._server.query(key)
 
     def augmentation(self):
@@ -132,7 +132,7 @@ class Video(PlexPartialObject):
 
     def uploadSubtitles(self, filepath):
         """ Upload Subtitle file for video. """
-        url = '%s/subtitles' % self.key
+        url = f'{self.key}/subtitles'
         filename = os.path.basename(filepath)
         subFormat = os.path.splitext(filepath)[1][1:]
         with open(filepath, 'rb') as subfile:
@@ -201,7 +201,7 @@ class Video(PlexPartialObject):
         from plexapi.sync import Policy, MediaSettings
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
-        key = '%s/items' % backgroundProcessing.key
+        key = f'{backgroundProcessing.key}/items'
 
         tags = {t.tag.lower(): t.id for t in self._server.library.tags('mediaProcessingTarget')}
         # Additional keys for shorthand values
@@ -291,7 +291,7 @@ class Video(PlexPartialObject):
 
         section = self._server.library.sectionByID(self.librarySectionID)
 
-        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.location = f'library://{section.uuid}/item/{quote_plus(self.key)}'
         sync_item.policy = Policy.create(limit, unwatched)
         sync_item.mediaSettings = MediaSettings.createVideo(videoQuality)
 
@@ -405,7 +405,7 @@ class Movie(
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
-        return '%s (%s)' % (self.title, self.year)
+        return f'{self.title} ({self.year})'
 
     def reviews(self):
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
@@ -607,7 +607,7 @@ class Show(
         """
         filepaths = []
         for episode in self.episodes():
-            _savepath = os.path.join(savepath, 'Season %s' % str(episode.seasonNumber).zfill(2)) if subfolders else savepath
+            _savepath = os.path.join(savepath, f'Season {str(episode.seasonNumber).zfill(2)}') if subfolders else savepath
             filepaths += episode.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
@@ -752,7 +752,7 @@ class Season(
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
-        return '%s - %s' % (self.parentTitle, self.title)
+        return f'{self.parentTitle} - {self.title}'
 
 
 @utils.registerPlexObject
@@ -859,7 +859,7 @@ class Episode(
             if not self.parentRatingKey and self.grandparentRatingKey:
                 self.parentRatingKey = self.show().season(season=self.parentIndex).ratingKey
             if self.parentRatingKey:
-                self.parentKey = '/library/metadata/%s' % self.parentRatingKey
+                self.parentKey = f'/library/metadata/{self.parentRatingKey}'
 
     def __repr__(self):
         return '<%s>' % ':'.join([p for p in [
@@ -870,7 +870,7 @@ class Episode(
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
-        return '%s - %s - %s' % (self.grandparentTitle, self.seasonEpisode, self.title)
+        return f'{self.grandparentTitle} - {self.seasonEpisode} - {self.title}'
 
     @property
     def actors(self):
@@ -902,7 +902,7 @@ class Episode(
     @property
     def seasonEpisode(self):
         """ Returns the s00e00 string containing the season and episode numbers. """
-        return 's%se%s' % (str(self.seasonNumber).zfill(2), str(self.episodeNumber).zfill(2))
+        return f's{str(self.seasonNumber).zfill(2)}e{str(self.episodeNumber).zfill(2)}'
 
     @property
     def hasCommercialMarker(self):
@@ -929,7 +929,7 @@ class Episode(
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
-        return '%s - %s - (%s) %s' % (self.grandparentTitle, self.parentTitle, self.seasonEpisode, self.title)
+        return f'{self.grandparentTitle} - {self.parentTitle} - ({self.seasonEpisode}) {self.title}'
 
 
 @utils.registerPlexObject
@@ -1003,7 +1003,7 @@ class Extra(Clip):
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
-        return '%s (%s)' % (self.title, self.subtype)
+        return f'{self.title} ({self.subtype})'
 
 
 @utils.registerPlexObject
