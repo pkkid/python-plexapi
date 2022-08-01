@@ -24,10 +24,10 @@ def test_navigate_around_artist(account, plex):
     album = artist.album("Layers")
     tracks = artist.tracks()
     track = artist.track("As Colourful as Ever")
-    print("Navigating around artist: %s" % artist)
-    print("Album: %s" % album)
-    print("Tracks: %s..." % tracks)
-    print("Track: %s" % track)
+    print(f"Navigating around artist: {artist}")
+    print(f"Album: {album}")
+    print(f"Tracks: {tracks}...")
+    print(f"Track: {track}")
     assert artist.track("As Colourful as Ever") == track, "Unable to get artist track."
     assert album.track("As Colourful as Ever") == track, "Unable to get album track."
     assert album.artist() == artist, "album.artist() doesn't match expected artist."

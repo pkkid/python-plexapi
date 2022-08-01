@@ -3,15 +3,15 @@
 
 def test_mark_movie_watched(movie):
     movie.markUnwatched()
-    print('Marking movie watched: %s' % movie)
-    print('View count: %s' % movie.viewCount)
+    print(f'Marking movie watched: {movie}')
+    print(f'View count: {movie.viewCount}')
     movie.markWatched()
     movie.reload()
-    print('View count: %s' % movie.viewCount)
+    print(f'View count: {movie.viewCount}')
     assert movie.viewCount == 1, 'View count 0 after watched.'
     movie.markUnwatched()
     movie.reload()
-    print('View count: %s' % movie.viewCount)
+    print(f'View count: {movie.viewCount}')
     assert movie.viewCount == 0, 'View count 1 after unwatched.'
 
 

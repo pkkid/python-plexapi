@@ -9,8 +9,7 @@ def _check_capabilities(client, capabilities):
     for capability in capabilities:
         if capability not in supported:
             pytest.skip(
-                "Client %s doesn't support %s capability support %s"
-                % (client.title, capability, supported)
+                f"Client {client.title} doesn't support {capability} capability support {supported}"
             )
 
 
@@ -79,22 +78,22 @@ def test_client_playback(plex, client, movies, proxy):
         subs = [
             stream for stream in movie.subtitleStreams() if stream.language == "English"
         ]
-        print("client.playMedia(%s)" % movie.title)
+        print(f"client.playMedia({movie.title})")
         client.playMedia(movie)
         time.sleep(5)
-        print("client.pause(%s)" % mtype)
+        print(f"client.pause({mtype})")
         client.pause(mtype)
         time.sleep(2)
-        print("client.stepForward(%s)" % mtype)
+        print(f"client.stepForward({mtype})")
         client.stepForward(mtype)
         time.sleep(5)
-        print("client.play(%s)" % mtype)
+        print(f"client.play({mtype})")
         client.play(mtype)
         time.sleep(3)
-        print("client.stepBack(%s)" % mtype)
+        print(f"client.stepBack({mtype})")
         client.stepBack(mtype)
         time.sleep(5)
-        print("client.play(%s)" % mtype)
+        print(f"client.play({mtype})")
         client.play(mtype)
         time.sleep(3)
         print("client.seekTo(1*60*1000)")
@@ -107,7 +106,7 @@ def test_client_playback(plex, client, movies, proxy):
             print("client.setSubtitleStream(subs[0])")
             client.setSubtitleStream(subs[0].id, mtype)
         time.sleep(10)
-        print("client.stop(%s)" % mtype)
+        print(f"client.stop({mtype})")
         client.stop(mtype)
         time.sleep(1)
     finally:
@@ -133,7 +132,7 @@ def test_client_timeline(plex, client, movies, proxy):
         client.playMedia(movie)
         time.sleep(10)
         assert client.isPlayingMedia() is True
-        print("client.stop(%s)" % mtype)
+        print(f"client.stop({mtype})")
         client.stop(mtype)
         time.sleep(10)
         assert client.isPlayingMedia() is False
