@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
-from plexapi.library import LibrarySection
+from plexapi.library import LibrarySection, ManagedHub
 from plexapi.mixins import (
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
@@ -194,6 +194,18 @@ class Collection(
             self._items = items
         return self._items
 
+    def visibility(self):
+        """ Returns the :class:`~plexapi.library.ManagedHub` for this collection. """
+        key = f'/hubs/sections/{self.librarySectionID}/manage?metadataItemId={self.ratingKey}'
+        data = self._server.query(key)
+        hub = self.findItem(data, cls=ManagedHub)
+        if hub is None:
+            hub = ManagedHub(self._server, data, parent=self)
+            hub.identifier = f'custom.collection.{self.librarySectionID}.{self.ratingKey}'
+            hub.title = self.title
+            hub._promoted = False
+        return hub
+
     def get(self, title):
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
@@ -334,10 +346,10 @@ class Collection(
         """ Move an item to a new position in the collection.
 
             Parameters:
-                items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
-                    or :class:`~plexapi.photo.Photo` objects to be moved in the collection.
+                item (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` object to be moved in the collection.
                 after (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
-                    or :class:`~plexapi.photo.Photo` objects to move the item after in the collection.
+                    or :class:`~plexapi.photo.Photo` object to move the item after in the collection.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to move items in a smart collection.
