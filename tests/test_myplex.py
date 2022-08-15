@@ -293,6 +293,10 @@ def test_myplex_watchlist(account, movie, show, artist):
     with pytest.raises(BadRequest):
         account.addToWatchlist(movie)
 
+    # Test retrieving maxresults from watchlist
+    watchlist = account.watchlist(maxresults=1)
+    assert len(watchlist) == 1
+
     # Remove multiple items from watchlist
     account.removeFromWatchlist([movie, show])
     assert not movie.onWatchlist(account) and not show.onWatchlist(account)
