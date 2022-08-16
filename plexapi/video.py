@@ -322,6 +322,7 @@ class Movie(
             countries (List<:class:`~plexapi.media.Country`>): List of countries objects.
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the movie in milliseconds.
+            editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -362,6 +363,7 @@ class Movie(
         self.countries = self.findItems(data, media.Country)
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.editionTitle = data.attrib.get('editionTitle')
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
