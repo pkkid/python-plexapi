@@ -414,6 +414,16 @@ class Movie(
         data = self._server.query(self._details_key)
         return self.findItems(data, media.Review, rtag='Video')
 
+    def editions(self):
+        """ Returns a list of :class:`~plexapi.video.Movie` objects
+            for other editions of the same movie.
+        """
+        filters = {
+            'guid': self.guid,
+            'id!': self.ratingKey
+        }
+        return self.section().search(filters=filters)
+
 
 @utils.registerPlexObject
 class Show(
