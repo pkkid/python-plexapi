@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
@@ -303,7 +303,7 @@ class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
