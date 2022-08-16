@@ -46,6 +46,10 @@ def edit_content_rating(obj):
     _test_mixins_field(obj, "contentRating", "ContentRating")
 
 
+def edit_edition_title(obj):
+    _test_mixins_field(obj, "editionTitle", "EditionTitle")
+
+
 def edit_originally_available(obj):
     _test_mixins_field(obj, "originallyAvailableAt", "OriginallyAvailable")
 
