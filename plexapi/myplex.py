@@ -886,10 +886,7 @@ class MyPlexAccount(PlexObject):
 
         data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
         searchResults = data['MediaContainer'].get('SearchResults', [])
-        searchResult = next(
-            (s['SearchResult'] for s in searchResults if s.get('id') == 'external' and s.get('SearchResult')),
-            []
-        )
+        searchResult = next((s.get('SearchResult', []) for s in searchResults if s.get('id') == 'external'), [])
 
         results = []
         for result in searchResult:
