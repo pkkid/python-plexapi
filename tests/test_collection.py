@@ -161,7 +161,7 @@ def test_Collection_add_move_remove(collection, movies):
     assert movie not in collection
     # Reset collection sort due to bug with corrupted XML response
     # for movies that have been moved in a collection and have
-    # progress (updateProgress) or marked as played (markWatched)
+    # progress (updateProgress) or marked as played (markPlayed)
     collection.sortUpdate("release")
 
 

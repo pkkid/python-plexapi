@@ -6,7 +6,7 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
     ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
@@ -15,7 +15,7 @@ from plexapi.mixins import (
 )
 
 
-class Video(PlexPartialObject):
+class Video(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
         :class:`~plexapi.video.Episode`, and :class:`~plexapi.video.Clip`.
@@ -71,24 +71,9 @@ class Video(PlexPartialObject):
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
-    @property
-    def isWatched(self):
-        """ Returns True if this video is watched. """
-        return bool(self.viewCount > 0) if self.viewCount else False
-
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
         return self._server.url(part, includeToken=True) if part else None
-
-    def markWatched(self):
-        """ Mark the video as played. """
-        key = '/:/scrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._server.query(key)
-
-    def markUnwatched(self):
-        """ Mark the video as unplayed. """
-        key = '/:/unscrobble?key=%s&identifier=com.plexapp.plugins.library' % self.ratingKey
-        self._server.query(key)
 
     def augmentation(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects.
@@ -523,8 +508,8 @@ class Show(
         return self.roles
 
     @property
-    def isWatched(self):
-        """ Returns True if the show is fully watched. """
+    def isPlayed(self):
+        """ Returns True if the show is fully played. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     def onDeck(self):
@@ -678,8 +663,8 @@ class Season(
         ] if p])
 
     @property
-    def isWatched(self):
-        """ Returns True if the season is fully watched. """
+    def isPlayed(self):
+        """ Returns True if the season is fully played. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     @property

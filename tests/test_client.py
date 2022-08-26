@@ -111,8 +111,8 @@ def test_client_playback(plex, client, movies, proxy):
         client.stop(mtype)
         time.sleep(1)
     finally:
-        print("movie.markWatched")
-        movie.markWatched()
+        print("movie.markPlayed")
+        movie.markPlayed()
         time.sleep(2)
 
 
@@ -138,6 +138,6 @@ def test_client_timeline(plex, client, movies, proxy):
         time.sleep(10)
         assert client.isPlayingMedia() is False
     finally:
-        print("movie.markWatched()")
-        movie.markWatched()
+        print("movie.markPlayed()")
+        movie.markPlayed()
         time.sleep(2)
