@@ -262,6 +262,9 @@ def test_myplex_claimToken(account):
 
 
 def test_myplex_watchlist(account, movie, show, artist):
+    # Ensure watchlist is cleared before tests
+    for item in account.watchlist():
+        account.removeFromWatchlist(item)
     assert not account.watchlist()
 
     # Add to watchlist from account
