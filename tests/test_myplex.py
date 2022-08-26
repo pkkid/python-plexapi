@@ -321,3 +321,11 @@ def test_myplex_searchDiscover(account, movie, show):
     assert show.guid in [r.guid for r in results]
     results = account.searchDiscover(show.title, libtype="movie")
     assert show.guid not in guids(results)
+
+
+@pytest.mark.authenticated
+def test_myplex_viewStateSync(account):
+    account.enableViewStateSync()
+    assert account.viewStateSync is True
+    account.disableViewStateSync()
+    assert account.viewStateSync is False
