@@ -547,6 +547,7 @@ class PlexServer(PlexObject):
                 f'Invalid butler task: {task}. Available tasks are: {validTasks}'
             )
         self.query(f'/butler/{task}', method=self._session.post)
+        return self
 
     @deprecated('use "checkForUpdate" instead')
     def check_for_update(self, force=True, download=False):

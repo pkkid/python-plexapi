@@ -150,11 +150,13 @@ class Library(PlexObject):
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
         self._server.query('/library/clean/bundles?async=1', method=self._server._session.put)
+        return self
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
         for section in self.sections():
             section.emptyTrash()
+        return self
 
     def optimize(self):
         """ The Optimize option cleans up the server database from unused or fragmented data.
@@ -162,21 +164,25 @@ class Library(PlexObject):
             library, you may like to optimize the database.
         """
         self._server.query('/library/optimize?async=1', method=self._server._session.put)
+        return self
 
     def update(self):
         """ Scan this library for new items."""
         self._server.query('/library/sections/all/refresh')
+        return self
 
     def cancelUpdate(self):
         """ Cancel a library update. """
         key = '/library/sections/all/refresh'
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def refresh(self):
         """ Forces a download of fresh media information from the internet.
             This can take a long time. Any locked fields are not modified.
         """
         self._server.query('/library/sections/all/refresh?force=1')
+        return self
 
     def deleteMediaPreviews(self):
         """ Delete the preview thumbnails for the all sections. This cannot be
@@ -184,6 +190,7 @@ class Library(PlexObject):
         """
         for section in self.sections():
             section.deleteMediaPreviews()
+        return self
 
     def add(self, name='', type='', agent='', scanner='', location='', language='en', *args, **kwargs):
         """ Simplified add for the most common options.
@@ -549,6 +556,7 @@ class LibrarySection(PlexObject):
 
         part = '/library/sections/%s?agent=%s&%s' % (self.key, agent, urlencode(params, doseq=True))
         self._server.query(part, method=self._server._session.put)
+        return self
 
     def addLocations(self, location):
         """ Add a location to a library.
@@ -570,7 +578,7 @@ class LibrarySection(PlexObject):
             if not self._server.isBrowsable(path):
                 raise BadRequest('Path: %s does not exist.' % path)
             locations.append(path)
-        self.edit(location=locations)
+        return self.edit(location=locations)
 
     def removeLocations(self, location):
         """ Remove a location from a library.
@@ -595,7 +603,7 @@ class LibrarySection(PlexObject):
                 raise BadRequest('Path: %s does not exist in the library.' % location)
         if len(locations) == 0:
             raise BadRequest('You are unable to remove all locations from a library.')
-        self.edit(location=locations)
+        return self.edit(location=locations)
 
     def get(self, title):
         """ Returns the media item with the specified title.
@@ -718,7 +726,7 @@ class LibrarySection(PlexObject):
             else:
                 raise NotFound('%s not found in %s' % (value, enums))
 
-        self.edit(**data)
+        return self.edit(**data)
 
     def defaultAdvanced(self):
         """ Edit all of library's advanced settings to default. """
@@ -730,7 +738,7 @@ class LibrarySection(PlexObject):
             else:
                 data[key % setting.id] = setting.default
 
-        self.edit(**data)
+        return self.edit(**data)
 
     def _lockUnlockAllField(self, field, libtype=None, locked=True):
         """ Lock or unlock a field for all items in the library. """
@@ -741,6 +749,7 @@ class LibrarySection(PlexObject):
         }
         key = '/library/sections/%s/all%s' % (self.key, utils.joinArgs(args))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def lockAllField(self, field, libtype=None):
         """ Lock a field for all items in the library.
@@ -750,7 +759,7 @@ class LibrarySection(PlexObject):
                 libtype (str, optional): The library type to lock (movie, show, season, episode,
                     artist, album, track, photoalbum, photo). Default is the main library type.
         """
-        self._lockUnlockAllField(field, libtype=libtype, locked=True)
+        return self._lockUnlockAllField(field, libtype=libtype, locked=True)
 
     def unlockAllField(self, field, libtype=None):
         """ Unlock a field for all items in the library.
@@ -760,7 +769,7 @@ class LibrarySection(PlexObject):
                 libtype (str, optional): The library type to lock (movie, show, season, episode,
                     artist, album, track, photoalbum, photo). Default is the main library type.
         """
-        self._lockUnlockAllField(field, libtype=libtype, locked=False)
+        return self._lockUnlockAllField(field, libtype=libtype, locked=False)
 
     def timeline(self):
         """ Returns a timeline query for this library section. """
@@ -794,11 +803,13 @@ class LibrarySection(PlexObject):
         """
         key = '/library/sections/%s/analyze' % self.key
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
         key = '/library/sections/%s/emptyTrash' % self.key
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def update(self, path=None):
         """ Scan this section for new media.
@@ -810,11 +821,13 @@ class LibrarySection(PlexObject):
         if path is not None:
             key += '?path=%s' % quote_plus(path)
         self._server.query(key)
+        return self
 
     def cancelUpdate(self):
         """ Cancel update of this Library Section. """
         key = '/library/sections/%s/refresh' % self.key
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def refresh(self):
         """ Forces a download of fresh media information from the internet.
@@ -822,6 +835,7 @@ class LibrarySection(PlexObject):
         """
         key = '/library/sections/%s/refresh?force=1' % self.key
         self._server.query(key)
+        return self
 
     def deleteMediaPreviews(self):
         """ Delete the preview thumbnails for items in this library. This cannot
@@ -829,6 +843,7 @@ class LibrarySection(PlexObject):
         """
         key = '/library/sections/%s/indexes' % self.key
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def _loadFilters(self):
         """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and

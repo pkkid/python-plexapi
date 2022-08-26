@@ -196,6 +196,7 @@ class MediaPart(PlexObject):
         else:
             key = "/library/parts/%d?audioStreamID=%d&allParts=1" % (self.id, stream)
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
@@ -208,11 +209,13 @@ class MediaPart(PlexObject):
         else:
             key = "/library/parts/%d?subtitleStreamID=%d&allParts=1" % (self.id, stream)
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def resetDefaultSubtitleStream(self):
         """ Set default subtitle of this MediaPart to 'none'. """
         key = "/library/parts/%d?subtitleStreamID=0&allParts=1" % (self.id)
         self._server.query(key, method=self._server._session.put)
+        return self
 
 
 class MediaPartStream(PlexObject):

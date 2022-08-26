@@ -223,6 +223,7 @@ class Playlist(
             'uri': uri
         }))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     @deprecated('use "removeItems" instead', stacklevel=3)
     def removeItem(self, item):
@@ -249,6 +250,7 @@ class Playlist(
             playlistItemID = self._getPlaylistItemID(item)
             key = '%s/items/%s' % (self.key, playlistItemID)
             self._server.query(key, method=self._server._session.delete)
+        return self
 
     def moveItem(self, item, after=None):
         """ Move an item to a new position in the playlist.
@@ -274,6 +276,7 @@ class Playlist(
             key += '?after=%s' % afterPlaylistItemID
 
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def updateFilters(self, limit=None, sort=None, filters=None, **kwargs):
         """ Update the filters for a smart playlist.
@@ -303,11 +306,13 @@ class Playlist(
             'uri': uri
         }))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def _edit(self, **kwargs):
         """ Actually edit the playlist. """
         key = '%s%s' % (self.key, utils.joinArgs(kwargs))
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
@@ -321,7 +326,7 @@ class Playlist(
             args['title'] = title
         if summary:
             args['summary'] = summary
-        self._edit(**args)
+        return self._edit(**args)
 
     def delete(self):
         """ Delete the playlist. """

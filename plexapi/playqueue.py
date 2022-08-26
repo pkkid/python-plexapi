@@ -258,6 +258,7 @@ class PlayQueue(PlexObject):
         path = "/playQueues/{playQueueID}{args}".format(playQueueID=self.playQueueID, args=utils.joinArgs(args))
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
+        return self
 
     def moveItem(self, item, after=None, refresh=True):
         """
@@ -288,6 +289,7 @@ class PlayQueue(PlexObject):
         )
         data = self._server.query(path, method=self._server._session.put)
         self._loadData(data)
+        return self
 
     def removeItem(self, item, refresh=True):
         """Remove an item from the PlayQueue.
@@ -307,15 +309,18 @@ class PlayQueue(PlexObject):
         )
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
+        return self
 
     def clear(self):
         """Remove all items from the PlayQueue."""
         path = "/playQueues/{playQueueID}/items".format(playQueueID=self.playQueueID)
         data = self._server.query(path, method=self._server._session.delete)
         self._loadData(data)
+        return self
 
     def refresh(self):
         """Refresh the PlayQueue from the Plex server."""
         path = "/playQueues/{playQueueID}".format(playQueueID=self.playQueueID)
         data = self._server.query(path, method=self._server._session.get)
         self._loadData(data)
+        return self

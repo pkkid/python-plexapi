@@ -262,7 +262,7 @@ def test_server_butlerTasks(plex):
 
 
 def test_server_runButlerTask(plex):
-    assert plex.runButlerTask("CleanOldBundles") is None
+    assert plex.runButlerTask("CleanOldBundles")
     with pytest.raises(BadRequest):
         plex.runButlerTask("<This-task-should-not-exist>")
 
