@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-from urllib.parse import quote, quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject
@@ -614,8 +614,10 @@ class LibrarySection(PlexObject):
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: The title is not found in the library.
         """
-        key = '/library/sections/%s/all?includeGuids=1&title=%s' % (self.key, quote(title, safe=''))
-        return self.fetchItem(key, title__iexact=title)
+        try:
+            return self.search(title)[0]
+        except IndexError:
+            raise NotFound(f"Unable to find item '{title}'") from None
 
     def getGuid(self, guid):
         """ Returns the media item with the specified external Plex, IMDB, TMDB, or TVDB ID.
