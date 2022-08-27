@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
@@ -291,7 +291,7 @@ class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
@@ -310,6 +310,7 @@ class Movie(
             countries (List<:class:`~plexapi.media.Country`>): List of countries objects.
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the movie in milliseconds.
+            editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -350,6 +351,7 @@ class Movie(
         self.countries = self.findItems(data, media.Country)
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.editionTitle = data.attrib.get('editionTitle')
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
@@ -399,6 +401,16 @@ class Movie(
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
         data = self._server.query(self._details_key)
         return self.findItems(data, media.Review, rtag='Video')
+
+    def editions(self):
+        """ Returns a list of :class:`~plexapi.video.Movie` objects
+            for other editions of the same movie.
+        """
+        filters = {
+            'guid': self.guid,
+            'id!': self.ratingKey
+        }
+        return self.section().search(filters=filters)
 
 
 @utils.registerPlexObject

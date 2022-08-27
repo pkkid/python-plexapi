@@ -56,6 +56,7 @@ def test_video_Movie_attrs(movies):
     assert movie.chapterSource is None
     assert not movie.collections
     assert movie.contentRating in utils.CONTENTRATINGS
+    assert movie.editionTitle is None
     if movie.countries:
         assert "United States of America" in [i.tag for i in movie.countries]
     if movie.producers:
@@ -579,6 +580,10 @@ def test_video_Movie_reviews(movies):
     assert review.text
 
 
+def test_video_Movie_editions(movie):
+    assert len(movie.editions()) == 0
+
+
 @pytest.mark.authenticated
 def test_video_Movie_extras(movies):
     movie = movies.get("Sita Sings The Blues")
@@ -660,6 +665,13 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_summary(movie)
     test_mixins.edit_tagline(movie)
     test_mixins.edit_title(movie)
+    with pytest.raises(BadRequest):
+        test_mixins.edit_edition_title(movie)
+
+
+@pytest.mark.authenticated
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_edition_title(movie)
 
 
 def test_video_Movie_mixins_tags(movie):

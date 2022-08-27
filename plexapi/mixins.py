@@ -569,6 +569,19 @@ class ContentRatingMixin(EditFieldMixin):
         return self.editField('contentRating', contentRating, locked=locked)
 
 
+class EditionTitleMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have an edition title. """
+
+    def editEditionTitle(self, editionTitle, locked=True):
+        """ Edit the edition title. Plex Pass is required to edit this field.
+
+            Parameters:
+                editionTitle (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        return self.editField('editionTitle', editionTitle, locked=locked)
+
+
 class OriginallyAvailableMixin(EditFieldMixin):
     """ Mixin for Plex objects that can have an originally available date. """
 
