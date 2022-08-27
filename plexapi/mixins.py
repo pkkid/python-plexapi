@@ -549,8 +549,8 @@ class EditFieldMixin:
 
         """
         edits = {
-            '%s.value' % field: value or '',
-            '%s.locked' % field: 1 if locked else 0
+            f'{field}.value': value or '',
+            f'{field}.locked': 1 if locked else 0
         }
         edits.update(kwargs)
         return self._edit(**edits)
@@ -733,7 +733,7 @@ class EditTagsMixin:
 
             Parameters:
                 tag (str): Name of the tag to edit.
-                items (List<str>): List of tags to add or remove.
+                items (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags to add or remove.
                 locked (bool): True (default) to lock the tags, False to unlock the tags.
                 remove (bool): True to remove the tags in items.
 
@@ -748,9 +748,11 @@ class EditTagsMixin:
         if not isinstance(items, list):
             items = [items]
 
-        value = getattr(self, self._tagPlural(tag))
-        existing_tags = [t.tag for t in value if t and remove is False]
-        edits = self._tagHelper(self._tagSingular(tag), existing_tags + items, locked, remove)
+        if not remove:
+            tags = getattr(self, self._tagPlural(tag))
+            items = tags + items
+
+        edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
         edits.update(kwargs)
         return self._edit(**edits)
 
@@ -783,15 +785,15 @@ class EditTagsMixin:
             items = [items]
 
         data = {
-            '%s.locked' % tag: 1 if locked else 0
+            f'{tag}.locked': 1 if locked else 0
         }
 
         if remove:
-            tagname = '%s[].tag.tag-' % tag
-            data[tagname] = ','.join(items)
+            tagname = f'{tag}[].tag.tag-'
+            data[tagname] = ','.join([str(t) for t in items])
         else:
             for i, item in enumerate(items):
-                tagname = '%s[%s].tag.tag' % (tag, i)
+                tagname = f'{str(tag)}[{i}].tag.tag'
                 data[tagname] = item
 
         return data
@@ -804,7 +806,7 @@ class CollectionMixin(EditTagsMixin):
         """ Add a collection tag(s).
 
             Parameters:
-                collections (list): List of strings.
+                collections (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('collection', collections, locked=locked)
@@ -813,7 +815,7 @@ class CollectionMixin(EditTagsMixin):
         """ Remove a collection tag(s).
 
             Parameters:
-                collections (list): List of strings.
+                collections (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('collection', collections, locked=locked, remove=True)
@@ -826,7 +828,7 @@ class CountryMixin(EditTagsMixin):
         """ Add a country tag(s).
 
             Parameters:
-                countries (list): List of strings.
+                countries (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('country', countries, locked=locked)
@@ -835,7 +837,7 @@ class CountryMixin(EditTagsMixin):
         """ Remove a country tag(s).
 
             Parameters:
-                countries (list): List of strings.
+                countries (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('country', countries, locked=locked, remove=True)
@@ -848,7 +850,7 @@ class DirectorMixin(EditTagsMixin):
         """ Add a director tag(s).
 
             Parameters:
-                directors (list): List of strings.
+                directors (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('director', directors, locked=locked)
@@ -857,7 +859,7 @@ class DirectorMixin(EditTagsMixin):
         """ Remove a director tag(s).
 
             Parameters:
-                directors (list): List of strings.
+                directors (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('director', directors, locked=locked, remove=True)
@@ -870,7 +872,7 @@ class GenreMixin(EditTagsMixin):
         """ Add a genre tag(s).
 
             Parameters:
-                genres (list): List of strings.
+                genres (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('genre', genres, locked=locked)
@@ -879,7 +881,7 @@ class GenreMixin(EditTagsMixin):
         """ Remove a genre tag(s).
 
             Parameters:
-                genres (list): List of strings.
+                genres (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('genre', genres, locked=locked, remove=True)
@@ -892,7 +894,7 @@ class LabelMixin(EditTagsMixin):
         """ Add a label tag(s).
 
             Parameters:
-                labels (list): List of strings.
+                labels (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('label', labels, locked=locked)
@@ -901,7 +903,7 @@ class LabelMixin(EditTagsMixin):
         """ Remove a label tag(s).
 
             Parameters:
-                labels (list): List of strings.
+                labels (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('label', labels, locked=locked, remove=True)
@@ -914,7 +916,7 @@ class MoodMixin(EditTagsMixin):
         """ Add a mood tag(s).
 
             Parameters:
-                moods (list): List of strings.
+                moods (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('mood', moods, locked=locked)
@@ -923,7 +925,7 @@ class MoodMixin(EditTagsMixin):
         """ Remove a mood tag(s).
 
             Parameters:
-                moods (list): List of strings.
+                moods (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('mood', moods, locked=locked, remove=True)
@@ -936,7 +938,7 @@ class ProducerMixin(EditTagsMixin):
         """ Add a producer tag(s).
 
             Parameters:
-                producers (list): List of strings.
+                producers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('producer', producers, locked=locked)
@@ -945,7 +947,7 @@ class ProducerMixin(EditTagsMixin):
         """ Remove a producer tag(s).
 
             Parameters:
-                producers (list): List of strings.
+                producers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('producer', producers, locked=locked, remove=True)
@@ -958,7 +960,7 @@ class SimilarArtistMixin(EditTagsMixin):
         """ Add a similar artist tag(s).
 
             Parameters:
-                artists (list): List of strings.
+                artists (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('similar', artists, locked=locked)
@@ -967,7 +969,7 @@ class SimilarArtistMixin(EditTagsMixin):
         """ Remove a similar artist tag(s).
 
             Parameters:
-                artists (list): List of strings.
+                artists (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('similar', artists, locked=locked, remove=True)
@@ -980,7 +982,7 @@ class StyleMixin(EditTagsMixin):
         """ Add a style tag(s).
 
             Parameters:
-                styles (list): List of strings.
+                styles (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('style', styles, locked=locked)
@@ -989,7 +991,7 @@ class StyleMixin(EditTagsMixin):
         """ Remove a style tag(s).
 
             Parameters:
-                styles (list): List of strings.
+                styles (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('style', styles, locked=locked, remove=True)
@@ -1002,7 +1004,7 @@ class TagMixin(EditTagsMixin):
         """ Add a tag(s).
 
             Parameters:
-                tags (list): List of strings.
+                tags (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('tag', tags, locked=locked)
@@ -1011,7 +1013,7 @@ class TagMixin(EditTagsMixin):
         """ Remove a tag(s).
 
             Parameters:
-                tags (list): List of strings.
+                tags (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('tag', tags, locked=locked, remove=True)
@@ -1024,7 +1026,7 @@ class WriterMixin(EditTagsMixin):
         """ Add a writer tag(s).
 
             Parameters:
-                writers (list): List of strings.
+                writers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('writer', writers, locked=locked)
@@ -1033,7 +1035,7 @@ class WriterMixin(EditTagsMixin):
         """ Remove a writer tag(s).
 
             Parameters:
-                writers (list): List of strings.
+                writers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('writer', writers, locked=locked, remove=True)
