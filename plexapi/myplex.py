@@ -7,8 +7,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
 
 import requests
-from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
-                     X_PLEX_IDENTIFIER, log, logfilter, utils)
+from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE,
+                     X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER, log, logfilter, utils)
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -761,7 +761,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self, filter=None, sort=None, libtype=None, **kwargs):
+    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=9999999, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
             Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
             search for the media using the guid.
@@ -773,6 +773,7 @@ class MyPlexAccount(PlexObject):
                     ``titleSort`` (Title), ``originallyAvailableAt`` (Release Date), or ``rating`` (Critic Rating).
                     ``dir`` can be ``asc`` or ``desc``.
                 libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
+                maxresults (int, optional): Only return the specified number of results.
                 **kwargs (dict): Additional custom filters to apply to the search results.
 
 
@@ -800,9 +801,18 @@ class MyPlexAccount(PlexObject):
         if libtype:
             params['type'] = utils.searchType(libtype)
 
+        params['X-Plex-Container-Start'] = 0
+        params['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
         params.update(kwargs)
-        data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
-        return self._toOnlineMetadata(self.findItems(data))
+
+        results, subresults = [], '_init'
+        while subresults and maxresults > len(results):
+            data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
+            subresults = self.findItems(data)
+            results += subresults[:maxresults - len(results)]
+            params['X-Plex-Container-Start'] += params['X-Plex-Container-Size']
+
+        return self._toOnlineMetadata(results)
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
