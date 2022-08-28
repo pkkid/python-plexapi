@@ -26,7 +26,7 @@ def test_video_ne(movies):
     assert (
         len(
             movies.fetchItems(
-                "/library/sections/%s/all" % movies.key, title__ne="Sintel"
+                f"/library/sections/{movies.key}/all", title__ne="Sintel"
             )
         )
         == 3

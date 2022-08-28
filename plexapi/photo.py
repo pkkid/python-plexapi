@@ -226,7 +226,7 @@ class Photo(
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
         if self.parentTitle:
-            return '%s - %s' % (self.parentTitle, self.title)
+            return f'{self.parentTitle} - {self.title}'
         return self.title
 
     def photoalbum(self):
@@ -282,7 +282,7 @@ class Photo(
 
         section = self.section()
 
-        sync_item.location = 'library://%s/item/%s' % (section.uuid, quote_plus(self.key))
+        sync_item.location = f'library://{section.uuid}/item/{quote_plus(self.key)}'
         sync_item.policy = Policy.create(limit)
         sync_item.mediaSettings = MediaSettings.createPhoto(resolution)
 

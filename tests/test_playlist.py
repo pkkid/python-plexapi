@@ -62,26 +62,26 @@ def test_Playlist_create(plex, show):
         # Test add item
         playlist.addItems(episodes[3])
         items = playlist.reload().items()
-        assert items[3].ratingKey == episodes[3].ratingKey, 'Missing added item: %s' % episodes[3]
+        assert items[3].ratingKey == episodes[3].ratingKey, f'Missing added item: {episodes[3]}'
         # Test add two items
         playlist.addItems(episodes[4:6])
         items = playlist.reload().items()
-        assert items[4].ratingKey == episodes[4].ratingKey, 'Missing added item: %s' % episodes[4]
-        assert items[5].ratingKey == episodes[5].ratingKey, 'Missing added item: %s' % episodes[5]
-        assert len(items) == 6, 'Playlist should have 6 items, %s found' % len(items)
+        assert items[4].ratingKey == episodes[4].ratingKey, f'Missing added item: {episodes[4]}'
+        assert items[5].ratingKey == episodes[5].ratingKey, f'Missing added item: {episodes[5]}'
+        assert len(items) == 6, f'Playlist should have 6 items, {len(items)} found'
         # Test remove item
         toremove = items[5]
         playlist.removeItems(toremove)
         items = playlist.reload().items()
-        assert toremove not in items, 'Removed item still in playlist: %s' % items[5]
-        assert len(items) == 5, 'Playlist should have 5 items, %s found' % len(items)
+        assert toremove not in items, f'Removed item still in playlist: {items[5]}'
+        assert len(items) == 5, f'Playlist should have 5 items, {len(items)} found'
         # Test remove two item
         toremove = items[3:5]
         playlist.removeItems(toremove)
         items = playlist.reload().items()
-        assert toremove[0] not in items, 'Removed item still in playlist: %s' % items[3]
-        assert toremove[1] not in items, 'Removed item still in playlist: %s' % items[4]
-        assert len(items) == 3, 'Playlist should have 5 items, %s found' % len(items)
+        assert toremove[0] not in items, f'Removed item still in playlist: {items[3]}'
+        assert toremove[1] not in items, f'Removed item still in playlist: {items[4]}'
+        assert len(items) == 3, f'Playlist should have 5 items, {len(items)} found'
     finally:
         playlist.delete()
 

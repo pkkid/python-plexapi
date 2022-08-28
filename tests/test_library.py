@@ -111,7 +111,7 @@ def test_library_section_delete(movies, patched_http_call):
 
 
 def test_library_fetchItem(plex, movie):
-    item1 = plex.library.fetchItem("/library/metadata/%s" % movie.ratingKey)
+    item1 = plex.library.fetchItem(f"/library/metadata/{movie.ratingKey}")
     item2 = plex.library.fetchItem(movie.ratingKey)
     assert item1.title == "Elephants Dream"
     assert item1 == item2 == movie
@@ -334,8 +334,8 @@ def test_library_MovieSection_PlexWebURL(plex, movies):
     url = movies.getWebURL(tab=tab)
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
-    assert 'source=%s' % movies.key in url
-    assert 'pivot=%s' % tab in url
+    assert f'source={movies.key}' in url
+    assert f'pivot={tab}' in url
     # Test a different base
     base = 'https://doesnotexist.com/plex'
     url = movies.getWebURL(base=base)
@@ -349,7 +349,7 @@ def test_library_MovieSection_PlexWebURL_hub(plex, movies):
     url = hub.section().getWebURL(key=hub.key)
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
-    assert 'source=%s' % movies.key in url
+    assert f'source={movies.key}' in url
     assert quote_plus(hub.key) in url
 
 

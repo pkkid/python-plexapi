@@ -25,7 +25,7 @@ def test_Collection_attrs(collection):
     assert collection.key.startswith("/library/collections/")
     assert not collection.labels
     assert utils.is_int(collection.librarySectionID)
-    assert collection.librarySectionKey == "/library/sections/%s" % collection.librarySectionID
+    assert collection.librarySectionKey == f"/library/sections/{collection.librarySectionID}"
     assert collection.librarySectionTitle == "Movies"
     assert utils.is_int(collection.maxYear)
     assert utils.is_int(collection.minYear)
@@ -35,7 +35,7 @@ def test_Collection_attrs(collection):
     assert collection.subtype == "movie"
     assert collection.summary == ""
     assert collection.theme is None
-    assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
+    assert collection.thumb.startswith(f"/library/collections/{collection.ratingKey}/composite")
     assert collection.thumbBlurHash is None
     assert collection.title == "Test Collection"
     assert collection.titleSort == collection.title

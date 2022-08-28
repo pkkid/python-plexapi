@@ -10,10 +10,10 @@ from .payloads import MYPLEX_INVITE
 def test_myplex_accounts(account, plex):
     assert account, "Must specify username, password & resource to run this test."
     print("MyPlexAccount:")
-    print("username: %s" % account.username)
-    print("email: %s" % account.email)
-    print("home: %s" % account.home)
-    print("queueEmail: %s" % account.queueEmail)
+    print(f"username: {account.username}")
+    print(f"email: {account.email}")
+    print(f"home: {account.home}")
+    print(f"queueEmail: {account.queueEmail}")
     assert account.username, "Account has no username"
     assert account.authenticationToken, "Account has no authenticationToken"
     assert account.email, "Account has no email"
@@ -21,9 +21,9 @@ def test_myplex_accounts(account, plex):
     assert account.queueEmail, "Account has no queueEmail"
     account = plex.account()
     print("Local PlexServer.account():")
-    print("username: %s" % account.username)
+    print(f"username: {account.username}")
     # print('authToken: %s' % account.authToken)
-    print("signInState: %s" % account.signInState)
+    print(f"signInState: {account.signInState}")
     assert account.username, "Account has no username"
     assert account.authToken, "Account has no authToken"
     assert account.signInState, "Account has no signInState"
@@ -36,8 +36,8 @@ def test_myplex_resources(account):
         name = resource.name or "Unknown"
         connections = [c.uri for c in resource.connections]
         connections = ", ".join(connections) if connections else "None"
-        print("%s (%s): %s" % (name, resource.product, connections))
-    assert resources, "No resources found for account: %s" % account.name
+        print(f"{name} ({resource.product}): {connections}")
+    assert resources, f"No resources found for account: {account.name}"
 
 
 def test_myplex_connect_to_resource(plex, account):
@@ -53,8 +53,8 @@ def test_myplex_devices(account):
     for device in devices:
         name = device.name or "Unknown"
         connections = ", ".join(device.connections) if device.connections else "None"
-        print("%s (%s): %s" % (name, device.product, connections))
-    assert devices, "No devices found for account: %s" % account.name
+        print(f"{name} ({device.product}): {connections}")
+    assert devices, f"No devices found for account: {account.name}"
 
 
 def test_myplex_device(account, plex):
@@ -74,10 +74,10 @@ def test_myplex_users(account):
     users = account.users()
     if not len(users):
         return pytest.skip("You have to add a shared account into your MyPlex")
-    print("Found %s users." % len(users))
+    print(f"Found {len(users)} users.")
     user = account.user(users[0].title)
-    print("Found user: %s" % user)
-    assert user, "Could not find user %s" % users[0].title
+    print(f"Found user: {user}")
+    assert user, f"Could not find user {users[0].title}"
 
     assert (
         len(users[0].servers[0].sections()) > 0
@@ -219,9 +219,7 @@ def test_myplex_updateFriend(account, plex, mocker, shared_username):
 
 def test_myplex_createExistingUser(account, plex, shared_username):
     user = account.user(shared_username)
-    url = "https://plex.tv/api/invites/requested/{}?friend=0&server=0&home=1".format(
-        user.id
-    )
+    url = f"https://plex.tv/api/invites/requested/{user.id}?friend=0&server=0&home=1"
 
     account.createExistingUser(user, plex)
     assert shared_username in [u.username for u in account.users() if u.home is True]

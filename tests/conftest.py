@@ -51,7 +51,7 @@ ENTITLEMENTS = {
     "windows",
     "windows_phone",
 }
-SYNC_DEVICE_IDENTIFIER = "test-sync-client-%s" % plexapi.X_PLEX_IDENTIFIER
+SYNC_DEVICE_IDENTIFIER = f"test-sync-client-{plexapi.X_PLEX_IDENTIFIER}"
 SYNC_DEVICE_HEADERS = {
     "X-Plex-Provides": "sync-target",
     "X-Plex-Platform": "iOS",
@@ -320,7 +320,7 @@ def shared_username(account):
             in (user.username.lower(), user.email.lower(), str(user.id))
         ):
             return username
-    pytest.skip("Shared user %s wasn't found in your MyPlex account" % username)
+    pytest.skip(f"Shared user {username} wasn't found in your MyPlex account")
 
 
 @pytest.fixture()
@@ -423,9 +423,6 @@ def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
         time.sleep(delay)
         ready = condition_function(*args, **kwargs)
 
-    assert ready, "Wait timeout after %d retries, %.2f seconds" % (
-        retries,
-        time.time() - start,
-    )
+    assert ready, f"Wait timeout after {int(retries)} retries, {time.time() - start:.2f} seconds"
 
     return ready
