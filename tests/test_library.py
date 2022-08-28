@@ -120,7 +120,7 @@ def test_library_fetchItem(plex, movie):
 def test_library_onDeck(plex, movie):
     movie.updateProgress(movie.duration // 4)  # set progress to 25%
     assert movie in plex.library.onDeck()
-    movie.markUnwatched()
+    movie.markUnplayed()
 
 
 def test_library_recentlyAdded(plex):
@@ -264,10 +264,10 @@ def test_library_deleteMediaPreviews(movies):
 def test_library_MovieSection_onDeck(movie, movies, tvshows, episode):
     movie.updateProgress(movie.duration // 4)  # set progress to 25%
     assert movie in movies.onDeck()
-    movie.markUnwatched()
+    movie.markUnplayed()
     episode.updateProgress(episode.duration // 4)
     assert episode in tvshows.onDeck()
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_library_MovieSection_searchMovies(movies):
@@ -298,6 +298,35 @@ def test_library_MovieSection_collections(movies, movie):
 def test_library_MovieSection_collection_exception(movies):
     with pytest.raises(NotFound):
         movies.collection("Does Not Exists")
+
+
+@pytest.mark.authenticated
+def test_library_MovieSection_managedHubs(movies):
+    recommendations = movies.managedHubs()
+    with pytest.raises(BadRequest):
+        recommendations[0].remove()
+    first = recommendations[0]
+    first.promoteRecommended().promoteHome().promoteShared()
+    assert first.promotedToRecommended is True
+    assert first.promotedToOwnHome is True
+    assert first.promotedToSharedHome is True
+    first.demoteRecommended().demoteHome().demoteShared()
+    assert first.promotedToRecommended is False
+    assert first.promotedToOwnHome is False
+    assert first.promotedToSharedHome is False
+    last = recommendations[-1]
+    last.move()
+    recommendations = movies.managedHubs()
+    assert first.identifier == recommendations[1].identifier
+    assert last.identifier == recommendations[0].identifier
+    last.move(after=first)
+    recommendations = movies.managedHubs()
+    assert first.identifier == recommendations[0].identifier
+    assert last.identifier == recommendations[1].identifier
+    movies.resetManagedHubs()
+    recommendations = movies.managedHubs()
+    assert first.identifier == recommendations[0].identifier
+    assert last.identifier == recommendations[-1].identifier
 
 
 def test_library_MovieSection_PlexWebURL(plex, movies):

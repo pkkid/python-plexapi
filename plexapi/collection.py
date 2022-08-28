@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
-from plexapi.library import LibrarySection
+from plexapi.library import LibrarySection, ManagedHub
 from plexapi.mixins import (
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
@@ -194,6 +194,18 @@ class Collection(
             self._items = items
         return self._items
 
+    def visibility(self):
+        """ Returns the :class:`~plexapi.library.ManagedHub` for this collection. """
+        key = f'/hubs/sections/{self.librarySectionID}/manage?metadataItemId={self.ratingKey}'
+        data = self._server.query(key)
+        hub = self.findItem(data, cls=ManagedHub)
+        if hub is None:
+            hub = ManagedHub(self._server, data, parent=self)
+            hub.identifier = f'custom.collection.{self.librarySectionID}.{self.ratingKey}'
+            hub.title = self.title
+            hub._promoted = False
+        return hub
+
     def get(self, title):
         """ Alias to :func:`~plexapi.library.Collection.item`. """
         return self.item(title)
@@ -222,7 +234,7 @@ class Collection(
         key = user_dict.get(user)
         if key is None:
             raise BadRequest(f'Unknown collection filtering user: {user}. Options {list(user_dict)}')
-        self.editAdvanced(collectionFilterBasedOnUser=key)
+        return self.editAdvanced(collectionFilterBasedOnUser=key)
 
     def modeUpdate(self, mode=None):
         """ Update the collection mode advanced setting.
@@ -249,7 +261,7 @@ class Collection(
         key = mode_dict.get(mode)
         if key is None:
             raise BadRequest(f'Unknown collection mode: {mode}. Options {list(mode_dict)}')
-        self.editAdvanced(collectionMode=key)
+        return self.editAdvanced(collectionMode=key)
 
     def sortUpdate(self, sort=None):
         """ Update the collection order advanced setting.
@@ -277,7 +289,7 @@ class Collection(
         key = sort_dict.get(sort)
         if key is None:
             raise BadRequest(f'Unknown sort dir: {sort}. Options: {list(sort_dict)}')
-        self.editAdvanced(collectionSort=key)
+        return self.editAdvanced(collectionSort=key)
 
     def addItems(self, items):
         """ Add items to the collection.
@@ -307,6 +319,7 @@ class Collection(
         args = {'uri': uri}
         key = f"{self.key}/items{utils.joinArgs(args)}"
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def removeItems(self, items):
         """ Remove items from the collection.
@@ -327,15 +340,16 @@ class Collection(
         for item in items:
             key = f'{self.key}/items/{item.ratingKey}'
             self._server.query(key, method=self._server._session.delete)
+        return self
 
     def moveItem(self, item, after=None):
         """ Move an item to a new position in the collection.
 
             Parameters:
-                items (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
-                    or :class:`~plexapi.photo.Photo` objects to be moved in the collection.
+                item (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
+                    or :class:`~plexapi.photo.Photo` object to be moved in the collection.
                 after (obj): :class:`~plexapi.audio.Audio`, :class:`~plexapi.video.Video`,
-                    or :class:`~plexapi.photo.Photo` objects to move the item after in the collection.
+                    or :class:`~plexapi.photo.Photo` object to move the item after in the collection.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When trying to move items in a smart collection.
@@ -349,6 +363,7 @@ class Collection(
             key += f'?after={after.ratingKey}'
 
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def updateFilters(self, libtype=None, limit=None, sort=None, filters=None, **kwargs):
         """ Update the filters for a smart collection.
@@ -379,6 +394,7 @@ class Collection(
         args = {'uri': uri}
         key = f"{self.key}/items{utils.joinArgs(args)}"
         self._server.query(key, method=self._server._session.put)
+        return self
 
     @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):

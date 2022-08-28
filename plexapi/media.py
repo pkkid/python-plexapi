@@ -195,6 +195,7 @@ class MediaPart(PlexObject):
         else:
             key = f"/library/parts/{self.id}?audioStreamID={stream}&allParts=1"
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def setDefaultSubtitleStream(self, stream):
         """ Set the default :class:`~plexapi.media.SubtitleStream` for this MediaPart.
@@ -207,11 +208,13 @@ class MediaPart(PlexObject):
         else:
             key = f"/library/parts/{self.id}?subtitleStreamID={stream}&allParts=1"
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def resetDefaultSubtitleStream(self):
         """ Set default subtitle of this MediaPart to 'none'. """
         key = f"/library/parts/{self.id}?subtitleStreamID=0&allParts=1"
         self._server.query(key, method=self._server._session.put)
+        return self
 
 
 class MediaPartStream(PlexObject):
@@ -671,6 +674,10 @@ class MediaTag(PlexObject):
                 person for Directors and Roles (ex: Animation, Stephen Graham, etc).
             thumb (str): URL to thumbnail image for :class:`~plexapi.media.Role` only.
     """
+
+    def __str__(self):
+        """ Returns the tag name. """
+        return self.tag
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """

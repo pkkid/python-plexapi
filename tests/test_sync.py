@@ -125,7 +125,7 @@ def test_add_episode_to_sync(clear_sync_device, episode):
 
 
 def test_limited_watched(clear_sync_device, show):
-    show.markUnwatched()
+    show.markUnplayed()
     new_item = show.sync(
         VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, limit=5, unwatched=False
     )
@@ -143,7 +143,7 @@ def test_limited_watched(clear_sync_device, show):
     )
     assert 5 == len(media_list)
     assert [e.ratingKey for e in episodes] == [m.ratingKey for m in media_list]
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     show._server.refreshSync()
     media_list = utils.wait_until(
         get_media, delay=0.25, timeout=3, item=item, server=show._server
@@ -153,7 +153,7 @@ def test_limited_watched(clear_sync_device, show):
 
 
 def test_limited_unwatched(clear_sync_device, show):
-    show.markUnwatched()
+    show.markUnplayed()
     new_item = show.sync(
         VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, limit=5, unwatched=True
     )
@@ -171,7 +171,7 @@ def test_limited_unwatched(clear_sync_device, show):
     )
     assert len(episodes) == len(media_list)
     assert [e.ratingKey for e in episodes] == [m.ratingKey for m in media_list]
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     show._server.refreshSync()
     episodes = show.episodes(viewCount=0)[:5]
     media_list = utils.wait_until(
@@ -182,7 +182,7 @@ def test_limited_unwatched(clear_sync_device, show):
 
 
 def test_unlimited_and_watched(clear_sync_device, show):
-    show.markUnwatched()
+    show.markUnplayed()
     new_item = show.sync(
         VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, unwatched=False
     )
@@ -200,7 +200,7 @@ def test_unlimited_and_watched(clear_sync_device, show):
     )
     assert len(episodes) == len(media_list)
     assert [e.ratingKey for e in episodes] == [m.ratingKey for m in media_list]
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     show._server.refreshSync()
     episodes = show.episodes()
     media_list = utils.wait_until(
@@ -211,7 +211,7 @@ def test_unlimited_and_watched(clear_sync_device, show):
 
 
 def test_unlimited_and_unwatched(clear_sync_device, show):
-    show.markUnwatched()
+    show.markUnplayed()
     new_item = show.sync(
         VIDEO_QUALITY_3_MBPS_720p, client=clear_sync_device, unwatched=True
     )
@@ -229,7 +229,7 @@ def test_unlimited_and_unwatched(clear_sync_device, show):
     )
     assert len(episodes) == len(media_list)
     assert [e.ratingKey for e in episodes] == [m.ratingKey for m in media_list]
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     show._server.refreshSync()
     episodes = show.episodes(viewCount=0)
     media_list = utils.wait_until(

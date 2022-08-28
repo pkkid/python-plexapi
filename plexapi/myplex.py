@@ -7,8 +7,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
 
 import requests
-from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
-                     X_PLEX_IDENTIFIER, log, logfilter, utils)
+from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE,
+                     X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER, log, logfilter, utils)
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -77,6 +77,7 @@ class MyPlexAccount(PlexObject):
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
+    VIEWSTATESYNC = 'https://plex.tv/api/v2/user/view_state_sync'                               # put
     # Hub sections
     VOD = 'https://vod.provider.plex.tv'                                                        # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
@@ -760,7 +761,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self, filter=None, sort=None, libtype=None, **kwargs):
+    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=9999999, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
             Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
             search for the media using the guid.
@@ -772,6 +773,7 @@ class MyPlexAccount(PlexObject):
                     ``titleSort`` (Title), ``originallyAvailableAt`` (Release Date), or ``rating`` (Critic Rating).
                     ``dir`` can be ``asc`` or ``desc``.
                 libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
+                maxresults (int, optional): Only return the specified number of results.
                 **kwargs (dict): Additional custom filters to apply to the search results.
 
 
@@ -799,9 +801,18 @@ class MyPlexAccount(PlexObject):
         if libtype:
             params['type'] = utils.searchType(libtype)
 
+        params['X-Plex-Container-Start'] = 0
+        params['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
         params.update(kwargs)
-        data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
-        return self._toOnlineMetadata(self.findItems(data))
+
+        results, subresults = [], '_init'
+        while subresults and maxresults > len(results):
+            data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
+            subresults = self.findItems(data)
+            results += subresults[:maxresults - len(results)]
+            params['X-Plex-Container-Start'] += params['X-Plex-Container-Size']
+
+        return self._toOnlineMetadata(results)
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
@@ -831,6 +842,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest(f'"{item.title}" is already on the watchlist')
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/addToWatchlist?ratingKey={ratingKey}', method=self._session.put)
+        return self
 
     def removeFromWatchlist(self, items):
         """ Remove media items from the user's watchlist
@@ -851,6 +863,7 @@ class MyPlexAccount(PlexObject):
                 raise BadRequest(f'"{item.title}" is not on the watchlist')
             ratingKey = item.guid.rsplit('/', 1)[-1]
             self.query(f'{self.METADATA}/actions/removeFromWatchlist?ratingKey={ratingKey}', method=self._session.put)
+        return self
 
     def userState(self, item):
         """ Returns a :class:`~plexapi.myplex.UserState` object for the specified item.
@@ -886,7 +899,7 @@ class MyPlexAccount(PlexObject):
 
         data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
         searchResults = data['MediaContainer'].get('SearchResults', [])
-        searchResult = next((s['SearchResult'] for s in searchResults if s.get('id') == 'external'), [])
+        searchResult = next((s.get('SearchResult', []) for s in searchResults if s.get('id') == 'external'), [])
 
         results = []
         for result in searchResult:
@@ -903,6 +916,32 @@ class MyPlexAccount(PlexObject):
             results.append(self._manuallyLoadXML(xml))
 
         return self._toOnlineMetadata(results)
+
+    @property
+    def viewStateSync(self):
+        """ Returns True or False if syncing of watch state and ratings
+            is enabled or disabled, respectively, for the account.
+        """
+        headers = {'Accept': 'application/json'}
+        data = self.query(self.VIEWSTATESYNC, headers=headers)
+        return data.get('consent')
+
+    def enableViewStateSync(self):
+        """ Enable syncing of watch state and ratings for the account. """
+        self._updateViewStateSync(True)
+
+    def disableViewStateSync(self):
+        """ Disable syncing of watch state and ratings for the account. """
+        self._updateViewStateSync(False)
+
+    def _updateViewStateSync(self, consent):
+        """ Enable or disable syncing of watch state and ratings for the account.
+
+            Parameters:
+                consent (bool): True to enable, False to disable.
+        """
+        params = {'consent': consent}
+        self.query(self.VIEWSTATESYNC, method=self._session.put, params=params)
 
     def link(self, pin):
         """ Link a device to the account using a pin code.
@@ -1219,7 +1258,6 @@ class MyPlexResource(PlexObject):
     def preferred_connections(
         self,
         ssl=None,
-        timeout=None,
         locations=DEFAULT_LOCATION_ORDER,
         schemes=DEFAULT_SCHEME_ORDER,
     ):
@@ -1231,7 +1269,6 @@ class MyPlexResource(PlexObject):
                 ssl (bool, optional): Set True to only connect to HTTPS connections. Set False to
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
-                timeout (int, optional): The timeout in seconds to attempt each connection.
         """
         connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
         for connection in self.connections:
@@ -1273,7 +1310,7 @@ class MyPlexResource(PlexObject):
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
-        connections = self.preferred_connections(ssl, timeout, locations, schemes)
+        connections = self.preferred_connections(ssl, locations, schemes)
         # Try connecting to all known resource connections in parallel, but
         # only return the first server (in order) that provides a response.
         cls = PlexServer if 'server' in self.provides else PlexClient

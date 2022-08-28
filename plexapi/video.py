@@ -6,16 +6,16 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
-    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
 )
 
 
-class Video(PlexPartialObject):
+class Video(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
         :class:`~plexapi.video.Episode`, and :class:`~plexapi.video.Clip`.
@@ -71,24 +71,9 @@ class Video(PlexPartialObject):
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
-    @property
-    def isWatched(self):
-        """ Returns True if this video is watched. """
-        return bool(self.viewCount > 0) if self.viewCount else False
-
     def url(self, part):
         """ Returns the full url for something. Typically used for getting a specific image. """
         return self._server.url(part, includeToken=True) if part else None
-
-    def markWatched(self):
-        """ Mark the video as played. """
-        key = f'/:/scrobble?key={self.ratingKey}&identifier=com.plexapp.plugins.library'
-        self._server.query(key)
-
-    def markUnwatched(self):
-        """ Mark the video as unplayed. """
-        key = f'/:/unscrobble?key={self.ratingKey}&identifier=com.plexapp.plugins.library'
-        self._server.query(key)
 
     def augmentation(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects.
@@ -141,6 +126,7 @@ class Video(PlexPartialObject):
                       }
             headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
+        return self
 
     def removeSubtitles(self, streamID=None, streamTitle=None):
         """ Remove Subtitle from movie's subtitles listing.
@@ -151,6 +137,7 @@ class Video(PlexPartialObject):
         for stream in self.subtitleStreams():
             if streamID == stream.id or streamTitle == stream.title:
                 self._server.query(stream.key, self._server._session.delete)
+        return self
 
     def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
                  locationID=-1, limit=None, unwatched=False):
@@ -259,6 +246,7 @@ class Video(PlexPartialObject):
 
         url = key + utils.joinArgs(params)
         self._server.query(url, method=self._server._session.put)
+        return self
 
     def sync(self, videoQuality, client=None, clientId=None, limit=None, unwatched=False, title=None):
         """ Add current video (movie, tv-show, season or episode) as sync item for specified device.
@@ -303,7 +291,7 @@ class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
     WatchlistMixin
@@ -322,6 +310,7 @@ class Movie(
             countries (List<:class:`~plexapi.media.Country`>): List of countries objects.
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the movie in milliseconds.
+            editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -362,6 +351,7 @@ class Movie(
         self.countries = self.findItems(data, media.Country)
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.editionTitle = data.attrib.get('editionTitle')
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
@@ -411,6 +401,16 @@ class Movie(
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
         data = self._server.query(self._details_key)
         return self.findItems(data, media.Review, rtag='Video')
+
+    def editions(self):
+        """ Returns a list of :class:`~plexapi.video.Movie` objects
+            for other editions of the same movie.
+        """
+        filters = {
+            'guid': self.guid,
+            'id!': self.ratingKey
+        }
+        return self.section().search(filters=filters)
 
 
 @utils.registerPlexObject
@@ -523,8 +523,8 @@ class Show(
         return self.roles
 
     @property
-    def isWatched(self):
-        """ Returns True if the show is fully watched. """
+    def isPlayed(self):
+        """ Returns True if the show is fully played. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     def onDeck(self):
@@ -678,8 +678,8 @@ class Season(
         ] if p])
 
     @property
-    def isWatched(self):
-        """ Returns True if the season is fully watched. """
+    def isPlayed(self):
+        """ Returns True if the season is fully played. """
         return bool(self.viewedLeafCount == self.leafCount)
 
     @property

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-from urllib.parse import quote, quote_plus, urlencode
+from urllib.parse import quote_plus, urlencode
 
 from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject
@@ -150,11 +150,13 @@ class Library(PlexObject):
         """
         # TODO: Should this check the response for success or the correct mediaprefix?
         self._server.query('/library/clean/bundles?async=1', method=self._server._session.put)
+        return self
 
     def emptyTrash(self):
         """ If a library has items in the Library Trash, use this option to empty the Trash. """
         for section in self.sections():
             section.emptyTrash()
+        return self
 
     def optimize(self):
         """ The Optimize option cleans up the server database from unused or fragmented data.
@@ -162,21 +164,25 @@ class Library(PlexObject):
             library, you may like to optimize the database.
         """
         self._server.query('/library/optimize?async=1', method=self._server._session.put)
+        return self
 
     def update(self):
         """ Scan this library for new items."""
         self._server.query('/library/sections/all/refresh')
+        return self
 
     def cancelUpdate(self):
         """ Cancel a library update. """
         key = '/library/sections/all/refresh'
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def refresh(self):
         """ Forces a download of fresh media information from the internet.
             This can take a long time. Any locked fields are not modified.
         """
         self._server.query('/library/sections/all/refresh?force=1')
+        return self
 
     def deleteMediaPreviews(self):
         """ Delete the preview thumbnails for the all sections. This cannot be
@@ -184,6 +190,7 @@ class Library(PlexObject):
         """
         for section in self.sections():
             section.deleteMediaPreviews()
+        return self
 
     def add(self, name='', type='', agent='', scanner='', location='', language='en', *args, **kwargs):
         """ Simplified add for the most common options.
@@ -549,6 +556,7 @@ class LibrarySection(PlexObject):
 
         part = f'/library/sections/{self.key}?agent={agent}&{urlencode(params, doseq=True)}'
         self._server.query(part, method=self._server._session.put)
+        return self
 
     def addLocations(self, location):
         """ Add a location to a library.
@@ -570,7 +578,7 @@ class LibrarySection(PlexObject):
             if not self._server.isBrowsable(path):
                 raise BadRequest(f'Path: {path} does not exist.')
             locations.append(path)
-        self.edit(location=locations)
+        return self.edit(location=locations)
 
     def removeLocations(self, location):
         """ Remove a location from a library.
@@ -595,7 +603,7 @@ class LibrarySection(PlexObject):
                 raise BadRequest(f'Path: {location} does not exist in the library.')
         if len(locations) == 0:
             raise BadRequest('You are unable to remove all locations from a library.')
-        self.edit(location=locations)
+        return self.edit(location=locations)
 
     def get(self, title):
         """ Returns the media item with the specified title.
@@ -606,8 +614,10 @@ class LibrarySection(PlexObject):
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: The title is not found in the library.
         """
-        key = f"/library/sections/{self.key}/all?includeGuids=1&title={quote(title, safe='')}"
-        return self.fetchItem(key, title__iexact=title)
+        try:
+            return self.search(title)[0]
+        except IndexError:
+            raise NotFound(f"Unable to find item '{title}'") from None
 
     def getGuid(self, guid):
         """ Returns the media item with the specified external Plex, IMDB, TMDB, or TVDB ID.
@@ -667,6 +677,18 @@ class LibrarySection(PlexObject):
         key = f'/library/sections/{self.key}/folder'
         return self.fetchItems(key, Folder)
 
+    def managedHubs(self):
+        """ Returns a list of available :class:`~plexapi.library.ManagedHub` for this library section.
+        """
+        key = f'/hubs/sections/{self.key}/manage'
+        return self.fetchItems(key, ManagedHub)
+
+    def resetManagedHubs(self):
+        """ Reset the managed hub customizations for this library section.
+        """
+        key = f'/hubs/sections/{self.key}/manage'
+        self._server.query(key, method=self._server._session.delete)
+
     def hubs(self):
         """ Returns a list of available :class:`~plexapi.library.Hub` for this library section.
         """
@@ -706,7 +728,7 @@ class LibrarySection(PlexObject):
             else:
                 raise NotFound(f'{value} not found in {enums}')
 
-        self.edit(**data)
+        return self.edit(**data)
 
     def defaultAdvanced(self):
         """ Edit all of library's advanced settings to default. """
@@ -718,7 +740,7 @@ class LibrarySection(PlexObject):
             else:
                 data[key % setting.id] = setting.default
 
-        self.edit(**data)
+        return self.edit(**data)
 
     def _lockUnlockAllField(self, field, libtype=None, locked=True):
         """ Lock or unlock a field for all items in the library. """
@@ -729,6 +751,7 @@ class LibrarySection(PlexObject):
         }
         key = f'/library/sections/{self.key}/all{utils.joinArgs(args)}'
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def lockAllField(self, field, libtype=None):
         """ Lock a field for all items in the library.
@@ -738,7 +761,7 @@ class LibrarySection(PlexObject):
                 libtype (str, optional): The library type to lock (movie, show, season, episode,
                     artist, album, track, photoalbum, photo). Default is the main library type.
         """
-        self._lockUnlockAllField(field, libtype=libtype, locked=True)
+        return self._lockUnlockAllField(field, libtype=libtype, locked=True)
 
     def unlockAllField(self, field, libtype=None):
         """ Unlock a field for all items in the library.
@@ -748,7 +771,7 @@ class LibrarySection(PlexObject):
                 libtype (str, optional): The library type to lock (movie, show, season, episode,
                     artist, album, track, photoalbum, photo). Default is the main library type.
         """
-        self._lockUnlockAllField(field, libtype=libtype, locked=False)
+        return self._lockUnlockAllField(field, libtype=libtype, locked=False)
 
     def timeline(self):
         """ Returns a timeline query for this library section. """
@@ -782,11 +805,13 @@ class LibrarySection(PlexObject):
         """
         key = f'/library/sections/{self.key}/analyze'
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def emptyTrash(self):
         """ If a section has items in the Trash, use this option to empty the Trash. """
         key = f'/library/sections/{self.key}/emptyTrash'
         self._server.query(key, method=self._server._session.put)
+        return self
 
     def update(self, path=None):
         """ Scan this section for new media.
@@ -798,11 +823,13 @@ class LibrarySection(PlexObject):
         if path is not None:
             key += f'?path={quote_plus(path)}'
         self._server.query(key)
+        return self
 
     def cancelUpdate(self):
         """ Cancel update of this Library Section. """
         key = f'/library/sections/{self.key}/refresh'
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def refresh(self):
         """ Forces a download of fresh media information from the internet.
@@ -810,6 +837,7 @@ class LibrarySection(PlexObject):
         """
         key = f'/library/sections/{self.key}/refresh?force=1'
         self._server.query(key)
+        return self
 
     def deleteMediaPreviews(self):
         """ Delete the preview thumbnails for items in this library. This cannot
@@ -817,6 +845,7 @@ class LibrarySection(PlexObject):
         """
         key = f'/library/sections/{self.key}/indexes'
         self._server.query(key, method=self._server._session.delete)
+        return self
 
     def _loadFilters(self):
         """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and
@@ -1376,48 +1405,47 @@ class LibrarySection(PlexObject):
 
             **Using Plex Operators**
 
-            Operators can be appended to the filter field to narrow down results with more granularity. If no
-            operator is specified, the default operator is assumed to be ``=``. The following is a list of
-            possible operators depending on the data type of the filter being applied. A special ``&`` operator
-            can also be used to ``AND`` together a list of values.
+            Operators can be appended to the filter field to narrow down results with more granularity.
+            The following is a list of possible operators depending on the data type of the filter being applied.
+            A special ``&`` operator can also be used to ``AND`` together a list of values.
 
             Type: :class:`~plexapi.media.MediaTag` or *subtitleLanguage* or *audioLanguage*
 
-            * ``=``: ``is``
-            * ``!=``: ``is not``
+            * no operator: ``is``
+            * ``!``: ``is not``
 
             Type: *int*
 
-            * ``=``: ``is``
-            * ``!=``: ``is not``
-            * ``>>=``: ``is greater than``
-            * ``<<=``: ``is less than``
+            * no operator: ``is``
+            * ``!``: ``is not``
+            * ``>>``: ``is greater than``
+            * ``<<``: ``is less than``
 
             Type: *str*
 
-            * ``=``: ``contains``
-            * ``!=``: ``does not contain``
-            * ``==``: ``is``
-            * ``!==``: ``is not``
-            * ``<=``: ``begins with``
-            * ``>=``: ``ends with``
+            * no operator: ``contains``
+            * ``!``: ``does not contain``
+            * ``=``: ``is``
+            * ``!=``: ``is not``
+            * ``<``: ``begins with``
+            * ``>``: ``ends with``
 
             Type: *bool*
 
-            * ``=``: ``is true``
-            * ``!=``: ``is false``
+            * no operator: ``is true``
+            * ``!``: ``is false``
 
             Type: *datetime*
 
-            * ``<<=``: ``is before``
-            * ``>>=``: ``is after``
+            * ``<<``: ``is before``
+            * ``>>``: ``is after``
 
             Type: *resolution*
 
-            * ``=``: ``is``
+            * no operator: ``is``
 
             Operators cannot be included directly in the function parameters so the filters
-            must be provided as a filters dictionary. The trailing ``=`` on the operator may be excluded.
+            must be provided as a filters dictionary.
 
             Examples:
 
@@ -2843,6 +2871,137 @@ class FilterChoice(PlexObject):
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
+
+
+class ManagedHub(PlexObject):
+    """ Represents a Managed Hub (recommendation) inside a library.
+
+        Attributes:
+            TAG (str): 'Hub'
+            deletable (bool): True if the Hub can be deleted (promoted collection).
+            homeVisibility (str): Promoted home visibility (none, all, admin, or shared).
+            identifier (str): Hub identifier for the managed hub.
+            promotedToOwnHome (bool): Promoted to own home.
+            promotedToRecommended (bool): Promoted to recommended.
+            promotedToSharedHome (bool): Promoted to shared home.
+            recommendationsVisibility (str): Promoted recommendation visibility (none or all).
+            title (str): Title of managed hub.
+    """
+    TAG = 'Hub'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.deletable = utils.cast(bool, data.attrib.get('deletable', True))
+        self.homeVisibility = data.attrib.get('homeVisibility', 'none')
+        self.identifier = data.attrib.get('identifier')
+        self.promotedToOwnHome = utils.cast(bool, data.attrib.get('promotedToOwnHome', False))
+        self.promotedToRecommended = utils.cast(bool, data.attrib.get('promotedToRecommended', False))
+        self.promotedToSharedHome = utils.cast(bool, data.attrib.get('promotedToSharedHome', False))
+        self.recommendationsVisibility = data.attrib.get('recommendationsVisibility', 'none')
+        self.title = data.attrib.get('title')
+        self._promoted = True  # flag to indicate if this hub has been promoted on the list of managed recommendations
+
+        parent = self._parent()
+        self.librarySectionID = parent.key if isinstance(parent, LibrarySection) else parent.librarySectionID
+
+    def reload(self):
+        """ Reload the data for this managed hub. """
+        key = f'/hubs/sections/{self.librarySectionID}/manage'
+        hub = self.fetchItem(key, self.__class__, identifier=self.identifier)
+        self.__dict__.update(hub.__dict__)
+        return self
+
+    def move(self, after=None):
+        """ Move a managed hub to a new position in the library's Managed Recommendations.
+
+            Parameters:
+                after (obj): :class:`~plexapi.library.ManagedHub` object to move the item after in the collection.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to move a Hub that is not a Managed Recommendation.
+        """
+        if not self._promoted:
+            raise BadRequest('Collection must be a Managed Recommendation to be moved')
+        key = f'/hubs/sections/{self.librarySectionID}/manage/{self.identifier}/move'
+        if after:
+            key = f'{key}?after={after.identifier}'
+        self._server.query(key, method=self._server._session.put)
+
+    def remove(self):
+        """ Removes a managed hub from the library's Managed Recommendations.
+
+            Raises:
+                :class:`plexapi.exceptions.BadRequest`: When trying to remove a Hub that is not a Managed Recommendation
+                    or when the Hub cannot be removed.
+        """
+        if not self._promoted:
+            raise BadRequest('Collection must be a Managed Recommendation to be removed')
+        if not self.deletable:
+            raise BadRequest(f'{self.title} managed hub cannot be removed' % self.title)
+        key = f'/hubs/sections/{self.librarySectionID}/manage/{self.identifier}'
+        self._server.query(key, method=self._server._session.delete)
+
+    def updateVisibility(self, recommended=None, home=None, shared=None):
+        """ Update the managed hub's visibility settings.
+
+            Parameters:
+                recommended (bool): True to make visible on your Library Recommended page. False to hide. Default None.
+                home (bool): True to make visible on your Home page. False to hide. Default None.
+                shared (bool): True to make visible on your Friends' Home page. False to hide. Default None.
+
+            Example:
+
+                .. code-block:: python
+
+                    managedHub.updateVisibility(recommended=True, home=True, shared=False).reload()
+                    # or using chained methods
+                    managedHub.promoteRecommended().promoteHome().demoteShared().reload()
+        """
+        params = {
+            'promotedToRecommended': int(self.promotedToRecommended),
+            'promotedToOwnHome': int(self.promotedToOwnHome),
+            'promotedToSharedHome': int(self.promotedToSharedHome),
+        }
+        if recommended is not None:
+            params['promotedToRecommended'] = int(recommended)
+        if home is not None:
+            params['promotedToOwnHome'] = int(home)
+        if shared is not None:
+            params['promotedToSharedHome'] = int(shared)
+
+        if not self._promoted:
+            params['metadataItemId'] = self.identifier.rsplit('.')[-1]
+            key = f'/hubs/sections/{self.librarySectionID}/manage'
+            self._server.query(key, method=self._server._session.post, params=params)
+        else:
+            key = f'/hubs/sections/{self.librarySectionID}/manage/{self.identifier}'
+            self._server.query(key, method=self._server._session.put, params=params)
+        return self.reload()
+
+    def promoteRecommended(self):
+        """ Show the managed hub on your Library Recommended Page. """
+        return self.updateVisibility(recommended=True)
+
+    def demoteRecommended(self):
+        """ Hide the managed hub on your Library Recommended Page. """
+        return self.updateVisibility(recommended=False)
+
+    def promoteHome(self):
+        """ Show the managed hub on your Home Page. """
+        return self.updateVisibility(home=True)
+
+    def demoteHome(self):
+        """ Hide the manged hub on your Home Page. """
+        return self.updateVisibility(home=False)
+
+    def promoteShared(self):
+        """ Show the managed hub on your Friends' Home Page. """
+        return self.updateVisibility(shared=True)
+
+    def demoteShared(self):
+        """ Hide the managed hub on your Friends' Home Page. """
+        return self.updateVisibility(shared=False)
 
 
 class Folder(PlexObject):

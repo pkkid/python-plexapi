@@ -547,6 +547,7 @@ class PlexServer(PlexObject):
                 f'Invalid butler task: {task}. Available tasks are: {validTasks}'
             )
         self.query(f'/butler/{task}', method=self._session.post)
+        return self
 
     @deprecated('use "checkForUpdate" instead')
     def check_for_update(self, force=True, download=False):
@@ -753,21 +754,27 @@ class PlexServer(PlexObject):
         """ Returns a list of all active :class:`~plexapi.media.TranscodeSession` objects. """
         return self.fetchItems('/transcode/sessions')
 
-    def startAlertListener(self, callback=None):
+    def startAlertListener(self, callback=None, callbackError=None):
         """ Creates a websocket connection to the Plex Server to optionally receive
             notifications. These often include messages from Plex about media scans
             as well as updates to currently running Transcode Sessions.
 
-            NOTE: You need websocket-client installed in order to use this feature.
-            >> pip install websocket-client
+            Returns a new :class:`~plexapi.alert.AlertListener` object.
+
+            Note: ``websocket-client`` must be installed in order to use this feature.
+
+            .. code-block:: python
+
+                >> pip install websocket-client
 
             Parameters:
                 callback (func): Callback function to call on received messages.
+                callbackError (func): Callback function to call on errors.
 
             Raises:
                 :exc:`~plexapi.exception.Unsupported`: Websocket-client not installed.
         """
-        notifier = AlertListener(self, callback)
+        notifier = AlertListener(self, callback, callbackError)
         notifier.start()
         return notifier
 

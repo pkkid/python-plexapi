@@ -260,6 +260,9 @@ def test_myplex_claimToken(account):
 
 
 def test_myplex_watchlist(account, movie, show, artist):
+    # Ensure watchlist is cleared before tests
+    for item in account.watchlist():
+        account.removeFromWatchlist(item)
     assert not account.watchlist()
 
     # Add to watchlist from account
@@ -291,6 +294,10 @@ def test_myplex_watchlist(account, movie, show, artist):
     with pytest.raises(BadRequest):
         account.addToWatchlist(movie)
 
+    # Test retrieving maxresults from watchlist
+    watchlist = account.watchlist(maxresults=1)
+    assert len(watchlist) == 1
+
     # Remove multiple items from watchlist
     account.removeFromWatchlist([movie, show])
     assert not movie.onWatchlist(account) and not show.onWatchlist(account)
@@ -316,3 +323,11 @@ def test_myplex_searchDiscover(account, movie, show):
     assert show.guid in [r.guid for r in results]
     results = account.searchDiscover(show.title, libtype="movie")
     assert show.guid not in guids(results)
+
+
+@pytest.mark.authenticated
+def test_myplex_viewStateSync(account):
+    account.enableViewStateSync()
+    assert account.viewStateSync is True
+    account.disableViewStateSync()
+    assert account.viewStateSync is False

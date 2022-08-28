@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
 import functools
+import json
 import logging
 import os
 import re
@@ -603,3 +604,17 @@ def iterXMLBFS(root, tag=None):
         if tag is None or node.tag == tag:
             yield node
         queue.extend(list(node))
+
+
+def toJson(obj, **kwargs):
+    """ Convert an object to a JSON string.
+
+        Parameters:
+            obj (object): The object to convert.
+            **kwargs (dict): Keyword arguments to pass to ``json.dumps()``.
+    """
+    def serialize(obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return {k: v for k, v in obj.__dict__.items() if not k.startswith('_')}
+    return json.dumps(obj, default=serialize, **kwargs)
