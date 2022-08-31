@@ -671,11 +671,13 @@ class Season(
             yield episode
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [
-            self.__class__.__name__,
-            self.key.replace('/library/metadata/', '').replace('/children', ''),
-            '%s-s%s' % (self.parentTitle.replace(' ', '-')[:20], self.seasonNumber),
-        ] if p])
+        return '<{}>'.format(
+            ':'.join([p for p in [
+                self.__class__.__name__,
+                self.key.replace('/library/metadata/', '').replace('/children', ''),
+                f"{self.parentTitle.replace(' ', '-')[:20]}-{self.seasonNumber}",
+            ] if p])
+        )
 
     @property
     def isPlayed(self):
@@ -862,11 +864,13 @@ class Episode(
                 self.parentKey = f'/library/metadata/{self.parentRatingKey}'
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [
-            self.__class__.__name__,
-            self.key.replace('/library/metadata/', '').replace('/children', ''),
-            '%s-%s' % (self.grandparentTitle.replace(' ', '-')[:20], self.seasonEpisode),
-        ] if p])
+        return '<{}>'.format(
+            ':'.join([p for p in [
+                self.__class__.__name__,
+                self.key.replace('/library/metadata/', '').replace('/children', ''),
+                f"{self.grandparentTitle.replace(' ', '-')[:20]}-{self.seasonEpisode}",
+            ] if p])
+        )
 
     def _prettyfilename(self):
         """ Returns a filename for use in download. """

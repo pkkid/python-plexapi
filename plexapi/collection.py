@@ -550,9 +550,8 @@ class Collection(
         sync_item.metadataType = self.metadataType
         sync_item.machineIdentifier = self._server.machineIdentifier
 
-        sync_item.location = 'library:///directory/%s' % quote_plus(
-            '%s/children?excludeAllLeaves=1' % (self.key)
-        )
+        key = quote_plus(f'{self.key}/children?excludeAllLeaves=1')
+        sync_item.location = f'library:///directory/{key}'
         sync_item.policy = Policy.create(limit, unwatched)
 
         if self.isVideo:

@@ -95,7 +95,7 @@ class Media(PlexObject):
         try:
             return self._server.query(part, method=self._server._session.delete)
         except BadRequest:
-            log.error(f"Failed to delete {part}. This could be because you haven't allowed items to be deleted")
+            log.error("Failed to delete %s. This could be because you haven't allowed items to be deleted", part)
             raise
 
 

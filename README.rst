@@ -105,7 +105,7 @@ Usage Examples
 
     # Example 5: List all content with the word 'Game' in the title.
     for video in plex.search('Game'):
-        print('%s (%s)' % (video.title, video.TYPE))
+        print(f'{video.title} ({video.TYPE})')
 
 
 .. code-block:: python
