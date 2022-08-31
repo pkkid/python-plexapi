@@ -851,18 +851,22 @@ class LibrarySection(PlexObject):
         """ Retrieves and caches the list of :class:`~plexapi.library.FilteringType` and
             list of :class:`~plexapi.library.FilteringFieldType` for this library section.
         """
-        _key = ('/library/sections/%s/%s?includeMeta=1&includeAdvanced=1'
-               '&X-Plex-Container-Start=0&X-Plex-Container-Size=0')
+        _key = ('/library/sections/{key}/{filter}?includeMeta=1&includeAdvanced=1'
+                '&X-Plex-Container-Start=0&X-Plex-Container-Size=0')
                
-        key = _key % (self.key, 'all')
+        key = _key.format(key=self.key, filter='all')
         data = self._server.query(key)
         self._filterTypes = self.findItems(data, FilteringType, rtag='Meta')
         self._fieldTypes = self.findItems(data, FilteringFieldType, rtag='Meta')
 
         if self.TYPE != 'photo':  # No collections for photo library
-            key = _key % (self.key, 'collections')
+            key = _key.format(key=self.key, filter='collections')
             data = self._server.query(key)
             self._filterTypes.extend(self.findItems(data, FilteringType, rtag='Meta'))
+
+        # Manually add guid field type, only allowing "is" operator
+        guidFieldType = '<FieldType type="guid"><Operator key="=" title="is"/></FieldType>'
+        self._fieldTypes.append(self._manuallyLoadXML(guidFieldType, FilteringFieldType))
 
     def filterTypes(self):
         """ Returns a list of available :class:`~plexapi.library.FilteringType` for this library section. """
@@ -2673,7 +2677,7 @@ class FilteringType(PlexObject):
         """
         # Fields: (key, type, title)
         additionalFields = [
-            ('guid', 'string', 'Guid'),
+            ('guid', 'guid', 'Guid'),
             ('id', 'integer', 'Rating Key'),
             ('index', 'integer', f'{self.type.capitalize()} Number'),
             ('lastRatedAt', 'date', f'{self.type.capitalize()} Last Rated'),
