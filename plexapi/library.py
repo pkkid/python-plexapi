@@ -1444,7 +1444,7 @@ class LibrarySection(PlexObject):
             * ``<<``: ``is before``
             * ``>>``: ``is after``
 
-            Type: *resolution*
+            Type: *resolution* or *guid*
 
             * no operator: ``is``
 
