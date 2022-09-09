@@ -175,18 +175,6 @@ jobs:
           --cov=plexapi \
           tests 
 
-    - name: Sync tests with ${{ matrix.plex }} server
-      if: matrix.plex == 'claimed'
-      run: |
-        . venv/bin/activate
-        pytest \
-          -rxXs \
-          --tb=native \
-          --verbose \
-          --cov=plexapi \
-          --cov-append \
-          tests/test_sync.py
-
     - name: Unlink PMS from MyPlex account
       if: matrix.plex == 'claimed' && always()
       run: |
