@@ -252,6 +252,6 @@ jobs:
         coverage xml
 
     - name: Upload ${{ matrix.plex }} coverage to Codecov
-      uses: codecov/codecov-action@v3.1.0
+      uses: codecov/codecov-action@v3.1.1
       with:
         flags: ${{ matrix.plex }}
