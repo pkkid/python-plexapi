@@ -154,12 +154,12 @@ def test_server_search(plex, movie):
     results = plex.search(genre.tag, mediatype="genre")
     hub_tag = results[0]
     assert utils.is_int(hub_tag.count)
-    assert hub_tag.filter == "genre={}".format(hub_tag.id)
+    assert hub_tag.filter == f"genre={hub_tag.id}"
     assert utils.is_int(hub_tag.id)
     assert utils.is_metadata(
         hub_tag.key,
         prefix=hub_tag.librarySectionKey,
-        contains="{}/all".format(hub_tag.librarySectionID),
+        contains=f"{hub_tag.librarySectionID}/all",
         suffix=hub_tag.filter)
     assert utils.is_int(hub_tag.librarySectionID)
     assert utils.is_metadata(hub_tag.librarySectionKey, prefix="/library/sections")
@@ -208,10 +208,10 @@ def test_server_playlists(plex, show):
 
 
 def test_server_history(plex, movie):
-    movie.markWatched()
+    movie.markPlayed()
     history = plex.history()
     assert len(history)
-    movie.markUnwatched()
+    movie.markUnplayed()
 
 
 def test_server_Server_query(plex):
@@ -262,7 +262,7 @@ def test_server_butlerTasks(plex):
 
 
 def test_server_runButlerTask(plex):
-    assert plex.runButlerTask("CleanOldBundles") is None
+    assert plex.runButlerTask("CleanOldBundles")
     with pytest.raises(BadRequest):
         plex.runButlerTask("<This-task-should-not-exist>")
 
@@ -580,7 +580,7 @@ def test_server_PlexWebURL_playlists(plex):
     assert url.startswith('https://app.plex.tv/desktop')
     assert plex.machineIdentifier in url
     assert 'source=playlists' in url
-    assert 'pivot=playlists.%s' % tab in url
+    assert f'pivot=playlists.{tab}' in url
 
 
 def test_server_agents(plex):

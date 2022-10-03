@@ -46,6 +46,10 @@ def edit_content_rating(obj):
     _test_mixins_field(obj, "contentRating", "ContentRating")
 
 
+def edit_edition_title(obj):
+    _test_mixins_field(obj, "editionTitle", "EditionTitle")
+
+
 def edit_originally_available(obj):
     _test_mixins_field(obj, "originallyAvailableAt", "OriginallyAvailable")
 
@@ -96,17 +100,33 @@ def _test_mixins_tag(obj, attr, tag_method):
     field_name = obj._tagSingular(attr)
     _tags = lambda: [t.tag for t in getattr(obj, attr)]
     _fields = lambda: [f for f in obj.fields if f.name == field_name]
+
     # Check tag is not present to begin with
     tags = _tags()
     assert TEST_MIXIN_TAG not in tags
-    # Add tag and lock the field
+
+    # Add tag string and lock the field
     add_tag_method(TEST_MIXIN_TAG)
     obj.reload()
     tags = _tags()
     fields = _fields()
     assert TEST_MIXIN_TAG in tags
     assert fields and fields[0].locked
-    # Remove tag and unlock to field to restore the clean state
+
+    # Remove MediaTag object
+    mediaTag = next(t for t in getattr(obj, attr) if t.tag == TEST_MIXIN_TAG)
+    remove_tag_method(mediaTag)
+    obj.reload()
+    tags = _tags()
+    assert TEST_MIXIN_TAG not in tags
+
+    # Add MediaTag object
+    add_tag_method(mediaTag)
+    obj.reload()
+    tags = _tags()
+    assert TEST_MIXIN_TAG in tags
+
+    # Remove tag string and unlock to field to restore the clean state
     remove_tag_method(TEST_MIXIN_TAG, locked=False)
     obj.reload()
     tags = _tags()

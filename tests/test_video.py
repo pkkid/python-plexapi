@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.sync import VIDEO_QUALITY_3_MBPS_720p
 
 from . import conftest as utils
 from . import test_media, test_mixins
@@ -25,7 +26,7 @@ def test_video_ne(movies):
     assert (
         len(
             movies.fetchItems(
-                "/library/sections/%s/all" % movies.key, title__ne="Sintel"
+                f"/library/sections/{movies.key}/all", title__ne="Sintel"
             )
         )
         == 3
@@ -55,6 +56,7 @@ def test_video_Movie_attrs(movies):
     assert movie.chapterSource is None
     assert not movie.collections
     assert movie.contentRating in utils.CONTENTRATINGS
+    assert movie.editionTitle is None
     if movie.countries:
         assert "United States of America" in [i.tag for i in movie.countries]
     if movie.producers:
@@ -87,7 +89,6 @@ def test_video_Movie_attrs(movies):
         assert utils.is_metadata(movie.primaryExtraKey)
     assert movie.ratingKey >= 1
     assert movie._server._baseurl == utils.SERVER_BASEURL
-    assert movie.sessionKey is None
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == "The Greatest Break-Up Story Ever Told."
@@ -96,7 +97,6 @@ def test_video_Movie_attrs(movies):
         assert utils.is_thumb(movie.thumb)
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
-    assert not movie.transcodeSessions
     assert movie.type == "movie"
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.useOriginalTitle == -1
@@ -104,7 +104,7 @@ def test_video_Movie_attrs(movies):
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
     assert movie.viewedAt is None
-    assert movie.year == 2008
+    assert movie.year == 2009
     # Audio
     audio = movie.media[0].parts[0].audioStreams()[0]
     if audio.audioChannelLayout:
@@ -123,6 +123,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(audio._initpath)
     assert audio.language is None
     assert audio.languageCode is None
+    assert audio.languageTag is None
     assert audio.profile == "lc"
     assert audio.requiredBandwidths is None or audio.requiredBandwidths
     assert audio.samplingRate == 44100
@@ -199,6 +200,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(video._initpath)
     assert video.language is None
     assert video.languageCode is None
+    assert video.languageTag is None
     assert utils.is_int(video.level)
     assert video.profile in utils.PROFILES
     assert video.pixelAspectRatio is None
@@ -257,6 +259,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream1._initpath)
     assert stream1.language is None
     assert stream1.languageCode is None
+    assert stream1.languageTag is None
     assert utils.is_int(stream1.level)
     assert stream1.profile in utils.PROFILES
     assert utils.is_int(stream1.refFrames)
@@ -282,6 +285,7 @@ def test_video_Movie_attrs(movies):
     assert utils.is_metadata(stream2._initpath)
     assert stream2.language is None
     assert stream2.languageCode is None
+    assert stream2.languageTag is None
     assert utils.is_int(stream2.samplingRate)
     assert stream2.selected is True
     assert stream2._server._baseurl == utils.SERVER_BASEURL
@@ -335,6 +339,16 @@ def test_video_Movie_isFullObject_and_reload(plex):
     assert movie_via_section_search.isFullObject() is True
     # If the verify that the object has been reloaded. xml from search only returns 3 actors.
     assert len(movie_via_section_search.roles) >= 3
+
+
+def test_video_movie_watched(movie):
+    movie.markUnplayed()
+    movie.markPlayed()
+    movie.reload()
+    assert movie.viewCount == 1
+    movie.markUnplayed()
+    movie.reload()
+    assert movie.viewCount == 0
 
 
 def test_video_Movie_isPartialObject(movie):
@@ -405,13 +419,6 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
         os.remove(filepath)
     except:
         pass
-
-
-def test_video_Movie_history(movie):
-    movie.markWatched()
-    history = movie.history()
-    assert len(history)
-    movie.markUnwatched()
 
 
 def test_video_Movie_match(movies):
@@ -573,6 +580,10 @@ def test_video_Movie_reviews(movies):
     assert review.text
 
 
+def test_video_Movie_editions(movie):
+    assert len(movie.editions()) == 0
+
+
 @pytest.mark.authenticated
 def test_video_Movie_extras(movies):
     movie = movies.get("Sita Sings The Blues")
@@ -654,6 +665,13 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_summary(movie)
     test_mixins.edit_tagline(movie)
     test_mixins.edit_title(movie)
+    with pytest.raises(BadRequest):
+        test_mixins.edit_edition_title(movie)
+
+
+@pytest.mark.authenticated
+def test_video_Movie_mixins_fields(movie):
+    test_mixins.edit_edition_title(movie)
 
 
 def test_video_Movie_mixins_tags(movie):
@@ -730,7 +748,7 @@ def test_video_Show_attrs(show):
         assert show.actors == show.roles
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert show.showOrdering in (None, 'aired')
-    assert show.studio == "Revolution Sun Studios"
+    assert show.studio == "Generator Entertainment"
     assert utils.is_string(show.summary, gte=100)
     assert show.tagline == "Winter is coming."
     assert utils.is_metadata(show.theme, contains="/theme/")
@@ -757,30 +775,23 @@ def test_video_Show_episode(show):
         show.episode(season=1337, episode=1337)
 
 
-def test_video_Show_history(show):
-    show.markWatched()
-    history = show.history()
-    assert len(history)
-    show.markUnwatched()
-
-
 def test_video_Show_watched(tvshows):
     show = tvshows.get("The 100")
     episode = show.episodes()[0]
-    episode.markWatched()
+    episode.markPlayed()
     watched = show.watched()
     assert len(watched) == 1 and watched[0].title == "Pilot"
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Show_unwatched(tvshows):
     show = tvshows.get("The 100")
     episodes = show.episodes()
     episode = episodes[0]
-    episode.markWatched()
+    episode.markPlayed()
     unwatched = show.unwatched()
     assert len(unwatched) == len(episodes) - 1
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Show_settings(show):
@@ -800,7 +811,7 @@ def test_video_Show_reload(plex):
 def test_video_Show_episodes(tvshows):
     show = tvshows.get("The 100")
     episodes = show.episodes()
-    episodes[0].markWatched()
+    episodes[0].markPlayed()
     unwatched = show.episodes(viewCount=0)
     assert len(unwatched) == len(episodes) - 1
 
@@ -833,16 +844,16 @@ def test_video_Show_analyze(show):
     show = show.analyze()
 
 
-def test_video_Show_markWatched(show):
-    show.markWatched()
+def test_video_Show_markPlayed(show):
+    show.markPlayed()
     show.reload()
-    assert show.isWatched
+    assert show.isPlayed
 
 
-def test_video_Show_markUnwatched(show):
-    show.markUnwatched()
+def test_video_Show_markUnplayed(show):
+    show.markUnplayed()
     show.reload()
-    assert not show.isWatched
+    assert not show.isPlayed
 
 
 def test_video_Show_refresh(show):
@@ -853,8 +864,8 @@ def test_video_Show_get(show):
     assert show.get("Winter Is Coming").title == "Winter Is Coming"
 
 
-def test_video_Show_isWatched(show):
-    assert not show.isWatched
+def test_video_Show_isPlayed(show):
+    assert not show.isPlayed
 
 
 def test_video_Show_section(show):
@@ -930,14 +941,6 @@ def test_video_Season(show):
     assert show.season("Season 1") == seasons[0]
 
 
-def test_video_Season_history(show):
-    season = show.season("Season 1")
-    season.markWatched()
-    history = season.history()
-    assert len(history)
-    season.markUnwatched()
-
-
 def test_video_Season_attrs(show):
     season = show.season("Season 1")
     assert utils.is_datetime(season.addedAt)
@@ -956,7 +959,7 @@ def test_video_Season_attrs(show):
     assert season.parentIndex == 1
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
-    assert season.parentStudio == "Revolution Sun Studios"
+    assert season.parentStudio == "Generator Entertainment"
     assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)
@@ -985,16 +988,16 @@ def test_video_Season_show(show):
 
 def test_video_Season_watched(show):
     season = show.season("Season 1")
-    season.markWatched()
+    season.markPlayed()
     season.reload()
-    assert season.isWatched
+    assert season.isPlayed
 
 
 def test_video_Season_unwatched(show):
     season = show.season("Season 1")
-    season.markUnwatched()
+    season.markUnplayed()
     season.reload()
-    assert not season.isWatched
+    assert not season.isPlayed
 
 
 def test_video_Season_get(show):
@@ -1070,18 +1073,13 @@ def test_video_Episode_updateTimeline(episode, patched_http_call):
     )  # 2 minutes.
 
 
-def test_video_Episode_stop(episode, mocker, patched_http_call):
-    mocker.patch.object(
-        episode, "session", return_value=list(mocker.MagicMock(id="hello"))
-    )
-    episode.stop(reason="It's past bedtime!")
-
-
-def test_video_Episode_history(episode):
-    episode.markWatched()
-    history = episode.history()
-    assert len(history)
-    episode.markUnwatched()
+def test_video_Episode(show):
+    episode = show.episode("Winter Is Coming")
+    assert episode == show.episode(season=1, episode=1)
+    with pytest.raises(BadRequest):
+        show.episode()
+    with pytest.raises(NotFound):
+        show.episode(season=1337, episode=1337)
 
 
 def test_video_Episode_hidden_season(episode):
@@ -1169,7 +1167,6 @@ def test_video_Episode_attrs(episode):
         assert utils.is_thumb(episode.thumb)
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
-    assert not episode.transcodeSessions
     assert episode.type == "episode"
     assert utils.is_datetime(episode.updatedAt)
     assert episode.userRating is None
@@ -1178,7 +1175,7 @@ def test_video_Episode_attrs(episode):
     if episode.writers:
         assert "David Benioff" in [i.tag for i in episode.writers]
     assert episode.year is None
-    assert episode.isWatched in [True, False]
+    assert episode.isPlayed in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
     assert episode.seasonEpisode == "s01e01"
@@ -1218,20 +1215,20 @@ def test_video_Episode_attrs(episode):
 def test_video_Episode_watched(tvshows):
     season = tvshows.get("The 100").season(1)
     episode = season.episode(1)
-    episode.markWatched()
+    episode.markPlayed()
     watched = season.watched()
     assert len(watched) == 1 and watched[0].title == "Pilot"
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 def test_video_Episode_unwatched(tvshows):
     season = tvshows.get("The 100").season(1)
     episodes = season.episodes()
     episode = episodes[0]
-    episode.markWatched()
+    episode.markPlayed()
     unwatched = season.unwatched()
     assert len(unwatched) == len(episodes) - 1
-    episode.markUnwatched()
+    episode.markUnplayed()
 
 
 @pytest.mark.xfail(reason="Changing images fails randomly")
@@ -1377,12 +1374,12 @@ def test_video_edits_locked(movie, episode):
     episode.edit(**{'titleSort.value': episodeTitleSort, 'titleSort.locked': 0})
 
 
-@pytest.mark.skip(
+@pytest.mark.xfail(
     reason="broken? assert len(plex.conversions()) == 1 may fail on some builds"
 )
-def test_video_optimize(movie, plex):
+def test_video_optimize(plex, movie, tvshows, show):
     plex.optimizedItems(removeAll=True)
-    movie.optimize(targetTagID=1)
+    movie.optimize(target="mobile")
     plex.conversions(pause=True)
     sleep(1)
     assert len(plex.optimizedItems()) == 1
@@ -1396,3 +1393,20 @@ def test_video_optimize(movie, plex):
     assert movie in videos
     plex.optimizedItems(removeAll=True)
     assert len(plex.optimizedItems()) == 0
+
+    locations = tvshows._locations()
+    show.optimize(
+        deviceProfile="Universal TV",
+        videoQuality=VIDEO_QUALITY_3_MBPS_720p,
+        locationID=locations[0].id,
+        limit=1,
+        unwatched=True
+    )
+    assert len(plex.optimizedItems()) == 1
+    plex.optimizedItems(removeAll=True)
+    assert len(plex.optimizedItems()) == 0
+
+    with pytest.raises(BadRequest):
+        movie.optimize()
+    with pytest.raises(BadRequest):
+        movie.optimize(target="mobile", locationID=-100)

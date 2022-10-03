@@ -54,7 +54,7 @@ def test_create_playqueue(plex, show):
     assert pq.playQueueLastAddedItemID == pq.items[2].playQueueItemID
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
     assert pq.items[2].ratingKey == episodes[3].ratingKey, (
-        "Missing added item: %s" % episodes[3]
+        f"Missing added item: {episodes[3]}"
     )
 
     # Test adding an item to play next
@@ -62,7 +62,7 @@ def test_create_playqueue(plex, show):
     assert pq.playQueueLastAddedItemID == pq.items[3].playQueueItemID
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
     assert pq.items[1].ratingKey == episodes[4].ratingKey, (
-        "Missing added item: %s" % episodes[4]
+        f"Missing added item: {episodes[4]}"
     )
 
     # Test add another item into Up Next section
@@ -70,7 +70,7 @@ def test_create_playqueue(plex, show):
     assert pq.playQueueLastAddedItemID == pq.items[4].playQueueItemID
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
     assert pq.items[4].ratingKey == episodes[5].ratingKey, (
-        "Missing added item: %s" % episodes[5]
+        f"Missing added item: {episodes[5]}"
     )
 
     # Test removing an item
@@ -78,20 +78,20 @@ def test_create_playqueue(plex, show):
     pq.removeItem(toremove)
     assert pq.playQueueLastAddedItemID == pq.items[3].playQueueItemID
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
-    assert toremove not in pq, "Removed item still in PlayQueue: %s" % toremove
-    assert len(pq) == 5, "PlayQueue should have 5 items, %s found" % len(pq)
+    assert toremove not in pq, f"Removed item still in PlayQueue: {toremove}"
+    assert len(pq) == 5, f"PlayQueue should have 5 items, {len(pq)} found"
 
     # Test clearing the PlayQueue
     pq.clear()
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
-    assert len(pq) == 1, "PlayQueue should have 1 item, %s found" % len(pq)
+    assert len(pq) == 1, f"PlayQueue should have 1 item, {len(pq)} found"
 
     # Test adding an item again
     pq.addItem(episodes[7])
     assert pq.playQueueLastAddedItemID == pq.items[1].playQueueItemID
     assert pq.playQueueSelectedMetadataItemID == episodes[0].ratingKey
     assert pq.items[1].ratingKey == episodes[7].ratingKey, (
-        "Missing added item: %s" % episodes[7]
+        f"Missing added item: {episodes[7]}"
     )
 
 

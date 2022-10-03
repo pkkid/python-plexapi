@@ -25,7 +25,7 @@ def test_Collection_attrs(collection):
     assert collection.key.startswith("/library/collections/")
     assert not collection.labels
     assert utils.is_int(collection.librarySectionID)
-    assert collection.librarySectionKey == "/library/sections/%s" % collection.librarySectionID
+    assert collection.librarySectionKey == f"/library/sections/{collection.librarySectionID}"
     assert collection.librarySectionTitle == "Movies"
     assert utils.is_int(collection.maxYear)
     assert utils.is_int(collection.minYear)
@@ -35,7 +35,7 @@ def test_Collection_attrs(collection):
     assert collection.subtype == "movie"
     assert collection.summary == ""
     assert collection.theme is None
-    assert collection.thumb.startswith("/library/collections/%s/composite" % collection.ratingKey)
+    assert collection.thumb.startswith(f"/library/collections/{collection.ratingKey}/composite")
     assert collection.thumbBlurHash is None
     assert collection.title == "Test Collection"
     assert collection.titleSort == collection.title
@@ -111,6 +111,29 @@ def test_Collection_sortUpdate(collection):
 
 
 @pytest.mark.authenticated
+def test_Collection_visibility(collection):
+    visibility = collection.visibility()
+    with pytest.raises(BadRequest):
+        visibility.move()
+    with pytest.raises(BadRequest):
+        visibility.remove()
+    visibility.updateVisibility(recommended=True, home=True, shared=True)
+    assert visibility.promotedToRecommended is True
+    assert visibility.promotedToOwnHome is True
+    assert visibility.promotedToSharedHome is True
+    visibility.updateVisibility(recommended=False, home=False, shared=False)
+    assert visibility.promotedToRecommended is False
+    assert visibility.promotedToOwnHome is False
+    assert visibility.promotedToSharedHome is False
+    visibility.move()
+    visibility.remove()
+    with pytest.raises(BadRequest):
+        visibility.move()
+    with pytest.raises(NotFound):
+        visibility.remove()
+
+
+@pytest.mark.authenticated
 def test_Collection_sortUpdate_custom(collection):
     collection.sortUpdate(sort="custom")
     collection.reload()
@@ -138,7 +161,7 @@ def test_Collection_add_move_remove(collection, movies):
     assert movie not in collection
     # Reset collection sort due to bug with corrupted XML response
     # for movies that have been moved in a collection and have
-    # progress (updateProgress) or marked as played (markWatched)
+    # progress (updateProgress) or marked as played (markPlayed)
     collection.sortUpdate("release")
 
 

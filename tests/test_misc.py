@@ -36,12 +36,12 @@ def test_readme_examples(plex):
     for title, example in examples:
         if _check_run_example(title):
             try:
-                print("\n%s\n%s" % (title, "-" * len(title)))
+                print(f"\n{title}\n{'-' * len(title)}")
                 exec("\n".join(example))
             except Exception as err:
                 failed += 1
-                print("Error running test: %s\nError: %s" % (title, err))
-    assert not failed, "%s examples raised an exception." % failed
+                print(f"Error running test: {title}\nError: {err}")
+    assert not failed, f"{failed} examples raised an exception."
 
 
 def _fetch_examples():

@@ -4,10 +4,11 @@
 name: CI
 
 on:
+  workflow_dispatch: ~
+  pull_request: ~
   push:
     branches:
       - master
-  pull_request: ~
 
 env:
   CACHE_VERSION: 1
@@ -23,13 +24,13 @@ jobs:
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
     - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.0.2
+      uses: actions/cache@v3.0.8
       with:
         path: venv
         key: >-
@@ -82,13 +83,13 @@ jobs:
 
     - name: Set up Python ${{ matrix.python-version }}
       id: python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Restore Python ${{ matrix.python-version }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.0.2
+      uses: actions/cache@v3.0.8
       with:
         path: venv
         key: >-
@@ -128,7 +129,7 @@ jobs:
 
     - name: Cache PMS Docker image
       id: docker-cache
-      uses: actions/cache@v3.0.2
+      uses: actions/cache@v3.0.8
       with:
         path: ~/.cache/docker/plexinc
         key: ${{ runner.os }}-docker-pms-${{ steps.docker-digest.outputs.digest }}
@@ -218,13 +219,13 @@ jobs:
 
     - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
     - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.0.2
+      uses: actions/cache@v3.0.8
       with:
         path: venv
         key: >-

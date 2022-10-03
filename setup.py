@@ -3,7 +3,6 @@
 """
 Install PlexAPI
 """
-import re
 try:
     from setuptools import setup
 except ImportError:
@@ -31,7 +30,7 @@ setup(
     url='https://github.com/pkkid/python-plexapi',
     packages=['plexapi'],
     install_requires=requirements,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     long_description=readme,
     keywords=['plex', 'api'],
     classifiers=[

@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.utils import deprecated
 
 
-class AdvancedSettingsMixin(object):
+class AdvancedSettingsMixin:
     """ Mixin for Plex objects that can have advanced settings. """
 
     def preferences(self):
@@ -27,40 +27,41 @@ class AdvancedSettingsMixin(object):
             return next(p for p in prefs if p.id == pref)
         except StopIteration:
             availablePrefs = [p.id for p in prefs]
-            raise NotFound('Unknown preference "%s" for %s. '
-                           'Available preferences: %s'
-                           % (pref, self.TYPE, availablePrefs)) from None
+            raise NotFound(f'Unknown preference "{pref}" for {self.TYPE}. '
+                           f'Available preferences: {availablePrefs}') from None
 
     def editAdvanced(self, **kwargs):
         """ Edit a Plex object's advanced settings. """
         data = {}
-        key = '%s/prefs?' % self.key
+        key = f'{self.key}/prefs?'
         preferences = {pref.id: pref for pref in self.preferences() if pref.enumValues}
         for settingID, value in kwargs.items():
             try:
                 pref = preferences[settingID]
             except KeyError:
-                raise NotFound('%s not found in %s' % (value, list(preferences.keys())))
+                raise NotFound(f'{value} not found in {list(preferences.keys())}')
             
             enumValues = pref.enumValues
             if enumValues.get(value, enumValues.get(str(value))):
                 data[settingID] = value
             else:
-                raise NotFound('%s not found in %s' % (value, list(enumValues)))
+                raise NotFound(f'{value} not found in {list(enumValues)}')
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
+        return self
 
     def defaultAdvanced(self):
         """ Edit all of a Plex object's advanced settings to default. """
         data = {}
-        key = '%s/prefs?' % self.key
+        key = f'{self.key}/prefs?'
         for preference in self.preferences():
             data[preference.id] = preference.default
         url = key + urlencode(data)
         self._server.query(url, method=self._server._session.put)
+        return self
 
 
-class SmartFilterMixin(object):
+class SmartFilterMixin:
     """ Mixing for Plex objects that can have smart filters. """
 
     def _parseFilters(self, content):
@@ -120,13 +121,14 @@ class SmartFilterMixin(object):
         return {filterOp: rules}
 
 
-class SplitMergeMixin(object):
+class SplitMergeMixin:
     """ Mixin for Plex objects that can be split and merged. """
 
     def split(self):
         """ Split duplicated Plex object into separate objects. """
-        key = '/library/metadata/%s/split' % self.ratingKey
-        return self._server.query(key, method=self._server._session.put)
+        key = f'{self.key}/split'
+        self._server.query(key, method=self._server._session.put)
+        return self
 
     def merge(self, ratingKeys):
         """ Merge other Plex objects into the current object.
@@ -137,16 +139,17 @@ class SplitMergeMixin(object):
         if not isinstance(ratingKeys, list):
             ratingKeys = str(ratingKeys).split(',')
 
-        key = '%s/merge?ids=%s' % (self.key, ','.join([str(r) for r in ratingKeys]))
-        return self._server.query(key, method=self._server._session.put)
+        key = f"{self.key}/merge?ids={','.join([str(r) for r in ratingKeys])}"
+        self._server.query(key, method=self._server._session.put)
+        return self
 
 
-class UnmatchMatchMixin(object):
+class UnmatchMatchMixin:
     """ Mixin for Plex objects that can be unmatched and matched. """
 
     def unmatch(self):
         """ Unmatches metadata match from object. """
-        key = '/library/metadata/%s/unmatch' % self.ratingKey
+        key = f'{self.key}/unmatch'
         self._server.query(key, method=self._server._session.put)
 
     def matches(self, agent=None, title=None, year=None, language=None):
@@ -177,7 +180,7 @@ class UnmatchMatchMixin(object):
 
                 For 2 to 7, the agent and language is automatically filled in
         """
-        key = '/library/metadata/%s/matches' % self.ratingKey
+        key = f'{self.key}/matches'
         params = {'manual': 1}
 
         if agent and not any([title, year, language]):
@@ -191,7 +194,7 @@ class UnmatchMatchMixin(object):
                     params['title'] = title
 
                 if year is None:
-                    params['year'] = self.year
+                    params['year'] = getattr(self, 'year', '')
                 else:
                     params['year'] = year
 
@@ -216,13 +219,13 @@ class UnmatchMatchMixin(object):
                     ~plexapi.base.matches()
                 agent (str): Agent name to be used (imdb, thetvdb, themoviedb, etc.)
         """
-        key = '/library/metadata/%s/match' % self.ratingKey
+        key = f'{self.key}/match'
         if auto:
             autoMatch = self.matches(agent=agent)
             if autoMatch:
                 searchResult = autoMatch[0]
             else:
-                raise NotFound('No matches found using this agent: (%s:%s)' % (agent, autoMatch))
+                raise NotFound(f'No matches found using this agent: ({agent}:{autoMatch})')
         elif not searchResult:
             raise NotFound('fixMatch() requires either auto=True or '
                            'searchResult=:class:`~plexapi.media.SearchResult`.')
@@ -232,9 +235,10 @@ class UnmatchMatchMixin(object):
 
         data = key + '?' + urlencode(params)
         self._server.query(data, method=self._server._session.put)
+        return self
 
 
-class ExtrasMixin(object):
+class ExtrasMixin:
     """ Mixin for Plex objects that can have extras. """
 
     def extras(self):
@@ -244,17 +248,57 @@ class ExtrasMixin(object):
         return self.findItems(data, Extra, rtag='Extras')
 
 
-class HubsMixin(object):
+class HubsMixin:
     """ Mixin for Plex objects that can have related hubs. """
 
     def hubs(self):
         """ Returns a list of :class:`~plexapi.library.Hub` objects. """
         from plexapi.library import Hub
-        data = self._server.query(self._details_key)
-        return self.findItems(data, Hub, rtag='Related')
+        key = f'{self.key}/related'
+        data = self._server.query(key)
+        return self.findItems(data, Hub)
 
 
-class RatingMixin(object):
+class PlayedUnplayedMixin:
+    """ Mixin for Plex objects that can be marked played and unplayed. """
+
+    @property
+    def isPlayed(self):
+        """ Returns True if this video is played. """
+        return bool(self.viewCount > 0) if self.viewCount else False
+
+    def markPlayed(self):
+        """ Mark the Plex object as played. """
+        key = '/:/scrobble'
+        params = {'key': self.ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self._server.query(key, params=params)
+        return self
+
+    def markUnplayed(self):
+        """ Mark the Plex object as unplayed. """
+        key = '/:/unscrobble'
+        params = {'key': self.ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self._server.query(key, params=params)
+        return self
+
+    @property
+    @deprecated('use "isPlayed" instead', stacklevel=3)
+    def isWatched(self):
+        """ Returns True if the show is watched. """
+        return self.isPlayed
+
+    @deprecated('use "markPlayed" instead')
+    def markWatched(self):
+        """ Mark the video as played. """
+        self.markPlayed()
+
+    @deprecated('use "markUnplayed" instead')
+    def markUnwatched(self):
+        """ Mark the video as unplayed. """
+        self.markUnplayed()
+
+
+class RatingMixin:
     """ Mixin for Plex objects that can have user star ratings. """
 
     def rate(self, rating=None):
@@ -270,11 +314,12 @@ class RatingMixin(object):
             rating = -1
         elif not isinstance(rating, (int, float)) or rating < 0 or rating > 10:
             raise BadRequest('Rating must be between 0 to 10.')
-        key = '/:/rate?key=%s&identifier=com.plexapp.plugins.library&rating=%s' % (self.ratingKey, rating)
+        key = f'/:/rate?key={self.ratingKey}&identifier=com.plexapp.plugins.library&rating={rating}'
         self._server.query(key, method=self._server._session.put)
+        return self
 
 
-class ArtUrlMixin(object):
+class ArtUrlMixin:
     """ Mixin for Plex objects that can have a background artwork url. """
     
     @property
@@ -289,7 +334,7 @@ class ArtMixin(ArtUrlMixin):
 
     def arts(self):
         """ Returns list of available :class:`~plexapi.media.Art` objects. """
-        return self.fetchItems('/library/metadata/%s/arts' % self.ratingKey, cls=media.Art)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/arts', cls=media.Art)
 
     def uploadArt(self, url=None, filepath=None):
         """ Upload a background artwork from a url or filepath.
@@ -299,12 +344,13 @@ class ArtMixin(ArtUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/arts?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'/library/metadata/{self.ratingKey}/arts?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/arts?' % self.ratingKey
+            key = f'/library/metadata/{self.ratingKey}/arts'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setArt(self, art):
         """ Set the background artwork for a Plex object.
@@ -313,6 +359,7 @@ class ArtMixin(ArtUrlMixin):
                 art (:class:`~plexapi.media.Art`): The art object to select.
         """
         art.select()
+        return self
 
     def lockArt(self):
         """ Lock the background artwork for a Plex object. """
@@ -323,7 +370,7 @@ class ArtMixin(ArtUrlMixin):
         return self._edit(**{'art.locked': 0})
 
 
-class BannerUrlMixin(object):
+class BannerUrlMixin:
     """ Mixin for Plex objects that can have a banner url. """
 
     @property
@@ -338,7 +385,7 @@ class BannerMixin(BannerUrlMixin):
 
     def banners(self):
         """ Returns list of available :class:`~plexapi.media.Banner` objects. """
-        return self.fetchItems('/library/metadata/%s/banners' % self.ratingKey, cls=media.Banner)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/banners', cls=media.Banner)
 
     def uploadBanner(self, url=None, filepath=None):
         """ Upload a banner from a url or filepath.
@@ -348,12 +395,13 @@ class BannerMixin(BannerUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/banners?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'/library/metadata/{self.ratingKey}/banners?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/banners?' % self.ratingKey
+            key = f'/library/metadata/{self.ratingKey}/banners'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setBanner(self, banner):
         """ Set the banner for a Plex object.
@@ -362,6 +410,7 @@ class BannerMixin(BannerUrlMixin):
                 banner (:class:`~plexapi.media.Banner`): The banner object to select.
         """
         banner.select()
+        return self
 
     def lockBanner(self):
         """ Lock the banner for a Plex object. """
@@ -372,7 +421,7 @@ class BannerMixin(BannerUrlMixin):
         return self._edit(**{'banner.locked': 0})
 
 
-class PosterUrlMixin(object):
+class PosterUrlMixin:
     """ Mixin for Plex objects that can have a poster url. """
 
     @property
@@ -392,7 +441,7 @@ class PosterMixin(PosterUrlMixin):
 
     def posters(self):
         """ Returns list of available :class:`~plexapi.media.Poster` objects. """
-        return self.fetchItems('/library/metadata/%s/posters' % self.ratingKey, cls=media.Poster)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/posters', cls=media.Poster)
 
     def uploadPoster(self, url=None, filepath=None):
         """ Upload a poster from a url or filepath.
@@ -402,12 +451,13 @@ class PosterMixin(PosterUrlMixin):
                 filepath (str): The full file path the the image to upload.
         """
         if url:
-            key = '/library/metadata/%s/posters?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'/library/metadata/{self.ratingKey}/posters?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/posters?' % self.ratingKey
+            key = f'/library/metadata/{self.ratingKey}/posters'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setPoster(self, poster):
         """ Set the poster for a Plex object.
@@ -416,6 +466,7 @@ class PosterMixin(PosterUrlMixin):
                 poster (:class:`~plexapi.media.Poster`): The poster object to select.
         """
         poster.select()
+        return self
 
     def lockPoster(self):
         """ Lock the poster for a Plex object. """
@@ -426,7 +477,7 @@ class PosterMixin(PosterUrlMixin):
         return self._edit(**{'thumb.locked': 0})
 
 
-class ThemeUrlMixin(object):
+class ThemeUrlMixin:
     """ Mixin for Plex objects that can have a theme url. """
 
     @property
@@ -441,7 +492,7 @@ class ThemeMixin(ThemeUrlMixin):
 
     def themes(self):
         """ Returns list of available :class:`~plexapi.media.Theme` objects. """
-        return self.fetchItems('/library/metadata/%s/themes' % self.ratingKey, cls=media.Theme)
+        return self.fetchItems(f'/library/metadata/{self.ratingKey}/themes', cls=media.Theme)
 
     def uploadTheme(self, url=None, filepath=None):
         """ Upload a theme from url or filepath.
@@ -453,12 +504,13 @@ class ThemeMixin(ThemeUrlMixin):
                 filepath (str): The full file path to the theme to upload.
         """
         if url:
-            key = '/library/metadata/%s/themes?url=%s' % (self.ratingKey, quote_plus(url))
+            key = f'/library/metadata/{self.ratingKey}/themes?url={quote_plus(url)}'
             self._server.query(key, method=self._server._session.post)
         elif filepath:
-            key = '/library/metadata/%s/themes?' % self.ratingKey
+            key = f'/library/metadata/{self.ratingKey}/themes'
             data = open(filepath, 'rb').read()
             self._server.query(key, method=self._server._session.post, data=data)
+        return self
 
     def setTheme(self, theme):
         raise NotImplementedError(
@@ -468,14 +520,14 @@ class ThemeMixin(ThemeUrlMixin):
 
     def lockTheme(self):
         """ Lock the theme for a Plex object. """
-        self._edit(**{'theme.locked': 1})
+        return self._edit(**{'theme.locked': 1})
 
     def unlockTheme(self):
         """ Unlock the theme for a Plex object. """
-        self._edit(**{'theme.locked': 0})
+        return self._edit(**{'theme.locked': 0})
 
 
-class EditFieldMixin(object):
+class EditFieldMixin:
     """ Mixin for editing Plex object fields. """
     
     def editField(self, field, value, locked=True, **kwargs):
@@ -496,8 +548,8 @@ class EditFieldMixin(object):
 
         """
         edits = {
-            '%s.value' % field: value or '',
-            '%s.locked' % field: 1 if locked else 0
+            f'{field}.value': value or '',
+            f'{field}.locked': 1 if locked else 0
         }
         edits.update(kwargs)
         return self._edit(**edits)
@@ -514,6 +566,19 @@ class ContentRatingMixin(EditFieldMixin):
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editField('contentRating', contentRating, locked=locked)
+
+
+class EditionTitleMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have an edition title. """
+
+    def editEditionTitle(self, editionTitle, locked=True):
+        """ Edit the edition title. Plex Pass is required to edit this field.
+
+            Parameters:
+                editionTitle (str): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        return self.editField('editionTitle', editionTitle, locked=locked)
 
 
 class OriginallyAvailableMixin(EditFieldMixin):
@@ -667,7 +732,7 @@ class PhotoCapturedTimeMixin(EditFieldMixin):
         return self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
-class EditTagsMixin(object):
+class EditTagsMixin:
     """ Mixin for editing Plex object tags. """
 
     @deprecated('use "editTags" instead')
@@ -680,7 +745,7 @@ class EditTagsMixin(object):
 
             Parameters:
                 tag (str): Name of the tag to edit.
-                items (List<str>): List of tags to add or remove.
+                items (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags to add or remove.
                 locked (bool): True (default) to lock the tags, False to unlock the tags.
                 remove (bool): True to remove the tags in items.
 
@@ -695,9 +760,11 @@ class EditTagsMixin(object):
         if not isinstance(items, list):
             items = [items]
 
-        value = getattr(self, self._tagPlural(tag))
-        existing_tags = [t.tag for t in value if t and remove is False]
-        edits = self._tagHelper(self._tagSingular(tag), existing_tags + items, locked, remove)
+        if not remove:
+            tags = getattr(self, self._tagPlural(tag))
+            items = tags + items
+
+        edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
         edits.update(kwargs)
         return self._edit(**edits)
 
@@ -730,15 +797,15 @@ class EditTagsMixin(object):
             items = [items]
 
         data = {
-            '%s.locked' % tag: 1 if locked else 0
+            f'{tag}.locked': 1 if locked else 0
         }
 
         if remove:
-            tagname = '%s[].tag.tag-' % tag
-            data[tagname] = ','.join(items)
+            tagname = f'{tag}[].tag.tag-'
+            data[tagname] = ','.join([str(t) for t in items])
         else:
             for i, item in enumerate(items):
-                tagname = '%s[%s].tag.tag' % (tag, i)
+                tagname = f'{str(tag)}[{i}].tag.tag'
                 data[tagname] = item
 
         return data
@@ -751,7 +818,7 @@ class CollectionMixin(EditTagsMixin):
         """ Add a collection tag(s).
 
             Parameters:
-                collections (list): List of strings.
+                collections (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('collection', collections, locked=locked)
@@ -760,7 +827,7 @@ class CollectionMixin(EditTagsMixin):
         """ Remove a collection tag(s).
 
             Parameters:
-                collections (list): List of strings.
+                collections (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('collection', collections, locked=locked, remove=True)
@@ -773,7 +840,7 @@ class CountryMixin(EditTagsMixin):
         """ Add a country tag(s).
 
             Parameters:
-                countries (list): List of strings.
+                countries (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('country', countries, locked=locked)
@@ -782,7 +849,7 @@ class CountryMixin(EditTagsMixin):
         """ Remove a country tag(s).
 
             Parameters:
-                countries (list): List of strings.
+                countries (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('country', countries, locked=locked, remove=True)
@@ -795,7 +862,7 @@ class DirectorMixin(EditTagsMixin):
         """ Add a director tag(s).
 
             Parameters:
-                directors (list): List of strings.
+                directors (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('director', directors, locked=locked)
@@ -804,7 +871,7 @@ class DirectorMixin(EditTagsMixin):
         """ Remove a director tag(s).
 
             Parameters:
-                directors (list): List of strings.
+                directors (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('director', directors, locked=locked, remove=True)
@@ -817,7 +884,7 @@ class GenreMixin(EditTagsMixin):
         """ Add a genre tag(s).
 
             Parameters:
-                genres (list): List of strings.
+                genres (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('genre', genres, locked=locked)
@@ -826,7 +893,7 @@ class GenreMixin(EditTagsMixin):
         """ Remove a genre tag(s).
 
             Parameters:
-                genres (list): List of strings.
+                genres (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('genre', genres, locked=locked, remove=True)
@@ -839,7 +906,7 @@ class LabelMixin(EditTagsMixin):
         """ Add a label tag(s).
 
             Parameters:
-                labels (list): List of strings.
+                labels (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('label', labels, locked=locked)
@@ -848,7 +915,7 @@ class LabelMixin(EditTagsMixin):
         """ Remove a label tag(s).
 
             Parameters:
-                labels (list): List of strings.
+                labels (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('label', labels, locked=locked, remove=True)
@@ -861,7 +928,7 @@ class MoodMixin(EditTagsMixin):
         """ Add a mood tag(s).
 
             Parameters:
-                moods (list): List of strings.
+                moods (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('mood', moods, locked=locked)
@@ -870,7 +937,7 @@ class MoodMixin(EditTagsMixin):
         """ Remove a mood tag(s).
 
             Parameters:
-                moods (list): List of strings.
+                moods (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('mood', moods, locked=locked, remove=True)
@@ -883,7 +950,7 @@ class ProducerMixin(EditTagsMixin):
         """ Add a producer tag(s).
 
             Parameters:
-                producers (list): List of strings.
+                producers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('producer', producers, locked=locked)
@@ -892,7 +959,7 @@ class ProducerMixin(EditTagsMixin):
         """ Remove a producer tag(s).
 
             Parameters:
-                producers (list): List of strings.
+                producers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('producer', producers, locked=locked, remove=True)
@@ -905,7 +972,7 @@ class SimilarArtistMixin(EditTagsMixin):
         """ Add a similar artist tag(s).
 
             Parameters:
-                artists (list): List of strings.
+                artists (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('similar', artists, locked=locked)
@@ -914,7 +981,7 @@ class SimilarArtistMixin(EditTagsMixin):
         """ Remove a similar artist tag(s).
 
             Parameters:
-                artists (list): List of strings.
+                artists (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('similar', artists, locked=locked, remove=True)
@@ -927,7 +994,7 @@ class StyleMixin(EditTagsMixin):
         """ Add a style tag(s).
 
             Parameters:
-                styles (list): List of strings.
+                styles (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('style', styles, locked=locked)
@@ -936,7 +1003,7 @@ class StyleMixin(EditTagsMixin):
         """ Remove a style tag(s).
 
             Parameters:
-                styles (list): List of strings.
+                styles (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('style', styles, locked=locked, remove=True)
@@ -949,7 +1016,7 @@ class TagMixin(EditTagsMixin):
         """ Add a tag(s).
 
             Parameters:
-                tags (list): List of strings.
+                tags (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('tag', tags, locked=locked)
@@ -958,7 +1025,7 @@ class TagMixin(EditTagsMixin):
         """ Remove a tag(s).
 
             Parameters:
-                tags (list): List of strings.
+                tags (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('tag', tags, locked=locked, remove=True)
@@ -971,7 +1038,7 @@ class WriterMixin(EditTagsMixin):
         """ Add a writer tag(s).
 
             Parameters:
-                writers (list): List of strings.
+                writers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('writer', writers, locked=locked)
@@ -980,13 +1047,13 @@ class WriterMixin(EditTagsMixin):
         """ Remove a writer tag(s).
 
             Parameters:
-                writers (list): List of strings.
+                writers (List<str> or List<:class:`~plexapi.media.MediaTag`>): List of tags.
                 locked (bool): True (default) to lock the field, False to unlock the field.
         """
         return self.editTags('writer', writers, locked=locked, remove=True)
 
 
-class WatchlistMixin(object):
+class WatchlistMixin:
     """ Mixin for Plex objects that can be added to a user's watchlist. """
 
     def onWatchlist(self, account=None):
@@ -1016,6 +1083,7 @@ class WatchlistMixin(object):
         except AttributeError:
             account = self._server
         account.addToWatchlist(self)
+        return self
 
     def removeFromWatchlist(self, account=None):
         """ Remove this item from the specified user's watchlist.
@@ -1030,6 +1098,7 @@ class WatchlistMixin(object):
         except AttributeError:
             account = self._server
         account.removeFromWatchlist(self)
+        return self
 
     def streamingServices(self, account=None):
         """ Return a list of :class:`~plexapi.media.Availability`
