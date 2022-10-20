@@ -48,6 +48,7 @@ class MyPlexAccount(PlexObject):
             locale (str): Your Plex locale
             mailing_list_status (str): Your current mailing list status.
             maxHomeSize (int): Unknown.
+            pin (str): The hashed Plex Home PIN.
             queueEmail (str): Email address to add items to your `Watch Later` queue.
             queueUid (str): Unknown.
             restricted (bool): Unknown.
@@ -72,7 +73,8 @@ class MyPlexAccount(PlexObject):
     FRIENDSERVERS = 'https://plex.tv/api/servers/{machineId}/shared_servers/{serverId}'         # put with data
     PLEXSERVERS = 'https://plex.tv/api/servers/{machineId}'                                     # get
     FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
-    REMOVEHOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                  # delete
+    HOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                        # delete, put
+    MANAGEDHOMEUSER = 'https://plex.tv/api/v2/home/users/restricted/{userId}'                   # put
     SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
@@ -118,6 +120,7 @@ class MyPlexAccount(PlexObject):
         self.locale = data.attrib.get('locale')
         self.mailing_list_status = data.attrib.get('mailing_list_status')
         self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))
+        self.pin = data.attrib.get('pin')
         self.queueEmail = data.attrib.get('queueEmail')
         self.queueUid = data.attrib.get('queueUid')
         self.restricted = utils.cast(bool, data.attrib.get('restricted'))
@@ -384,7 +387,7 @@ class MyPlexAccount(PlexObject):
                     username, or email of the user to be removed.
         """
         user = user if isinstance(user, MyPlexUser) else self.user(user)
-        url = self.REMOVEHOMEUSER.format(userId=user.id)
+        url = self.HOMEUSER.format(userId=user.id)
         return self.query(url, self._session.delete)
 
     def switchHomeUser(self, user):
@@ -410,6 +413,52 @@ class MyPlexAccount(PlexObject):
         data = self.query(url, self._session.post)
         userToken = data.attrib.get('authenticationToken')
         return MyPlexAccount(token=userToken)
+
+    def setPin(self, newPin, currentPin=None):
+        """ Set a new Plex Home PIN for the account.
+
+            Parameters:
+                newPin (str): New PIN to set for the account.
+                currentPin (str): Current PIN for the account (required to change the PIN).
+        """
+        url = self.HOMEUSER.format(userId=self.id)
+        params = {'pin': newPin}
+        if currentPin:
+            params['currentPin'] = currentPin
+        return self.query(url, self._session.put, params=params)
+
+    def removePin(self, currentPin):
+        """ Remove the Plex Home PIN for the account.
+
+            Parameters:
+                currentPin (str): Current PIN for the account (required to remove the PIN).
+        """
+        return self.setPin('', currentPin)
+
+    def setManagedUserPin(self, user, newPin):
+        """ Set a new Plex Home PIN for a managed home user. This must be done from the Plex Home admin account.
+
+            Parameters:
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`
+                    or username of the managed home user.
+                newPin (str): New PIN to set for the managed home user.
+        """
+        user = user if isinstance(user, MyPlexUser) else self.user(user)
+        url = self.MANAGEDHOMEUSER.format(userId=user.id)
+        params = {'pin': newPin}
+        return self.query(url, self._session.post, params=params)
+
+    def removeManagedUserPin(self, user):
+        """ Remove the Plex Home PIN for a managed home user. This must be done from the Plex Home admin account.
+
+            Parameters:
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`
+                    or username of the managed home user.
+        """
+        user = user if isinstance(user, MyPlexUser) else self.user(user)
+        url = self.MANAGEDHOMEUSER.format(userId=user.id)
+        params = {'removePin': 1}
+        return self.query(url, self._session.post, params=params)
 
     def acceptInvite(self, user):
         """ Accept a pending firend invite from the specified user.
