@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from plexapi.myplex import MyPlexInvite
 
 from . import conftest as utils
@@ -331,3 +331,26 @@ def test_myplex_viewStateSync(account):
     assert account.viewStateSync is True
     account.disableViewStateSync()
     assert account.viewStateSync is False
+
+
+@pytest.mark.authenticated
+def test_myplex_pin(account, plex):
+    assert account.pin is None
+
+    account.setPin("0000")
+
+    with pytest.raises(Unauthorized):
+        account.setPin("1111")
+    account.setPin("1111", currentPin="0000")
+
+    with pytest.raises(Unauthorized):
+        account.removePin("1111")
+    account.removePin("1111")
+
+    homeuser = "Test PIN User"
+    try:
+        account.createHomeUser(homeuser, plex)
+        account.setManagedUserPin(homeuser, "0000")
+        account.removeManagedUserPin(homeuser)
+    finally:
+        account.removeHomeUser(homeuser)
