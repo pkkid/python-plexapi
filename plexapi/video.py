@@ -167,7 +167,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
             Example:
 
                 .. code-block:: python
-                
+
                 # Optimize for mobile using defaults
                 video.optimize(target="mobile")
 
@@ -558,7 +558,7 @@ class Show(
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
         key = f'{self.key}/children?excludeAllLeaves=1'
-        return self.fetchItems(key, Season, **kwargs)
+        return self.fetchItems(key, Season, container_size=self.childCount, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
         """ Find a episode using a title or season and episode.
