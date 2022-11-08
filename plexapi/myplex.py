@@ -412,7 +412,7 @@ class MyPlexAccount(PlexObject):
         return MyPlexAccount(token=userToken)
 
     def acceptInvite(self, user):
-        """ Accept a pending firend invite from the specified user.
+        """ Accept a pending friend invite from the specified user.
 
             Parameters:
                 user (:class:`~plexapi.myplex.MyPlexInvite` or str): :class:`~plexapi.myplex.MyPlexInvite`,
