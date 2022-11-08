@@ -598,7 +598,7 @@ class MyPlexAccount(PlexObject):
         values = []
         for key, vals in filterDict.items():
             if key not in ('contentRating', 'label', 'contentRating!', 'label!'):
-                raise BadRequest('Unknown filter key: %s', key)
+                raise BadRequest(f'Unknown filter key: {key}')
             values.append(f"{key}={'%2C'.join(vals)}")
         return '|'.join(values)
 
@@ -615,7 +615,7 @@ class MyPlexAccount(PlexObject):
         return self.setWebhooks(urls)
 
     def setWebhooks(self, urls):
-        log.info(f'Setting webhooks: {urls}')
+        log.info('Setting webhooks: %s', urls)
         data = {'urls[]': urls} if len(urls) else {'urls': ''}
         data = self.query(self.WEBHOOKS, self._session.post, data=data)
         self._webhooks = self.listAttrs(data, 'url', etag='webhook')
@@ -686,7 +686,7 @@ class MyPlexAccount(PlexObject):
                     break
 
             if not client:
-                raise BadRequest('Unable to find client by clientId=%s', clientId)
+                raise BadRequest(f'Unable to find client by clientId={clientId}')
 
         if 'sync-target' not in client.provides:
             raise BadRequest("Received client doesn't provides sync-target")
@@ -1037,7 +1037,7 @@ class MyPlexUser(PlexObject):
                 if utils.cast(int, item.attrib.get('userID')) == self.id:
                     return item.attrib.get('accessToken')
         except Exception:
-            log.exception(f'Failed to get access token for {self.title}')
+            log.exception('Failed to get access token for %s', self.title)
 
     def server(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexServerShare` that matches the name specified.

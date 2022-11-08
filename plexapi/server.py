@@ -911,8 +911,7 @@ class PlexServer(PlexObject):
                         gigabytes = round(bandwidth.bytes / 1024**3, 3)
                         local = 'local' if bandwidth.lan else 'remote'
                         date = bandwidth.at.strftime('%Y-%m-%d')
-                        print('%s used %s GB of %s bandwidth on %s from %s'
-                              % (account.name, gigabytes, local, date, device.name))
+                        print(f'{account.name} used {gigabytes} GB of {local} bandwidth on {date} from {device.name}')
 
         """
         params = {}
@@ -1149,12 +1148,14 @@ class StatisticsBandwidth(PlexObject):
         self.timespan = utils.cast(int, data.attrib.get('timespan'))
 
     def __repr__(self):
-        return '<%s>' % ':'.join([p for p in [
-            self.__class__.__name__,
-            self._clean(self.accountID),
-            self._clean(self.deviceID),
-            self._clean(int(self.at.timestamp()))
-        ] if p])
+        return '<{}>'.format(
+            ':'.join([p for p in [
+                self.__class__.__name__,
+                self._clean(self.accountID),
+                self._clean(self.deviceID),
+                self._clean(int(self.at.timestamp()))
+            ] if p])
+        )
 
     def account(self):
         """ Returns the :class:`~plexapi.server.SystemAccount` associated with the bandwidth data. """

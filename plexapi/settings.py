@@ -77,7 +77,7 @@ class Settings(PlexObject):
         params = {}
         for setting in self.all():
             if setting._setValue:
-                log.info(f'Saving PlexServer setting {setting.id} = {setting._setValue}')
+                log.info('Saving PlexServer setting %s = %s', setting.id, setting._setValue)
                 params[setting.id] = quote(setting._setValue)
         if not params:
             raise BadRequest('No setting have been modified.')

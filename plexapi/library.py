@@ -483,8 +483,8 @@ class LibrarySection(PlexObject):
         xpath = (
             './MediaProvider[@identifier="com.plexapp.plugins.library"]'
             '/Feature[@type="content"]'
-            '/Directory[@id="%s"]'
-        ) % self.key
+            f'/Directory[@id="{self.key}"]'
+        )
         directory = next(iter(data.findall(xpath)), None)
         if directory:
             self._totalDuration = utils.cast(int, directory.attrib.get('durationTotal'))
@@ -710,7 +710,7 @@ class LibrarySection(PlexObject):
         """ Edit a library's advanced settings. """
         data = {}
         idEnums = {}
-        key = 'prefs[%s]'
+        key = 'prefs[{}]'
 
         for setting in self.settings():
             if setting.type != 'bool':
@@ -724,7 +724,7 @@ class LibrarySection(PlexObject):
             except KeyError:
                 raise NotFound(f'{value} not found in {list(idEnums.keys())}')
             if value in enums:
-                data[key % settingID] = value
+                data[key.format(settingID)] = value
             else:
                 raise NotFound(f'{value} not found in {enums}')
 
@@ -733,12 +733,12 @@ class LibrarySection(PlexObject):
     def defaultAdvanced(self):
         """ Edit all of library's advanced settings to default. """
         data = {}
-        key = 'prefs[%s]'
+        key = 'prefs[{}]'
         for setting in self.settings():
             if setting.type == 'bool':
-                data[key % setting.id] = int(setting.default)
+                data[key.format(setting.id)] = int(setting.default)
             else:
-                data[key % setting.id] = setting.default
+                data[key.format(setting.id)] = setting.default
 
         return self.edit(**data)
 
@@ -988,7 +988,7 @@ class LibrarySection(PlexObject):
                     field = 'genre'  # Available filter field from listFields()
                     filterField = next(f for f in library.listFields() if f.key.endswith(field))
                     availableOperators = [o.key for o in library.listOperators(filterField.type)]
-                    print("Available operators for %s:" % field, availableOperators)
+                    print(f"Available operators for {field}:", availableOperators)
 
         """
         return self.getFieldType(fieldType).operators
@@ -1015,7 +1015,7 @@ class LibrarySection(PlexObject):
 
                     field = 'genre'  # Available filter field from listFilters()
                     availableChoices = [f.title for f in library.listFilterChoices(field)]
-                    print("Available choices for %s:" % field, availableChoices)
+                    print(f"Available choices for {field}:", availableChoices)
 
         """
         if isinstance(field, str):
