@@ -344,7 +344,7 @@ def test_myplex_pin(account, plex):
     account.setPin("1111", currentPin="0000")
 
     with pytest.raises(Unauthorized):
-        account.removePin("1111")
+        account.removePin("0000")
     account.removePin("1111")
 
     homeuser = "Test PIN User"
