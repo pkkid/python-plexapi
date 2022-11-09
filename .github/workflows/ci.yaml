@@ -125,7 +125,7 @@ jobs:
           "https://registry-1.docker.io/v2/${{ env.PLEX_CONTAINER }}/manifests/${{ env.PLEX_CONTAINER_TAG }}" \
           | jq -r '.config.digest')
         echo "Digest: $digest"
-        echo ::set-output name=digest::$digest
+        echo "digest=$digest" >> $GITHUB_OUTPUT
 
     - name: Cache PMS Docker image
       id: docker-cache
