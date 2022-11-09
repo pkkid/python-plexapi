@@ -621,7 +621,7 @@ class ClientTimeline(PlexObject):
         self.protocol = data.attrib.get('protocol')
         self.providerIdentifier = data.attrib.get('providerIdentifier')
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
-        self.repeat = utils.cast(bool, data.attrib.get('repeat'))
+        self.repeat = utils.cast(int, data.attrib.get('repeat'))
         self.seekRange = data.attrib.get('seekRange')
         self.shuffle = utils.cast(bool, data.attrib.get('shuffle'))
         self.state = data.attrib.get('state')
