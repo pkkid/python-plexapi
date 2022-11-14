@@ -454,6 +454,29 @@ class PlexServer(PlexObject):
 
             Returns:
                 :class:`~plexapi.collection.Collection`: A new instance of the created Collection.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Create a regular collection
+                    movies = plex.library.section("Movies")
+                    movie1 = movies.get("Big Buck Bunny")
+                    movie2 = movies.get("Sita Sings the Blues")
+                    collection = plex.createCollection(
+                        title="Favorite Movies",
+                        section=movies,
+                        items=[movie1, movie2]
+                    )
+
+                    # Create a smart collection
+                    collection = plex.createCollection(
+                        title="Recently Aired Comedy TV Shows",
+                        section="TV Shows",
+                        smart=True,
+                        sort="episode.originallyAvailableAt:desc",
+                        filters={"episode.originallyAvailableAt>>": "4w", "genre": "comedy"}
+                    )
         """
         return Collection.create(
             self, title, section, items=items, smart=smart, limit=limit,
