@@ -7,7 +7,6 @@ from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection
 from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
-from plexapi.playqueue import PlayQueue
 from plexapi.utils import deprecated
 
 
@@ -329,10 +328,6 @@ class Playlist(
     def delete(self):
         """ Delete the playlist. """
         self._server.query(self.key, method=self._server._session.delete)
-
-    def playQueue(self, *args, **kwargs):
-        """ Returns a new :class:`~plexapi.playqueue.PlayQueue` from the playlist. """
-        return PlayQueue.create(self._server, self, *args, **kwargs)
 
     @classmethod
     def _create(cls, server, title, items):

@@ -666,6 +666,13 @@ class PlexPartialObject(PlexObject):
         """
         return self._getWebURL(base=base)
 
+    def playQueue(self, *args, **kwargs):
+        """ Returns a new :class:`~plexapi.playqueue.PlayQueue` from this media item.
+            See :func:`~plexapi.playqueue.PlayQueue.create` for available parameters.
+        """
+        from plexapi.playqueue import PlayQueue
+        return PlayQueue.create(self._server, self, *args, **kwargs)
+
 
 class Playable:
     """ This is a general place to store functions specific to media that is Playable.
