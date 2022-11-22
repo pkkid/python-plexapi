@@ -903,7 +903,7 @@ class Review(PlexObject):
 
         Attributes:
             TAG (str): 'Review'
-            filter (str): filter for reviews?
+            filter (str): The library filter for the review.
             id (int): The ID of the review.
             image (str): The image uri for the review.
             link (str): The url to the online review.
@@ -978,18 +978,34 @@ class Chapter(PlexObject):
 
         Attributes:
             TAG (str): 'Chapter'
+            end (int): The end time of the chapter in milliseconds.
+            filter (str): The library filter for the chapter.
+            id (int): The ID of the chapter.
+            index (int): The index of the chapter.
+            tag (str): The name of the chapter.
+            title (str): The title of the chapter.
+            thumb (str): The URL to retrieve the chapter thumbnail.
+            start (int): The start time of the chapter in milliseconds.
     """
     TAG = 'Chapter'
 
+    def __repr__(self):
+        name = self._clean(self.firstAttr('tag'))
+        start = utils.millisecondToHumanstr(self._clean(self.firstAttr('start')))
+        end = utils.millisecondToHumanstr(self._clean(self.firstAttr('end')))
+        offsets = f'{start}-{end}'
+        return f"<{':'.join([self.__class__.__name__, name, offsets])}>"
+
     def _loadData(self, data):
         self._data = data
+        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
+        self.filter = data.attrib.get('filter')
         self.id = utils.cast(int, data.attrib.get('id', 0))
-        self.filter = data.attrib.get('filter')  # I couldn't filter on it anyways
+        self.index = utils.cast(int, data.attrib.get('index'))
         self.tag = data.attrib.get('tag')
         self.title = self.tag
-        self.index = utils.cast(int, data.attrib.get('index'))
+        self.thumb = data.attrib.get('thumb')
         self.start = utils.cast(int, data.attrib.get('startTimeOffset'))
-        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
 
 
 @utils.registerPlexObject
@@ -998,6 +1014,10 @@ class Marker(PlexObject):
 
         Attributes:
             TAG (str): 'Marker'
+            end (int): The end time of the marker in milliseconds.
+            id (int): The ID of the marker.
+            type (str): The type of marker.
+            start (int): The start time of the marker in milliseconds.
     """
     TAG = 'Marker'
 
@@ -1010,10 +1030,10 @@ class Marker(PlexObject):
 
     def _loadData(self, data):
         self._data = data
+        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
         self.id = utils.cast(int, data.attrib.get('id'))
         self.type = data.attrib.get('type')
         self.start = utils.cast(int, data.attrib.get('startTimeOffset'))
-        self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
 
 
 @utils.registerPlexObject
@@ -1022,13 +1042,15 @@ class Field(PlexObject):
 
         Attributes:
             TAG (str): 'Field'
+            locked (bool): True if the field is locked.
+            name (str): The name of the field.
     """
     TAG = 'Field'
 
     def _loadData(self, data):
         self._data = data
-        self.name = data.attrib.get('name')
         self.locked = utils.cast(bool, data.attrib.get('locked'))
+        self.name = data.attrib.get('name')
 
 
 @utils.registerPlexObject
