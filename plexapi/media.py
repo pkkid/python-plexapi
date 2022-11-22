@@ -672,6 +672,7 @@ class MediaTag(PlexObject):
             role (str): The name of the character role for :class:`~plexapi.media.Role` only.
             tag (str): Name of the tag. This will be Animation, SciFi etc for Genres. The name of
                 person for Directors and Roles (ex: Animation, Stephen Graham, etc).
+            tagKey (str): Plex GUID for the actor/actress for :class:`~plexapi.media.Role` only.
             thumb (str): URL to thumbnail image for :class:`~plexapi.media.Role` only.
     """
 
@@ -687,6 +688,7 @@ class MediaTag(PlexObject):
         self.key = data.attrib.get('key')
         self.role = data.attrib.get('role')
         self.tag = data.attrib.get('tag')
+        self.tagKey = data.attrib.get('tagKey')
         self.thumb = data.attrib.get('thumb')
 
         parent = self._parent()
