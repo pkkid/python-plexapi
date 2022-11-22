@@ -898,6 +898,28 @@ class Guid(PlexObject):
 
 
 @utils.registerPlexObject
+class Rating(PlexObject):
+    """ Represents a single Rating media tag.
+
+        Attributes:
+            TAG (str): 'Rating'
+            image (str): The uri for the rating image
+                (e.g. ``imdb://image.rating``, ``rottentomatoes://image.rating.ripe``,
+                ``rottentomatoes://image.rating.upright``, ``themoviedb://image.rating``).
+            type (str): The type of rating (e.g. audience or critic).
+            value (float): The rating value.
+    """
+    TAG = 'Rating'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.image = data.attrib.get('image')
+        self.type = data.attrib.get('type')
+        self.value = utils.cast(float, data.attrib.get('value'))
+
+
+@utils.registerPlexObject
 class Review(PlexObject):
     """ Represents a single Review for a Movie.
 
