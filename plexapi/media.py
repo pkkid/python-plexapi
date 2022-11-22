@@ -881,27 +881,20 @@ class Writer(MediaTag):
     FILTER = 'writer'
 
 
-class GuidTag(PlexObject):
-    """ Base class for guid tags used only for Guids, as they contain only a string identifier
+@utils.registerPlexObject
+class Guid(PlexObject):
+    """ Represents a single Guid media tag.
 
         Attributes:
+            TAG (str): 'Guid'
             id (id): The guid for external metadata sources (e.g. IMDB, TMDB, TVDB, MBID).
     """
+    TAG = 'Guid'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = data.attrib.get('id')
-
-
-@utils.registerPlexObject
-class Guid(GuidTag):
-    """ Represents a single Guid media tag.
-
-        Attributes:
-            TAG (str): 'Guid'
-    """
-    TAG = 'Guid'
 
 
 @utils.registerPlexObject
