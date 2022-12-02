@@ -32,6 +32,7 @@ class MyPlexAccount(PlexObject):
             session (requests.Session, optional): Use your own session object if you want to
                 cache the http responses from PMS
             timeout (int): timeout in seconds on initial connect to myplex (default config.TIMEOUT).
+            code (str): Two-factor authentication code to use when logging in.
 
         Attributes:
             SIGNIN (str): 'https://plex.tv/users/sign_in.xml'
@@ -88,19 +89,21 @@ class MyPlexAccount(PlexObject):
     # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
     key = 'https://plex.tv/users/account'
 
-    def __init__(self, username=None, password=None, token=None, session=None, timeout=None):
+    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None):
         self._token = token or CONFIG.get('auth.server_token')
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
-        data, initpath = self._signin(username, password, timeout)
+        data, initpath = self._signin(username, password, code, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
-    def _signin(self, username, password, timeout):
+    def _signin(self, username, password, code, timeout):
         if self._token:
             return self.query(self.key), self.key
         username = username or CONFIG.get('auth.myplex_username')
         password = password or CONFIG.get('auth.myplex_password')
+        if code:
+            password += code
         data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password), timeout=timeout)
         return data, self.SIGNIN
 
