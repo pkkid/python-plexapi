@@ -109,7 +109,6 @@ class PlexServer(PlexObject):
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
         self._timeout = timeout
-        self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
@@ -183,13 +182,11 @@ class PlexServer(PlexObject):
             data = self.query('/library/sections/')
         return Library(self, data)
 
-    @property
+    @cached_property
     def settings(self):
         """ Returns a list of all server settings. """
-        if not self._settings:
-            data = self.query(Settings.key)
-            self._settings = Settings(self, data)
-        return self._settings
+        data = self.query(Settings.key)
+        return Settings(self, data)
 
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
