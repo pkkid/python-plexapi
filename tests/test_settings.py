@@ -13,7 +13,7 @@ def test_settings_set(plex):
     new_value = not old_value
     cd.set(new_value)
     plex.settings.save()
-    plex._settings = None
+    del plex.__dict__['settings']
     assert plex.settings.get("autoEmptyTrash").value == new_value
 
 
@@ -22,5 +22,5 @@ def test_settings_set_str(plex):
     new_value = 99
     cd.set(new_value)
     plex.settings.save()
-    plex._settings = None
+    del plex.__dict__['settings']
     assert plex.settings.get("OnDeckWindow").value == 99
