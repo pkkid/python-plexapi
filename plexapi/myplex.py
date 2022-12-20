@@ -861,7 +861,7 @@ class MyPlexAccount(PlexObject):
             results += subresults[:maxresults - len(results)]
             params['X-Plex-Container-Start'] += params['X-Plex-Container-Size']
 
-        return self._toOnlineMetadata(results)
+        return self._toOnlineMetadata(results, **kwargs)
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
