@@ -454,19 +454,42 @@ class PlexServer(PlexObject):
 
             Returns:
                 :class:`~plexapi.collection.Collection`: A new instance of the created Collection.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Create a regular collection
+                    movies = plex.library.section("Movies")
+                    movie1 = movies.get("Big Buck Bunny")
+                    movie2 = movies.get("Sita Sings the Blues")
+                    collection = plex.createCollection(
+                        title="Favorite Movies",
+                        section=movies,
+                        items=[movie1, movie2]
+                    )
+
+                    # Create a smart collection
+                    collection = plex.createCollection(
+                        title="Recently Aired Comedy TV Shows",
+                        section="TV Shows",
+                        smart=True,
+                        sort="episode.originallyAvailableAt:desc",
+                        filters={"episode.originallyAvailableAt>>": "4w", "genre": "comedy"}
+                    )
         """
         return Collection.create(
             self, title, section, items=items, smart=smart, limit=limit,
             libtype=libtype, sort=sort, filters=filters, **kwargs)
 
     def createPlaylist(self, title, section=None, items=None, smart=False, limit=None,
-                       libtype=None, sort=None, filters=None, **kwargs):
+                       libtype=None, sort=None, filters=None, m3ufilepath=None, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playlist.Playlist`.
 
             Parameters:
                 title (str): Title of the playlist.
-                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists only,
-                    library section to create the playlist in.
+                section (:class:`~plexapi.library.LibrarySection`, str): Smart playlists and m3u import only,
+                    the library section to create the playlist in.
                 items (List): Regular playlists only, list of :class:`~plexapi.audio.Audio`,
                     :class:`~plexapi.video.Video`, or :class:`~plexapi.photo.Photo` objects to be added to the playlist.
                 smart (bool): True to create a smart playlist. Default False.
@@ -478,19 +501,51 @@ class PlexServer(PlexObject):
                     See :func:`~plexapi.library.LibrarySection.search` for more info.
                 filters (dict): Smart playlists only, a dictionary of advanced filters.
                     See :func:`~plexapi.library.LibrarySection.search` for more info.
+                m3ufilepath (str): Music playlists only, the full file path to an m3u file to import.
+                    Note: This will overwrite any playlist previously created from the same m3u file.
                 **kwargs (dict): Smart playlists only, additional custom filters to apply to the
                     search results. See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :class:`plexapi.exceptions.BadRequest`: When no items are included to create the playlist.
                 :class:`plexapi.exceptions.BadRequest`: When mixing media types in the playlist.
+                :class:`plexapi.exceptions.BadRequest`: When attempting to import m3u file into non-music library.
+                :class:`plexapi.exceptions.BadRequest`: When failed to import m3u file.
 
             Returns:
                 :class:`~plexapi.playlist.Playlist`: A new instance of the created Playlist.
+
+            Example:
+
+                .. code-block:: python
+
+                    # Create a regular playlist
+                    episodes = plex.library.section("TV Shows").get("Game of Thrones").episodes()
+                    playlist = plex.createPlaylist(
+                        title="GoT Episodes",
+                        items=episodes
+                    )
+
+                    # Create a smart playlist
+                    playlist = plex.createPlaylist(
+                        title="Top 10 Unwatched Movies",
+                        section="Movies",
+                        smart=True,
+                        limit=10,
+                        sort="audienceRating:desc",
+                        filters={"audienceRating>>": 8.0, "unwatched": True}
+                    )
+
+                    # Create a music playlist from an m3u file
+                    playlist = plex.createPlaylist(
+                        title="Favorite Tracks",
+                        section="Music",
+                        m3ufilepath="/path/to/playlist.m3u"
+                    )
         """
         return Playlist.create(
             self, title, section=section, items=items, smart=smart, limit=limit,
-            libtype=libtype, sort=sort, filters=filters, **kwargs)
+            libtype=libtype, sort=sort, filters=filters, m3ufilepath=m3ufilepath, **kwargs)
 
     def createPlayQueue(self, item, **kwargs):
         """ Creates and returns a new :class:`~plexapi.playqueue.PlayQueue`.

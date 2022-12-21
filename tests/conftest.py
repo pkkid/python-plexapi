@@ -307,6 +307,18 @@ def subtitle():
 
 
 @pytest.fixture()
+def m3ufile(plex, music, track, tmp_path):
+    for path, paths, files in plex.walk(music.locations[0]):
+        for file in files:
+            if file.title == "playlist.m3u":
+                return file.path
+    m3u = tmp_path / "playlist.m3u"
+    with open(m3u, "w") as handler:
+        handler.write(track.media[0].parts[0].file)
+    return str(m3u)
+
+
+@pytest.fixture()
 def shared_username(account):
     username = os.environ.get("SHARED_USERNAME", "PKKid")
     for user in account.users():

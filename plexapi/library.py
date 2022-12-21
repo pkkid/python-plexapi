@@ -1671,13 +1671,13 @@ class LibrarySection(PlexObject):
         return self.search(libtype='collection', **kwargs)
 
     def createPlaylist(self, title, items=None, smart=False, limit=None,
-                       sort=None, filters=None, **kwargs):
+                       sort=None, filters=None, m3ufilepath=None, **kwargs):
         """ Alias for :func:`~plexapi.server.PlexServer.createPlaylist` using this
             :class:`~plexapi.library.LibrarySection`.
         """
         return self._server.createPlaylist(
             title, section=self, items=items, smart=smart, limit=limit,
-            sort=sort, filters=filters, **kwargs)
+            sort=sort, filters=filters, m3ufilepath=m3ufilepath, **kwargs)
 
     def playlist(self, title):
         """ Returns the playlist with the specified title.

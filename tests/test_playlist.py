@@ -259,6 +259,20 @@ def test_Playlist_exceptions(plex, movies, movie, artist):
         playlist.delete()
 
 
+def test_Playlist_m3ufile(plex, tvshows, music, m3ufile):
+    title = 'test_playlist_m3ufile'
+    try:
+        playlist = plex.createPlaylist(title, section=music.title, m3ufilepath=m3ufile)
+        assert playlist.title == title
+    finally:
+        playlist.delete()
+
+    with pytest.raises(BadRequest):
+        plex.createPlaylist(title, section=tvshows, m3ufilepath='does_not_exist.m3u')
+    with pytest.raises(BadRequest):
+        plex.createPlaylist(title, section=music, m3ufilepath='does_not_exist.m3u')
+
+
 def test_Playlist_PlexWebURL(plex, show):
     title = 'test_playlist_plexweburl'
     episodes = show.episodes()
