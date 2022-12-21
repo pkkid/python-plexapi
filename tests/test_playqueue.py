@@ -133,7 +133,6 @@ def test_create_playqueue_from_playlist(plex, album):
         playlist = plex.createPlaylist("test_playlist", items=album)
         pq = playlist.playQueue(shuffle=1)
         assert pq.playQueueShuffled is True
-        assert len(playlist) == len(album.tracks())
         assert len(pq) == len(playlist)
         pq.addItem(playlist)
         assert len(pq) == 2 * len(playlist)
@@ -146,8 +145,7 @@ def test_create_playqueue_from_collection(plex, music, album):
         collection = plex.createCollection("test_collection", music, album)
         pq = collection.playQueue(shuffle=1)
         assert pq.playQueueShuffled is True
-        assert len(collection) == len(album.tracks())
-        assert len(pq) == len(collection)
+        assert len(pq) == len(album.tracks())
         pq.addItem(collection.items()[0])
         assert len(pq) == len(collection) + 1
     finally:
