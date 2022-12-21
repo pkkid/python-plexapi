@@ -1012,7 +1012,7 @@ class MyPlexAccount(PlexObject):
         """ Convert a list of media objects to online metadata objects. """
         # TODO: Add proper support for metadata.provider.plex.tv
         # Temporary workaround to allow reloading and browsing of online media objects
-        server = PlexServer(self.METADATA, self._token)
+        server = PlexServer(self.METADATA, self._token, session=self._session)
 
         if not isinstance(objs, list):
             objs = [objs]

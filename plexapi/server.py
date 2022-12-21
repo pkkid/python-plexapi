@@ -311,7 +311,7 @@ class PlexServer(PlexObject):
         """
         if self._myPlexAccount is None:
             from plexapi.myplex import MyPlexAccount
-            self._myPlexAccount = MyPlexAccount(token=self._token)
+            self._myPlexAccount = MyPlexAccount(token=self._token, session=self._session)
         return self._myPlexAccount
 
     def _myPlexClientPorts(self):
