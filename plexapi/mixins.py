@@ -494,7 +494,7 @@ class ThemeMixin(ThemeUrlMixin):
         """ Returns list of available :class:`~plexapi.media.Theme` objects. """
         return self.fetchItems(f'/library/metadata/{self.ratingKey}/themes', cls=media.Theme)
 
-    def uploadTheme(self, url=None, filepath=None):
+    def uploadTheme(self, url=None, filepath=None, timeout=None):
         """ Upload a theme from url or filepath.
 
             Warning: Themes cannot be deleted using PlexAPI!
@@ -502,14 +502,16 @@ class ThemeMixin(ThemeUrlMixin):
             Parameters:
                 url (str): The full URL to the theme to upload.
                 filepath (str): The full file path to the theme to upload.
+                timeout (int, optional): Timeout, in seconds, to use when uploading themes to the server.
+                    (default config.TIMEOUT).
         """
         if url:
             key = f'/library/metadata/{self.ratingKey}/themes?url={quote_plus(url)}'
-            self._server.query(key, method=self._server._session.post)
+            self._server.query(key, method=self._server._session.post, timeout=timeout)
         elif filepath:
             key = f'/library/metadata/{self.ratingKey}/themes'
             data = open(filepath, 'rb').read()
-            self._server.query(key, method=self._server._session.post, data=data)
+            self._server.query(key, method=self._server._session.post, data=data, timeout=timeout)
         return self
 
     def setTheme(self, theme):
