@@ -641,12 +641,12 @@ class LibrarySection(PlexObject):
                     guidLookup = {}
                     for item in library.all():
                         guidLookup[item.guid] = item
-                        guidLookup.update({guid.id for guid in item.guids}}
+                        guidLookup.update({guid.id: item for guid in item.guids}}
 
                     result1 = guidLookup['plex://show/5d9c086c46115600200aa2fe']
                     result2 = guidLookup['imdb://tt0944947']
-                    result4 = guidLookup['tmdb://1399']
-                    result5 = guidLookup['tvdb://121361']
+                    result3 = guidLookup['tmdb://1399']
+                    result4 = guidLookup['tvdb://121361']
 
         """
 
