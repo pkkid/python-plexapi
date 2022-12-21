@@ -17,6 +17,7 @@ def _test_mixins_field(obj, attr, field_method):
     edit_field_method = getattr(obj, "edit" + field_method)
     _value = lambda: getattr(obj, attr)
     _fields = lambda: [f for f in obj.fields if f.name == attr]
+
     # Check field does not match to begin with
     default_value = _value()
     if isinstance(default_value, datetime):
@@ -26,6 +27,7 @@ def _test_mixins_field(obj, attr, field_method):
     else:
         test_value = TEST_MIXIN_FIELD
     assert default_value != test_value
+
     # Edit and lock the field
     edit_field_method(test_value)
     obj.reload()
@@ -33,6 +35,7 @@ def _test_mixins_field(obj, attr, field_method):
     fields = _fields()
     assert value == test_value
     assert fields and fields[0].locked
+
     # Reset and unlock the field to restore the clean state
     edit_field_method(default_value, locked=False)
     obj.reload()
@@ -229,6 +232,7 @@ def _test_mixins_edit_image(obj, attr):
             assert images[1].selected is True
     else:
         default_image = None
+
     # Test upload image from file
     upload_img_method(filepath=utils.STUB_IMAGE_PATH)
     images = get_img_method()
@@ -237,9 +241,25 @@ def _test_mixins_edit_image(obj, attr):
         if i.ratingKey.startswith("upload://") and i.ratingKey.endswith(CUTE_CAT_SHA1)
     ]
     assert file_image
+
     # Reset to default image
     if default_image:
         set_img_method(default_image)
+
+    # Test upload image from file-like ojbect
+    with open(utils.STUB_IMAGE_PATH, "rb") as f:
+        upload_img_method(filepath=f)
+        images = get_img_method()
+        file_image = [
+            i for i in images
+            if i.ratingKey.startswith("upload://") and i.ratingKey.endswith(CUTE_CAT_SHA1)
+        ]
+        assert file_image
+
+    # Reset to default image
+    if default_image:
+        set_img_method(default_image)
+
     # Unlock the image
     unlock_img_method = getattr(obj, "unlock" + cap_attr)
     unlock_img_method()
@@ -283,6 +303,7 @@ def attr_posterUrl(obj):
 
 def _test_mixins_edit_theme(obj):
     _fields = lambda: [f.name for f in obj.fields]
+
     # Test upload theme from file
     obj.uploadTheme(filepath=utils.STUB_MP3_PATH)
     themes = obj.themes()
@@ -293,10 +314,12 @@ def _test_mixins_edit_theme(obj):
     assert file_theme
     obj.reload()
     assert "theme" in _fields()
+
     # Unlock the theme
     obj.unlockTheme()
     obj.reload()
     assert "theme" not in _fields()
+    
     # Lock the theme
     obj.lockTheme()
     obj.reload()

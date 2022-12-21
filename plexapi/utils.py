@@ -623,3 +623,10 @@ def toJson(obj, **kwargs):
             return obj.isoformat()
         return {k: v for k, v in obj.__dict__.items() if not k.startswith('_')}
     return json.dumps(obj, default=serialize, **kwargs)
+
+
+def openOrRead(file):
+    if hasattr(file, 'read'):
+        return file.read()
+    with open(file, 'rb') as f:
+        return f.read()
