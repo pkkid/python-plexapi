@@ -949,7 +949,7 @@ class MyPlexAccount(PlexObject):
         }
         params = {
             'query': query,
-            'limit ': limit,
+            'limit': limit,
             'searchTypes': libtype,
             'includeMetadata': 1
         }
