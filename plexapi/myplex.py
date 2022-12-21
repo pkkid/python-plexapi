@@ -393,12 +393,13 @@ class MyPlexAccount(PlexObject):
         url = self.HOMEUSER.format(userId=user.id)
         return self.query(url, self._session.delete)
 
-    def switchHomeUser(self, user):
+    def switchHomeUser(self, user, pin=None):
         """ Returns a new :class:`~plexapi.myplex.MyPlexAccount` object switched to the given home user.
 
             Parameters:
                 user (:class:`~plexapi.myplex.MyPlexUser` or str): :class:`~plexapi.myplex.MyPlexUser`,
                     username, or email of the home user to switch to.
+                pin (str): PIN for the home user (required if the home user has a PIN set).
 
             Example:
 
@@ -413,9 +414,12 @@ class MyPlexAccount(PlexObject):
         """
         user = user if isinstance(user, MyPlexUser) else self.user(user)
         url = f'{self.HOMEUSERS}/{user.id}/switch'
-        data = self.query(url, self._session.post)
+        params = {}
+        if pin:
+            params['pin'] = pin
+        data = self.query(url, self._session.post, params=params)
         userToken = data.attrib.get('authenticationToken')
-        return MyPlexAccount(token=userToken)
+        return MyPlexAccount(token=userToken, session=self._session)
 
     def setPin(self, newPin, currentPin=None):
         """ Set a new Plex Home PIN for the account.
