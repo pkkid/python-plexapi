@@ -3,6 +3,7 @@
 """
 Install PlexAPI
 """
+from pkg_resources import parse_requirements
 try:
     from setuptools import setup
 except ImportError:
@@ -14,12 +15,8 @@ from plexapi import const
 readme = open('README.rst', 'r').read()
 
 # Get requirements
-requirements = []
 with open('requirements.txt') as handle:
-    for line in handle.readlines():
-        if not line.startswith('#'):
-            package = line.strip().split('=', 1)[0]
-            requirements.append(package)
+    requirements = [str(req) for req in parse_requirements(handle)]
 
 setup(
     name='PlexAPI',
