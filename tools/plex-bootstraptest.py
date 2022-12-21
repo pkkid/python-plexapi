@@ -112,7 +112,7 @@ def clean_pms(server, path):
     print("Deleted %s" % path)
 
 
-def setup_music(music_path):
+def setup_music(music_path, docker=False):
     print("Setup files for the Music section..")
     makedirs(music_path, exist_ok=True)
 
@@ -135,12 +135,23 @@ def setup_music(music_path):
 
     }
 
+    m3u_file = open(os.path.join(music_path, "playlist.m3u"), "w")
+
     for artist, album in all_music.items():
         for k, v in album.items():
             artist_album = os.path.join(music_path, artist, k)
             makedirs(artist_album, exist_ok=True)
             for song in v:
-                copyfile(STUB_MP3_PATH, os.path.join(artist_album, song))
+                trackpath = os.path.join(artist_album, song)
+                copyfile(STUB_MP3_PATH, trackpath)
+
+                if docker:
+                    reltrackpath = os.path.relpath(trackpath, os.path.dirname(music_path))
+                    m3u_file.write(os.path.join("/data", reltrackpath) + "\n")
+                else:
+                    m3u_file.write(trackpath + "\n")
+
+    m3u_file.close()
 
     return len(check_ext(music_path, (".mp3")))
 
@@ -554,7 +565,7 @@ if __name__ == "__main__":
     # Prepare Music section
     if opts.with_music:
         music_path = os.path.join(media_path, "Music")
-        song_c = setup_music(music_path)
+        song_c = setup_music(music_path, docker=not opts.no_docker)
 
         sections.append(
             dict(

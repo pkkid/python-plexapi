@@ -52,6 +52,8 @@ def test_video_Movie_attrs(movies):
     assert movie.ratingImage == 'rottentomatoes://image.rating.ripe'
     assert utils.is_float(movie.audienceRating)
     assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
+    if movie.ratings:
+        assert "imdb://image.rating" in [i.image for i in movie.ratings]
     movie.reload()  # RELOAD
     assert movie.chapterSource is None
     assert not movie.collections
@@ -742,6 +744,8 @@ def test_video_Show_attrs(show):
     assert utils.is_datetime(show.originallyAvailableAt)
     assert show.originalTitle is None
     assert show.rating is None
+    if show.ratings:
+        assert "themoviedb://image.rating" in [i.image for i in show.ratings]
     assert utils.is_int(show.ratingKey)
     if show.roles:
         assert "Emilia Clarke" in [i.tag for i in show.roles]
@@ -964,6 +968,8 @@ def test_video_Season_attrs(show):
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)
     assert season.parentTitle == "Game of Thrones"
+    if show.ratings:
+        assert "themoviedb://image.rating" in [i.image for i in show.ratings]
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_string(season.summary, gte=100)
@@ -1156,6 +1162,8 @@ def test_video_Episode_attrs(episode):
     if episode.producers:
         assert episode.producers  # Test episode doesn't have producers
     assert episode.rating is None
+    if episode.ratings:
+        assert "themoviedb://image.rating" in [i.image for i in episode.ratings]
     assert utils.is_int(episode.ratingKey)
     if episode.roles:
         assert "Jason Momoa" in [i.tag for i in episode.roles]
