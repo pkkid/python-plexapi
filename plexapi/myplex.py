@@ -869,7 +869,7 @@ class MyPlexAccount(PlexObject):
             if maxresults > totalSize:
                 maxresults = totalSize
 
-        return self._toOnlineMetadata(results)
+        return self._toOnlineMetadata(results, **kwargs)
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
@@ -1013,21 +1013,24 @@ class MyPlexAccount(PlexObject):
         data = {'code': pin}
         self.query(self.LINK, self._session.put, headers=headers, data=data)
 
-    def _toOnlineMetadata(self, objs):
+    def _toOnlineMetadata(self, objs, **kwargs):
         """ Convert a list of media objects to online metadata objects. """
         # TODO: Add proper support for metadata.provider.plex.tv
         # Temporary workaround to allow reloading and browsing of online media objects
         server = PlexServer(self.METADATA, self._token, session=self._session)
 
+        includeUserState = int(bool(kwargs.pop('includeUserState', True)))
+
         if not isinstance(objs, list):
             objs = [objs]
+
         for obj in objs:
             obj._server = server
 
             # Parse details key to modify query string
             url = urlsplit(obj._details_key)
             query = dict(parse_qsl(url.query))
-            query['includeUserState'] = 1
+            query['includeUserState'] = includeUserState
             query.pop('includeFields', None)
             obj._details_key = urlunsplit((url.scheme, url.netloc, url.path, urlencode(query), url.fragment))
 
