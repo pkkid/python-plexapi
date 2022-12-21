@@ -864,6 +864,11 @@ class MyPlexAccount(PlexObject):
             results += subresults[:maxresults - len(results)]
             params['X-Plex-Container-Start'] += params['X-Plex-Container-Size']
 
+            # totalSize is available in first response, update maxresults from it
+            totalSize = utils.cast(int, data.attrib.get('totalSize'))
+            if maxresults > totalSize:
+                maxresults = totalSize
+
         return self._toOnlineMetadata(results)
 
     def onWatchlist(self, item):
