@@ -7,7 +7,7 @@ from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
 from plexapi.base import OPERATORS, PlexObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.settings import Setting
-from plexapi.utils import deprecated
+from plexapi.utils import cached_property, deprecated
 
 
 class Library(PlexObject):
@@ -418,7 +418,6 @@ class LibrarySection(PlexObject):
         self._filterTypes = None
         self._fieldTypes = None
         self._totalViewSize = None
-        self._totalSize = None
         self._totalDuration = None
         self._totalStorage = None
 
@@ -456,12 +455,10 @@ class LibrarySection(PlexObject):
                 item.librarySectionID = librarySectionID
         return items
 
-    @property
+    @cached_property
     def totalSize(self):
         """ Returns the total number of items in the library for the default library type. """
-        if self._totalSize is None:
-            self._totalSize = self.totalViewSize(includeCollections=False)
-        return self._totalSize
+        return self.totalViewSize(includeCollections=False)
 
     @property
     def totalDuration(self):

@@ -17,7 +17,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
-from plexapi.utils import deprecated
+from plexapi.utils import cached_property, deprecated
 from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
@@ -109,8 +109,6 @@ class PlexServer(PlexObject):
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
         self._timeout = timeout
-        self._library = None   # cached library
-        self._settings = None   # cached settings
         self._myPlexAccount = None   # cached myPlexAccount
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
@@ -173,27 +171,22 @@ class PlexServer(PlexObject):
     def _uriRoot(self):
         return f'server://{self.machineIdentifier}/com.plexapp.plugins.library'
 
-    @property
+    @cached_property
     def library(self):
         """ Library to browse or search your media. """
-        if not self._library:
-            try:
-                data = self.query(Library.key)
-                self._library = Library(self, data)
-            except BadRequest:
-                data = self.query('/library/sections/')
-                # Only the owner has access to /library
-                # so just return the library without the data.
-                return Library(self, data)
-        return self._library
+        try:
+            data = self.query(Library.key)
+        except BadRequest:
+            # Only the owner has access to /library
+            # so just return the library without the data.
+            data = self.query('/library/sections/')
+        return Library(self, data)
 
-    @property
+    @cached_property
     def settings(self):
         """ Returns a list of all server settings. """
-        if not self._settings:
-            data = self.query(Settings.key)
-            self._settings = Settings(self, data)
-        return self._settings
+        data = self.query(Settings.key)
+        return Settings(self, data)
 
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
