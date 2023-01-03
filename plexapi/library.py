@@ -352,15 +352,21 @@ class Library(PlexObject):
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=9999999, mindate=None, ratingKey=None, accountID=None, librarySectionID=None):
         """ Get Play History for all library Sections for the owner.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
-                mindate (datetime): Min datetime to return results from.
+                mindate (datetime): Min datetime to return results from. This really helps speed
+                    up the result listing. For example: datetime.now() - timedelta(days=7)
+                ratingKey (int/str) Request history for a specific ratingKey item.
+                accountID (int/str) Request history for a specific account ID.
+                librarySectionID (int/str) Request history for a specific library section ID.
         """
         hist = []
         for section in self.sections():
-            hist.extend(section.history(maxresults=maxresults, mindate=mindate))
+            hist.extend(section.history(maxresults=maxresults, mindate=mindate, ratingKey=ratingKey, librarySectionID=librarySectionID, accountID=accountID))
+            if librarySectionID and section.key == librarySectionID:
+                break
         return hist
 
     def tags(self, tag):
@@ -1630,13 +1636,17 @@ class LibrarySection(PlexObject):
 
         return myplex.sync(client=client, clientId=clientId, sync_item=sync_item)
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=9999999, mindate=None, ratingKey=None, accountID=None, librarySectionID=None):
         """ Get Play History for this library Section for the owner.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
-                mindate (datetime): Min datetime to return results from.
+                mindate (datetime): Min datetime to return results from. This really helps speed
+                    up the result listing. For example: datetime.now() - timedelta(days=7)
+                ratingKey (int/str) Request history for a specific ratingKey item.
+                accountID (int/str) Request history for a specific account ID.
+                librarySectionID (int/str) Request history for a specific library section ID.
         """
-        return self._server.history(maxresults=maxresults, mindate=mindate, librarySectionID=self.key, accountID=1)
+        return self._server.history(maxresults=maxresults, mindate=mindate, ratingKey=ratingKey, librarySectionID=librarySectionID, accountID=accountID)
 
     def createCollection(self, title, items=None, smart=False, limit=None,
                          libtype=None, sort=None, filters=None, **kwargs):
