@@ -101,6 +101,9 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
         streams = []
 
+        if self.isPartialObject():
+            self.reload()
+
         parts = self.iterParts()
         for part in parts:
             streams += part.audioStreams()
@@ -109,6 +112,9 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
         streams = []
+
+        if self.isPartialObject():
+            self.reload()
 
         parts = self.iterParts()
         for part in parts:
