@@ -400,14 +400,11 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     filepath = os.path.realpath(subtitle.name)
 
     movie.uploadSubtitles(filepath)
-    movie.reload()
     subtitles = [sub.title for sub in movie.subtitleStreams()]
     subname = subtitle.name.rsplit(".", 1)[0]
     assert subname in subtitles
 
-    subtitleSelection = movie.subtitleStreams()[0]
-    parts = list(movie.iterParts())
-    parts[0].setDefaultSubtitleStream(subtitleSelection)
+    movie.subtitleStreams()[0].setDefault()
     movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
