@@ -936,6 +936,27 @@ class MyPlexAccount(PlexObject):
         data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
         return self.findItem(data, cls=UserState)
 
+    def isPlayed(self, item):
+        """ Returns True if this item is played. """
+        userState = self.userState(item)
+        return bool(userState.viewCount > 0) if userState.viewCount else False
+
+    def markPlayed(self, item):
+        """ Mark the Plex object as played. """
+        key = f'{self.METADATA}/actions/scrobble'
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self.query(key, params=params)
+        return self
+
+    def markUnplayed(self, item):
+        """ Mark the Plex object as unplayed. """
+        key = f'{self.METADATA}/actions/unscrobble'
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self.query(key, params=params)
+        return self
+
     def searchDiscover(self, query, limit=30, libtype=None):
         """ Search for movies and TV shows in Discover.
             Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
