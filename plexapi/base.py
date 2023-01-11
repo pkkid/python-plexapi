@@ -491,6 +491,7 @@ class PlexPartialObject(PlexObject):
         if attr in USER_DONT_RELOAD_FOR_KEYS: return value
         if attr.startswith('_'): return value
         if value not in (None, []): return value
+        if attr in self.__dict__: return value
         if self.isFullObject(): return value
         if isinstance(self, PlexSession): return value
         if self._autoReload is False: return value
