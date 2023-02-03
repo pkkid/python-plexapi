@@ -8,7 +8,7 @@ from . import conftest as utils
 
 TEST_MIXIN_FIELD = "Test Field"
 TEST_MIXIN_DATE = utils.MIN_DATETIME
-TEST_MIXIN_TAG = "Test Tag"
+TEST_MIXIN_TAG = "Test Tag !@#$%^&*()-_=+[];:'\"/?,."
 CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
 AUDIO_STUB_SHA1 = "1abc20d5fdc904201bf8988ca6ef30f96bb73617"
 
