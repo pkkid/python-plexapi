@@ -1182,7 +1182,7 @@ def test_video_Episode_attrs(episode):
     assert episode.viewOffset == 0
     if episode.writers:
         assert "David Benioff" in [i.tag for i in episode.writers]
-    assert episode.year is None
+    assert episode.year == 2011
     assert episode.isPlayed in [True, False]
     assert len(episode.locations) == 1
     assert len(episode.locations[0]) >= 10
