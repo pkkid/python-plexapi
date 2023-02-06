@@ -3,7 +3,7 @@ import time
 from xml.etree import ElementTree
 
 import requests
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
+from plexapi import CONFIG, TIMEOUT, log, logfilter, reset_base_headers, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
@@ -74,6 +74,8 @@ class PlexClient(PlexObject):
         self._last_call = 0
         self._timeline_cache = []
         self._timeline_cache_timestamp = 0
+        self._base_headers = reset_base_headers()
+
         if not any([data is not None, initpath, baseurl, token]):
             self._baseurl = CONFIG.get('auth.client_baseurl', 'http://localhost:32433')
             self._token = logfilter.add_secret(CONFIG.get('auth.client_token'))
@@ -149,7 +151,7 @@ class PlexClient(PlexObject):
 
     def _headers(self, **kwargs):
         """ Returns a dict of all default headers for Client requests. """
-        headers = BASE_HEADERS
+        headers = self._base_headers.copy()
         if self._token:
             headers['X-Plex-Token'] = self._token
         headers.update(kwargs)

@@ -42,25 +42,47 @@ class PlexConfig(ConfigParser):
     def _asDict(self):
         """ Returns all configuration values as a dictionary. """
         config = defaultdict(dict)
+        config.update(self._defaults())
         for section in self._sections:
             for name, value in self._sections[section].items():
                 if name != '__name__':
                     config[section.lower()][name.lower()] = value
         return dict(config)
 
+    def _defaults(self):
+        from uuid import getnode
+        from platform import uname
+        from plexapi import PROJECT, VERSION
+
+        platform_name, device_name, platform_version = uname()[0:3]
+
+        return {
+            'header': {
+                'provides': 'controller',
+                'platform': platform_name,
+                'platform_version': platform_version,
+                'product': PROJECT,
+                'version': VERSION,
+                'device': platform_name,
+                'device_name': device_name,
+                'identifier': str(hex(getnode())),
+            }
+        }
+
 
 def reset_base_headers():
     """ Convenience function returns a dict of all base X-Plex-* headers for session requests. """
-    import plexapi
+    from plexapi import CONFIG
+
     return {
-        'X-Plex-Platform': plexapi.X_PLEX_PLATFORM,
-        'X-Plex-Platform-Version': plexapi.X_PLEX_PLATFORM_VERSION,
-        'X-Plex-Provides': plexapi.X_PLEX_PROVIDES,
-        'X-Plex-Product': plexapi.X_PLEX_PRODUCT,
-        'X-Plex-Version': plexapi.X_PLEX_VERSION,
-        'X-Plex-Device': plexapi.X_PLEX_DEVICE,
-        'X-Plex-Device-Name': plexapi.X_PLEX_DEVICE_NAME,
-        'X-Plex-Client-Identifier': plexapi.X_PLEX_IDENTIFIER,
+        'X-Plex-Platform': CONFIG.get('header.platorm', CONFIG.get('header.platform')),
+        'X-Plex-Platform-Version': CONFIG.get('header.platform_version'),
+        'X-Plex-Provides': CONFIG.get('header.provides'),
+        'X-Plex-Product': CONFIG.get('header.product'),
+        'X-Plex-Version': CONFIG.get('header.version'),
+        'X-Plex-Device': CONFIG.get('header.device'),
+        'X-Plex-Device-Name': CONFIG.get('header.device_name'),
+        'X-Plex-Client-Identifier': CONFIG.get('header.identifier'),
         'X-Plex-Sync-Version': '2',
         'X-Plex-Features': 'external-media',
     }
