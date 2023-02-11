@@ -45,6 +45,10 @@ def _test_mixins_field(obj, attr, field_method):
     assert not fields
 
 
+def edit_added_at(obj):
+    _test_mixins_field(obj, "addedAt", "AddedAt")
+
+
 def edit_content_rating(obj):
     _test_mixins_field(obj, "contentRating", "ContentRating")
 
