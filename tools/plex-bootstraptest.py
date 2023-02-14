@@ -502,6 +502,7 @@ if __name__ == "__main__":
     # These tasks won't work on the test server since we are using fake media files
     if not opts.unclaimed and account and account.subscriptionActive:
         server.settings.get("GenerateIntroMarkerBehavior").set("never")
+        server.settings.get("GenerateCreditsMarkerBehavior").set("never")
     server.settings.get("GenerateBIFBehavior").set("never")
     server.settings.get("GenerateChapterThumbBehavior").set("never")
     server.settings.get("LoudnessAnalysisBehavior").set("never")
