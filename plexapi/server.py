@@ -549,26 +549,28 @@ class PlexServer(PlexObject):
         """
         return PlayQueue.create(self, item, **kwargs)
 
-    def downloadDatabases(self, savepath=None, unpack=False):
+    def downloadDatabases(self, savepath=None, unpack=False, showstatus=False):
         """ Download databases.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
                 unpack (bool): Unpack the zip file.
+                showstatus(bool): Display a progressbar.
         """
         url = self.url('/diagnostics/databases')
-        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
+        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack, showstatus=showstatus)
         return filepath
 
-    def downloadLogs(self, savepath=None, unpack=False):
+    def downloadLogs(self, savepath=None, unpack=False, showstatus=False):
         """ Download server logs.
 
             Parameters:
                 savepath (str): Defaults to current working dir.
                 unpack (bool): Unpack the zip file.
+                showstatus(bool): Display a progressbar.
         """
         url = self.url('/diagnostics/logs')
-        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack)
+        filepath = utils.download(url, self._token, None, savepath, self._session, unpack=unpack, showstatus=showstatus)
         return filepath
 
     def butlerTasks(self):
