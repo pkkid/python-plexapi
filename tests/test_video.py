@@ -751,6 +751,7 @@ def test_video_Show_attrs(show):
         assert "Emilia Clarke" in [i.tag for i in show.roles]
         assert show.actors == show.roles
     assert show._server._baseurl == utils.SERVER_BASEURL
+    assert utils.is_int(show.seasonCount)
     assert show.showOrdering in (None, 'aired')
     assert show.studio == "Generator Entertainment"
     assert utils.is_string(show.summary, gte=100)
