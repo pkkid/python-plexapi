@@ -1037,7 +1037,7 @@ class Marker(PlexObject):
         Attributes:
             TAG (str): 'Marker'
             end (int): The end time of the marker in milliseconds.
-            final (bool): True if the marker is the final credit marker.
+            final (bool): True if the marker is the final credits marker.
             id (int): The ID of the marker.
             type (str): The type of marker.
             start (int): The start time of the marker in milliseconds.
@@ -1062,6 +1062,17 @@ class Marker(PlexObject):
 
         attributes = data.find('Attributes')
         self.version = attributes.attrib.get('version')
+
+    @property
+    def first(self):
+        """ Returns True if the marker in the first credits marker. """
+        if self.type != 'credits':
+            return None
+        first = min(
+            (marker for marker in self._parent().markers if marker.type == 'credits'),
+            key=lambda m: m.start
+        )
+        return first == self
 
 
 @utils.registerPlexObject
