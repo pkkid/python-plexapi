@@ -382,8 +382,11 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
     assert filename in with_resolution[0]
 
 
+def test_video_Movie_videoStreams(movie):
+    assert movie.videoStreams()
+
+    
 def test_video_Movie_audioStreams(movie):
-    movie.reload()
     assert movie.audioStreams()
 
 
