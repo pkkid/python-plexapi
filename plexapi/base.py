@@ -795,8 +795,8 @@ class Playable:
         """ Set the watched progress for this video.
 
             Note that setting the time to 0 will not work.
-            Use :func:`~plexapi.mixins.PlayedMixin.markPlayed` or
-            :func:`~plexapi.mixins.PlayedMixin.markUnplayed` to achieve
+            Use :func:`~plexapi.mixins.PlayedUnplayedMixin.markPlayed` or
+            :func:`~plexapi.mixins.PlayedUnplayedMixin.markUnplayed` to achieve
             that goal.
 
             Parameters:
