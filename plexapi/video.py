@@ -391,6 +391,11 @@ class Movie(
         return [part.file for part in self.iterParts() if part]
 
     @property
+    def hasCreditsMarker(self):
+        """ Returns True if the movie has a credits marker. """
+        return any(marker.type == 'credits' for marker in self.markers)
+
+    @property
     def hasPreviewThumbnails(self):
         """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
         return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
@@ -920,13 +925,18 @@ class Episode(
 
     @property
     def hasCommercialMarker(self):
-        """ Returns True if the episode has a commercial marker in the xml. """
+        """ Returns True if the episode has a commercial marker. """
         return any(marker.type == 'commercial' for marker in self.markers)
 
     @property
     def hasIntroMarker(self):
-        """ Returns True if the episode has an intro marker in the xml. """
+        """ Returns True if the episode has an intro marker. """
         return any(marker.type == 'intro' for marker in self.markers)
+
+    @property
+    def hasCreditsMarker(self):
+        """ Returns True if the episode has a credits marker. """
+        return any(marker.type == 'credits' for marker in self.markers)
 
     @property
     def hasPreviewThumbnails(self):
