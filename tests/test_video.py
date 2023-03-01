@@ -983,7 +983,7 @@ def test_video_Season_attrs(show):
     assert utils.is_int(season.viewCount, gte=0)
     assert utils.is_int(season.viewedLeafCount, gte=0)
     assert utils.is_int(season.seasonNumber)
-    assert season.year is None
+    assert season.year == 2011
 
 
 def test_video_Season_show(show):
