@@ -309,20 +309,19 @@ def test_video_Movie_media_tags_collection(movie, collection):
 
 
 def test_video_Movie_getStreamURL(movie, account):
-    key = movie.ratingKey
-    assert movie.getStreamURL() == (
-        "{0}/video/:/transcode/universal/start.m3u8?"
-        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
-        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&X-Plex-Token={2}").format(
-        utils.SERVER_BASEURL, key, account.authenticationToken
-    )  # noqa
-    assert movie.getStreamURL(
-        videoResolution="800x600"
-    ) == ("{0}/video/:/transcode/universal/start.m3u8?"
-        "X-Plex-Platform=Chrome&copyts=1&mediaIndex=0&"
-        "offset=0&path=%2Flibrary%2Fmetadata%2F{1}&videoResolution=800x600&X-Plex-Token={2}").format(
-        utils.SERVER_BASEURL, key, account.authenticationToken
-    )  # noqa
+    key = movie.key
+
+    url = movie.getStreamURL()
+    assert url.startswith(f"{utils.SERVER_BASEURL}/video/:/transcode/universal/start.m3u8")
+    assert account.authenticationToken in url
+    assert f"path={quote_plus(key)}" in url
+    assert "protocol" not in url
+    assert "videoResolution" not in url
+
+    url = movie.getStreamURL(videoResolution="800x600", protocol='dash')
+    assert url.startswith(f"{utils.SERVER_BASEURL}/video/:/transcode/universal/start.mpd")
+    assert "protocol=dash" in url
+    assert "videoResolution=800x600" in url
 
 
 def test_video_Movie_isFullObject_and_reload(plex):
