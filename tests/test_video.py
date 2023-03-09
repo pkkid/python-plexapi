@@ -753,7 +753,7 @@ def test_video_Show_attrs(show):
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(show.seasonCount)
     assert show.showOrdering in (None, 'aired')
-    assert show.studio == "Generator Entertainment"
+    assert show.studio == "Revolution Sun Studios"
     assert utils.is_string(show.summary, gte=100)
     assert show.tagline == "Winter is coming."
     assert utils.is_metadata(show.theme, contains="/theme/")
@@ -964,7 +964,7 @@ def test_video_Season_attrs(show):
     assert season.parentIndex == 1
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
-    assert season.parentStudio == "Generator Entertainment"
+    assert season.parentStudio == "Revolution Sun Studios"
     assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
         assert utils.is_thumb(season.parentThumb)
