@@ -724,6 +724,7 @@ def test_video_Show_attrs(show):
     show.reload()
     assert utils.is_float(show.audienceRating)
     assert show.audienceRatingImage == "themoviedb://image.rating"
+    assert show.audioLanguage == ''
     assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
     assert show.autoDeletionItemPolicyWatchedLibrary == 0
     assert show.enableCreditsMarkerGeneration == -1
@@ -758,6 +759,8 @@ def test_video_Show_attrs(show):
     assert show.showOrdering in (None, 'aired')
     assert show.studio == "Revolution Sun Studios"
     assert utils.is_string(show.summary, gte=100)
+    assert show.subtitleLanguage == ''
+    assert show.subtitleMode == -1
     assert show.tagline == "Winter is coming."
     assert utils.is_metadata(show.theme, contains="/theme/")
     if show.thumb:
@@ -955,6 +958,7 @@ def test_video_Season_attrs(show):
     assert utils.is_datetime(season.addedAt)
     if season.art:
         assert utils.is_art(season.art)
+    assert season.audioLanguage == ''
     assert season.guid == "plex://season/602e67d31d3358002c411c39"
     assert "tvdb://364731" in [i.id for i in season.guids]
     assert season.index == 1
@@ -978,6 +982,8 @@ def test_video_Season_attrs(show):
     assert utils.is_int(season.ratingKey)
     assert season._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_string(season.summary, gte=100)
+    assert season.subtitleLanguage == ''
+    assert season.subtitleMode == -1
     if season.thumb:
         assert utils.is_thumb(season.thumb)
     assert season.title == "Season 1"
