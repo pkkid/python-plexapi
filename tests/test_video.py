@@ -59,6 +59,7 @@ def test_video_Movie_attrs(movies):
     assert not movie.collections
     assert movie.contentRating in utils.CONTENTRATINGS
     assert movie.editionTitle is None
+    assert movie.enableCreditsMarkerGeneration == -1
     if movie.countries:
         assert "United States of America" in [i.tag for i in movie.countries]
     if movie.producers:
@@ -724,6 +725,7 @@ def test_video_Show_attrs(show):
     assert show.audienceRatingImage == "themoviedb://image.rating"
     assert show.autoDeletionItemPolicyUnwatchedLibrary == 0
     assert show.autoDeletionItemPolicyWatchedLibrary == 0
+    assert show.enableCreditsMarkerGeneration == -1
     assert show.episodeSort == -1
     assert show.flattenSeasons == -1
     assert "Drama" in [i.tag for i in show.genres]

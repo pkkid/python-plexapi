@@ -311,6 +311,7 @@ class Movie(
             directors (List<:class:`~plexapi.media.Director`>): List of director objects.
             duration (int): Duration of the movie in milliseconds.
             editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
+            enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -353,6 +354,7 @@ class Movie(
         self.directors = self.findItems(data, media.Director)
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.editionTitle = data.attrib.get('editionTitle')
+        self.enableCreditsMarkerGeneration = utils.cast(int, data.attrib.get('enableCreditsMarkerGeneration', '-1'))
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
@@ -389,6 +391,11 @@ class Movie(
                 List<str> of file paths where the movie is found on disk.
         """
         return [part.file for part in self.iterParts() if part]
+
+    @property
+    def hasCreditsMarker(self):
+        """ Returns True if the movie has a credits marker. """
+        return any(marker.type == 'credits' for marker in self.markers)
 
     @property
     def hasPreviewThumbnails(self):
@@ -444,6 +451,7 @@ class Show(
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             contentRating (str) Content rating (PG-13; NR; TV-G).
             duration (int): Typical duration of the show episodes in milliseconds.
+            enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
             episodeSort (int): Setting that indicates how episodes are sorted for the show
                 (-1 = Library default, 0 = Oldest first, 1 = Newest first).
             flattenSeasons (int): Setting that indicates if seasons are set to hidden for the show
@@ -493,6 +501,7 @@ class Show(
         self.collections = self.findItems(data, media.Collection)
         self.contentRating = data.attrib.get('contentRating')
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.enableCreditsMarkerGeneration = utils.cast(int, data.attrib.get('enableCreditsMarkerGeneration', '-1'))
         self.episodeSort = utils.cast(int, data.attrib.get('episodeSort', '-1'))
         self.flattenSeasons = utils.cast(int, data.attrib.get('flattenSeasons', '-1'))
         self.genres = self.findItems(data, media.Genre)
@@ -920,13 +929,18 @@ class Episode(
 
     @property
     def hasCommercialMarker(self):
-        """ Returns True if the episode has a commercial marker in the xml. """
+        """ Returns True if the episode has a commercial marker. """
         return any(marker.type == 'commercial' for marker in self.markers)
 
     @property
     def hasIntroMarker(self):
-        """ Returns True if the episode has an intro marker in the xml. """
+        """ Returns True if the episode has an intro marker. """
         return any(marker.type == 'intro' for marker in self.markers)
+
+    @property
+    def hasCreditsMarker(self):
+        """ Returns True if the episode has a credits marker. """
+        return any(marker.type == 'credits' for marker in self.markers)
 
     @property
     def hasPreviewThumbnails(self):

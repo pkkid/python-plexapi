@@ -1037,9 +1037,11 @@ class Marker(PlexObject):
         Attributes:
             TAG (str): 'Marker'
             end (int): The end time of the marker in milliseconds.
+            final (bool): True if the marker is the final credits marker.
             id (int): The ID of the marker.
             type (str): The type of marker.
             start (int): The start time of the marker in milliseconds.
+            version (int): The Plex marker version.
     """
     TAG = 'Marker'
 
@@ -1053,9 +1055,24 @@ class Marker(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
+        self.final = utils.cast(bool, data.attrib.get('final'))
         self.id = utils.cast(int, data.attrib.get('id'))
         self.type = data.attrib.get('type')
         self.start = utils.cast(int, data.attrib.get('startTimeOffset'))
+
+        attributes = data.find('Attributes')
+        self.version = attributes.attrib.get('version')
+
+    @property
+    def first(self):
+        """ Returns True if the marker in the first credits marker. """
+        if self.type != 'credits':
+            return None
+        first = min(
+            (marker for marker in self._parent().markers if marker.type == 'credits'),
+            key=lambda m: m.start
+        )
+        return first == self
 
 
 @utils.registerPlexObject
