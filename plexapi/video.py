@@ -440,7 +440,7 @@ class Show(
                 after being watched for the show (0 = Never, 1 = After a day, 7 = After a week,
                 100 = On next refresh).
             banner (str): Key to banner artwork (/library/metadata/<ratingkey>/banner/<bannerid>).
-            childCount (int): Number of seasons in the show.
+            childCount (int): Number of seasons (including Specials) in the show.
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             contentRating (str) Content rating (PG-13; NR; TV-G).
             duration (int): Typical duration of the show episodes in milliseconds.
@@ -463,6 +463,7 @@ class Show(
             rating (float): Show rating (7.9; 9.8; 8.1).
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+            seasonCount (int): Number of seasons (excluding Specials) in the show.
             showOrdering (str): Setting that indicates the episode ordering for the show
                 (None = Library default).
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
@@ -508,6 +509,7 @@ class Show(
         self.rating = utils.cast(float, data.attrib.get('rating'))
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
+        self.seasonCount = utils.cast(int, data.attrib.get('seasonCount', self.childCount))
         self.showOrdering = data.attrib.get('showOrdering')
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
