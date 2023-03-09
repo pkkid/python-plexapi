@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-from urllib.parse import parse_qsl, quote_plus, unquote, urlencode, urlsplit
+from urllib.parse import parse_qsl, quote, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
 from plexapi.exceptions import BadRequest, NotFound
@@ -804,7 +804,7 @@ class EditTagsMixin:
 
         if remove:
             tagname = f'{tag}[].tag.tag-'
-            data[tagname] = ','.join([str(t) for t in items])
+            data[tagname] = ','.join([quote(str(t)) for t in items])
         else:
             for i, item in enumerate(items):
                 tagname = f'{str(tag)}[{i}].tag.tag'
