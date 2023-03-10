@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 import os
 import time
 from datetime import datetime
@@ -7,6 +8,7 @@ from functools import partial
 import plexapi
 import pytest
 import requests
+from PIL import Image, ImageColor, ImageStat
 from plexapi.client import PlexClient
 from plexapi.exceptions import NotFound
 from plexapi.myplex import MyPlexAccount
@@ -438,3 +440,39 @@ def wait_until(condition_function, delay=0.25, timeout=1, *args, **kwargs):
     assert ready, f"Wait timeout after {int(retries)} retries, {time.time() - start:.2f} seconds"
 
     return ready
+
+
+def detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=True):
+    # http://stackoverflow.com/questions/20068945/detect-if-image-is-color-grayscale-or-black-and-white-with-python-pil
+    pilimg = Image.open(file)
+    bands = pilimg.getbands()
+    if bands == ("R", "G", "B") or bands == ("R", "G", "B", "A"):
+        thumb = pilimg.resize((thumb_size, thumb_size))
+        sse, bias = 0, [0, 0, 0]
+        if adjust_color_bias:
+            bias = ImageStat.Stat(thumb).mean[:3]
+            bias = [b - sum(bias) / 3 for b in bias]
+        for pixel in thumb.getdata():
+            mu = sum(pixel) / 3
+            sse += sum(
+                (pixel[i] - mu - bias[i]) * (pixel[i] - mu - bias[i]) for i in [0, 1, 2]
+            )
+        mse = float(sse) / (thumb_size * thumb_size)
+        return "grayscale" if mse <= MSE_cutoff else "color"
+    elif len(bands) == 1:
+        return "blackandwhite"
+
+
+def detect_dominant_hexcolor(file):
+    # https://stackoverflow.com/questions/3241929/python-find-dominant-most-common-color-in-an-image
+    pilimg = Image.open(file)
+    pilimg.convert("RGB")
+    pilimg.resize((1, 1), resample=0)
+    rgb_color = pilimg.getpixel((0, 0))
+    return "{:02x}{:02x}{:02x}".format(*rgb_color)
+
+
+def detect_color_distance(hex1, hex2, threshold=100):
+    rgb1 = ImageColor.getcolor("#" + hex1, "RGB")
+    rgb2 = ImageColor.getcolor("#" + hex2, "RGB")
+    return math.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(rgb1, rgb2))) <= threshold

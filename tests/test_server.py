@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 
 import pytest
 from datetime import datetime
-from PIL import Image, ImageStat
+from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from plexapi.utils import download
@@ -62,12 +62,14 @@ def test_server_url(plex):
 def test_server_transcodeImage(tmpdir, plex, movie):
     width, height = 500, 100
     background = "000000"
+    blend = "FFFFFF"
 
     original_url = movie.thumbUrl
     resize_jpeg_url = plex.transcodeImage(original_url, height, width)
     no_minSize_png_url = plex.transcodeImage(original_url, height, width, minSize=False, imageFormat="png")
     grayscale_url = plex.transcodeImage(original_url, height, width, saturation=0)
     opacity_background_url = plex.transcodeImage(original_url, height, width, opacity=0, background=background, blur=100)
+    blend_url = plex.transcodeImage(original_url, height, width, blendColor=blend, blur=1000)
     online_no_upscale_url = plex.transcodeImage(
         "https://raw.githubusercontent.com/pkkid/python-plexapi/master/tests/data/cute_cat.jpg", 1000, 1000, upscale=False)
 
@@ -86,6 +88,9 @@ def test_server_transcodeImage(tmpdir, plex, movie):
     opacity_background_img = download(
         opacity_background_url, plex._token, savepath=str(tmpdir), filename="opacity_background_img"
     )
+    blend_img = download(
+        blend_url, plex._token, savepath=str(tmpdir), filename="blend_img"
+    )
     online_no_upscale_img = download(
         online_no_upscale_url, plex._token, savepath=str(tmpdir), filename="online_no_upscale_img"
     )
@@ -101,41 +106,12 @@ def test_server_transcodeImage(tmpdir, plex, movie):
         assert image.size[0] != width
         assert image.size[1] == height
         assert image.format == "PNG"
-    assert _detect_color_image(grayscale_img, thumb_size=150) == "grayscale"
-    assert _detect_dominant_hexcolor(opacity_background_img) == background
+    assert utils.detect_color_image(grayscale_img) == "grayscale"
+    assert utils.detect_dominant_hexcolor(opacity_background_img) == background
+    assert utils.detect_color_distance(utils.detect_dominant_hexcolor(blend_img), blend)
     with Image.open(online_no_upscale_img) as image1:
         with Image.open(utils.STUB_IMAGE_PATH) as image2:
             assert image1.size == image2.size
-
-
-def _detect_color_image(file, thumb_size=150, MSE_cutoff=22, adjust_color_bias=True):
-    # http://stackoverflow.com/questions/20068945/detect-if-image-is-color-grayscale-or-black-and-white-with-python-pil
-    pilimg = Image.open(file)
-    bands = pilimg.getbands()
-    if bands == ("R", "G", "B") or bands == ("R", "G", "B", "A"):
-        thumb = pilimg.resize((thumb_size, thumb_size))
-        sse, bias = 0, [0, 0, 0]
-        if adjust_color_bias:
-            bias = ImageStat.Stat(thumb).mean[:3]
-            bias = [b - sum(bias) / 3 for b in bias]
-        for pixel in thumb.getdata():
-            mu = sum(pixel) / 3
-            sse += sum(
-                (pixel[i] - mu - bias[i]) * (pixel[i] - mu - bias[i]) for i in [0, 1, 2]
-            )
-        mse = float(sse) / (thumb_size * thumb_size)
-        return "grayscale" if mse <= MSE_cutoff else "color"
-    elif len(bands) == 1:
-        return "blackandwhite"
-
-
-def _detect_dominant_hexcolor(file):
-    # https://stackoverflow.com/questions/3241929/python-find-dominant-most-common-color-in-an-image
-    pilimg = Image.open(file)
-    pilimg.convert("RGB")
-    pilimg.resize((1, 1), resample=0)
-    rgb_color = pilimg.getpixel((0, 0))
-    return "{:02x}{:02x}{:02x}".format(*rgb_color)
 
 
 def test_server_fetchitem_notfound(plex):
