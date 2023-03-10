@@ -82,6 +82,6 @@ if __name__ == '__main__':
             # We do this manually since we don't want to add a progress to Episode etc
             filename = '%s.%s' % (item._prettyfilename(), part.container)
             url = item._server.url('%s?download=1' % part.key)
-            filepath = utils.download(url, token=account.authenticationToken, filename=filename, savepath=os.getcwd(),
+            filepath = utils.download(url, token=item._server._token, filename=filename, savepath=os.getcwd(),
                                       session=item._server._session, showstatus=True)
             #print('  %s' % filepath)
