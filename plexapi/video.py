@@ -335,6 +335,7 @@ class Movie(
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             languageOverride (str): Setting that indicates if a language is used to override metadata
                 (eg. en-CA, None = Library default).
+            markers (List<:class:`~plexapi.media.Marker`>): List of marker objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the movie was released.
             originalTitle (str): Original title, often the foreign title (転々; 엽기적인 그녀).
@@ -377,6 +378,7 @@ class Movie(
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
         self.languageOverride = data.attrib.get('languageOverride')
+        self.markers = self.findItems(data, media.Marker)
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.originalTitle = data.attrib.get('originalTitle')
