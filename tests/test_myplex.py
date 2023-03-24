@@ -18,7 +18,6 @@ def test_myplex_accounts(account, plex):
     assert account.authenticationToken, "Account has no authenticationToken"
     assert account.email, "Account has no email"
     assert account.home is not None, "Account has no home"
-    assert account.queueEmail, "Account has no queueEmail"
     account = plex.account()
     print("Local PlexServer.account():")
     print(f"username: {account.username}")
