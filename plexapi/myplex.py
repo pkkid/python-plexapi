@@ -937,7 +937,7 @@ class MyPlexAccount(PlexObject):
         return self.findItem(data, cls=UserState)
 
     def isPlayed(self, item):
-        """ Returns True if this item is played.
+        """ Return True if the item is played on Discover.
 
             Parameters:
                 item (:class:`~plexapi.video.Movie`,
@@ -949,7 +949,7 @@ class MyPlexAccount(PlexObject):
         return bool(userState.viewCount > 0) if userState.viewCount else False
 
     def markPlayed(self, item):
-        """ Mark the Plex object as played.
+        """ Mark the Plex object as played on Discover.
 
             Parameters:
                 item (:class:`~plexapi.video.Movie`,
@@ -964,7 +964,7 @@ class MyPlexAccount(PlexObject):
         return self
 
     def markUnplayed(self, item):
-        """ Mark the Plex object as unplayed.
+        """ Mark the Plex object as unplayed on Discover.
 
             Parameters:
                 item (:class:`~plexapi.video.Movie`,
