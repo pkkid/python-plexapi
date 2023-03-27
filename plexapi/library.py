@@ -781,6 +781,11 @@ class LibrarySection(PlexObject):
         key = f'/library/sections/{self.key}/onDeck'
         return self.fetchItems(key)
 
+    def continueWatching(self):
+        """ Return a list of media items in the library's Continue Watching hub. """
+        key = f'/hubs/sections/{self.key}/continueWatching/items'
+        return self.fetchItems(key)
+
     def recentlyAdded(self, maxresults=50, libtype=None):
         """ Returns a list of media items recently added from this library section.
 
