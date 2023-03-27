@@ -937,12 +937,26 @@ class MyPlexAccount(PlexObject):
         return self.findItem(data, cls=UserState)
 
     def isPlayed(self, item):
-        """ Returns True if this item is played. """
+        """ Returns True if this item is played.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
         userState = self.userState(item)
         return bool(userState.viewCount > 0) if userState.viewCount else False
 
     def markPlayed(self, item):
-        """ Mark the Plex object as played. """
+        """ Mark the Plex object as played.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
         key = f'{self.METADATA}/actions/scrobble'
         ratingKey = item.guid.rsplit('/', 1)[-1]
         params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
@@ -950,7 +964,14 @@ class MyPlexAccount(PlexObject):
         return self
 
     def markUnplayed(self, item):
-        """ Mark the Plex object as unplayed. """
+        """ Mark the Plex object as unplayed.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
         key = f'{self.METADATA}/actions/unscrobble'
         ratingKey = item.guid.rsplit('/', 1)[-1]
         params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
