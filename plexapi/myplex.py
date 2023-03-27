@@ -1298,21 +1298,25 @@ class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
         content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
         for the data presented here can be found at:
-        https://plex.tv/api/resources?includeHttps=1&includeRelay=1
+        https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1
 
         Attributes:
             TAG (str): 'Device'
-            key (str): 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
-            accessToken (str): This resources accesstoken.
+            key (str): 'https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1'
+            accessToken (str): This resources Plex access token.
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of :class:`~plexapi.myplex.ResourceConnection` objects
                 for this resource.
             createdAt (datetime): Timestamp this resource first connected to your server.
             device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
+            dnsRebindingProtection (bool): True if the server had DNS rebinding protection.
             home (bool): Unknown
+            httpsRequired (bool): True if the resource requires https.
             lastSeenAt (datetime): Timestamp this resource last connected.
             name (str): Descriptive name of this resource.
+            natLoopbackSupported (bool): True if the resource supports NAT loopback.
             owned (bool): True if this resource is one of your own (you logged into it).
+            ownerId (int): ID of the user that owns this resource (shared resources only).
             platform (str): OS the resource is running (Linux, Windows, Chrome, etc.)
             platformVersion (str): Version of the platform.
             presence (bool): True if the resource is online
@@ -1320,10 +1324,13 @@ class MyPlexResource(PlexObject):
             productVersion (str): Version of the product.
             provides (str): List of services this resource provides (client, server,
                 player, pubsub-player, etc.)
+            publicAddressMatches (bool): True if the public IP address matches the client's public IP address.
+            relay (bool): True if this resource has the Plex Relay enabled.
+            sourceTitle (str): Username of the user that owns this resource (shared resources only).
             synced (bool): Unknown (possibly True if the resource has synced content?)
     """
-    TAG = 'Device'
-    key = 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
+    TAG = 'resource'
+    key = 'https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1'
 
     # Default order to prioritize available resource connections
     DEFAULT_LOCATION_ORDER = ['local', 'remote', 'relay']
@@ -1331,27 +1338,29 @@ class MyPlexResource(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.name = data.attrib.get('name')
         self.accessToken = logfilter.add_secret(data.attrib.get('accessToken'))
-        self.product = data.attrib.get('product')
-        self.productVersion = data.attrib.get('productVersion')
+        self.clientIdentifier = data.attrib.get('clientIdentifier')
+        self.connections = self.findItems(data, ResourceConnection, rtag='connections')
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'), "%Y-%m-%dT%H:%M:%SZ")
+        self.device = data.attrib.get('device')
+        self.dnsRebindingProtection = utils.cast(bool, data.attrib.get('dnsRebindingProtection'))
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.httpsRequired = utils.cast(bool, data.attrib.get('httpsRequired'))
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'), "%Y-%m-%dT%H:%M:%SZ")
+        self.name = data.attrib.get('name')
+        self.natLoopbackSupported = utils.cast(bool, data.attrib.get('natLoopbackSupported'))
+        self.owned = utils.cast(bool, data.attrib.get('owned'))
+        self.ownerId = utils.cast(int, data.attrib.get('ownerId', 0))
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
-        self.device = data.attrib.get('device')
-        self.clientIdentifier = data.attrib.get('clientIdentifier')
-        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
-        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
-        self.provides = data.attrib.get('provides')
-        self.owned = utils.cast(bool, data.attrib.get('owned'))
-        self.home = utils.cast(bool, data.attrib.get('home'))
-        self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = self.findItems(data, ResourceConnection)
+        self.product = data.attrib.get('product')
+        self.productVersion = data.attrib.get('productVersion')
+        self.provides = data.attrib.get('provides')
         self.publicAddressMatches = utils.cast(bool, data.attrib.get('publicAddressMatches'))
-        # This seems to only be available if its not your device (say are shared server)
-        self.httpsRequired = utils.cast(bool, data.attrib.get('httpsRequired'))
-        self.ownerid = utils.cast(int, data.attrib.get('ownerId', 0))
-        self.sourceTitle = data.attrib.get('sourceTitle')  # owners plex username.
+        self.relay = utils.cast(bool, data.attrib.get('relay'))
+        self.sourceTitle = data.attrib.get('sourceTitle')
+        self.synced = utils.cast(bool, data.attrib.get('synced'))
 
     def preferred_connections(
         self,
@@ -1434,24 +1443,27 @@ class ResourceConnection(PlexObject):
 
         Attributes:
             TAG (str): 'Connection'
-            address (str): Local IP address
-            httpuri (str): Full local address
-            local (bool): True if local
-            port (int): 32400
+            address (str): The connection IP address
+            httpuri (str): Full HTTP URL
+            IPv6 (bool): True if the address is IPv6
+            local (bool): True if the address is local
+            port (int): The connection port
             protocol (str): HTTP or HTTPS
-            uri (str): External address
+            relay (bool): True if the address uses the Plex Relay
+            uri (str): Full connetion URL
     """
-    TAG = 'Connection'
+    TAG = 'connection'
 
     def _loadData(self, data):
         self._data = data
-        self.protocol = data.attrib.get('protocol')
         self.address = data.attrib.get('address')
-        self.port = utils.cast(int, data.attrib.get('port'))
-        self.uri = data.attrib.get('uri')
+        self.IPv6 = utils.cast(bool, data.attrib.get('IPv6'))
         self.local = utils.cast(bool, data.attrib.get('local'))
-        self.httpuri = f'http://{self.address}:{self.port}'
+        self.port = utils.cast(int, data.attrib.get('port'))
+        self.protocol = data.attrib.get('protocol')
         self.relay = utils.cast(bool, data.attrib.get('relay'))
+        self.uri = data.attrib.get('uri')
+        self.httpuri = f'http://{self.address}:{self.port}'
 
 
 class MyPlexDevice(PlexObject):
