@@ -441,6 +441,13 @@ class Movie(
         }
         return self.section().search(filters=filters)
 
+    def removeFromContinueWatching(self):
+        """ Remove the movie from continue watching. """
+        key = '/actions/removeFromContinueWatching'
+        params = {'ratingKey': self.ratingKey}
+        self._server.query(key, params=params, method=self._server._session.put)
+        return self
+
 
 @utils.registerPlexObject
 class Show(
@@ -992,6 +999,13 @@ class Episode(
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return f'{self.grandparentTitle} - {self.parentTitle} - ({self.seasonEpisode}) {self.title}'
+
+    def removeFromContinueWatching(self):
+        """ Remove the movie from continue watching. """
+        key = '/actions/removeFromContinueWatching'
+        params = {'ratingKey': self.ratingKey}
+        self._server.query(key, params=params, method=self._server._session.put)
+        return self
 
 
 @utils.registerPlexObject
