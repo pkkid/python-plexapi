@@ -372,6 +372,7 @@ class Track(
         Attributes:
             TAG (str): 'Directory'
             TYPE (str): 'track'
+            chapters (List<:class:`~plexapi.media.Chapter`>): List of Chapter objects.
             chapterSource (str): Unknown
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             duration (int): Length of the track in milliseconds.
@@ -407,6 +408,7 @@ class Track(
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
+        self.chapters = self.findItems(data, media.Chapter)
         self.chapterSource = data.attrib.get('chapterSource')
         self.collections = self.findItems(data, media.Collection)
         self.duration = utils.cast(int, data.attrib.get('duration'))
