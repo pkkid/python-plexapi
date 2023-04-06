@@ -188,6 +188,8 @@ class MyPlexAccount(PlexObject):
                 raise Unauthorized(message)
             elif response.status_code == 404:
                 raise NotFound(message)
+            elif response.status_code == 422 and "Invalid token" in response.text:
+                raise Unauthorized(message)
             else:
                 raise BadRequest(message)
         if headers.get('Accept') == 'application/json':
