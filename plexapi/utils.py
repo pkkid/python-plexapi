@@ -106,7 +106,7 @@ class SecretsFilter(logging.Filter):
         self.secrets = secrets or set()
 
     def add_secret(self, secret):
-        if secret is not None:
+        if secret is not None and secret != '':
             self.secrets.add(secret)
         return secret
 
