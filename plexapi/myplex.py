@@ -786,7 +786,7 @@ class MyPlexAccount(PlexObject):
             raise BadRequest(f'({response.status_code}) {codename} {response.url}; {errtext}')
         return response.json()['token']
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=None, mindate=None):
         """ Get Play History for all library sections on all servers for the owner.
 
             Parameters:
@@ -1148,7 +1148,7 @@ class MyPlexUser(PlexObject):
 
         raise NotFound(f'Unable to find server {name}')
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=None, mindate=None):
         """ Get all Play History for a user in all shared servers.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
@@ -1222,7 +1222,7 @@ class Section(PlexObject):
         self.sectionId = self.id  # For backwards compatibility
         self.sectionKey = self.key  # For backwards compatibility
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=None, mindate=None):
         """ Get all Play History for a user for this section in this shared server.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).

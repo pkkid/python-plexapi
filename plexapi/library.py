@@ -352,7 +352,7 @@ class Library(PlexObject):
             part += urlencode(kwargs)
         return self._server.query(part, method=self._server._session.post)
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=None, mindate=None):
         """ Get Play History for all library Sections for the owner.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
@@ -1568,7 +1568,7 @@ class LibrarySection(PlexObject):
 
         return myplex.sync(client=client, clientId=clientId, sync_item=sync_item)
 
-    def history(self, maxresults=9999999, mindate=None):
+    def history(self, maxresults=None, mindate=None):
         """ Get Play History for this library Section for the owner.
             Parameters:
                 maxresults (int): Only return the specified number of results (optional).
