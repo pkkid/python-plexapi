@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
-import os
-from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_CONTAINER_SIZE, log,
-                     logfilter)
+
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter
 from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject

@@ -4,7 +4,7 @@ import weakref
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-from plexapi import log, utils, X_PLEX_CONTAINER_SIZE
+from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import cached_property
 

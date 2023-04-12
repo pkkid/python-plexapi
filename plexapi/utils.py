@@ -18,6 +18,7 @@ from urllib.parse import quote
 from requests.status_codes import _codes as codes
 
 import requests
+
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
