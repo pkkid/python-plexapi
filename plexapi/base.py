@@ -4,7 +4,7 @@ import weakref
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-from plexapi import log, utils
+from plexapi import log, utils, X_PLEX_CONTAINER_SIZE
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import cached_property
 
@@ -147,42 +147,7 @@ class PlexObject:
         elem = ElementTree.fromstring(xml)
         return self._buildItemOrNone(elem, cls)
 
-    def fetchItem(self, ekey, cls=None, **kwargs):
-        """ Load the specified key to find and build the first item with the
-            specified tag and attrs. If no tag or attrs are specified then
-            the first item in the result set is returned.
-
-            Parameters:
-                ekey (str or int): Path in Plex to fetch items from. If an int is passed
-                    in, the key will be translated to /library/metadata/<key>. This allows
-                    fetching an item only knowing its key-id.
-                cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
-                    items to be fetched, passing this in will help the parser ensure
-                    it only returns those items. By default we convert the xml elements
-                    with the best guess PlexObjects based on tag and type attrs.
-                etag (str): Only fetch items with the specified tag.
-                **kwargs (dict): Optionally add XML attribute to filter the items.
-                    See :func:`~plexapi.base.PlexObject.fetchItems` for more details
-                    on how this is used.
-        """
-        if ekey is None:
-            raise BadRequest('ekey was not provided')
-        if isinstance(ekey, int):
-            ekey = f'/library/metadata/{ekey}'
-
-        data = self._server.query(ekey)
-        item = self.findItem(data, cls, ekey, **kwargs)
-
-        if item:
-            librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
-            if librarySectionID:
-                item.librarySectionID = librarySectionID
-            return item
-
-        clsname = cls.__name__ if cls else 'None'
-        raise NotFound(f'Unable to find elem: cls={clsname}, attrs={kwargs}')
-
-    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
+    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, maxresults=None, **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs.
 
@@ -195,6 +160,7 @@ class PlexObject:
                 etag (str): Only fetch items with the specified tag.
                 container_start (None, int): offset to get a subset of the data
                 container_size (None, int): How many items in data
+                maxresults (int, optional): Only return the specified number of results.
                 **kwargs (dict): Optionally add XML attribute to filter the items.
                     See the details below for more info.
 
@@ -259,39 +225,77 @@ class PlexObject:
         if ekey is None:
             raise BadRequest('ekey was not provided')
 
-        params = {}
-        if container_start is not None:
-            params["X-Plex-Container-Start"] = container_start
-        if container_size is not None:
-            params["X-Plex-Container-Size"] = container_size
+        container_start = container_start or 0
+        container_size = container_size or X_PLEX_CONTAINER_SIZE
+        offset = container_start
 
-        data = self._server.query(ekey, params=params)
-        items = self.findItems(data, cls, ekey, **kwargs)
+        if maxresults is not None:
+            container_size = min(container_size, maxresults)
 
-        librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
-        if librarySectionID:
-            for item in items:
-                item.librarySectionID = librarySectionID
-        return items
+        results = []
+        subresults = []
+        headers = {}
 
-    def findItem(self, data, cls=None, initpath=None, rtag=None, **kwargs):
-        """ Load the specified data to find and build the first items with the specified tag
-            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
-            on how this is used.
+        while True:
+            headers['X-Plex-Container-Start'] = str(container_start)
+            headers['X-Plex-Container-Size'] = str(container_size)
+
+            data = self._server.query(ekey, headers=headers)
+            subresults = self.findItems(data, cls, ekey, **kwargs)
+            total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
+
+            if not subresults:
+                if offset > total_size:
+                    log.info('container_start is greater than the number of items')
+
+            librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+            if librarySectionID:
+                for item in subresults:
+                    item.librarySectionID = librarySectionID
+
+            results.extend(subresults)
+
+            wanted_number_of_items = total_size - offset
+            if maxresults is not None:
+                wanted_number_of_items = min(maxresults, wanted_number_of_items)
+                container_size = min(container_size, wanted_number_of_items - len(results))
+
+            if wanted_number_of_items <= len(results):
+                break
+
+            container_start += container_size
+
+            if container_start > total_size:
+                break
+
+        return results
+
+    def fetchItem(self, ekey, cls=None, **kwargs):
+        """ Load the specified key to find and build the first item with the
+            specified tag and attrs. If no tag or attrs are specified then
+            the first item in the result set is returned.
+
+            Parameters:
+                ekey (str or int): Path in Plex to fetch items from. If an int is passed
+                    in, the key will be translated to /library/metadata/<key>. This allows
+                    fetching an item only knowing its key-id.
+                cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
+                    items to be fetched, passing this in will help the parser ensure
+                    it only returns those items. By default we convert the xml elements
+                    with the best guess PlexObjects based on tag and type attrs.
+                etag (str): Only fetch items with the specified tag.
+                **kwargs (dict): Optionally add XML attribute to filter the items.
+                    See :func:`~plexapi.base.PlexObject.fetchItems` for more details
+                    on how this is used.
         """
-        # filter on cls attrs if specified
-        if cls and cls.TAG and 'tag' not in kwargs:
-            kwargs['etag'] = cls.TAG
-        if cls and cls.TYPE and 'type' not in kwargs:
-            kwargs['type'] = cls.TYPE
-        # rtag to iter on a specific root tag
-        if rtag:
-            data = next(data.iter(rtag), [])
-        # loop through all data elements to find matches
-        for elem in data:
-            if self._checkAttrs(elem, **kwargs):
-                item = self._buildItemOrNone(elem, cls, initpath)
-                return item
+        if isinstance(ekey, int):
+            ekey = f'/library/metadata/{ekey}'
+
+        try:
+            return self.fetchItems(ekey, cls, **kwargs)[0]
+        except IndexError:
+            clsname = cls.__name__ if cls else 'None'
+            raise NotFound(f'Unable to find elem: cls={clsname}, attrs={kwargs}') from None
 
     def findItems(self, data, cls=None, initpath=None, rtag=None, **kwargs):
         """ Load the specified data to find and build all items with the specified tag
@@ -314,6 +318,16 @@ class PlexObject:
                 if item is not None:
                     items.append(item)
         return items
+
+    def findItem(self, data, cls=None, initpath=None, rtag=None, **kwargs):
+        """ Load the specified data to find and build the first items with the specified tag
+            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
+            on how this is used.
+        """
+        try:
+            return self.findItems(data, cls, initpath, rtag, **kwargs)[0]
+        except IndexError:
+            return None
 
     def firstAttr(self, *attrs):
         """ Return the first attribute in attrs that is not None. """
