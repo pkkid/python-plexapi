@@ -819,7 +819,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=9999999, **kwargs):
+    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
             Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
             search for the media using the guid.
@@ -859,23 +859,10 @@ class MyPlexAccount(PlexObject):
         if libtype:
             params['type'] = utils.searchType(libtype)
 
-        params['X-Plex-Container-Start'] = 0
-        params['X-Plex-Container-Size'] = min(X_PLEX_CONTAINER_SIZE, maxresults)
         params.update(kwargs)
 
-        results, subresults = [], '_init'
-        while subresults and maxresults > len(results):
-            data = self.query(f'{self.METADATA}/library/sections/watchlist/{filter}', params=params)
-            subresults = self.findItems(data)
-            results += subresults[:maxresults - len(results)]
-            params['X-Plex-Container-Start'] += params['X-Plex-Container-Size']
-
-            # totalSize is available in first response, update maxresults from it
-            totalSize = utils.cast(int, data.attrib.get('totalSize'))
-            if maxresults > totalSize:
-                maxresults = totalSize
-
-        return self._toOnlineMetadata(results, **kwargs)
+        key = f'{self.METADATA}/library/sections/watchlist/{filter}{utils.joinArgs(params)}'
+        return self._toOnlineMetadata(self.fetchItems(key, maxresults=maxresults), **kwargs)
 
     def onWatchlist(self, item):
         """ Returns True if the item is on the user's watchlist.
