@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from urllib.parse import quote_plus, urlencode
 
-from plexapi import X_PLEX_CONTAINER_SIZE, log, media, utils
+from plexapi import log, media, utils
 from plexapi.base import OPERATORS, PlexObject
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.settings import Setting
@@ -420,40 +420,6 @@ class LibrarySection(PlexObject):
         self._totalViewSize = None
         self._totalDuration = None
         self._totalStorage = None
-
-    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, **kwargs):
-        """ Load the specified key to find and build all items with the specified tag
-            and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
-            on how this is used.
-
-            Parameters:
-                container_start (None, int): offset to get a subset of the data
-                container_size (None, int): How many items in data
-
-        """
-        url_kw = {}
-        if container_start is not None:
-            url_kw["X-Plex-Container-Start"] = container_start
-        if container_size is not None:
-            url_kw["X-Plex-Container-Size"] = container_size
-
-        if ekey is None:
-            raise BadRequest('ekey was not provided')
-        data = self._server.query(ekey, params=url_kw)
-
-        if '/all' in ekey:
-            # totalSize is only included in the xml response
-            # if container size is used.
-            total_size = data.attrib.get("totalSize") or data.attrib.get("size")
-            self._totalViewSize = utils.cast(int, total_size)
-
-        items = self.findItems(data, cls, ekey, **kwargs)
-
-        librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
-        if librarySectionID:
-            for item in items:
-                item.librarySectionID = librarySectionID
-        return items
 
     @cached_property
     def totalSize(self):
@@ -1268,7 +1234,7 @@ class LibrarySection(PlexObject):
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
     def search(self, title=None, sort=None, maxresults=None, libtype=None,
-               container_start=0, container_size=X_PLEX_CONTAINER_SIZE, limit=None, filters=None, **kwargs):
+               container_start=None, container_size=None, limit=None, filters=None, **kwargs):
         """ Search the library. The http requests will be batched in container_size. If you are only looking for the
             first <num> results, it would be wise to set the maxresults option to that amount so the search doesn't iterate
             over all results on the server.
@@ -1524,43 +1490,8 @@ class LibrarySection(PlexObject):
         """
         key, kwargs = self._buildSearchKey(
             title=title, sort=sort, libtype=libtype, limit=limit, filters=filters, returnKwargs=True, **kwargs)
-        return self._search(key, maxresults, container_start, container_size, **kwargs)
-
-    def _search(self, key, maxresults, container_start, container_size, **kwargs):
-        """ Perform the actual library search and return the results. """
-        results = []
-        subresults = []
-        offset = container_start
-
-        if maxresults is not None:
-            container_size = min(container_size, maxresults)
-
-        while True:
-            subresults = self.fetchItems(key, container_start=container_start,
-                                         container_size=container_size, **kwargs)
-            if not len(subresults):
-                if offset > self._totalViewSize:
-                    log.info("container_start is higher than the number of items in the library")
-
-            results.extend(subresults)
-
-            # self._totalViewSize is not used as a condition in the while loop as
-            # this require a additional http request.
-            # self._totalViewSize is updated from self.fetchItems
-            wanted_number_of_items = self._totalViewSize - offset
-            if maxresults is not None:
-                wanted_number_of_items = min(maxresults, wanted_number_of_items)
-                container_size = min(container_size, maxresults - len(results))
-
-            if wanted_number_of_items <= len(results):
-                break
-
-            container_start += container_size
-
-            if container_start > self._totalViewSize:
-                break
-
-        return results
+        return self.fetchItems(
+            key, container_start=container_start, container_size=container_size, maxresults=maxresults, **kwargs)
 
     def _locations(self):
         """ Returns a list of :class:`~plexapi.library.Location` objects
