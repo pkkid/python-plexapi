@@ -186,20 +186,20 @@ class Video(PlexPartialObject, PlayedUnplayedMixin, AddedAtMixin):
 
                 .. code-block:: python
 
-                # Optimize for mobile using defaults
-                video.optimize(target="mobile")
+                    # Optimize for mobile using defaults
+                    video.optimize(target="mobile")
 
-                # Optimize for Android at 10 Mbps 1080p
-                from plexapi.sync import VIDEO_QUALITY_10_MBPS_1080p
-                video.optimize(deviceProfile="Android", videoQuality=sync.VIDEO_QUALITY_10_MBPS_1080p)
+                    # Optimize for Android at 10 Mbps 1080p
+                    from plexapi.sync import VIDEO_QUALITY_10_MBPS_1080p
+                    video.optimize(deviceProfile="Android", videoQuality=sync.VIDEO_QUALITY_10_MBPS_1080p)
 
-                # Optimize for iOS at original quality in library location
-                from plexapi.sync import VIDEO_QUALITY_ORIGINAL
-                locations = plex.library.section("Movies")._locations()
-                video.optimize(deviceProfile="iOS", videoQuality=VIDEO_QUALITY_ORIGINAL, locationID=locations[0])
+                    # Optimize for iOS at original quality in library location
+                    from plexapi.sync import VIDEO_QUALITY_ORIGINAL
+                    locations = plex.library.section("Movies")._locations()
+                    video.optimize(deviceProfile="iOS", videoQuality=VIDEO_QUALITY_ORIGINAL, locationID=locations[0])
 
-                # Optimize for tv the next 5 unwatched episodes
-                show.optimize(target="tv", limit=5, unwatched=True)
+                    # Optimize for tv the next 5 unwatched episodes
+                    show.optimize(target="tv", limit=5, unwatched=True)
 
         """
         from plexapi.library import Location

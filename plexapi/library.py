@@ -565,8 +565,9 @@ class LibrarySection(PlexObject):
 
                 .. code-block:: python
 
-                LibrarySection.addLocations('/path/1')
-                LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
+                    LibrarySection.addLocations('/path/1')
+                    LibrarySection.addLocations(['/path/1', 'path/2', '/path/3'])
+
         """
         locations = self.locations
         if isinstance(location, str):
@@ -587,8 +588,9 @@ class LibrarySection(PlexObject):
 
                 .. code-block:: python
 
-                LibrarySection.removeLocations('/path/1')
-                LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
+                    LibrarySection.removeLocations('/path/1')
+                    LibrarySection.removeLocations(['/path/1', 'path/2', '/path/3'])
+
         """
         locations = self.locations
         if isinstance(location, str):
@@ -2958,6 +2960,7 @@ class ManagedHub(PlexObject):
                     managedHub.updateVisibility(recommended=True, home=True, shared=False).reload()
                     # or using chained methods
                     managedHub.promoteRecommended().promoteHome().demoteShared().reload()
+
         """
         params = {
             'promotedToRecommended': int(self.promotedToRecommended),
