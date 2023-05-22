@@ -9,10 +9,14 @@ try:
 except ImportError:
     from distutils.core import setup
 
-from plexapi import const
+# Get version
+version = {}
+with open('plexapi/const.py') as handle:
+    exec(handle.read(), version)
 
 # Get README.rst contents
-readme = open('README.rst', 'r').read()
+with open('README.rst') as handle:
+    readme = handle.read()
 
 # Get requirements
 with open('requirements.txt') as handle:
@@ -20,7 +24,7 @@ with open('requirements.txt') as handle:
 
 setup(
     name='PlexAPI',
-    version=const.__version__,
+    version=version['__version__'],
     description='Python bindings for the Plex API.',
     author='Michael Shepanski',
     author_email='michael.shepanski@gmail.com',
