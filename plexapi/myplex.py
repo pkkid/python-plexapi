@@ -1368,8 +1368,8 @@ class MyPlexResource(PlexObject):
     def preferred_connections(
         self,
         ssl=None,
-        locations=DEFAULT_LOCATION_ORDER,
-        schemes=DEFAULT_SCHEME_ORDER,
+        locations=None,
+        schemes=None,
     ):
         """ Returns a sorted list of the available connection addresses for this resource.
             Often times there is more than one address specified for a server or client.
@@ -1380,6 +1380,11 @@ class MyPlexResource(PlexObject):
                     only connect to HTTP connections. Set None (default) to connect to any
                     HTTP or HTTPS connection.
         """
+        if locations is None:
+            locations = self.DEFAULT_LOCATION_ORDER[:]
+        if schemes is None:
+            schemes = self.DEFAULT_SCHEME_ORDER[:]
+
         connections_dict = {location: {scheme: [] for scheme in schemes} for location in locations}
         for connection in self.connections:
             # Only check non-local connections unless we own the resource
@@ -1403,8 +1408,8 @@ class MyPlexResource(PlexObject):
         self,
         ssl=None,
         timeout=None,
-        locations=DEFAULT_LOCATION_ORDER,
-        schemes=DEFAULT_SCHEME_ORDER,
+        locations=None,
+        schemes=None,
     ):
         """ Returns a new :class:`~plexapi.server.PlexServer` or :class:`~plexapi.client.PlexClient` object.
             Uses `MyPlexResource.preferred_connections()` to generate the priority order of connection addresses.
@@ -1420,6 +1425,11 @@ class MyPlexResource(PlexObject):
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this resource.
         """
+        if locations is None:
+            locations = self.DEFAULT_LOCATION_ORDER[:]
+        if schemes is None:
+            schemes = self.DEFAULT_SCHEME_ORDER[:]
+
         connections = self.preferred_connections(ssl, locations, schemes)
         # Try connecting to all known resource connections in parallel, but
         # only return the first server (in order) that provides a response.
