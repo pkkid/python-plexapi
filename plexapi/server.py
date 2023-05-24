@@ -236,12 +236,13 @@ class PlexServer(PlexObject):
         q = self.query(f'/security/token?type={type}&scope={scope}')
         return q.attrib.get('token')
 
-    def switchUser(self, username, session=None, timeout=None):
+    def switchUser(self, user, session=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` object logged in as the given username.
             Note: Only the admin account can switch to other users.
         
             Parameters:
-                username (str): Username, email or user id of the user to log in to the server.
+                user (:class:`~plexapi.myplex.MyPlexUser` or str): `MyPlexUser` object, username,
+                    email, or user id of the user to log in to the server.
                 session (requests.Session, optional): Use your own session object if you want to
                     cache the http responses from the server. This will default to the same
                     session as the admin account if no new session is provided.
@@ -260,7 +261,8 @@ class PlexServer(PlexObject):
                     userPlex = plex.switchUser("Username")
 
         """
-        user = self.myPlexAccount().user(username)
+        from plexapi.myplex import MyPlexUser
+        user = user if isinstance(user, MyPlexUser) else self.myPlexAccount().user(user)
         userToken = user.get_token(self.machineIdentifier)
         if session is None:
             session = self._session
