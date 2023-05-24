@@ -470,6 +470,7 @@ class PlexServer(PlexObject):
                         sort="episode.originallyAvailableAt:desc",
                         filters={"episode.originallyAvailableAt>>": "4w", "genre": "comedy"}
                     )
+
         """
         return Collection.create(
             self, title, section, items=items, smart=smart, limit=limit,
@@ -535,6 +536,7 @@ class PlexServer(PlexObject):
                         section="Music",
                         m3ufilepath="/path/to/playlist.m3u"
                     )
+
         """
         return Playlist.create(
             self, title, section=section, items=items, smart=smart, limit=limit,
@@ -590,6 +592,7 @@ class PlexServer(PlexObject):
 
                     availableTasks = [task.name for task in plex.butlerTasks()]
                     print("Available butler tasks:", availableTasks)
+
         """
         validTasks = [task.name for task in self.butlerTasks()]
         if task not in validTasks:

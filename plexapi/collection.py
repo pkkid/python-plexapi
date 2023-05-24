@@ -222,6 +222,7 @@ class Collection(
                 .. code-block:: python
 
                     collection.updateMode(user="user")
+
         """
         if not self.smart:
             raise BadRequest('Cannot change collection filtering user for a non-smart collection.')
@@ -250,6 +251,7 @@ class Collection(
                 .. code-block:: python
 
                     collection.updateMode(mode="hide")
+
         """
         mode_dict = {
             'default': -1,
@@ -276,6 +278,7 @@ class Collection(
                 .. code-block:: python
 
                     collection.updateSort(mode="alpha")
+
         """
         if self.smart:
             raise BadRequest('Cannot change collection order for a smart collection.')
