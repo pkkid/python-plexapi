@@ -936,6 +936,48 @@ class MyPlexAccount(PlexObject):
         data = self.query(f"{self.METADATA}/library/metadata/{ratingKey}/userState")
         return self.findItem(data, cls=UserState)
 
+    def isPlayed(self, item):
+        """ Return True if the item is played on Discover.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
+        userState = self.userState(item)
+        return bool(userState.viewCount > 0) if userState.viewCount else False
+
+    def markPlayed(self, item):
+        """ Mark the Plex object as played on Discover.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
+        key = f'{self.METADATA}/actions/scrobble'
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self.query(key, params=params)
+        return self
+
+    def markUnplayed(self, item):
+        """ Mark the Plex object as unplayed on Discover.
+
+            Parameters:
+                item (:class:`~plexapi.video.Movie`,
+                :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season` or
+                :class:`~plexapi.video.Episode`): Object from searchDiscover().
+                Can be also result from Plex Movie or Plex TV Series agent.
+        """
+        key = f'{self.METADATA}/actions/unscrobble'
+        ratingKey = item.guid.rsplit('/', 1)[-1]
+        params = {'key': ratingKey, 'identifier': 'com.plexapp.plugins.library'}
+        self.query(key, params=params)
+        return self
+
     def searchDiscover(self, query, limit=30, libtype=None):
         """ Search for movies and TV shows in Discover.
             Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
