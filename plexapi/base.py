@@ -826,7 +826,7 @@ class Playable:
         """
         key = f'/:/progress?key={self.ratingKey}&identifier=com.plexapp.plugins.library&time={time}&state={state}'
         self._server.query(key)
-        self._reload(_overwriteNone=False)
+        return self
 
     def updateTimeline(self, time, state='stopped', duration=None):
         """ Set the timeline progress for this video.
@@ -844,7 +844,7 @@ class Playable:
         key = (f'/:/timeline?ratingKey={self.ratingKey}&key={self.key}&'
                f'identifier=com.plexapp.plugins.library&time={int(time)}&state={state}{durationStr}')
         self._server.query(key)
-        self._reload(_overwriteNone=False)
+        return self
 
 
 class PlexSession(object):
