@@ -712,6 +712,17 @@ def test_video_Movie_PlexWebURL(plex, movie):
     assert url.startswith(base)
 
 
+def test_video_Movie_continueWatching(plex, movies, movie):
+    assert movie not in plex.continueWatching()
+    assert movie not in movies.continueWatching()
+    movie.updateProgress(90000)
+    assert movie in plex.continueWatching()
+    assert movie in movies.continueWatching()
+    movie.markUnplayed()
+    assert movie not in plex.continueWatching()
+    assert movie not in movies.continueWatching()
+
+
 def test_video_Show_attrs(show):
     assert utils.is_datetime(show.addedAt)
     if show.art:
@@ -1297,6 +1308,17 @@ def test_video_Episode_PlexWebURL(plex, episode):
     assert plex.machineIdentifier in url
     assert 'details' in url
     assert quote_plus(episode.key) in url
+
+
+def test_video_Episode_continueWatching(plex, tvshows, episode):
+    assert episode not in plex.continueWatching()
+    assert episode not in tvshows.continueWatching()
+    episode.updateProgress(90000)
+    assert episode in plex.continueWatching()
+    assert episode in tvshows.continueWatching()
+    episode.markUnplayed()
+    assert episode not in plex.continueWatching()
+    assert episode not in tvshows.continueWatching()
 
 
 def test_that_reload_return_the_same_object(plex):

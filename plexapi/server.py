@@ -796,6 +796,10 @@ class PlexServer(PlexObject):
                 results += hub.items
         return results
 
+    def continueWatching(self):
+        """ Return a list of all items in the Continue Watching hub. """
+        return self.fetchItems('/hubs/home/continueWatching')
+
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
         return self.fetchItems('/status/sessions')
