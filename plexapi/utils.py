@@ -15,9 +15,10 @@ from datetime import datetime
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
+from requests.status_codes import _codes as codes
 
 import requests
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
 try:
     from tqdm import tqdm
@@ -391,12 +392,12 @@ def downloadSessionImages(server, filename=None, height=150, width=150,
                 prettyname = media._prettyfilename()
                 filename = f'session_transcode_{media.usernames[0]}_{prettyname}_{int(time.time())}'
             url = server.transcodeImage(url, height, width, opacity, saturation)
-            filepath = download(url, filename=filename)
+            filepath = download(url, server._token, filename=filename)
             info['username'] = {'filepath': filepath, 'url': url}
     return info
 
 
-def download(url, token, filename=None, savepath=None, session=None, chunksize=4024,
+def download(url, token, filename=None, savepath=None, session=None, chunksize=4024,   # noqa: C901
              unpack=False, mocked=False, showstatus=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
@@ -419,6 +420,17 @@ def download(url, token, filename=None, savepath=None, session=None, chunksize=4
     session = session or requests.Session()
     headers = {'X-Plex-Token': token}
     response = session.get(url, headers=headers, stream=True)
+    if response.status_code not in (200, 201, 204):
+        codename = codes.get(response.status_code)[0]
+        errtext = response.text.replace('\n', ' ')
+        message = f'({response.status_code}) {codename}; {response.url} {errtext}'
+        if response.status_code == 401:
+            raise Unauthorized(message)
+        elif response.status_code == 404:
+            raise NotFound(message)
+        else:
+            raise BadRequest(message)
+
     # make sure the savepath directory exists
     savepath = savepath or os.getcwd()
     os.makedirs(savepath, exist_ok=True)
