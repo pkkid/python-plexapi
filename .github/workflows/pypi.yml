@@ -12,8 +12,8 @@ env:
   DEFAULT_PYTHON: 3.7
 
 jobs:
-  pypi:
-    name: Publish to PyPI
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -31,8 +31,23 @@ jobs:
         pip install setuptools wheel
         python setup.py sdist bdist_wheel
 
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@master
+    - name: Upload builds
+      uses: actions/upload-artifact@v3
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
+        name: dist
+        path: dist
+
+  pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/PlexAPI
+    permissions:
+      id-token: write
+    steps:
+    - name: Download builds
+      uses: actions/download-artifact@v3
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
