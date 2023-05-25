@@ -1422,7 +1422,7 @@ class MyPlexResource(PlexObject):
         # Try connecting to all known resource connections in parallel, but
         # only return the first server (in order) that provides a response.
         cls = PlexServer if 'server' in self.provides else PlexClient
-        listargs = [[cls, url, self.accessToken, timeout] for url in connections]
+        listargs = [[cls, url, self.accessToken, self._server._session, timeout] for url in connections]
         log.debug('Testing %s resource connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Resource', self.name, results)
@@ -1517,7 +1517,7 @@ class MyPlexDevice(PlexObject):
                 :exc:`~plexapi.exceptions.NotFound`: When unable to connect to any addresses for this device.
         """
         cls = PlexServer if 'server' in self.provides else PlexClient
-        listargs = [[cls, url, self.token, timeout] for url in self.connections]
+        listargs = [[cls, url, self.token, self._server._session, timeout] for url in self.connections]
         log.debug('Testing %s device connections..', len(listargs))
         results = utils.threaded(_connect, listargs)
         return _chooseConnection('Device', self.name, results)
@@ -1767,7 +1767,7 @@ class MyPlexPinLogin:
         return ElementTree.fromstring(data) if data.strip() else None
 
 
-def _connect(cls, url, token, timeout, results, i, job_is_done_event=None):
+def _connect(cls, url, token, session, timeout, results, i, job_is_done_event=None):
     """ Connects to the specified cls with url and token. Stores the connection
         information to results[i] in a threadsafe way.
 
@@ -1775,6 +1775,7 @@ def _connect(cls, url, token, timeout, results, i, job_is_done_event=None):
             cls: the class which is responsible for establishing connection, basically it's
                  :class:`~plexapi.client.PlexClient` or :class:`~plexapi.server.PlexServer`
             url (str): url which should be passed as `baseurl` argument to cls.__init__()
+            session (requests.Session): session which sould be passed as `session` argument to cls.__init()
             token (str): authentication token which should be passed as `baseurl` argument to cls.__init__()
             timeout (int): timeout which should be passed as `baseurl` argument to cls.__init__()
             results (list): pre-filled list for results
@@ -1784,7 +1785,7 @@ def _connect(cls, url, token, timeout, results, i, job_is_done_event=None):
     """
     starttime = time.time()
     try:
-        device = cls(baseurl=url, token=token, timeout=timeout)
+        device = cls(baseurl=url, token=token, session=session, timeout=timeout)
         runtime = int(time.time() - starttime)
         results[i] = (url, token, device, runtime)
         if X_PLEX_ENABLE_FAST_CONNECT and job_is_done_event:
