@@ -1917,13 +1917,13 @@ class PhotoSection(LibrarySection):
     def collections(self, **kwargs):
         raise NotImplementedError('Collections are not available for a Photo library.')
 
-    def searchAlbums(self, title, **kwargs):
+    def searchAlbums(self, **kwargs):
         """ Search for a photo album. See :func:`~plexapi.library.LibrarySection.search` for usage. """
-        return self.search(libtype='photoalbum', title=title, **kwargs)
+        return self.search(libtype='photoalbum', **kwargs)
 
-    def searchPhotos(self, title, **kwargs):
+    def searchPhotos(self, **kwargs):
         """ Search for a photo. See :func:`~plexapi.library.LibrarySection.search` for usage. """
-        return self.search(libtype='photo', title=title, **kwargs)
+        return self.search(libtype='photo', **kwargs)
 
     def recentlyAddedAlbums(self, maxresults=50):
         """ Returns a list of recently added photo albums from this library section.
