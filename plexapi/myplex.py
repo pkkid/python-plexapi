@@ -969,46 +969,49 @@ class MyPlexAccount(PlexObject):
         return self
 
     def searchDiscover(self, query, limit=30, libtype=None):
-        """ Search for movies and TV shows in Discover.
-            Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
+            """ Search for movies, TV shows, and people in Discover.
+                Returns a list of :class:`~plexapi.video.Movie`, :class:`~plexapi.video.Show`, and :class:`to be updated` objects.
 
-            Parameters:
-                query (str): Search query.
-                limit (int, optional): Limit to the specified number of results. Default 30.
-                libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
-        """
-        libtypes = {'movie': 'movies', 'show': 'tv'}
-        libtype = libtypes.get(libtype, 'movies,tv')
+                Parameters:
+                    query (str): Search query.
+                    limit (int, optional): Limit to the specified number of results. Default 30.
+                    libtype (str, optional): 'movie', 'show', or 'people' to only return movies, shows, or people, otherwise return all items.
+            """
+            libtypes = {'movie': 'movies', 'show': 'tv', 'people': 'people'}
+            libtype = libtypes.get(libtype, 'movies,tv,people')
 
-        headers = {
-            'Accept': 'application/json'
-        }
-        params = {
-            'query': query,
-            'limit': limit,
-            'searchTypes': libtype,
-            'includeMetadata': 1
-        }
+            headers = {
+                'Accept': 'application/json'
+            }
+            params = {
+                'query': query,
+                'limit': limit,
+                'searchTypes': libtype,
+                'includeMetadata': 1,
+                'filterPeople': 1
+            }
 
-        data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
-        searchResults = data['MediaContainer'].get('SearchResults', [])
-        searchResult = next((s.get('SearchResult', []) for s in searchResults if s.get('id') == 'external'), [])
+            data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
+            searchResults = data['MediaContainer'].get('SearchResults', [])
+            searchResult = [r for s in searchResults if s.get('id') in ['external', 'people'] for r in s.get('SearchResult', [])]
 
-        results = []
-        for result in searchResult:
-            metadata = result['Metadata']
-            type = metadata['type']
-            if type == 'movie':
-                tag = 'Video'
-            elif type == 'show':
-                tag = 'Directory'
-            else:
-                continue
-            attrs = ''.join(f'{k}="{html.escape(str(v))}" ' for k, v in metadata.items())
-            xml = f'<{tag} {attrs}/>'
-            results.append(self._manuallyLoadXML(xml))
+            results = []
+            for result in searchResult:
+                metadata = result.get('Metadata') or result.get('Directory')
+                type = metadata['type']
+                if type == 'movie':
+                    tag = 'Video'
+                elif type == 'show':
+                    tag = 'Directory'
+                elif type == 'person':
+                    tag = 'Directory' # Needs to be updated, maybe a new object Person should be created
+                else:
+                    continue
+                attrs = ''.join(f'{k}="{html.escape(str(v))}" ' for k, v in metadata.items())
+                xml = f'<{tag} {attrs}/>'
+                results.append(self._manuallyLoadXML(xml))
 
-        return self._toOnlineMetadata(results)
+            return self._toOnlineMetadata(results)
 
     @property
     def viewStateSync(self):
