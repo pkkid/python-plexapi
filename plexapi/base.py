@@ -489,7 +489,9 @@ class PlexPartialObject(PlexObject):
     }
 
     def __eq__(self, other):
-        return other not in [None, []] and self.key == other.key
+        if isinstance(other, PlexPartialObject):
+            return other not in [None, []] and self.key == other.key
+        return NotImplemented
 
     def __hash__(self):
         return hash(repr(self))
