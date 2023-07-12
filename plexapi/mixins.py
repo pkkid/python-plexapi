@@ -138,7 +138,7 @@ class SplitMergeMixin:
         if not isinstance(ratingKeys, list):
             ratingKeys = str(ratingKeys).split(',')
 
-        key = f"{self.key}/merge?ids={','.join([str(r) for r in ratingKeys])}"
+        key = f"{self.key}/merge?ids={','.join(str(r) for r in ratingKeys)}"
         self._server.query(key, method=self._server._session.put)
         return self
 
@@ -821,7 +821,7 @@ class EditTagsMixin:
 
         if remove:
             tagname = f'{tag}[].tag.tag-'
-            data[tagname] = ','.join([quote(str(t)) for t in items])
+            data[tagname] = ','.join(quote(str(t)) for t in items)
         else:
             for i, item in enumerate(items):
                 tagname = f'{str(tag)}[{i}].tag.tag'
