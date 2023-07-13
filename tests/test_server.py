@@ -144,6 +144,7 @@ def test_server_search(plex, movie):
     assert hub_tag.reason == "section"
     assert hub_tag.reasonID == hub_tag.librarySectionID
     assert hub_tag.reasonTitle == hub_tag.librarySectionTitle
+    assert utils.is_float(hub_tag.score, gte=0.0)
     assert hub_tag.type == "tag"
     assert hub_tag.tag == genre.tag
     assert hub_tag.tagType == 1
@@ -155,7 +156,10 @@ def test_server_search(plex, movie):
     assert plex.search(director.tag, mediatype="director")
     # Test actor search
     role = movie.roles[0]
-    assert plex.search(role.tag, mediatype="actor")
+    results = plex.search(role.tag, mediatype="actor")
+    assert results
+    hub_tag = results[0]
+    assert hub_tag.tagKey
 
 
 def test_server_playlist(plex, show):
