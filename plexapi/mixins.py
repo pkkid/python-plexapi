@@ -793,7 +793,7 @@ class EditTagsMixin:
             items = [items]
 
         if not remove:
-            tags = getattr(self, self._tagPlural(tag))
+            tags = getattr(self, self._tagPlural(tag), [])
             items = tags + items
 
         edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
