@@ -751,6 +751,19 @@ class PhotoCapturedTimeMixin(EditFieldMixin):
         return self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
+class UserRatingMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a user rating. """
+
+    def editUserRating(self, userRating, locked=True):
+        """ Edit the user rating.
+
+            Parameters:
+                userRating (int): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        return self.editField('userRating', userRating, locked=locked)
+
+
 class EditTagsMixin:
     """ Mixin for editing Plex object tags. """
 
@@ -1138,7 +1151,7 @@ class WatchlistMixin:
 
 class MovieEditMixins(
     AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
-    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin,
+    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
 ):
     pass
@@ -1146,62 +1159,62 @@ class MovieEditMixins(
 
 class ShowEditMixins(
     AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
-    SummaryMixin, TaglineMixin, TitleMixin,
+    SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, GenreMixin, LabelMixin,
 ):
     pass
 
 
 class SeasonEditMixins(
-    AddedAtMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, LabelMixin
 ):
     pass
 
 
 class EpisodeEditMixins(
-    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
 ):
     pass
 
 
 class ArtistEditMixins(
-    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 ):
     pass
 
 
 class AlbumEditMixins(
-    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
 ):
     pass
 
 
 class TrackEditMixins(
-    AddedAtMixin, TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
+    AddedAtMixin, TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin, UserRatingMixin,
     CollectionMixin, LabelMixin, MoodMixin
 ):
     pass
 
 
 class PhotoalbumEditMixins(
-    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin
 ):
     pass
 
 
 class PhotoEditMixins(
-    AddedAtMixin, PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     TagMixin
 ):
     pass
 
 
 class CollectionEditMixins(
-    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     LabelMixin
 ):
     pass
