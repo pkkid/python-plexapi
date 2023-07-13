@@ -2095,8 +2095,10 @@ class LibraryMediaTag(PlexObject):
             reason (str): The reason for the search result.
             reasonID (int): The reason ID for the search result.
             reasonTitle (str): The reason title for the search result.
+            score (float): The score for the search result.
             type (str): The type of search result (tag).
             tag (str): The title of the tag.
+            tagKey (str): The Plex Discover ratingKey (guid) for people.
             tagType (int): The type ID of the tag.
             tagValue (int): The value of the tag.
             thumb (str): The URL for the thumbnail of the tag (if available).
@@ -2117,8 +2119,10 @@ class LibraryMediaTag(PlexObject):
         self.reason = data.attrib.get('reason')
         self.reasonID = utils.cast(int, data.attrib.get('reasonID'))
         self.reasonTitle = data.attrib.get('reasonTitle')
+        self.score = utils.cast(float, data.attrib.get('score'))
         self.type = data.attrib.get('type')
         self.tag = data.attrib.get('tag')
+        self.tagKey = data.attrib.get('tagKey')
         self.tagType = utils.cast(int, data.attrib.get('tagType'))
         self.tagValue = utils.cast(int, data.attrib.get('tagValue'))
         self.thumb = data.attrib.get('thumb')
