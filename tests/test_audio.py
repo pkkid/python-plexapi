@@ -318,7 +318,6 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.updatedAt)
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
-    assert track.viewedAt is None
     assert track.year is None
     assert track.url(None) is None
     assert media.aspectRatio is None

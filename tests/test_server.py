@@ -183,13 +183,6 @@ def test_server_playlists(plex, show):
         playlist.delete()
 
 
-def test_server_history(plex, movie):
-    movie.markPlayed()
-    history = plex.history()
-    assert len(history)
-    movie.markUnplayed()
-
-
 def test_server_Server_query(plex):
     assert plex.query("/")
     with pytest.raises(NotFound):

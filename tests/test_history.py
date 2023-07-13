@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import conftest as utils
 
 
 def test_history_Movie(movie):
@@ -81,6 +82,24 @@ def test_history_MyServer(plex, movie):
     history = plex.history()
     assert len(history)
     movie.markUnplayed()
+
+
+def test_history_PlexHistory(plex, movie):
+    movie.markPlayed()
+    history = plex.history()
+    assert len(history)
+    
+    hist = history[0]
+    assert hist.source() == movie
+    assert hist.accountID
+    assert hist.deviceID
+    assert hist.historyKey
+    assert utils.is_datetime(hist.viewedAt)
+    assert hist.guid is None
+    hist.delete()
+
+    history = plex.history()
+    assert hist not in history
 
 
 def test_history_User(account, shared_username):
