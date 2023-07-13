@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexSession
+from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
@@ -1119,3 +1119,42 @@ class ClipSession(PlexSession, Clip):
         """ Load attribute values from Plex XML response. """
         Clip._loadData(self, data)
         PlexSession._loadData(self, data)
+
+
+@utils.registerPlexObject
+class MovieHistory(PlexHistory, Movie):
+    """ Represents a single Movie history entry
+        loaded from :func:`~plexapi.server.PlexServer.history`.
+    """
+    _HISTORYTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Movie._loadData(self, data)
+        PlexHistory._loadData(self, data)
+
+
+@utils.registerPlexObject
+class EpisodeHistory(PlexHistory, Episode):
+    """ Represents a single Episode history entry
+        loaded from :func:`~plexapi.server.PlexServer.history`.
+    """
+    _HISTORYTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Episode._loadData(self, data)
+        PlexHistory._loadData(self, data)
+
+
+@utils.registerPlexObject
+class ClipHistory(PlexHistory, Clip):
+    """ Represents a single Clip history entry
+        loaded from :func:`~plexapi.server.PlexServer.history`.
+    """
+    _HISTORYTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Clip._loadData(self, data)
+        PlexHistory._loadData(self, data)
