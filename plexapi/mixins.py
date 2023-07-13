@@ -1134,3 +1134,74 @@ class WatchlistMixin:
         ratingKey = self.guid.rsplit('/', 1)[-1]
         data = account.query(f"{account.METADATA}/library/metadata/{ratingKey}/availabilities")
         return self.findItems(data)
+
+
+class MovieEditMixins(
+    AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
+    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin,
+    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
+):
+    pass
+
+
+class ShowEditMixins(
+    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    SummaryMixin, TaglineMixin, TitleMixin,
+    CollectionMixin, GenreMixin, LabelMixin,
+):
+    pass
+
+
+class SeasonEditMixins(
+    AddedAtMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, LabelMixin
+):
+    pass
+
+
+class EpisodeEditMixins(
+    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
+):
+    pass
+
+
+class ArtistEditMixins(
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+):
+    pass
+
+
+class AlbumEditMixins(
+    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
+    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+):
+    pass
+
+
+class TrackEditMixins(
+    AddedAtMixin, TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
+    CollectionMixin, LabelMixin, MoodMixin
+):
+    pass
+
+
+class PhotoalbumEditMixins(
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin
+):
+    pass
+
+
+class PhotoEditMixins(
+    AddedAtMixin, PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    TagMixin
+):
+    pass
+
+
+class CollectionEditMixins(
+    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
+    LabelMixin
+):
+    pass

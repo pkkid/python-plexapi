@@ -8,14 +8,12 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
-    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
-    TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
-    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+    ArtistEditMixins, AlbumEditMixins, TrackEditMixins
 )
 from plexapi.playlist import Playlist
 
 
-class Audio(PlexPartialObject, PlayedUnplayedMixin, AddedAtMixin):
+class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all audio objects including :class:`~plexapi.audio.Artist`,
         :class:`~plexapi.audio.Album`, and :class:`~plexapi.audio.Track`.
 
@@ -132,8 +130,7 @@ class Artist(
     Audio,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    SortTitleMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+    ArtistEditMixins
 ):
     """ Represents a single Artist.
 
@@ -244,8 +241,7 @@ class Album(
     Audio,
     UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+    AlbumEditMixins
 ):
     """ Represents a single Album.
 
@@ -364,8 +360,7 @@ class Track(
     Audio, Playable,
     ExtrasMixin, RatingMixin,
     ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
-    TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
-    CollectionMixin, LabelMixin, MoodMixin
+    TrackEditMixins
 ):
     """ Represents a single Track.
 

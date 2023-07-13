@@ -8,14 +8,12 @@ from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
-    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
 
 
-class Video(PlexPartialObject, PlayedUnplayedMixin, AddedAtMixin):
+class Video(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
         :class:`~plexapi.video.Episode`, and :class:`~plexapi.video.Clip`.
@@ -309,9 +307,7 @@ class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
-    SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    MovieEditMixins,
     WatchlistMixin
 ):
     """ Represents a single Movie.
@@ -454,9 +450,7 @@ class Show(
     Video,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, BannerMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
-    SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, GenreMixin, LabelMixin,
+    ShowEditMixins,
     WatchlistMixin
 ):
     """ Represents a single Show (including all seasons and episodes).
@@ -666,8 +660,7 @@ class Season(
     Video,
     AdvancedSettingsMixin, ExtrasMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    SummaryMixin, TitleMixin,
-    CollectionMixin, LabelMixin
+    SeasonEditMixins
 ):
     """ Represents a single Show Season (including all episodes).
 
@@ -820,8 +813,7 @@ class Episode(
     Video, Playable,
     ExtrasMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
+    EpisodeEditMixins
 ):
     """ Represents a single Shows Episode.
 
