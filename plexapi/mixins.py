@@ -328,7 +328,19 @@ class ArtUrlMixin:
         return self._server.url(art, includeToken=True) if art else None
 
 
-class ArtMixin(ArtUrlMixin):
+class ArtLockMixin:
+    """ Mixin for Plex objects that can have a locked background artwork. """
+
+    def lockArt(self):
+        """ Lock the background artwork for a Plex object. """
+        return self._edit(**{'art.locked': 1})
+
+    def unlockArt(self):
+        """ Unlock the background artwork for a Plex object. """
+        return self._edit(**{'art.locked': 0})
+
+
+class ArtMixin(ArtUrlMixin, ArtLockMixin):
     """ Mixin for Plex objects that can have background artwork. """
 
     def arts(self):
@@ -360,14 +372,6 @@ class ArtMixin(ArtUrlMixin):
         art.select()
         return self
 
-    def lockArt(self):
-        """ Lock the background artwork for a Plex object. """
-        return self._edit(**{'art.locked': 1})
-
-    def unlockArt(self):
-        """ Unlock the background artwork for a Plex object. """
-        return self._edit(**{'art.locked': 0})
-
 
 class PosterUrlMixin:
     """ Mixin for Plex objects that can have a poster url. """
@@ -384,7 +388,19 @@ class PosterUrlMixin:
         return self.thumbUrl
 
 
-class PosterMixin(PosterUrlMixin):
+class PosterLockMixin:
+    """ Mixin for Plex objects that can have a locked poster. """
+
+    def lockPoster(self):
+        """ Lock the poster for a Plex object. """
+        return self._edit(**{'thumb.locked': 1})
+
+    def unlockPoster(self):
+        """ Unlock the poster for a Plex object. """
+        return self._edit(**{'thumb.locked': 0})
+
+
+class PosterMixin(PosterUrlMixin, PosterLockMixin):
     """ Mixin for Plex objects that can have posters. """
 
     def posters(self):
@@ -416,14 +432,6 @@ class PosterMixin(PosterUrlMixin):
         poster.select()
         return self
 
-    def lockPoster(self):
-        """ Lock the poster for a Plex object. """
-        return self._edit(**{'thumb.locked': 1})
-
-    def unlockPoster(self):
-        """ Unlock the poster for a Plex object. """
-        return self._edit(**{'thumb.locked': 0})
-
 
 class ThemeUrlMixin:
     """ Mixin for Plex objects that can have a theme url. """
@@ -435,7 +443,19 @@ class ThemeUrlMixin:
         return self._server.url(theme, includeToken=True) if theme else None
 
 
-class ThemeMixin(ThemeUrlMixin):
+class ThemeLockMixin:
+    """ Mixin for Plex objects that can have a locked theme. """
+
+    def lockTheme(self):
+        """ Lock the theme for a Plex object. """
+        return self._edit(**{'theme.locked': 1})
+
+    def unlockTheme(self):
+        """ Unlock the theme for a Plex object. """
+        return self._edit(**{'theme.locked': 0})
+
+
+class ThemeMixin(ThemeUrlMixin, ThemeLockMixin):
     """ Mixin for Plex objects that can have themes. """
 
     def themes(self):
@@ -467,14 +487,6 @@ class ThemeMixin(ThemeUrlMixin):
             'Themes cannot be set through the API. '
             'Re-upload the theme using "uploadTheme" to set it.'
         )
-
-    def lockTheme(self):
-        """ Lock the theme for a Plex object. """
-        return self._edit(**{'theme.locked': 1})
-
-    def unlockTheme(self):
-        """ Unlock the theme for a Plex object. """
-        return self._edit(**{'theme.locked': 0})
 
 
 class EditFieldMixin:
@@ -1099,6 +1111,7 @@ class WatchlistMixin:
 
 
 class MovieEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
     StudioMixin, SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
@@ -1107,6 +1120,7 @@ class MovieEditMixins(
 
 
 class ShowEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
     SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, GenreMixin, LabelMixin,
@@ -1115,6 +1129,7 @@ class ShowEditMixins(
 
 
 class SeasonEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, LabelMixin
 ):
@@ -1122,6 +1137,7 @@ class SeasonEditMixins(
 
 
 class EpisodeEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
 ):
@@ -1129,6 +1145,7 @@ class EpisodeEditMixins(
 
 
 class ArtistEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
 ):
@@ -1136,6 +1153,7 @@ class ArtistEditMixins(
 
 
 class AlbumEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
 ):
@@ -1143,6 +1161,7 @@ class AlbumEditMixins(
 
 
 class TrackEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin, UserRatingMixin,
     CollectionMixin, LabelMixin, MoodMixin
 ):
@@ -1150,12 +1169,14 @@ class TrackEditMixins(
 
 
 class PhotoalbumEditMixins(
+    ArtLockMixin, PosterLockMixin,
     AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin
 ):
     pass
 
 
 class PhotoEditMixins(
+    ArtLockMixin, PosterLockMixin,
     AddedAtMixin, PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     TagMixin
 ):
@@ -1163,6 +1184,7 @@ class PhotoEditMixins(
 
 
 class CollectionEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     LabelMixin
 ):
