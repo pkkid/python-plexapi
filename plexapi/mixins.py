@@ -369,57 +369,6 @@ class ArtMixin(ArtUrlMixin):
         return self._edit(**{'art.locked': 0})
 
 
-class BannerUrlMixin:
-    """ Mixin for Plex objects that can have a banner url. """
-
-    @property
-    def bannerUrl(self):
-        """ Return the banner url for the Plex object. """
-        banner = self.firstAttr('banner')
-        return self._server.url(banner, includeToken=True) if banner else None
-
-
-class BannerMixin(BannerUrlMixin):
-    """ Mixin for Plex objects that can have banners. """
-
-    def banners(self):
-        """ Returns list of available :class:`~plexapi.media.Banner` objects. """
-        return self.fetchItems(f'/library/metadata/{self.ratingKey}/banners', cls=media.Banner)
-
-    def uploadBanner(self, url=None, filepath=None):
-        """ Upload a banner from a url or filepath.
-        
-            Parameters:
-                url (str): The full URL to the image to upload.
-                filepath (str): The full file path the the image to upload or file-like object.
-        """
-        if url:
-            key = f'/library/metadata/{self.ratingKey}/banners?url={quote_plus(url)}'
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = f'/library/metadata/{self.ratingKey}/banners'
-            data = openOrRead(filepath)
-            self._server.query(key, method=self._server._session.post, data=data)
-        return self
-
-    def setBanner(self, banner):
-        """ Set the banner for a Plex object.
-        
-            Parameters:
-                banner (:class:`~plexapi.media.Banner`): The banner object to select.
-        """
-        banner.select()
-        return self
-
-    def lockBanner(self):
-        """ Lock the banner for a Plex object. """
-        return self._edit(**{'banner.locked': 1})
-
-    def unlockBanner(self):
-        """ Unlock the banner for a Plex object. """
-        return self._edit(**{'banner.locked': 0})
-
-
 class PosterUrlMixin:
     """ Mixin for Plex objects that can have a poster url. """
 

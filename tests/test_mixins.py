@@ -205,10 +205,6 @@ def lock_art(obj):
     _test_mixins_lock_image(obj, "arts")
 
 
-def lock_banner(obj):
-    _test_mixins_lock_image(obj, "banners")
-
-
 def lock_poster(obj):
     _test_mixins_lock_image(obj, "posters")
 
@@ -273,10 +269,6 @@ def edit_art(obj):
     _test_mixins_edit_image(obj, "arts")
 
 
-def edit_banner(obj):
-    _test_mixins_edit_image(obj, "banners")
-
-
 def edit_poster(obj):
     _test_mixins_edit_image(obj, "posters")
 
@@ -295,10 +287,6 @@ def _test_mixins_imageUrl(obj, attr):
 
 def attr_artUrl(obj):
     _test_mixins_imageUrl(obj, "art")
-
-
-def attr_bannerUrl(obj):
-    _test_mixins_imageUrl(obj, "banner")
 
 
 def attr_posterUrl(obj):

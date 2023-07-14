@@ -7,7 +7,7 @@ from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
-    ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
     MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
@@ -449,7 +449,7 @@ class Movie(
 class Show(
     Video,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, BannerMixin, PosterMixin, ThemeMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
     ShowEditMixins,
     WatchlistMixin
 ):
@@ -468,7 +468,6 @@ class Show(
             autoDeletionItemPolicyWatchedLibrary (int): Setting that indicates if episodes are deleted
                 after being watched for the show (0 = Never, 1 = After a day, 7 = After a week,
                 100 = On next refresh).
-            banner (str): Key to banner artwork (/library/metadata/<ratingkey>/banner/<bannerid>).
             childCount (int): Number of seasons (including Specials) in the show.
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             contentRating (str) Content rating (PG-13; NR; TV-G).
@@ -522,7 +521,6 @@ class Show(
             int, data.attrib.get('autoDeletionItemPolicyUnwatchedLibrary', '0'))
         self.autoDeletionItemPolicyWatchedLibrary = utils.cast(
             int, data.attrib.get('autoDeletionItemPolicyWatchedLibrary', '0'))
-        self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.collections = self.findItems(data, media.Collection)
         self.contentRating = data.attrib.get('contentRating')

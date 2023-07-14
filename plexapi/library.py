@@ -2272,16 +2272,6 @@ class Autotag(LibraryMediaTag):
 
 
 @utils.registerPlexObject
-class Banner(LibraryMediaTag):
-    """ Represents a single Banner library media tag.
-
-        Attributes:
-            TAGTYPE (int): 311
-    """
-    TAGTYPE = 311
-
-
-@utils.registerPlexObject
 class Chapter(LibraryMediaTag):
     """ Represents a single Chapter library media tag.
 

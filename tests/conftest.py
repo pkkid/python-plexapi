@@ -416,10 +416,6 @@ def is_art(key):
     return is_metadata(key, contains="/art/")
 
 
-def is_banner(key):
-    return is_metadata(key, contains="/banner/")
-
-
 def is_thumb(key):
     return is_metadata(key, contains="/thumb/")
 
