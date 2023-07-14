@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
-from urllib.parse import quote_plus, urlencode
+from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
 
 from plexapi import log, media, utils
 from plexapi.base import OPERATORS, PlexObject
@@ -3226,3 +3226,26 @@ class Common(PlexObject):
         self.type = data.attrib.get('type')
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
+
+    def __repr__(self):
+        return '<%s:%s:%s>' % (
+            self.__class__.__name__,
+            self.commonType,
+            ','.join(str(key) for key in self.ratingKeys)
+        )
+
+    @property
+    def commonType(self):
+        """ Returns the media type of the common items. """
+        parsed_query = parse_qs(urlparse(self._initpath).query)
+        return utils.reverseSearchType(parsed_query['type'][0])
+
+    @property
+    def ratingKeys(self):
+        """ Returns a list of rating keys for the common items. """
+        parsed_query = parse_qs(urlparse(self._initpath).query)
+        return [int(value.strip()) for value in parsed_query['id'][0].split(',')]
+
+    def items(self):
+        """ Returns a list of the common items. """
+        return self._server.fetchItems(self.ratingKeys)
