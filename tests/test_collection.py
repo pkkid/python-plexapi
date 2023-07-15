@@ -347,6 +347,7 @@ def test_Collection_mixins_fields(collection):
     test_mixins.edit_sort_title(collection)
     test_mixins.edit_summary(collection)
     test_mixins.edit_title(collection)
+    test_mixins.edit_user_rating(collection)
 
 
 def test_Collection_mixins_tags(collection):

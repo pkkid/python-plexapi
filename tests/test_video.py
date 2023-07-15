@@ -668,12 +668,13 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_summary(movie)
     test_mixins.edit_tagline(movie)
     test_mixins.edit_title(movie)
+    test_mixins.edit_user_rating(movie)
     with pytest.raises(BadRequest):
         test_mixins.edit_edition_title(movie)
 
 
 @pytest.mark.authenticated
-def test_video_Movie_mixins_fields(movie):
+def test_video_Movie_mixins_fields_edition(movie):
     test_mixins.edit_edition_title(movie)
 
 
@@ -926,6 +927,7 @@ def test_video_Show_mixins_fields(show):
     test_mixins.edit_summary(show)
     test_mixins.edit_tagline(show)
     test_mixins.edit_title(show)
+    test_mixins.edit_user_rating(show)
 
 
 def test_video_Show_mixins_tags(show):
@@ -1075,6 +1077,7 @@ def test_video_Season_mixins_fields(show):
     test_mixins.edit_added_at(season)
     test_mixins.edit_summary(season)
     test_mixins.edit_title(season)
+    test_mixins.edit_user_rating(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1286,6 +1289,7 @@ def test_video_Episode_mixins_fields(episode):
     test_mixins.edit_sort_title(episode)
     test_mixins.edit_summary(episode)
     test_mixins.edit_title(episode)
+    test_mixins.edit_user_rating(episode)
 
 
 def test_video_Episode_mixins_tags(episode):

@@ -13,14 +13,16 @@ CUTE_CAT_SHA1 = "9f7003fc401761d8e0b0364d428b2dab2f789dbb"
 AUDIO_STUB_SHA1 = "1abc20d5fdc904201bf8988ca6ef30f96bb73617"
 
 
-def _test_mixins_field(obj, attr, field_method):
+def _test_mixins_field(obj, attr, field_method, default=None, value=None):
     edit_field_method = getattr(obj, "edit" + field_method)
     _value = lambda: getattr(obj, attr)
     _fields = lambda: [f for f in obj.fields if f.name == attr]
 
     # Check field does not match to begin with
-    default_value = _value()
-    if isinstance(default_value, datetime):
+    default_value = default or _value()
+    if value:
+        test_value = value
+    elif isinstance(default_value, datetime):
         test_value = TEST_MIXIN_DATE
     elif isinstance(default_value, int):
         test_value = default_value + 1
@@ -99,6 +101,10 @@ def edit_track_disc_number(obj):
 
 def edit_photo_captured_time(obj):
     _test_mixins_field(obj, "originallyAvailableAt", "CapturedTime")
+
+
+def edit_user_rating(obj):
+    _test_mixins_field(obj, "userRating", "UserRating", default=None, value=10)
 
 
 def _test_mixins_tag(obj, attr, tag_method):
