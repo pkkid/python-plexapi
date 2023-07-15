@@ -4,7 +4,7 @@ import weakref
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
+from plexapi import CONFIG, X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 from plexapi.utils import cached_property
 
@@ -50,9 +50,14 @@ class PlexObject:
         self._initpath = initpath or self.key
         self._parent = weakref.ref(parent) if parent is not None else None
         self._details_key = None
-        self._overwriteNone = True  # Allow overwriting previous attribute values with `None` when manually reloading
-        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
-        self._edits = None  # Save batch edits for a single API call
+
+        # Allow overwriting previous attribute values with `None` when manually reloading
+        self._overwriteNone = True
+        # Automatically reload the object when accessing a missing attribute
+        self._autoReload = CONFIG.get('plexapi.autoreload', True, bool)
+        # Attribute to save batch edits for a single API call
+        self._edits = None
+
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
