@@ -968,7 +968,7 @@ class MyPlexAccount(PlexObject):
         self.query(key, params=params)
         return self
 
-    def searchDiscover(self, query, limit=30, libtype=None):
+    def searchDiscover(self, query, limit=30, libtype=None, language=None):
             """ Search for movies, TV shows, and people in Discover.
                 Returns a list of :class:`~plexapi.video.Movie`, :class:`~plexapi.video.Show`, and :class:`to be updated` objects.
 
@@ -988,7 +988,8 @@ class MyPlexAccount(PlexObject):
                 'limit': limit,
                 'searchTypes': libtype,
                 'includeMetadata': 1,
-                'filterPeople': 1
+                'filterPeople': 1,
+                'X-Plex-Language': language
             }
 
             data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
