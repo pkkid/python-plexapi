@@ -326,6 +326,7 @@ class Movie(
             duration (int): Duration of the movie in milliseconds.
             editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
             enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
+                (-1 = Library default, 0 = Disabled)
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -473,6 +474,7 @@ class Show(
             contentRating (str) Content rating (PG-13; NR; TV-G).
             duration (int): Typical duration of the show episodes in milliseconds.
             enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
+                (-1 = Library default, 0 = Disabled).
             episodeSort (int): Setting that indicates how episodes are sorted for the show
                 (-1 = Library default, 0 = Oldest first, 1 = Newest first).
             flattenSeasons (int): Setting that indicates if seasons are set to hidden for the show
@@ -494,7 +496,8 @@ class Show(
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             seasonCount (int): Number of seasons (excluding Specials) in the show.
             showOrdering (str): Setting that indicates the episode ordering for the show
-                (None = Library default).
+                (None = Library default, tmdbAiring = The Movie Database (Aired),
+                aired = TheTVDB (Aired), dvd = TheTVDB (DVD), absolute = TheTVDB (Absolute)).
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created show (Di Bonaventura Pictures; 21 Laps Entertainment).
             subtitleLanguage (str): Setting that indicates the preferred subtitle language.
@@ -585,31 +588,21 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
-        kwargs = {
-            'title': None,
-            'libtype': 'season',
-            'filters': {'show.id': self.ratingKey}
-        }
-
+        key = f'{self.key}/children?excludeAllLeaves=1'
         if title is not None and not isinstance(title, int):
-            kwargs['title'] = title
+            return self.fetchItem(key, Season, title__iexact=title)
         elif season is not None or isinstance(title, int):
             if isinstance(title, int):
-                kwargs['filters']['season.index'] = title
+                index = title
             else:
-                kwargs['filters']['season.index'] = season
-        else:
-            raise BadRequest('Missing argument: title or season is required')
-
-        return self.section().get(**kwargs)
+                index = season
+            return self.fetchItem(key, Season, index=index)
+        raise BadRequest('Missing argument: title or season is required')
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
-        return self.section().search(
-            libtype='season',
-            filters={'show.id': self.ratingKey},
-            **kwargs
-        )
+        key = f'{self.key}/children?excludeAllLeaves=1'
+        return self.fetchItems(key, Season, container_size=self.childCount, **kwargs)
 
     def episode(self, title=None, season=None, episode=None):
         """ Find a episode using a title or season and episode.
@@ -622,29 +615,17 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season and episode parameters are missing.
         """
-        kwargs = {
-            'title': None,
-            'libtype': 'episode',
-            'filters': {'show.id': self.ratingKey}
-        }
-
+        key = f'{self.key}/allLeaves'
         if title is not None:
-            kwargs['title'] = title
+            return self.fetchItem(key, Episode, title__iexact=title)
         elif season is not None and episode is not None:
-            kwargs['filters']['season.index'] = season
-            kwargs['filters']['episode.index'] = episode
-        else:
-            raise BadRequest('Missing argument: title or season and episode are required')
-        
-        return self.section().get(**kwargs)
+            return self.fetchItem(key, Episode, parentIndex=season, index=episode)
+        raise BadRequest('Missing argument: title or season and episode are required')
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
-        return self.section().search(
-            libtype='episode',
-            filters={'show.id': self.ratingKey},
-            **kwargs
-        )
+        key = f'{self.key}/allLeaves'
+        return self.fetchItems(key, Episode, **kwargs)
 
     def get(self, title=None, season=None, episode=None):
         """ Alias to :func:`~plexapi.video.Show.episode`. """
@@ -652,11 +633,11 @@ class Show(
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(unwatched=False)
+        return self.episodes(viewCount__gt=0)
 
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(unwatched=True)
+        return self.episodes(viewCount=0)
 
     def download(self, savepath=None, keep_original_name=False, subfolders=False, **kwargs):
         """ Download all episodes from the show. See :func:`~plexapi.base.Playable.download` for details.
@@ -777,31 +758,21 @@ class Season(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
-        kwargs = {
-            'title': None,
-            'libtype': 'episode',
-            'filters': {'season.id': self.ratingKey}
-        }
-
+        key = f'{self.key}/children'
         if title is not None and not isinstance(title, int):
-            kwargs['title'] = title
+            return self.fetchItem(key, Episode, title__iexact=title)
         elif episode is not None or isinstance(title, int):
             if isinstance(title, int):
-                kwargs['filters']['episode.index'] = title
+                index = title
             else:
-                kwargs['filters']['episode.index'] = episode
-        else:
-            raise BadRequest('Missing argument: title or episode is required')
-        
-        return self.section().get(**kwargs)
+                index = episode
+            return self.fetchItem(key, Episode, parentIndex=self.index, index=index)
+        raise BadRequest('Missing argument: title or episode is required')
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
-        return self.section().search(
-            libtype='episode',
-            filters={'season.id': self.ratingKey},
-            **kwargs
-        )
+        key = f'{self.key}/children'
+        return self.fetchItems(key, Episode, **kwargs)
 
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode`. """
@@ -813,11 +784,11 @@ class Season(
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(unwatched=False)
+        return self.episodes(viewCount__gt=0)
 
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(unwatched=True)
+        return self.episodes(viewCount=0)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download all episodes from the season. See :func:`~plexapi.base.Playable.download` for details.

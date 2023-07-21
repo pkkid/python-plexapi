@@ -178,13 +178,11 @@ class Artist(
             Parameters:
                 title (str): Title of the album to return.
         """
-        kwargs = {
-            'title': title,
-            'libtype': 'album',
-            'filters': {'artist.id': self.ratingKey}
-        }
-
-        return self.section().get(**kwargs)
+        return self.section().get(
+            title=title,
+            libtype='album',
+            filters={'artist.id': self.ratingKey}
+        )
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
@@ -205,29 +203,17 @@ class Artist(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or album and track parameters are missing.
         """
-        kwargs = {
-            'title': None,
-            'libtype': 'track',
-            'filters': {'artist.id': self.ratingKey}
-        }
-
+        key = f'{self.key}/allLeaves'
         if title is not None:
-            kwargs['title'] = title
+            return self.fetchItem(key, Track, title__iexact=title)
         elif album is not None and track is not None:
-            kwargs['filters']['album.title'] = album
-            kwargs['filters']['track.index'] = track
-        else:
-            raise BadRequest('Missing argument: title or album and track are required')
-
-        return self.section().get(**kwargs)
+            return self.fetchItem(key, Track, parentTitle__iexact=album, index=track)
+        raise BadRequest('Missing argument: title or album and track are required')
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
-        return self.section().search(
-            libtype='track',
-            filters={'artist.id': self.ratingKey},
-            **kwargs
-        )
+        key = f'{self.key}/allLeaves'
+        return self.fetchItems(key, Track, **kwargs)
 
     def get(self, title=None, album=None, track=None):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -331,31 +317,21 @@ class Album(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
-        kwargs = {
-            'title': None,
-            'libtype': 'track',
-            'filters': {'album.id': self.ratingKey}
-        }
-
+        key = f'{self.key}/children'
         if title is not None and not isinstance(title, int):
-            kwargs['title'] = title
+            return self.fetchItem(key, Track, title__iexact=title)
         elif track is not None or isinstance(title, int):
             if isinstance(title, int):
-                kwargs['filters']['track.index'] = title
+                index = title
             else:
-                kwargs['filters']['track.index'] = track
-        else:
-            raise BadRequest('Missing argument: title or track is required')
-
-        return self.section().get(**kwargs)
+                index = track
+            return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=index)
+        raise BadRequest('Missing argument: title or track is required')
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in the album. """
-        return self.section().search(
-            libtype='track',
-            filters={'album.id': self.ratingKey},
-            **kwargs
-        )
+        key = f'{self.key}/children'
+        return self.fetchItems(key, Track, **kwargs)
 
     def get(self, title=None, track=None):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
