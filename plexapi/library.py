@@ -588,19 +588,24 @@ class LibrarySection(PlexObject):
             raise BadRequest('You are unable to remove all locations from a library.')
         return self.edit(location=locations)
 
-    def get(self, title):
-        """ Returns the media item with the specified title.
+    def get(self, title, **kwargs):
+        """ Returns the media item with the specified title and kwargs.
 
             Parameters:
                 title (str): Title of the item to return.
+                kwargs (dict): Additional search parameters.
+                    See :func:`~plexapi.library.LibrarySection.search` for more info.
 
             Raises:
                 :exc:`~plexapi.exceptions.NotFound`: The title is not found in the library.
         """
         try:
-            return self.search(title)[0]
+            return self.search(title, limit=1, **kwargs)[0]
         except IndexError:
-            raise NotFound(f"Unable to find item '{title}'") from None
+            msg = f"Unable to find item with title '{title}'"
+            if kwargs:
+                msg += f" and kwargs {kwargs}"
+            raise NotFound(msg) from None
 
     def getGuid(self, guid):
         """ Returns the media item with the specified external Plex, IMDB, TMDB, or TVDB ID.

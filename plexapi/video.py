@@ -585,21 +585,31 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season parameter is missing.
         """
-        key = f'{self.key}/children?excludeAllLeaves=1'
+        kwargs = {
+            'title': None,
+            'libtype': 'season',
+            'filters': {'show.id': self.ratingKey}
+        }
+
         if title is not None and not isinstance(title, int):
-            return self.fetchItem(key, Season, title__iexact=title)
+            kwargs['title'] = title
         elif season is not None or isinstance(title, int):
             if isinstance(title, int):
-                index = title
+                kwargs['filters']['season.index'] = title
             else:
-                index = season
-            return self.fetchItem(key, Season, index=index)
-        raise BadRequest('Missing argument: title or season is required')
+                kwargs['filters']['season.index'] = season
+        else:
+            raise BadRequest('Missing argument: title or season is required')
+
+        return self.section().get(**kwargs)
 
     def seasons(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Season` objects in the show. """
-        key = f'{self.key}/children?excludeAllLeaves=1'
-        return self.fetchItems(key, Season, container_size=self.childCount, **kwargs)
+        return self.section().search(
+            libtype='season',
+            filters={'show.id': self.ratingKey},
+            **kwargs
+        )
 
     def episode(self, title=None, season=None, episode=None):
         """ Find a episode using a title or season and episode.
@@ -612,17 +622,29 @@ class Show(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or season and episode parameters are missing.
         """
-        key = f'{self.key}/allLeaves'
+        kwargs = {
+            'title': None,
+            'libtype': 'episode',
+            'filters': {'show.id': self.ratingKey}
+        }
+
         if title is not None:
-            return self.fetchItem(key, Episode, title__iexact=title)
+            kwargs['title'] = title
         elif season is not None and episode is not None:
-            return self.fetchItem(key, Episode, parentIndex=season, index=episode)
-        raise BadRequest('Missing argument: title or season and episode are required')
+            kwargs['filters']['season.index'] = season
+            kwargs['filters']['episode.index'] = episode
+        else:
+            raise BadRequest('Missing argument: title or season and episode are required')
+        
+        return self.section().get(**kwargs)
 
     def episodes(self, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Episode` objects in the show. """
-        key = f'{self.key}/allLeaves'
-        return self.fetchItems(key, Episode, **kwargs)
+        return self.section().search(
+            libtype='episode',
+            filters={'show.id': self.ratingKey},
+            **kwargs
+        )
 
     def get(self, title=None, season=None, episode=None):
         """ Alias to :func:`~plexapi.video.Show.episode`. """
@@ -630,11 +652,11 @@ class Show(
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(viewCount__gt=0)
+        return self.episodes(unwatched=False)
 
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(viewCount=0)
+        return self.episodes(unwatched=True)
 
     def download(self, savepath=None, keep_original_name=False, subfolders=False, **kwargs):
         """ Download all episodes from the show. See :func:`~plexapi.base.Playable.download` for details.
@@ -738,10 +760,12 @@ class Season(
         """ Returns the season number. """
         return self.index
 
-    def episodes(self, **kwargs):
-        """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
-        key = f'{self.key}/children'
-        return self.fetchItems(key, Episode, **kwargs)
+    def onDeck(self):
+        """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
+            Will only return a match if the show's On Deck episode is in this season.
+        """
+        data = self._server.query(self._details_key)
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
@@ -753,27 +777,35 @@ class Season(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or episode parameter is missing.
         """
-        key = f'{self.key}/children'
+        kwargs = {
+            'title': None,
+            'libtype': 'episode',
+            'filters': {'season.id': self.ratingKey}
+        }
+
         if title is not None and not isinstance(title, int):
-            return self.fetchItem(key, Episode, title__iexact=title)
+            kwargs['title'] = title
         elif episode is not None or isinstance(title, int):
             if isinstance(title, int):
-                index = title
+                kwargs['filters']['episode.index'] = title
             else:
-                index = episode
-            return self.fetchItem(key, Episode, parentIndex=self.index, index=index)
-        raise BadRequest('Missing argument: title or episode is required')
+                kwargs['filters']['episode.index'] = episode
+        else:
+            raise BadRequest('Missing argument: title or episode is required')
+        
+        return self.section().get(**kwargs)
+
+    def episodes(self, **kwargs):
+        """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
+        return self.section().search(
+            libtype='episode',
+            filters={'season.id': self.ratingKey},
+            **kwargs
+        )
 
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode`. """
         return self.episode(title, episode)
-
-    def onDeck(self):
-        """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
-            Will only return a match if the show's On Deck episode is in this season.
-        """
-        data = self._server.query(self._details_key)
-        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
@@ -781,11 +813,11 @@ class Season(
 
     def watched(self):
         """ Returns list of watched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(viewCount__gt=0)
+        return self.episodes(unwatched=False)
 
     def unwatched(self):
         """ Returns list of unwatched :class:`~plexapi.video.Episode` objects. """
-        return self.episodes(viewCount=0)
+        return self.episodes(unwatched=True)
 
     def download(self, savepath=None, keep_original_name=False, **kwargs):
         """ Download all episodes from the season. See :func:`~plexapi.base.Playable.download` for details.

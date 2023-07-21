@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
@@ -178,14 +178,21 @@ class Artist(
             Parameters:
                 title (str): Title of the album to return.
         """
-        try:
-            return self.section().search(title, libtype='album', filters={'artist.id': self.ratingKey})[0]
-        except IndexError:
-            raise NotFound(f"Unable to find album '{title}'") from None
+        kwargs = {
+            'title': title,
+            'libtype': 'album',
+            'filters': {'artist.id': self.ratingKey}
+        }
+
+        return self.section().get(**kwargs)
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        return self.section().search(libtype='album', filters={'artist.id': self.ratingKey}, **kwargs)
+        return self.section().search(
+            libtype='album',
+            filters={'artist.id': self.ratingKey},
+            **kwargs
+        )
 
     def track(self, title=None, album=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -198,17 +205,29 @@ class Artist(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or album and track parameters are missing.
         """
-        key = f'{self.key}/allLeaves'
+        kwargs = {
+            'title': None,
+            'libtype': 'track',
+            'filters': {'artist.id': self.ratingKey}
+        }
+
         if title is not None:
-            return self.fetchItem(key, Track, title__iexact=title)
+            kwargs['title'] = title
         elif album is not None and track is not None:
-            return self.fetchItem(key, Track, parentTitle__iexact=album, index=track)
-        raise BadRequest('Missing argument: title or album and track are required')
+            kwargs['filters']['album.title'] = album
+            kwargs['filters']['track.index'] = track
+        else:
+            raise BadRequest('Missing argument: title or album and track are required')
+
+        return self.section().get(**kwargs)
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
-        key = f'{self.key}/allLeaves'
-        return self.fetchItems(key, Track, **kwargs)
+        return self.section().search(
+            libtype='track',
+            filters={'artist.id': self.ratingKey},
+            **kwargs
+        )
 
     def get(self, title=None, album=None, track=None):
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
@@ -312,21 +331,31 @@ class Album(
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: If title or track parameter is missing.
         """
-        key = f'{self.key}/children'
+        kwargs = {
+            'title': None,
+            'libtype': 'track',
+            'filters': {'album.id': self.ratingKey}
+        }
+
         if title is not None and not isinstance(title, int):
-            return self.fetchItem(key, Track, title__iexact=title)
+            kwargs['title'] = title
         elif track is not None or isinstance(title, int):
             if isinstance(title, int):
-                index = title
+                kwargs['filters']['track.index'] = title
             else:
-                index = track
-            return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=index)
-        raise BadRequest('Missing argument: title or track is required')
+                kwargs['filters']['track.index'] = track
+        else:
+            raise BadRequest('Missing argument: title or track is required')
+
+        return self.section().get(**kwargs)
 
     def tracks(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Track` objects in the album. """
-        key = f'{self.key}/children'
-        return self.fetchItems(key, Track, **kwargs)
+        return self.section().search(
+            libtype='track',
+            filters={'album.id': self.ratingKey},
+            **kwargs
+        )
 
     def get(self, title=None, track=None):
         """ Alias of :func:`~plexapi.audio.Album.track`. """
@@ -430,18 +459,6 @@ class Track(
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
 
-    def _prettyfilename(self):
-        """ Returns a filename for use in download. """
-        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
-
-    def album(self):
-        """ Return the track's :class:`~plexapi.audio.Album`. """
-        return self.fetchItem(self.parentKey)
-
-    def artist(self):
-        """ Return the track's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItem(self.grandparentKey)
-
     @property
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
@@ -456,6 +473,18 @@ class Track(
     def trackNumber(self):
         """ Returns the track number. """
         return self.index
+
+    def _prettyfilename(self):
+        """ Returns a filename for use in download. """
+        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
+
+    def album(self):
+        """ Return the track's :class:`~plexapi.audio.Album`. """
+        return self.fetchItem(self.parentKey)
+
+    def artist(self):
+        """ Return the track's :class:`~plexapi.audio.Artist`. """
+        return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """

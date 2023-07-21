@@ -186,9 +186,10 @@ class Collection(
     def items(self):
         """ Returns a list of all items in the collection. """
         if self._items is None:
-            key = f'{self.key}/children'
-            items = self.fetchItems(key)
-            self._items = items
+            self._items = self.section().search(
+                libtype=self.subtype,
+                filters={'collection': self.index}
+            )
         return self._items
 
     def visibility(self):
