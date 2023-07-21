@@ -575,6 +575,7 @@ if __name__ == "__main__":
                 location="/data/Music" if opts.no_docker is False else music_path,
                 agent="tv.plex.agents.music",
                 scanner="Plex Music",
+                language="en-US",
                 expected_media_count=song_c,
             )
         )
