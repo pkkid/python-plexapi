@@ -34,6 +34,7 @@ class MyPlexAccount(PlexObject):
                 cache the http responses from PMS
             timeout (int): timeout in seconds on initial connect to myplex (default config.TIMEOUT).
             code (str): Two-factor authentication code to use when logging in.
+            rememberMe (bool): Remember the account token for 14 days (Default True).
 
         Attributes:
             key (str): 'https://plex.tv/api/v2/user'
@@ -112,24 +113,25 @@ class MyPlexAccount(PlexObject):
     METADATA = 'https://metadata.provider.plex.tv'
     key = 'https://plex.tv/api/v2/user'
 
-    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None):
-        self._token = token or CONFIG.get('auth.server_token')
+    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None, rememberMe=True):
+        self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
-        data, initpath = self._signin(username, password, code, timeout)
+        data, initpath = self._signin(username, password, code, rememberMe, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
-    def _signin(self, username, password, code, timeout):
+    def _signin(self, username, password, code, rememberMe, timeout):
         if self._token:
             return self.query(self.key), self.key
-        params = {
+        payload = {
             'login': username or CONFIG.get('auth.myplex_username'),
-            'password': password or CONFIG.get('auth.myplex_password')
+            'password': password or CONFIG.get('auth.myplex_password'),
+            'rememberMe': rememberMe
         }
         if code:
-            params['verificationCode'] = code
-        data = self.query(self.SIGNIN, method=self._session.post, params=params, timeout=timeout)
+            payload['verificationCode'] = code
+        data = self.query(self.SIGNIN, method=self._session.post, data=payload, timeout=timeout)
         return data, self.SIGNIN
 
     def signout(self):
