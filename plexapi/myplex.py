@@ -28,13 +28,14 @@ class MyPlexAccount(PlexObject):
         and return this object.
 
         Parameters:
-            username (str): Your MyPlex username.
-            password (str): Your MyPlex password.
+            username (str): Plex login username if not using a token.
+            password (str): Plex login password if not using a token.
+            token (str): Plex authentication token instead of username and password.
             session (requests.Session, optional): Use your own session object if you want to
-                cache the http responses from PMS
+                cache the http responses from PMS.
             timeout (int): timeout in seconds on initial connect to myplex (default config.TIMEOUT).
-            code (str): Two-factor authentication code to use when logging in.
-            rememberMe (bool): Remember the account token for 14 days (Default True).
+            code (str): Two-factor authentication code to use when logging in with username and password.
+            remember (bool): Remember the account token for 14 days (Default True).
 
         Attributes:
             key (str): 'https://plex.tv/api/v2/user'
@@ -113,21 +114,21 @@ class MyPlexAccount(PlexObject):
     METADATA = 'https://metadata.provider.plex.tv'
     key = 'https://plex.tv/api/v2/user'
 
-    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None, rememberMe=True):
+    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None, remember=True):
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
-        data, initpath = self._signin(username, password, code, rememberMe, timeout)
+        data, initpath = self._signin(username, password, code, remember, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
-    def _signin(self, username, password, code, rememberMe, timeout):
+    def _signin(self, username, password, code, remember, timeout):
         if self._token:
             return self.query(self.key), self.key
         payload = {
             'login': username or CONFIG.get('auth.myplex_username'),
             'password': password or CONFIG.get('auth.myplex_password'),
-            'rememberMe': rememberMe
+            'rememberMe': remember
         }
         if code:
             payload['verificationCode'] = code
