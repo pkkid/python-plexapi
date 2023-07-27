@@ -157,7 +157,7 @@ def account_synctarget(account_plexpass):
 
 @pytest.fixture()
 def mocked_account(requests_mock):
-    requests_mock.get("https://plex.tv/users/account", text=ACCOUNT_XML)
+    requests_mock.get("https://plex.tv/api/v2/user", text=ACCOUNT_XML)
     return MyPlexAccount(token="faketoken")
 
 
