@@ -1303,7 +1303,7 @@ class MyPlexResource(PlexObject):
         Attributes:
             TAG (str): 'Device'
             key (str): 'https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1'
-            accessToken (str): This resources Plex access token.
+            accessToken (str): This resource's Plex access token.
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of :class:`~plexapi.myplex.ResourceConnection` objects
                 for this resource.
@@ -1445,7 +1445,7 @@ class ResourceConnection(PlexObject):
             TAG (str): 'Connection'
             address (str): The connection IP address
             httpuri (str): Full HTTP URL
-            IPv6 (bool): True if the address is IPv6
+            ipv6 (bool): True if the address is IPv6
             local (bool): True if the address is local
             port (int): The connection port
             protocol (str): HTTP or HTTPS
@@ -1457,7 +1457,7 @@ class ResourceConnection(PlexObject):
     def _loadData(self, data):
         self._data = data
         self.address = data.attrib.get('address')
-        self.IPv6 = utils.cast(bool, data.attrib.get('IPv6'))
+        self.ipv6 = utils.cast(bool, data.attrib.get('IPv6'))
         self.local = utils.cast(bool, data.attrib.get('local'))
         self.port = utils.cast(int, data.attrib.get('port'))
         self.protocol = data.attrib.get('protocol')
