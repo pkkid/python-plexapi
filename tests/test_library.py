@@ -429,13 +429,12 @@ def test_library_MusicSection_recentlyAdded(music, artist):
 
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
     title = photoalbum.title
-    albums = photos.searchAlbums(title)
-    assert len(albums)
+    assert len(photos.searchAlbums(title=title))
 
 
 def test_library_PhotoSection_searchPhotos(photos, photoalbum):
     title = photoalbum.photos()[0].title
-    assert len(photos.searchPhotos(title))
+    assert len(photos.searchPhotos(title=title))
 
 
 def test_library_PhotoSection_recentlyAdded(photos, photoalbum):
