@@ -8,8 +8,7 @@ from plexapi.library import LibrarySection, ManagedHub
 from plexapi.mixins import (
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    LabelMixin
+    CollectionEditMixins
 )
 from plexapi.utils import deprecated
 
@@ -19,8 +18,7 @@ class Collection(
     PlexPartialObject,
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    LabelMixin
+    CollectionEditMixins
 ):
     """ Represents a single Collection.
 

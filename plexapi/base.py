@@ -152,7 +152,9 @@ class PlexObject:
             and attrs.
 
             Parameters:
-                ekey (str): API URL path in Plex to fetch items from.
+                ekey (str or List<int>): API URL path in Plex to fetch items from. If a list of ints is passed
+                    in, the key will be translated to /library/metadata/<key1,key2,key3>. This allows
+                    fetching multiple items only knowing their key-ids.
                 cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
                     items to be fetched, passing this in will help the parser ensure
                     it only returns those items. By default we convert the xml elements
@@ -224,6 +226,9 @@ class PlexObject:
         """
         if ekey is None:
             raise BadRequest('ekey was not provided')
+
+        if isinstance(ekey, list) and all(isinstance(key, int) for key in ekey):
+            ekey = f'/library/metadata/{",".join(str(key) for key in ekey)}'
 
         container_start = container_start or 0
         container_size = container_size or X_PLEX_CONTAINER_SIZE
@@ -559,13 +564,10 @@ class PlexPartialObject(PlexObject):
             self._edits.update(kwargs)
             return self
 
-        if 'id' not in kwargs:
-            kwargs['id'] = self.ratingKey
         if 'type' not in kwargs:
             kwargs['type'] = utils.searchType(self._searchType)
 
-        part = f'/library/sections/{self.librarySectionID}/all{utils.joinArgs(kwargs)}'
-        self._server.query(part, method=self._server._session.put)
+        self.section()._edit(items=self, **kwargs)
         return self
 
     def edit(self, **kwargs):

@@ -7,15 +7,13 @@ from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
-    ArtUrlMixin, ArtMixin, BannerMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
-    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
+    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
 
 
-class Video(PlexPartialObject, PlayedUnplayedMixin, AddedAtMixin):
+class Video(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all video objects including :class:`~plexapi.video.Movie`,
         :class:`~plexapi.video.Show`, :class:`~plexapi.video.Season`,
         :class:`~plexapi.video.Episode`, and :class:`~plexapi.video.Clip`.
@@ -309,9 +307,7 @@ class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
-    SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin,
+    MovieEditMixins,
     WatchlistMixin
 ):
     """ Represents a single Movie.
@@ -453,10 +449,8 @@ class Movie(
 class Show(
     Video,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, BannerMixin, PosterMixin, ThemeMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
-    SummaryMixin, TaglineMixin, TitleMixin,
-    CollectionMixin, GenreMixin, LabelMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    ShowEditMixins,
     WatchlistMixin
 ):
     """ Represents a single Show (including all seasons and episodes).
@@ -474,7 +468,6 @@ class Show(
             autoDeletionItemPolicyWatchedLibrary (int): Setting that indicates if episodes are deleted
                 after being watched for the show (0 = Never, 1 = After a day, 7 = After a week,
                 100 = On next refresh).
-            banner (str): Key to banner artwork (/library/metadata/<ratingkey>/banner/<bannerid>).
             childCount (int): Number of seasons (including Specials) in the show.
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             contentRating (str) Content rating (PG-13; NR; TV-G).
@@ -528,7 +521,6 @@ class Show(
             int, data.attrib.get('autoDeletionItemPolicyUnwatchedLibrary', '0'))
         self.autoDeletionItemPolicyWatchedLibrary = utils.cast(
             int, data.attrib.get('autoDeletionItemPolicyWatchedLibrary', '0'))
-        self.banner = data.attrib.get('banner')
         self.childCount = utils.cast(int, data.attrib.get('childCount'))
         self.collections = self.findItems(data, media.Collection)
         self.contentRating = data.attrib.get('contentRating')
@@ -666,8 +658,7 @@ class Season(
     Video,
     AdvancedSettingsMixin, ExtrasMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    SummaryMixin, TitleMixin,
-    CollectionMixin, LabelMixin
+    SeasonEditMixins
 ):
     """ Represents a single Show Season (including all episodes).
 
@@ -820,8 +811,7 @@ class Episode(
     Video, Playable,
     ExtrasMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
+    EpisodeEditMixins
 ):
     """ Represents a single Shows Episode.
 

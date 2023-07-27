@@ -955,7 +955,7 @@ class Review(PlexObject):
 
 
 class BaseResource(PlexObject):
-    """ Base class for all Art, Banner, Poster, and Theme objects.
+    """ Base class for all Art, Poster, and Theme objects.
 
         Attributes:
             TAG (str): 'Photo' or 'Track'
@@ -984,11 +984,6 @@ class BaseResource(PlexObject):
 
 class Art(BaseResource):
     """ Represents a single Art object. """
-    TAG = 'Photo'
-
-
-class Banner(BaseResource):
-    """ Represents a single Banner object. """
     TAG = 'Photo'
 
 
