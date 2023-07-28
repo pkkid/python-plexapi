@@ -130,7 +130,9 @@ def registerPlexObject(cls):
     etype = getattr(cls, 'STREAMTYPE', getattr(cls, 'TAGTYPE', cls.TYPE))
     ehash = f'{cls.TAG}.{etype}' if etype else cls.TAG
     if getattr(cls, '_SESSIONTYPE', None):
-        ehash = f"{ehash}.{'session'}"
+        ehash = f"{ehash}.session"
+    elif getattr(cls, '_HISTORYTYPE', None):
+        ehash = f"{ehash}.history"
     if ehash in PLEXOBJECTS:
         raise Exception(f'Ambiguous PlexObject definition {cls.__name__}(tag={cls.TAG}, type={etype}) '
                         f'with {PLEXOBJECTS[ehash].__name__}')

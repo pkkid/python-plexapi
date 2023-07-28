@@ -3,7 +3,7 @@ import os
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexSession
+from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
@@ -477,3 +477,16 @@ class TrackSession(PlexSession, Track):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexSession._loadData(self, data)
+
+
+@utils.registerPlexObject
+class TrackHistory(PlexHistory, Track):
+    """ Represents a single Track history entry
+        loaded from :func:`~plexapi.server.PlexServer.history`.
+    """
+    _HISTORYTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Track._loadData(self, data)
+        PlexHistory._loadData(self, data)
