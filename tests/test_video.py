@@ -669,12 +669,16 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_tagline(movie)
     test_mixins.edit_title(movie)
     test_mixins.edit_user_rating(movie)
+
+
+@pytest.mark.anonymous
+def test_video_Movie_mixins_fields_edition(movie):
     with pytest.raises(BadRequest):
         test_mixins.edit_edition_title(movie)
 
 
 @pytest.mark.authenticated
-def test_video_Movie_mixins_fields_edition(movie):
+def test_video_Movie_mixins_fields_edition_authenticated(movie):
     test_mixins.edit_edition_title(movie)
 
 
