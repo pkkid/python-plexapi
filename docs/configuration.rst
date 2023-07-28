@@ -55,6 +55,11 @@ Section [plexapi] Options
     Timeout in seconds to use when making requests to the Plex Media Server or Plex Client
     resources (default: 30).
 
+**autoreload**
+    By default PlexAPI will automatically :func:`~plexapi.base.PlexObject.reload` any :any:`PlexPartialObject`
+    when accessing a missing attribute. When this option is set to `false`, automatic reloading will be
+    disabled and :func:`~plexapi.base.PlexObject.reload` must be called manually (default: true).
+
 **enable_fast_connect**
     By default Plex will be trying to connect with all available connection methods simultaneously,
     combining local and remote addresses, http and https, and be waiting for all connection to
@@ -62,7 +67,7 @@ Section [plexapi] Options
     to connect to your Plex Server outside of your home network.
 
     When the options is set to `true` the connection procedure will be aborted with first successfully
-    established connection.
+    established connection (default: false).
 
 
 Section [auth] Options
