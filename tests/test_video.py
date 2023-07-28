@@ -670,7 +670,7 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_user_rating(movie)
 
 
-@pytest.mark.anonymous
+@pytest.mark.anonymously
 def test_video_Movie_mixins_fields_edition(movie):
     with pytest.raises(BadRequest):
         test_mixins.edit_edition_title(movie)
