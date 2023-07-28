@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime
+from functools import cached_property
 from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
 
 from plexapi import log, media, utils
@@ -11,7 +12,7 @@ from plexapi.mixins import (
     ArtistEditMixins, AlbumEditMixins, TrackEditMixins, PhotoalbumEditMixins, PhotoEditMixins
 )
 from plexapi.settings import Setting
-from plexapi.utils import cached_property, deprecated
+from plexapi.utils import deprecated
 
 
 class Library(PlexObject):
