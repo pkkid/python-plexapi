@@ -55,6 +55,9 @@ def test_library_sectionByID_with_attrs(plex, movies):
 
 def test_library_section_get_movie(movies):
     assert movies.get("Sita Sings the Blues")
+    assert movies.get(None, filters={"title": "Big Buck Bunny", "year": 2008})
+    with pytest.raises(NotFound):
+        movies.get("invalid title")
 
 
 def test_library_MovieSection_getGuid(movies, movie):

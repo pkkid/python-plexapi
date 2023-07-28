@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
@@ -178,14 +178,19 @@ class Artist(
             Parameters:
                 title (str): Title of the album to return.
         """
-        try:
-            return self.section().search(title, libtype='album', filters={'artist.id': self.ratingKey})[0]
-        except IndexError:
-            raise NotFound(f"Unable to find album '{title}'") from None
+        return self.section().get(
+            title=title,
+            libtype='album',
+            filters={'artist.id': self.ratingKey}
+        )
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        return self.section().search(libtype='album', filters={'artist.id': self.ratingKey}, **kwargs)
+        return self.section().search(
+            libtype='album',
+            filters={'artist.id': self.ratingKey},
+            **kwargs
+        )
 
     def track(self, title=None, album=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -430,18 +435,6 @@ class Track(
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
 
-    def _prettyfilename(self):
-        """ Returns a filename for use in download. """
-        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
-
-    def album(self):
-        """ Return the track's :class:`~plexapi.audio.Album`. """
-        return self.fetchItem(self.parentKey)
-
-    def artist(self):
-        """ Return the track's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItem(self.grandparentKey)
-
     @property
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
@@ -456,6 +449,18 @@ class Track(
     def trackNumber(self):
         """ Returns the track number. """
         return self.index
+
+    def _prettyfilename(self):
+        """ Returns a filename for use in download. """
+        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
+
+    def album(self):
+        """ Return the track's :class:`~plexapi.audio.Album`. """
+        return self.fetchItem(self.parentKey)
+
+    def artist(self):
+        """ Return the track's :class:`~plexapi.audio.Artist`. """
+        return self.fetchItem(self.grandparentKey)
 
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """

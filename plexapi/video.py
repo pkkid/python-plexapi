@@ -326,6 +326,7 @@ class Movie(
             duration (int): Duration of the movie in milliseconds.
             editionTitle (str): The edition title of the movie (e.g. Director's Cut, Extended Edition, etc.).
             enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
+                (-1 = Library default, 0 = Disabled)
             genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
@@ -473,6 +474,7 @@ class Show(
             contentRating (str) Content rating (PG-13; NR; TV-G).
             duration (int): Typical duration of the show episodes in milliseconds.
             enableCreditsMarkerGeneration (int): Setting that indicates if credits markers detection is enabled.
+                (-1 = Library default, 0 = Disabled).
             episodeSort (int): Setting that indicates how episodes are sorted for the show
                 (-1 = Library default, 0 = Oldest first, 1 = Newest first).
             flattenSeasons (int): Setting that indicates if seasons are set to hidden for the show
@@ -494,7 +496,8 @@ class Show(
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             seasonCount (int): Number of seasons (excluding Specials) in the show.
             showOrdering (str): Setting that indicates the episode ordering for the show
-                (None = Library default).
+                (None = Library default, tmdbAiring = The Movie Database (Aired),
+                aired = TheTVDB (Aired), dvd = TheTVDB (DVD), absolute = TheTVDB (Absolute)).
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created show (Di Bonaventura Pictures; 21 Laps Entertainment).
             subtitleLanguage (str): Setting that indicates the preferred subtitle language.
@@ -738,10 +741,12 @@ class Season(
         """ Returns the season number. """
         return self.index
 
-    def episodes(self, **kwargs):
-        """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
-        key = f'{self.key}/children'
-        return self.fetchItems(key, Episode, **kwargs)
+    def onDeck(self):
+        """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
+            Will only return a match if the show's On Deck episode is in this season.
+        """
+        data = self._server.query(self._details_key)
+        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
@@ -764,16 +769,14 @@ class Season(
             return self.fetchItem(key, Episode, parentIndex=self.index, index=index)
         raise BadRequest('Missing argument: title or episode is required')
 
+    def episodes(self, **kwargs):
+        """ Returns a list of :class:`~plexapi.video.Episode` objects in the season. """
+        key = f'{self.key}/children'
+        return self.fetchItems(key, Episode, **kwargs)
+
     def get(self, title=None, episode=None):
         """ Alias to :func:`~plexapi.video.Season.episode`. """
         return self.episode(title, episode)
-
-    def onDeck(self):
-        """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
-            Will only return a match if the show's On Deck episode is in this season.
-        """
-        data = self._server.query(self._details_key)
-        return next(iter(self.findItems(data, rtag='OnDeck')), None)
 
     def show(self):
         """ Return the season's :class:`~plexapi.video.Show`. """
@@ -903,7 +906,7 @@ class Episode(
 
         # If seasons are hidden, parentKey and parentRatingKey are missing from the XML response.
         # https://forums.plex.tv/t/parentratingkey-not-in-episode-xml-when-seasons-are-hidden/300553
-        if self.skipParent and not self.parentRatingKey:
+        if self.skipParent and data.attrib.get('parentRatingKey') is None:
             # Parse the parentRatingKey from the parentThumb
             if self.parentThumb and self.parentThumb.startswith('/library/metadata/'):
                 self.parentRatingKey = utils.cast(int, self.parentThumb.split('/')[3])
