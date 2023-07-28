@@ -12,7 +12,7 @@ on:
 
 env:
   CACHE_VERSION: 1
-  DEFAULT_PYTHON: 3.7
+  DEFAULT_PYTHON: 3.8
 
 jobs:
   lint-flake8:
@@ -70,7 +70,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        python-version: [3.7]
+        python-version: [3.8]
         plex: ['unclaimed', 'claimed']
         is-master:
           - ${{ github.ref == 'refs/heads/master' }}

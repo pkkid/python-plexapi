@@ -9,7 +9,7 @@ on:
     types: [published]
 
 env:
-  DEFAULT_PYTHON: 3.7
+  DEFAULT_PYTHON: 3.8
 
 jobs:
   build:

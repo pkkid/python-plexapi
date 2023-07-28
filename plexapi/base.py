@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
 import weakref
+from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 from plexapi import CONFIG, X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import cached_property
 
 USER_DONT_RELOAD_FOR_KEYS = set()
 _DONT_RELOAD_FOR_KEYS = {'key'}
