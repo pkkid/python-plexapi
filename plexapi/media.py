@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import xml
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import log, settings, utils
@@ -988,6 +988,20 @@ class BaseResource(PlexObject):
             self._server.query(data, method=self._server._session.put)
         except xml.etree.ElementTree.ParseError:
             pass
+
+    @property
+    def resourceFilepath(self):
+        """ Returns the file path to the resource in the Plex Media Server data directory.
+            Note: Returns the URL if the resource is not stored locally.
+        """
+        if self.ratingKey.startswith('media://'):
+            return str(Path('Media') / 'localhost' / self.ratingKey.split('://')[-1])
+        elif self.ratingKey.startswith('metadata://'):
+            return str(Path(self._parent().metadataDirectory) / 'Contents' / '_combined' / self.ratingKey.split('://')[-1])
+        elif self.ratingKey.startswith('upload://'):
+            return str(Path(self._parent().metadataDirectory) / 'Uploads' / self.ratingKey.split('://')[-1])
+        else:
+            return self.ratingKey
 
 
 class Art(BaseResource):
