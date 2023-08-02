@@ -13,9 +13,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import copy, sys
-import sphinx_rtd_theme
 from os.path import abspath, dirname, join
-from recommonmark.parser import CommonMarkParser
 path = dirname(dirname(abspath(__file__)))
 sys.path.append(path)
 sys.path.append(join(path, 'plexapi'))
@@ -25,6 +23,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
+    'sphinx_rtd_theme',
 ]
 
 # -- Monkey-patch docstring to not auto-link :ivars ------------------------
@@ -71,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Python PlexAPI'
-copyright = '2017, M.Shepanski'
+copyright = '2023, M.Shepanski'
 author = 'M.Shepanski'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -133,7 +132,6 @@ todo_include_todos = False
 # a list of builtin themes.
 # html_theme = 'alabaster'
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_static_path = ['_static']
 html_context = {'css_files': ['_static/custom.css']}
 html_theme_options = {
