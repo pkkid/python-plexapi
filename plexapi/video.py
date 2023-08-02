@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
@@ -445,6 +446,12 @@ class Movie(
         self._server.query(key, params=params, method=self._server._session.put)
         return self
 
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Movies' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
 
 @utils.registerPlexObject
 class Show(
@@ -655,6 +662,12 @@ class Show(
             filepaths += episode.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'TV Shows' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
 
 @utils.registerPlexObject
 class Season(
@@ -807,6 +820,12 @@ class Season(
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return f'{self.parentTitle} - {self.title}'
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.parentGuid)
+        return str(Path('Metadata') / 'TV Shows' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
 
 @utils.registerPlexObject
@@ -1000,6 +1019,12 @@ class Episode(
         self._server.query(key, params=params, method=self._server._session.put)
         return self
 
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.grandparentGuid)
+        return str(Path('Metadata') / 'TV Shows' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
 
 @utils.registerPlexObject
 class Clip(
@@ -1057,6 +1082,12 @@ class Clip(
     def _prettyfilename(self):
         """ Returns a filename for use in download. """
         return self.title
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Movies' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
 
 class Extra(Clip):

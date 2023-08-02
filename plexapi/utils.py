@@ -13,6 +13,7 @@ import zipfile
 from collections import deque
 from datetime import datetime
 from getpass import getpass
+from hashlib import sha1
 from threading import Event, Thread
 from urllib.parse import quote
 from requests.status_codes import _codes as codes
@@ -644,3 +645,8 @@ def openOrRead(file):
         return file.read()
     with open(file, 'rb') as f:
         return f.read()
+
+
+def sha1hash(guid):
+    """ Return the SHA1 hash of a guid. """
+    return sha1(guid.encode('utf-8')).hexdigest()

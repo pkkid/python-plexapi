@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils, video
@@ -138,6 +139,12 @@ class Photoalbum(
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.key, legacy=1)
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Photos' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
 
 @utils.registerPlexObject
@@ -289,6 +296,12 @@ class Photo(
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey, legacy=1)
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.parentGuid)
+        return str(Path('Metadata') / 'Photos' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
 
 @utils.registerPlexObject
