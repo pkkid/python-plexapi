@@ -333,16 +333,19 @@ def toDatetime(value, format=None):
 
 
 def millisecondToHumanstr(milliseconds):
-    """ Returns human readable time duration from milliseconds.
-        HH:MM:SS:MMMM
+    """ Returns human readable time duration [D day[s], ]HH:MM:SS.UUU from milliseconds.
 
         Parameters:
-            milliseconds (str,int): time duration in milliseconds.
+            milliseconds (str, int): time duration in milliseconds.
     """
     milliseconds = int(milliseconds)
-    r = datetime.utcfromtimestamp(milliseconds / 1000)
-    f = r.strftime("%H:%M:%S.%f")
-    return f[:-2]
+    if milliseconds < 0:
+        return '-' + millisecondToHumanstr(abs(milliseconds))
+    secs, ms = divmod(milliseconds, 1000)
+    mins, secs = divmod(secs, 60)
+    hours, mins = divmod(mins, 60)
+    days, hours = divmod(hours, 24)
+    return ('' if days == 0 else f'{days} day{"s" if days > 1 else ""}, ') + f'{hours:02d}:{mins:02d}:{secs:02d}.{ms:03d}'
 
 
 def toList(value, itemcast=None, delim=','):
