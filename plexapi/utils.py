@@ -11,13 +11,13 @@ import unicodedata
 import warnings
 import zipfile
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getpass
 from threading import Event, Thread
 from urllib.parse import quote
-from requests.status_codes import _codes as codes
 
 import requests
+from requests.status_codes import _codes as codes
 
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 
@@ -313,19 +313,22 @@ def toDatetime(value, format=None):
             value (str): value to return as a datetime
             format (str): Format to pass strftime (optional; if value is a str).
     """
-    if value and value is not None:
+    if value is not None:
         if format:
             try:
-                value = datetime.strptime(value, format)
+                return datetime.strptime(value, format)
             except ValueError:
-                log.info('Failed to parse %s to datetime, defaulting to None', value)
+                log.info('Failed to parse "%s" to datetime as format "%s", defaulting to None', value, format)
                 return None
         else:
-            # https://bugs.python.org/issue30684
-            # And platform support for before epoch seems to be flaky.
-            # Also limit to max 32-bit integer
-            value = min(max(int(value), 86400), 2**31 - 1)
-            value = datetime.fromtimestamp(int(value))
+            try:
+                return datetime.utcfromtimestamp(0) + timedelta(seconds=int(value))
+            except ValueError:
+                log.info('Failed to parse "%s" to datetime as timestamp, defaulting to None', value)
+                return None
+            except OverflowError:
+                log.info('Failed to parse "%s" to datetime as timestamp (out-of-bounds), defaulting to None', value)
+                return None
     return value
 
 
