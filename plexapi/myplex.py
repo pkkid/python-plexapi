@@ -1773,7 +1773,7 @@ class MyPlexPinLogin:
             params = None
 
         response = self._query(url, self._session.post, params=params)
-        if not response:
+        if response is None:
             return None
 
         self._id = response.attrib.get('id')
@@ -1790,7 +1790,7 @@ class MyPlexPinLogin:
 
         url = self.CHECKPINS.format(pinid=self._id)
         response = self._query(url)
-        if not response:
+        if response is None:
             return False
 
         token = response.attrib.get('authToken')
