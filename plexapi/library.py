@@ -1684,7 +1684,7 @@ class LibrarySection(PlexObject):
 
     def _validateItems(self, items):
         """ Validates the specified items are from this library and of the same type. """
-        if not items:
+        if items is None or items == []:
             raise BadRequest('No items specified.')
         
         if not isinstance(items, list):
