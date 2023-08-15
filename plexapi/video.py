@@ -445,6 +445,42 @@ class Movie(
         self._server.query(key, params=params, method=self._server._session.put)
         return self
 
+    def addActor(self, index=0, name=None, role=None, thumb=None):
+        """ Add an Actor.
+
+           Parameters:
+                index (int): Positional index
+                name (str): Name of Actor.
+                role (str): Role actor plays in video.
+                thumb (str): URL to image file.
+        """
+        edits = {}
+        actors = {actor.tag: actor for actor in self.actors}
+        actor = 'actor[%s]' % index
+        if name:
+            edits['%s.tag.tag' % actor] = name
+        else:
+            raise BadRequest('name keyword is required.')
+        if role or type(role) == str:
+            edits['%s.tagging.text' % actor] = role
+        else:
+            previousRole = actors.get(name)
+            if previousRole:
+                edits['%s.tagging.text' % actor] = previousRole.role
+        if thumb:
+            edits['%s.tag.thumb' % actor] = thumb
+
+        self.edit(**edits)
+
+    def removeActor(self, name):
+        """ Remove an Actor from item. """
+        actors = [actor.tag for actor in self.actors]
+        if name in actors:
+            edits = {'actor[].tag.tag-': name}
+            self.edit(**edits)
+        else:
+            raise NotFound('%s not found in items list of actors %s' % (name, actors))
+
 
 @utils.registerPlexObject
 class Show(
@@ -654,6 +690,37 @@ class Show(
             _savepath = os.path.join(savepath, f'Season {str(episode.seasonNumber).zfill(2)}') if subfolders else savepath
             filepaths += episode.download(_savepath, keep_original_name, **kwargs)
         return filepaths
+
+    def addActor(self, index=0, name=None, role=None, thumb=None, locked=True):
+        """ Add an Actor.
+
+           Parameters:
+                index (int): Positional index
+                name (str): Name of Actor.
+                role (str): Role actor plays in video.
+                thumb (str): URL to image file.
+                locked (bool): True = 1, False = 0
+        """
+        edits = {}
+        actor = 'actor[%s]' % index
+        if name:
+            edits['%s.tag.tag' % actor] = name
+        if role:
+            edits['%s.tagging.text' % actor] = role
+        if thumb:
+            edits['%s.tag.thumb' % actor] = thumb
+        if locked:
+            edits['%s.locked' % actor] = int(locked)
+        self.edit(**edits)
+
+    def removeActor(self, name):
+        """ Remove an Actor from item. """
+        actors = [actor.tag for actor in self.actors]
+        if name in actors:
+            edits = {'actor[].tag.tag-': name}
+            self.edit(**edits)
+        else:
+            raise NotFound('%s not found in items list of actors %s' % (name, actors))
 
 
 @utils.registerPlexObject
