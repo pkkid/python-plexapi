@@ -586,7 +586,7 @@ def test_video_Movie_editions(movie):
 
 
 @pytest.mark.authenticated
-def test_video_Movie_extras(movies):
+def test_video_Movie_extras(account_plexpass, movies):
     movie = movies.get("Sita Sings The Blues")
     extras = movie.extras()
     assert extras
@@ -677,7 +677,7 @@ def test_video_Movie_mixins_fields_edition(movie):
 
 
 @pytest.mark.authenticated
-def test_video_Movie_mixins_fields_edition_authenticated(movie):
+def test_video_Movie_mixins_fields_edition_authenticated(account_plexpass, movie):
     test_mixins.edit_edition_title(movie)
 
 
