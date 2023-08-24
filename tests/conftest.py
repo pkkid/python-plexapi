@@ -141,7 +141,8 @@ def account_once(account):
 def account_plexpass(account):
     if not account.subscriptionActive:
         pytest.skip(
-            "PlexPass subscription is not active, unable to test sync-stuff, be careful!"
+            "PlexPass subscription is not active, unable to test dashboard, movie extras, movie editions, "
+            "or sync-stuff, be careful!"
         )
     return account
 
