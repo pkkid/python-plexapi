@@ -47,7 +47,7 @@ def _list_devices(account, servers):
 def _test_servers(servers):
     items, seen = [], set()
     print('Finding Plex clients..')
-    listargs = [[PlexServer, s, t, None, 5] for s,t in servers.items()]
+    listargs = [[PlexServer, s, t, None, 5] for s, t in servers.items()]
     results = utils.threaded(_connect, listargs)
     for url, token, plex, runtime in results:
         clients = plex.clients() if plex else []

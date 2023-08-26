@@ -202,7 +202,7 @@ class PlexServer(PlexObject):
     def claim(self, account):
         """ Claim the Plex server using a :class:`~plexapi.myplex.MyPlexAccount`.
             This will only work with an unclaimed server on localhost or the same subnet.
-        
+
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`): The account used to
                     claim the server.
@@ -245,7 +245,7 @@ class PlexServer(PlexObject):
     def switchUser(self, user, session=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` object logged in as the given username.
             Note: Only the admin account can switch to other users.
-        
+
             Parameters:
                 user (:class:`~plexapi.myplex.MyPlexUser` or str): `MyPlexUser` object, username,
                     email, or user id of the user to log in to the server.
@@ -590,7 +590,7 @@ class PlexServer(PlexObject):
     def runButlerTask(self, task):
         """ Manually run a butler task immediately instead of waiting for the scheduled task to run.
             Note: The butler task is run asynchronously. Check Plex Web to monitor activity.
-        
+
             Parameters:
                 task (str): The name of the task to run. (e.g. 'BackupDatabase')
 
@@ -666,7 +666,7 @@ class PlexServer(PlexObject):
             args['librarySectionID'] = librarySectionID
         if mindate:
             args['viewedAt>'] = int(mindate.timestamp())
-        
+
         key = f'/status/sessions/history/all{utils.joinArgs(args)}'
         return self.fetchItems(key, maxresults=maxresults)
 
@@ -1258,7 +1258,7 @@ class StatisticsResources(PlexObject):
 @utils.registerPlexObject
 class ButlerTask(PlexObject):
     """ Represents a single scheduled butler task.
-    
+
         Attributes:
             TAG (str): 'ButlerTask'
             description (str): The description of the task.
@@ -1291,7 +1291,7 @@ class Identity(PlexObject):
 
     def __repr__(self):
         return f"<{self.__class__.__name__}:{self.machineIdentifier}>"
-    
+
     def _loadData(self, data):
         self._data = data
         self.claimed = utils.cast(bool, data.attrib.get('claimed'))

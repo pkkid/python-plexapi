@@ -28,6 +28,7 @@ def test_navigate_around_artist(account, plex):
     print(f"Album: {album}")
     print(f"Tracks: {tracks}...")
     print(f"Track: {track}")
+    assert isinstance(albums, list), "Unable to list artist albums."
     assert artist.track("As Colourful as Ever") == track, "Unable to get artist track."
     assert album.track("As Colourful as Ever") == track, "Unable to get album track."
     assert album.artist() == artist, "album.artist() doesn't match expected artist."

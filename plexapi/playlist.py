@@ -155,7 +155,7 @@ class Playlist(
                 sectionKey = int(match.group(1))
                 self._section = self._server.library.sectionByID(sectionKey)
                 return self._section
-        
+
             # Try to get the library section from the first item in the playlist
             if self.items():
                 self._section = self.items()[0].section()
@@ -314,7 +314,7 @@ class Playlist(
 
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
-        
+
             Parameters:
                 title (str, optional): The title of the playlist.
                 summary (str, optional): The summary of the playlist.
@@ -432,7 +432,7 @@ class Playlist(
 
     def copyToUser(self, user):
         """ Copy playlist to another user account.
-        
+
             Parameters:
                 user (:class:`~plexapi.myplex.MyPlexUser` or str): `MyPlexUser` object, username,
                     email, or user id of the user to copy the playlist to.

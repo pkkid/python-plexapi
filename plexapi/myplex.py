@@ -674,7 +674,7 @@ class MyPlexAccount(PlexObject):
             if (invite.username and invite.email and invite.id and username.lower() in
                     (invite.username.lower(), invite.email.lower(), str(invite.id))):
                 return invite
-        
+
         raise NotFound(f'Unable to find invite {username}')
 
     def pendingInvites(self, includeSent=True, includeReceived=True):
@@ -952,7 +952,7 @@ class MyPlexAccount(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        
+
         for item in items:
             if self.onWatchlist(item):
                 raise BadRequest(f'"{item.title}" is already on the watchlist')
@@ -973,7 +973,7 @@ class MyPlexAccount(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        
+
         for item in items:
             if not self.onWatchlist(item):
                 raise BadRequest(f'"{item.title}" is not on the watchlist')
@@ -1944,7 +1944,7 @@ class AccountOptOut(PlexObject):
 
     def optOutManaged(self):
         """ Sets the Online Media Source to "Disabled for Managed Users".
-        
+
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When trying to opt out music.
         """

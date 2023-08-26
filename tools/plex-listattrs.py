@@ -6,7 +6,14 @@ items to build a collection of attributes on each media type. The resulting list
 can be compared with the current object implementation in python-plexapi to track
 new attributes and deprecate old ones.
 """
-import argparse, copy, pickle, plexapi, os, re, sys, time
+import argparse
+import copy
+import pickle
+import plexapi
+import os
+import re
+import sys
+import time
 from os.path import abspath, dirname, join
 from collections import defaultdict
 from datetime import datetime
@@ -296,19 +303,19 @@ class PlexAttributes():
     def _safe_connect(self, elem):
         try:
             return elem.connect()
-        except:
+        except Exception:
             return None
 
     def _safe_reload(self, elem):
         try:
             elem.reload()
-        except:
+        except Exception:
             pass
 
 
 def _(text, color):
     FMTSTR = '\033[%dm%s\033[0m'
-    COLORS = {'blue':34, 'cyan':36, 'green':32, 'grey':30, 'purple':35, 'red':31, 'white':37, 'yellow':33}
+    COLORS = {'blue': 34, 'cyan': 36, 'green': 32, 'grey': 30, 'purple': 35, 'red': 31, 'white': 37, 'yellow': 33}
     return FMTSTR % (COLORS[color], text)
 
 

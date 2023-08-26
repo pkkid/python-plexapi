@@ -317,7 +317,7 @@ def _test_mixins_edit_theme(obj):
     obj.unlockTheme()
     obj.reload()
     assert "theme" not in _fields()
-    
+
     # Lock the theme
     obj.lockTheme()
     obj.reload()

@@ -1008,6 +1008,7 @@ class BaseResource(PlexObject):
             selected (bool): True if the resource is currently selected.
             thumb (str): The URL to retrieve the resource thumbnail.
     """
+
     def _loadData(self, data):
         self._data = data
         self.key = data.attrib.get('key')
