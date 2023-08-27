@@ -502,7 +502,7 @@ class PlexPartialObject(PlexObject):
 
     def __eq__(self, other):
         if isinstance(other, PlexPartialObject):
-            return other not in [None, []] and self.key == other.key
+            return self.key == other.key
         return NotImplemented
 
     def __hash__(self):
