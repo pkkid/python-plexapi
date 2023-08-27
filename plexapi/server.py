@@ -602,7 +602,7 @@ class PlexServer(PlexObject):
                     print("Available butler tasks:", availableTasks)
 
         """
-        validTasks = [task.name for task in self.butlerTasks()]
+        validTasks = [_task.name for _task in self.butlerTasks()]
         if task not in validTasks:
             raise BadRequest(
                 f'Invalid butler task: {task}. Available tasks are: {validTasks}'
