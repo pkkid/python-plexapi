@@ -566,3 +566,8 @@ def test_server_agents(plex):
     setting = next((s for s in settings if s.id == 'country'), None)
     assert setting
     assert setting.enumValues is not None
+
+
+def test_server_identity(plex):
+    identity = plex.identity()
+    assert identity.machineIdentifier == plex.machineIdentifier

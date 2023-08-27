@@ -189,6 +189,11 @@ class PlexServer(PlexObject):
         data = self.query(Settings.key)
         return Settings(self, data)
 
+    def identity(self):
+        """ Returns the Plex server identity. """
+        data = self.query('/identity')
+        return Identity(self, data)
+
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query(Account.key)
@@ -1273,3 +1278,22 @@ class ButlerTask(PlexObject):
         self.name = data.attrib.get('name')
         self.scheduleRandomized = utils.cast(bool, data.attrib.get('scheduleRandomized'))
         self.title = data.attrib.get('title')
+
+
+class Identity(PlexObject):
+    """ Represents a server identity.
+
+        Attributes:
+            claimed (bool): True or False if the server is claimed.
+            machineIdentifier (str): The Plex server machine identifier.
+            version (str): The Plex server version.
+    """
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}:{self.machineIdentifier}>"
+    
+    def _loadData(self, data):
+        self._data = data
+        self.claimed = utils.cast(bool, data.attrib.get('claimed'))
+        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.version = data.attrib.get('version')
