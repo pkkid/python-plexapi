@@ -189,7 +189,7 @@ Use:
      tools/plex-boostraptest.py 
     
 with appropriate
-arguments and add this new server to a shared user which username is defined in environment veriable `SHARED_USERNAME`.
+arguments and add this new server to a shared user which username is defined in environment variable `SHARED_USERNAME`.
 It uses `official docker image`_ to create a proper instance.
 
 For skipping the docker and reuse a existing server use 
@@ -244,7 +244,7 @@ match with the provided XML documents.
 **Why don't you offer feature XYZ?**
 
 This library is meant to be a wrapper around the XML pages the Plex
-server provides. If we are not providing an API that is offerered in the
+server provides. If we are not providing an API that is offered in the
 XML pages, please let us know! -- Adding additional features beyond that
 should be done outside the scope of this library.
 
