@@ -405,7 +405,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     subname = subtitle.name.rsplit(".", 1)[0]
     assert subname in subtitles
 
-    movie.subtitleStreams()[0].setDefault()
+    movie.subtitleStreams()[0].setSelected()
     movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
