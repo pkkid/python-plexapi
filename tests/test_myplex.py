@@ -352,3 +352,7 @@ def test_myplex_pin(account, plex):
         account.removeManagedUserPin(homeuser)
     finally:
         account.removeHomeUser(homeuser)
+
+
+def test_myplex_geoip(account):
+    assert account.geoip(account.publicIP())

@@ -239,8 +239,10 @@ class MyPlexAccount(PlexObject):
                 raise Unauthorized(message)
             else:
                 raise BadRequest(message)
-        if headers.get('Accept') == 'application/json':
+        if 'application/json' in response.headers.get('Content-Type', ''):
             return response.json()
+        elif 'text/plain' in response.headers.get('Content-Type', ''):
+            return response.text.strip()
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
 
@@ -1135,6 +1137,21 @@ class MyPlexAccount(PlexObject):
 
         return objs
 
+    def publicIP(self):
+        """ Returns your public IP address. """
+        return self.query('https://plex.tv/:/ip')
+
+    def geoip(self, ip_address):
+        """ Returns a :class:`~plexapi.myplex.GeoLocation` object with geolocation information
+            for an IP address using Plex's GeoIP database.
+
+            Parameters:
+                ip_address (str): IP address to lookup.
+        """
+        params = {'ip_address': ip_address}
+        data = self.query('https://plex.tv/api/v2/geoip', params=params)
+        return GeoLocation(self, data)
+
 
 class MyPlexUser(PlexObject):
     """ This object represents non-signed in users such as friends and linked
@@ -1964,3 +1981,42 @@ class UserState(PlexObject):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.viewState = data.attrib.get('viewState') == 'complete'
         self.watchlistedAt = utils.toDatetime(data.attrib.get('watchlistedAt'))
+
+
+class GeoLocation(PlexObject):
+    """ Represents a signle IP address geolocation
+
+        Attributes:
+            TAG (str): location
+            city (str): City name
+            code (str): Country code
+            continentCode (str): Continent code
+            coordinates (Tuple<float>): Latitude and longitude
+            country (str): Country name
+            europeanUnionMember (bool): True if the country is a member of the European Union
+            inPrivacyRestrictedCountry (bool): True if the country is privacy restricted
+            postalCode (str): Postal code
+            subdivisions (str): Subdivision name
+            timezone (str): Timezone
+    """
+    TAG = 'location'
+
+    def _loadData(self, data):
+        self._data = data
+        self.city = data.attrib.get('city')
+        self.code = data.attrib.get('code')
+        self.continentCode = data.attrib.get('continent_code')
+        self.coordinates = tuple(
+            utils.cast(float, coord) for coord in (data.attrib.get('coordinates') or ',').split(','))
+        self.country = data.attrib.get('country')
+        self.postalCode = data.attrib.get('postal_code')
+        self.subdivisions = data.attrib.get('subdivisions')
+        self.timezone = data.attrib.get('time_zone')
+
+        europeanUnionMember = data.attrib.get('european_union_member')
+        self.europeanUnionMember = (
+            False if europeanUnionMember == 'Unknown' else utils.cast(bool, europeanUnionMember))
+
+        inPrivacyRestrictedCountry = data.attrib.get('in_privacy_restricted_country')
+        self.inPrivacyRestrictedCountry = (
+            False if inPrivacyRestrictedCountry == 'Unknown' else utils.cast(bool, inPrivacyRestrictedCountry))
