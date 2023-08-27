@@ -439,7 +439,7 @@ def test_server_system_devices(plex):
     
 
 @pytest.mark.authenticated
-def test_server_dashboard_bandwidth(plex):
+def test_server_dashboard_bandwidth(account_plexpass, plex):
     bandwidthData = plex.bandwidth()
     assert len(bandwidthData)
     bandwidth = bandwidthData[0]
@@ -456,7 +456,7 @@ def test_server_dashboard_bandwidth(plex):
 
 
 @pytest.mark.authenticated
-def test_server_dashboard_bandwidth_filters(plex):
+def test_server_dashboard_bandwidth_filters(account_plexpass, plex):
     at = datetime(2021, 1, 1)
     filters = {
         'at>': at,

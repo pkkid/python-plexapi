@@ -77,6 +77,11 @@ def test_myplex_users(account):
     print(f"Found user: {user}")
     assert user, f"Could not find user {users[0].title}"
 
+    try:
+        users[0].servers[0]
+    except IndexError:
+        return pytest.skip(f"{users[0].title} shared user does not have access to any servers")
+
     assert (
         len(users[0].servers[0].sections()) > 0
     ), "Couldn't info about the shared libraries"
