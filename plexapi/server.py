@@ -109,7 +109,7 @@ class PlexServer(PlexObject):
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._showSecrets = CONFIG.get('log.show_secrets', '').lower() == 'true'
         self._session = session or requests.Session()
-        self._timeout = timeout
+        self._timeout = timeout or TIMEOUT
         self._myPlexAccount = None   # cached myPlexAccount
         self._systemAccounts = None   # cached list of SystemAccount
         self._systemDevices = None   # cached list of SystemDevice
