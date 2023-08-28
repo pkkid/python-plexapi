@@ -32,6 +32,12 @@ Installation & Documentation
 
     pip install plexapi
 
+*Install extra features:*
+
+.. code-block:: python
+
+    pip install plexapi[alert]  # Install with dependencies required for plexapi.alert
+
 Documentation_ can be found at Read the Docs.
 
 .. _Documentation: http://python-plexapi.readthedocs.io/en/latest/
