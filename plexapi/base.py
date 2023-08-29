@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
 import weakref
+from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-from plexapi import X_PLEX_CONTAINER_SIZE, log, utils
+from plexapi import CONFIG, X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
-from plexapi.utils import cached_property
 
 USER_DONT_RELOAD_FOR_KEYS = set()
 _DONT_RELOAD_FOR_KEYS = {'key'}
@@ -50,9 +50,14 @@ class PlexObject:
         self._initpath = initpath or self.key
         self._parent = weakref.ref(parent) if parent is not None else None
         self._details_key = None
-        self._overwriteNone = True  # Allow overwriting previous attribute values with `None` when manually reloading
-        self._autoReload = True  # Automatically reload the object when accessing a missing attribute
-        self._edits = None  # Save batch edits for a single API call
+
+        # Allow overwriting previous attribute values with `None` when manually reloading
+        self._overwriteNone = True
+        # Automatically reload the object when accessing a missing attribute
+        self._autoReload = CONFIG.get('plexapi.autoreload', True, bool)
+        # Attribute to save batch edits for a single API call
+        self._edits = None
+
         if data is not None:
             self._loadData(data)
         self._details_key = self._buildDetailsKey()
@@ -87,7 +92,9 @@ class PlexObject:
         etype = elem.attrib.get('streamType', elem.attrib.get('tagType', elem.attrib.get('type')))
         ehash = f'{elem.tag}.{etype}' if etype else elem.tag
         if initpath == '/status/sessions':
-            ehash = f"{ehash}.{'session'}"
+            ehash = f"{ehash}.session"
+        elif initpath.startswith('/status/sessions/history'):
+            ehash = f"{ehash}.history"
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
         # log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
@@ -152,7 +159,9 @@ class PlexObject:
             and attrs.
 
             Parameters:
-                ekey (str): API URL path in Plex to fetch items from.
+                ekey (str or List<int>): API URL path in Plex to fetch items from. If a list of ints is passed
+                    in, the key will be translated to /library/metadata/<key1,key2,key3>. This allows
+                    fetching multiple items only knowing their key-ids.
                 cls (:class:`~plexapi.base.PlexObject`): If you know the class of the
                     items to be fetched, passing this in will help the parser ensure
                     it only returns those items. By default we convert the xml elements
@@ -224,6 +233,9 @@ class PlexObject:
         """
         if ekey is None:
             raise BadRequest('ekey was not provided')
+
+        if isinstance(ekey, list) and all(isinstance(key, int) for key in ekey):
+            ekey = f'/library/metadata/{",".join(str(key) for key in ekey)}'
 
         container_start = container_start or 0
         container_size = container_size or X_PLEX_CONTAINER_SIZE
@@ -489,7 +501,9 @@ class PlexPartialObject(PlexObject):
     }
 
     def __eq__(self, other):
-        return other not in [None, []] and self.key == other.key
+        if isinstance(other, PlexPartialObject):
+            return self.key == other.key
+        return NotImplemented
 
     def __hash__(self):
         return hash(repr(self))
@@ -506,7 +520,7 @@ class PlexPartialObject(PlexObject):
         if attr.startswith('_'): return value
         if value not in (None, []): return value
         if self.isFullObject(): return value
-        if isinstance(self, PlexSession): return value
+        if isinstance(self, (PlexSession, PlexHistory)): return value
         if self._autoReload is False: return value
         # Log the reload.
         clsname = self.__class__.__name__
@@ -557,13 +571,10 @@ class PlexPartialObject(PlexObject):
             self._edits.update(kwargs)
             return self
 
-        if 'id' not in kwargs:
-            kwargs['id'] = self.ratingKey
         if 'type' not in kwargs:
             kwargs['type'] = utils.searchType(self._searchType)
 
-        part = f'/library/sections/{self.librarySectionID}/all{utils.joinArgs(kwargs)}'
-        self._server.query(part, method=self._server._session.put)
+        self.section()._edit(items=self, **kwargs)
         return self
 
     def edit(self, **kwargs):
@@ -695,17 +706,11 @@ class Playable:
         Albums which are all not playable.
 
         Attributes:
-            viewedAt (datetime): Datetime item was last viewed (history).
-            accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
-            deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
             playlistItemID (int): Playlist item ID (only populated for :class:`~plexapi.playlist.Playlist` items).
             playQueueItemID (int): PlayQueue item ID (only populated for :class:`~plexapi.playlist.PlayQueue` items).
     """
 
     def _loadData(self, data):
-        self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))               # history
-        self.accountID = utils.cast(int, data.attrib.get('accountID'))              # history
-        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))                # history
         self.playlistItemID = utils.cast(int, data.attrib.get('playlistItemID'))    # playlist
         self.playQueueItemID = utils.cast(int, data.attrib.get('playQueueItemID'))  # playqueue
 
@@ -914,7 +919,7 @@ class PlexSession(object):
 
     def stop(self, reason=''):
         """ Stop playback for the session.
-        
+
             Parameters:
                 reason (str): Message displayed to the user for stopping playback.
         """
@@ -924,6 +929,35 @@ class PlexSession(object):
         }
         key = '/status/sessions/terminate'
         return self._server.query(key, params=params)
+
+
+class PlexHistory(object):
+    """ This is a general place to store functions specific to media that is a Plex history item.
+
+        Attributes:
+            accountID (int): The associated :class:`~plexapi.server.SystemAccount` ID.
+            deviceID (int): The associated :class:`~plexapi.server.SystemDevice` ID.
+            historyKey (str): API URL (/status/sessions/history/<historyID>).
+            viewedAt (datetime): Datetime item was last watched.
+    """
+
+    def _loadData(self, data):
+        self.accountID = utils.cast(int, data.attrib.get('accountID'))
+        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))
+        self.historyKey = data.attrib.get('historyKey')
+        self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))
+
+    def _reload(self, **kwargs):
+        """ Reload the data for the history entry. """
+        raise NotImplementedError('History objects cannot be reloaded. Use source() to get the source media item.')
+
+    def source(self):
+        """ Return the source media object for the history entry. """
+        return self.fetchItem(self._details_key)
+
+    def delete(self):
+        """ Delete the history entry. """
+        return self._server.query(self.historyKey, method=self._server._session.delete)
 
 
 class MediaContainer(PlexObject):

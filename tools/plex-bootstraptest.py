@@ -121,15 +121,15 @@ def setup_music(music_path, docker=False):
         "Broke for free": {
             "Layers": [
                 "1 - As Colorful As Ever.mp3",
-                #"02 - Knock Knock.mp3",
-                #"03 - Only Knows.mp3",
-                #"04 - If.mp3",
-                #"05 - Note Drop.mp3",
-                #"06 - Murmur.mp3",
-                #"07 - Spellbound.mp3",
-                #"08 - The Collector.mp3",
-                #"09 - Quit Bitching.mp3",
-                #"10 - A Year.mp3",
+                # "02 - Knock Knock.mp3",
+                # "03 - Only Knows.mp3",
+                # "04 - If.mp3",
+                # "05 - Note Drop.mp3",
+                # "06 - Murmur.mp3",
+                # "07 - Spellbound.mp3",
+                # "08 - The Collector.mp3",
+                # "09 - Quit Bitching.mp3",
+                # "10 - A Year.mp3",
             ]
         },
 
@@ -279,7 +279,7 @@ def add_library_section(server, section):
     raise SystemExit("Timeout adding section to Plex instance.")
 
 
-def create_section(server, section, opts):
+def create_section(server, section, opts):  # noqa: C901
     processed_media = 0
     expected_media_count = section.pop("expected_media_count", 0)
     expected_media_type = (section["type"],)
@@ -337,7 +337,7 @@ def create_section(server, section, opts):
     notifier.stop()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # noqa: C901
     default_ip = get_default_ip()
     parser = argparse.ArgumentParser(description=__doc__)
     # Authentication arguments
@@ -575,6 +575,7 @@ if __name__ == "__main__":
                 location="/data/Music" if opts.no_docker is False else music_path,
                 agent="tv.plex.agents.music",
                 scanner="Plex Music",
+                language="en-US",
                 expected_media_count=song_c,
             )
         )

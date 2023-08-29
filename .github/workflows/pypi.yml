@@ -9,7 +9,7 @@ on:
     types: [published]
 
 env:
-  DEFAULT_PYTHON: 3.7
+  DEFAULT_PYTHON: 3.8
 
 jobs:
   build:
@@ -39,7 +39,11 @@ jobs:
 
   pypi:
     name: Publish to PyPI
+    needs: build
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/PlexAPI
     permissions:
       id-token: write
     steps:

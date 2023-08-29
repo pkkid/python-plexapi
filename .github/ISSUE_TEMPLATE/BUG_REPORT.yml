@@ -50,7 +50,7 @@ body:
     id: python
     attributes:
       label: Python Version
-      placeholder: eg. 3.7.10
+      placeholder: eg. 3.8.17
     validations:
       required: true
   - type: input

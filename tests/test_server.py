@@ -144,6 +144,7 @@ def test_server_search(plex, movie):
     assert hub_tag.reason == "section"
     assert hub_tag.reasonID == hub_tag.librarySectionID
     assert hub_tag.reasonTitle == hub_tag.librarySectionTitle
+    assert utils.is_float(hub_tag.score, gte=0.0)
     assert hub_tag.type == "tag"
     assert hub_tag.tag == genre.tag
     assert hub_tag.tagType == 1
@@ -155,7 +156,10 @@ def test_server_search(plex, movie):
     assert plex.search(director.tag, mediatype="director")
     # Test actor search
     role = movie.roles[0]
-    assert plex.search(role.tag, mediatype="actor")
+    results = plex.search(role.tag, mediatype="actor")
+    assert results
+    hub_tag = results[0]
+    assert hub_tag.tagKey
 
 
 def test_server_playlist(plex, show):
@@ -181,13 +185,6 @@ def test_server_playlists(plex, show):
         assert playlist not in plex.playlists(playlistType='audio')
     finally:
         playlist.delete()
-
-
-def test_server_history(plex, movie):
-    movie.markPlayed()
-    history = plex.history()
-    assert len(history)
-    movie.markUnplayed()
 
 
 def test_server_Server_query(plex):
@@ -439,10 +436,10 @@ def test_server_system_devices(plex):
     assert len(device.name) or device.name == ""
     assert len(device.platform) or device.platform == ""
     assert plex.systemDevice(device.id) == device
-    
+
 
 @pytest.mark.authenticated
-def test_server_dashboard_bandwidth(plex):
+def test_server_dashboard_bandwidth(account_plexpass, plex):
     bandwidthData = plex.bandwidth()
     assert len(bandwidthData)
     bandwidth = bandwidthData[0]
@@ -459,7 +456,7 @@ def test_server_dashboard_bandwidth(plex):
 
 
 @pytest.mark.authenticated
-def test_server_dashboard_bandwidth_filters(plex):
+def test_server_dashboard_bandwidth_filters(account_plexpass, plex):
     at = datetime(2021, 1, 1)
     filters = {
         'at>': at,
@@ -569,3 +566,8 @@ def test_server_agents(plex):
     setting = next((s for s in settings if s.id == 'country'), None)
     assert setting
     assert setting.enumValues is not None
+
+
+def test_server_identity(plex):
+    identity = plex.identity()
+    assert identity.machineIdentifier == plex.machineIdentifier

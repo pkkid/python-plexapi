@@ -110,6 +110,7 @@ def test_audio_Artist_mixins_fields(artist):
     test_mixins.edit_sort_title(artist)
     test_mixins.edit_summary(artist)
     test_mixins.edit_title(artist)
+    test_mixins.edit_user_rating(artist)
 
 
 def test_audio_Artist_mixins_tags(artist):
@@ -238,6 +239,7 @@ def test_audio_Album_mixins_fields(album):
     test_mixins.edit_studio(album)
     test_mixins.edit_summary(album)
     test_mixins.edit_title(album)
+    test_mixins.edit_user_rating(album)
 
 
 def test_audio_Album_mixins_tags(album):
@@ -318,7 +320,6 @@ def test_audio_Track_attrs(album):
     assert utils.is_datetime(track.updatedAt)
     assert utils.is_int(track.viewCount, gte=0)
     assert track.viewOffset == 0
-    assert track.viewedAt is None
     assert track.year is None
     assert track.url(None) is None
     assert media.aspectRatio is None
@@ -408,6 +409,7 @@ def test_audio_Track_mixins_fields(track):
     test_mixins.edit_track_artist(track)
     test_mixins.edit_track_number(track)
     test_mixins.edit_track_disc_number(track)
+    test_mixins.edit_user_rating(track)
 
 
 def test_audio_Track_mixins_tags(track):

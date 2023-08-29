@@ -90,7 +90,13 @@ def test_utils_download(plex, episode):
 
 def test_millisecondToHumanstr():
     res = utils.millisecondToHumanstr(1000)
-    assert res == "00:00:01.0000"
+    assert res == "00:00:01.000"
+    res = utils.millisecondToHumanstr(-1000)
+    assert res == "-00:00:01.000"
+    res = utils.millisecondToHumanstr(123456789)
+    assert res == "1 day, 10:17:36.789"
+    res = utils.millisecondToHumanstr(-123456789)
+    assert res == "-1 day, 10:17:36.789"
 
 
 def test_toJson(movie):

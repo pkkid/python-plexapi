@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexSession
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
-    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
-    TrackArtistMixin, TrackDiscNumberMixin, TrackNumberMixin,
-    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+    ArtistEditMixins, AlbumEditMixins, TrackEditMixins
 )
 from plexapi.playlist import Playlist
 
 
-class Audio(PlexPartialObject, PlayedUnplayedMixin, AddedAtMixin):
+class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all audio objects including :class:`~plexapi.audio.Artist`,
         :class:`~plexapi.audio.Album`, and :class:`~plexapi.audio.Track`.
 
@@ -132,8 +131,7 @@ class Artist(
     Audio,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    SortTitleMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+    ArtistEditMixins
 ):
     """ Represents a single Artist.
 
@@ -181,14 +179,19 @@ class Artist(
             Parameters:
                 title (str): Title of the album to return.
         """
-        try:
-            return self.section().search(title, libtype='album', filters={'artist.id': self.ratingKey})[0]
-        except IndexError:
-            raise NotFound(f"Unable to find album '{title}'") from None
+        return self.section().get(
+            title=title,
+            libtype='album',
+            filters={'artist.id': self.ratingKey}
+        )
 
     def albums(self, **kwargs):
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
-        return self.section().search(libtype='album', filters={'artist.id': self.ratingKey}, **kwargs)
+        return self.section().search(
+            libtype='album',
+            filters={'artist.id': self.ratingKey},
+            **kwargs
+        )
 
     def track(self, title=None, album=None, track=None):
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
@@ -238,14 +241,19 @@ class Artist(
         key = f'{self.key}?includeStations=1'
         return next(iter(self.fetchItems(key, cls=Playlist, rtag="Stations")), None)
 
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Artists' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
 
 @utils.registerPlexObject
 class Album(
     Audio,
     UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
-    OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin,
-    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+    AlbumEditMixins
 ):
     """ Represents a single Album.
 
@@ -358,14 +366,19 @@ class Album(
         """ Returns str, default title for a new syncItem. """
         return f'{self.parentTitle} - {self.title}'
 
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
 
 @utils.registerPlexObject
 class Track(
     Audio, Playable,
     ExtrasMixin, RatingMixin,
     ArtUrlMixin, PosterUrlMixin, ThemeUrlMixin,
-    TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin,
-    CollectionMixin, LabelMixin, MoodMixin
+    TrackEditMixins
 ):
     """ Represents a single Track.
 
@@ -435,18 +448,6 @@ class Track(
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
 
-    def _prettyfilename(self):
-        """ Returns a filename for use in download. """
-        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
-
-    def album(self):
-        """ Return the track's :class:`~plexapi.audio.Album`. """
-        return self.fetchItem(self.parentKey)
-
-    def artist(self):
-        """ Return the track's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItem(self.grandparentKey)
-
     @property
     def locations(self):
         """ This does not exist in plex xml response but is added to have a common
@@ -462,6 +463,18 @@ class Track(
         """ Returns the track number. """
         return self.index
 
+    def _prettyfilename(self):
+        """ Returns a filename for use in download. """
+        return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
+
+    def album(self):
+        """ Return the track's :class:`~plexapi.audio.Album`. """
+        return self.fetchItem(self.parentKey)
+
+    def artist(self):
+        """ Return the track's :class:`~plexapi.audio.Artist`. """
+        return self.fetchItem(self.grandparentKey)
+
     def _defaultSyncTitle(self):
         """ Returns str, default title for a new syncItem. """
         return f'{self.grandparentTitle} - {self.parentTitle} - {self.title}'
@@ -469,6 +482,12 @@ class Track(
     def _getWebURL(self, base=None):
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey)
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.parentGuid)
+        return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
 
 @utils.registerPlexObject
@@ -482,3 +501,16 @@ class TrackSession(PlexSession, Track):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexSession._loadData(self, data)
+
+
+@utils.registerPlexObject
+class TrackHistory(PlexHistory, Track):
+    """ Represents a single Track history entry
+        loaded from :func:`~plexapi.server.PlexServer.history`.
+    """
+    _HISTORYTYPE = True
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        Track._loadData(self, data)
+        PlexHistory._loadData(self, data)

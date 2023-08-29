@@ -22,51 +22,76 @@ from requests.status_codes import _codes as codes
 
 class MyPlexAccount(PlexObject):
     """ MyPlex account and profile information. This object represents the data found Account on
-        the myplex.tv servers at the url https://plex.tv/users/account. You may create this object
+        the myplex.tv servers at the url https://plex.tv/api/v2/user. You may create this object
         directly by passing in your username & password (or token). There is also a convenience
         method provided at :class:`~plexapi.server.PlexServer.myPlexAccount()` which will create
         and return this object.
 
         Parameters:
-            username (str): Your MyPlex username.
-            password (str): Your MyPlex password.
+            username (str): Plex login username if not using a token.
+            password (str): Plex login password if not using a token.
+            token (str): Plex authentication token instead of username and password.
             session (requests.Session, optional): Use your own session object if you want to
-                cache the http responses from PMS
+                cache the http responses from PMS.
             timeout (int): timeout in seconds on initial connect to myplex (default config.TIMEOUT).
-            code (str): Two-factor authentication code to use when logging in.
+            code (str): Two-factor authentication code to use when logging in with username and password.
+            remember (bool): Remember the account token for 14 days (Default True).
 
         Attributes:
-            SIGNIN (str): 'https://plex.tv/users/sign_in.xml'
-            key (str): 'https://plex.tv/users/account'
-            authenticationToken (str): Unknown.
-            certificateVersion (str): Unknown.
-            cloudSyncDevice (str): Unknown.
-            email (str): Your current Plex email address.
+            key (str): 'https://plex.tv/api/v2/user'
+            adsConsent (str): Unknown.
+            adsConsentReminderAt (str): Unknown.
+            adsConsentSetAt (str): Unknown.
+            anonymous (str): Unknown.
+            authToken (str): The account token.
+            backupCodesCreated (bool): If the two-factor authentication backup codes have been created.
+            confirmed (bool): If the account has been confirmed.
+            country (str): The account country.
+            email (str): The account email address.
+            emailOnlyAuth (bool): If login with email only is enabled.
+            experimentalFeatures (bool): If experimental features are enabled.
+            friendlyName (str): Your account full name.
             entitlements (List<str>): List of devices your allowed to use with this account.
-            guest (bool): Unknown.
-            home (bool): Unknown.
-            homeSize (int): Unknown.
-            id (int): Your Plex account ID.
-            locale (str): Your Plex locale
-            mailing_list_status (str): Your current mailing list status.
-            maxHomeSize (int): Unknown.
+            guest (bool): If the account is a Plex Home guest user.
+            hasPassword (bool): If the account has a password.
+            home (bool): If the account is a Plex Home user.
+            homeAdmin (bool): If the account is the Plex Home admin.
+            homeSize (int): The number of accounts in the Plex Home.
+            id (int): The Plex account ID.
+            joinedAt (datetime): Date the account joined Plex.
+            locale (str): the account locale
+            mailingListActive (bool): If you are subscribed to the Plex newsletter.
+            mailingListStatus (str): Your current mailing list status.
+            maxHomeSize (int): The maximum number of accounts allowed in the Plex Home.
             pin (str): The hashed Plex Home PIN.
-            queueEmail (str): Email address to add items to your `Watch Later` queue.
-            queueUid (str): Unknown.
-            restricted (bool): Unknown.
+            profileAutoSelectAudio (bool): If the account has automatically select audio and subtitle tracks enabled.
+            profileDefaultAudioLanguage (str): The preferred audio language for the account.
+            profileDefaultSubtitleLanguage (str): The preferred subtitle language for the account.
+            profileAutoSelectSubtitle (int): The auto-select subtitle mode
+                (0 = Manually selected, 1 = Shown with foreign audio, 2 = Always enabled).
+            profileDefaultSubtitleAccessibility (int): The subtitles for the deaf or hard-of-hearing (SDH) searches mode
+                (0 = Prefer non-SDH subtitles, 1 = Prefer SDH subtitles, 2 = Only show SDH subtitles,
+                3 = Only shown non-SDH subtitles).
+            profileDefaultSubtitleForced (int): The forced subtitles searches mode
+                (0 = Prefer non-forced subtitles, 1 = Prefer forced subtitles, 2 = Only show forced subtitles,
+                3 = Only show non-forced subtitles).
+            protected (bool): If the account has a Plex Home PIN enabled.
+            rememberExpiresAt (datetime): Date the token expires.
+            restricted (bool): If the account is a Plex Home managed user.
             roles: (List<str>) Lit of account roles. Plexpass membership listed here.
-            scrobbleTypes (str): Description
-            secure (bool): Description
-            subscriptionActive (bool): True if your subscription is active.
-            subscriptionFeatures: (List<str>) List of features allowed on your subscription.
-            subscriptionPlan (str): Name of subscription plan.
-            subscriptionStatus (str): String representation of `subscriptionActive`.
-            thumb (str): URL of your account thumbnail.
-            title (str): Unknown. - Looks like an alias for `username`.
-            username (str): Your account username.
-            uuid (str): Unknown.
-            _token (str): Token used to access this client.
-            _session (obj): Requests session object used to access this client.
+            scrobbleTypes (List<int>): Unknown.
+            subscriptionActive (bool): If the account's Plex Pass subscription is active.
+            subscriptionDescription (str): Description of the Plex Pass subscription.
+            subscriptionFeatures: (List<str>) List of features allowed on your Plex Pass subscription.
+            subscriptionPaymentService (str): Payment service used for your Plex Pass subscription.
+            subscriptionPlan (str): Name of Plex Pass subscription plan.
+            subscriptionStatus (str): String representation of ``subscriptionActive``.
+            subscriptionSubscribedAt (datetime): Date the account subscribed to Plex Pass.
+            thumb (str): URL of the account thumbnail.
+            title (str): The title of the account (username or friendly name).
+            twoFactorEnabled (bool): If two-factor authentication is enabled.
+            username (str): The account username.
+            uuid (str): The account UUID.
     """
     FRIENDINVITE = 'https://plex.tv/api/servers/{machineId}/shared_servers'                     # post with data
     HOMEUSERS = 'https://plex.tv/api/home/users'
@@ -77,7 +102,8 @@ class MyPlexAccount(PlexObject):
     FRIENDUPDATE = 'https://plex.tv/api/friends/{userId}'                                       # put with args, delete
     HOMEUSER = 'https://plex.tv/api/home/users/{userId}'                                        # delete, put
     MANAGEDHOMEUSER = 'https://plex.tv/api/v2/home/users/restricted/{userId}'                   # put
-    SIGNIN = 'https://plex.tv/users/sign_in.xml'                                                # get with auth
+    SIGNIN = 'https://plex.tv/api/v2/users/signin'                                              # post with auth
+    SIGNOUT = 'https://plex.tv/api/v2/users/signout'                                            # delete
     WEBHOOKS = 'https://plex.tv/api/v2/user/webhooks'                                           # get, post with data
     OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
@@ -86,86 +112,106 @@ class MyPlexAccount(PlexObject):
     VOD = 'https://vod.provider.plex.tv'                                                        # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
     METADATA = 'https://metadata.provider.plex.tv'
-    # Key may someday switch to the following url. For now the current value works.
-    # https://plex.tv/api/v2/user?X-Plex-Token={token}&X-Plex-Client-Identifier={clientId}
-    key = 'https://plex.tv/users/account'
+    key = 'https://plex.tv/api/v2/user'
 
-    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None):
-        self._token = token or CONFIG.get('auth.server_token')
+    def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None, remember=True):
+        self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
-        data, initpath = self._signin(username, password, code, timeout)
+        data, initpath = self._signin(username, password, code, remember, timeout)
         super(MyPlexAccount, self).__init__(self, data, initpath)
 
-    def _signin(self, username, password, code, timeout):
+    def _signin(self, username, password, code, remember, timeout):
         if self._token:
             return self.query(self.key), self.key
-        username = username or CONFIG.get('auth.myplex_username')
-        password = password or CONFIG.get('auth.myplex_password')
+        payload = {
+            'login': username or CONFIG.get('auth.myplex_username'),
+            'password': password or CONFIG.get('auth.myplex_password'),
+            'rememberMe': remember
+        }
         if code:
-            password += code
-        data = self.query(self.SIGNIN, method=self._session.post, auth=(username, password), timeout=timeout)
+            payload['verificationCode'] = code
+        data = self.query(self.SIGNIN, method=self._session.post, data=payload, timeout=timeout)
         return data, self.SIGNIN
+
+    def signout(self):
+        """ Sign out of the Plex account. Invalidates the authentication token. """
+        return self.query(self.SIGNOUT, method=self._session.delete)
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
         self._data = data
-        self._token = logfilter.add_secret(data.attrib.get('authenticationToken'))
+        self._token = logfilter.add_secret(data.attrib.get('authToken'))
         self._webhooks = []
-        self.authenticationToken = self._token
-        self.certificateVersion = data.attrib.get('certificateVersion')
-        self.cloudSyncDevice = data.attrib.get('cloudSyncDevice')
+
+        self.adsConsent = data.attrib.get('adsConsent')
+        self.adsConsentReminderAt = data.attrib.get('adsConsentReminderAt')
+        self.adsConsentSetAt = data.attrib.get('adsConsentSetAt')
+        self.anonymous = data.attrib.get('anonymous')
+        self.authToken = self._token
+        self.backupCodesCreated = utils.cast(bool, data.attrib.get('backupCodesCreated'))
+        self.confirmed = utils.cast(bool, data.attrib.get('confirmed'))
+        self.country = data.attrib.get('country')
         self.email = data.attrib.get('email')
+        self.emailOnlyAuth = utils.cast(bool, data.attrib.get('emailOnlyAuth'))
+        self.experimentalFeatures = utils.cast(bool, data.attrib.get('experimentalFeatures'))
+        self.friendlyName = data.attrib.get('friendlyName')
         self.guest = utils.cast(bool, data.attrib.get('guest'))
+        self.hasPassword = utils.cast(bool, data.attrib.get('hasPassword'))
         self.home = utils.cast(bool, data.attrib.get('home'))
+        self.homeAdmin = utils.cast(bool, data.attrib.get('homeAdmin'))
         self.homeSize = utils.cast(int, data.attrib.get('homeSize'))
         self.id = utils.cast(int, data.attrib.get('id'))
+        self.joinedAt = utils.toDatetime(data.attrib.get('joinedAt'))
         self.locale = data.attrib.get('locale')
-        self.mailing_list_status = data.attrib.get('mailing_list_status')
+        self.mailingListActive = utils.cast(bool, data.attrib.get('mailingListActive'))
+        self.mailingListStatus = data.attrib.get('mailingListStatus')
         self.maxHomeSize = utils.cast(int, data.attrib.get('maxHomeSize'))
         self.pin = data.attrib.get('pin')
-        self.queueEmail = data.attrib.get('queueEmail')
-        self.queueUid = data.attrib.get('queueUid')
+        self.protected = utils.cast(bool, data.attrib.get('protected'))
+        self.rememberExpiresAt = utils.toDatetime(data.attrib.get('rememberExpiresAt'))
         self.restricted = utils.cast(bool, data.attrib.get('restricted'))
-        self.scrobbleTypes = data.attrib.get('scrobbleTypes')
-        self.secure = utils.cast(bool, data.attrib.get('secure'))
+        self.scrobbleTypes = [utils.cast(int, x) for x in data.attrib.get('scrobbleTypes').split(',')]
         self.thumb = data.attrib.get('thumb')
         self.title = data.attrib.get('title')
+        self.twoFactorEnabled = utils.cast(bool, data.attrib.get('twoFactorEnabled'))
         self.username = data.attrib.get('username')
         self.uuid = data.attrib.get('uuid')
 
         subscription = data.find('subscription')
         self.subscriptionActive = utils.cast(bool, subscription.attrib.get('active'))
-        self.subscriptionStatus = subscription.attrib.get('status')
+        self.subscriptionDescription = data.attrib.get('subscriptionDescription')
+        self.subscriptionFeatures = self.listAttrs(subscription, 'id', rtag='features', etag='feature')
+        self.subscriptionPaymentService = subscription.attrib.get('paymentService')
         self.subscriptionPlan = subscription.attrib.get('plan')
-        self.subscriptionFeatures = self.listAttrs(subscription, 'id', etag='feature')
+        self.subscriptionStatus = subscription.attrib.get('status')
+        self.subscriptionSubscribedAt = utils.toDatetime(subscription.attrib.get('subscribedAt'), '%Y-%m-%d %H:%M:%S %Z')
 
-        self.roles = self.listAttrs(data, 'id', rtag='roles', etag='role')
+        profile = data.find('profile')
+        self.profileAutoSelectAudio = utils.cast(bool, profile.attrib.get('autoSelectAudio'))
+        self.profileDefaultAudioLanguage = profile.attrib.get('defaultAudioLanguage')
+        self.profileDefaultSubtitleLanguage = profile.attrib.get('defaultSubtitleLanguage')
+        self.profileAutoSelectSubtitle = utils.cast(int, profile.attrib.get('autoSelectSubtitle'))
+        self.profileDefaultSubtitleAccessibility = utils.cast(int, profile.attrib.get('defaultSubtitleAccessibility'))
+        self.profileDefaultSubtitleForces = utils.cast(int, profile.attrib.get('defaultSubtitleForces'))
 
         self.entitlements = self.listAttrs(data, 'id', rtag='entitlements', etag='entitlement')
+        self.roles = self.listAttrs(data, 'id', rtag='roles', etag='role')
 
-        # TODO: Fetch missing MyPlexAccount attributes
-        self.profile_settings = None
+        # TODO: Fetch missing MyPlexAccount services
         self.services = None
-        self.joined_at = None
 
-    def device(self, name=None, clientId=None):
-        """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
+    @property
+    def authenticationToken(self):
+        """ Returns the authentication token for the account. Alias for ``authToken``. """
+        return self.authToken
 
-            Parameters:
-                name (str): Name to match against.
-                clientId (str): clientIdentifier to match against.
-        """
-        for device in self.devices():
-            if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientId):
-                return device
-        raise NotFound(f'Unable to find device {name}')
-
-    def devices(self):
-        """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
-        data = self.query(MyPlexDevice.key)
-        return [MyPlexDevice(self, elem) for elem in data]
+    def _reload(self, key=None, **kwargs):
+        """ Perform the actual reload. """
+        data = self.query(self.key)
+        self._loadData(data)
+        return self
 
     def _headers(self, **kwargs):
         """ Returns dict containing base headers for all requests to the server. """
@@ -193,10 +239,29 @@ class MyPlexAccount(PlexObject):
                 raise Unauthorized(message)
             else:
                 raise BadRequest(message)
-        if headers.get('Accept') == 'application/json':
+        if 'application/json' in response.headers.get('Content-Type', ''):
             return response.json()
+        elif 'text/plain' in response.headers.get('Content-Type', ''):
+            return response.text.strip()
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
+
+    def device(self, name=None, clientId=None):
+        """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
+
+            Parameters:
+                name (str): Name to match against.
+                clientId (str): clientIdentifier to match against.
+        """
+        for device in self.devices():
+            if (name and device.name.lower() == name.lower() or device.clientIdentifier == clientId):
+                return device
+        raise NotFound(f'Unable to find device {name}')
+
+    def devices(self):
+        """ Returns a list of all :class:`~plexapi.myplex.MyPlexDevice` objects connected to the server. """
+        data = self.query(MyPlexDevice.key)
+        return [MyPlexDevice(self, elem) for elem in data]
 
     def resource(self, name):
         """ Returns the :class:`~plexapi.myplex.MyPlexResource` that matches the name specified.
@@ -609,7 +674,7 @@ class MyPlexAccount(PlexObject):
             if (invite.username and invite.email and invite.id and username.lower() in
                     (invite.username.lower(), invite.email.lower(), str(invite.id))):
                 return invite
-        
+
         raise NotFound(f'Unable to find invite {username}')
 
     def pendingInvites(self, includeSent=True, includeReceived=True):
@@ -887,7 +952,7 @@ class MyPlexAccount(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        
+
         for item in items:
             if self.onWatchlist(item):
                 raise BadRequest(f'"{item.title}" is already on the watchlist')
@@ -908,7 +973,7 @@ class MyPlexAccount(PlexObject):
         """
         if not isinstance(items, list):
             items = [items]
-        
+
         for item in items:
             if not self.onWatchlist(item):
                 raise BadRequest(f'"{item.title}" is not on the watchlist')
@@ -1075,6 +1140,21 @@ class MyPlexAccount(PlexObject):
             obj._details_key = urlunsplit((url.scheme, url.netloc, url.path, urlencode(query), url.fragment))
 
         return objs
+
+    def publicIP(self):
+        """ Returns your public IP address. """
+        return self.query('https://plex.tv/:/ip')
+
+    def geoip(self, ip_address):
+        """ Returns a :class:`~plexapi.myplex.GeoLocation` object with geolocation information
+            for an IP address using Plex's GeoIP database.
+
+            Parameters:
+                ip_address (str): IP address to lookup.
+        """
+        params = {'ip_address': ip_address}
+        data = self.query('https://plex.tv/api/v2/geoip', params=params)
+        return GeoLocation(self, data)
 
 
 class MyPlexUser(PlexObject):
@@ -1302,21 +1382,25 @@ class MyPlexResource(PlexObject):
     """ This object represents resources connected to your Plex server that can provide
         content such as Plex Media Servers, iPhone or Android clients, etc. The raw xml
         for the data presented here can be found at:
-        https://plex.tv/api/resources?includeHttps=1&includeRelay=1
+        https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1
 
         Attributes:
             TAG (str): 'Device'
-            key (str): 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
-            accessToken (str): This resources accesstoken.
+            key (str): 'https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1'
+            accessToken (str): This resource's Plex access token.
             clientIdentifier (str): Unique ID for this resource.
             connections (list): List of :class:`~plexapi.myplex.ResourceConnection` objects
                 for this resource.
             createdAt (datetime): Timestamp this resource first connected to your server.
             device (str): Best guess on the type of device this is (PS, iPhone, Linux, etc).
+            dnsRebindingProtection (bool): True if the server had DNS rebinding protection.
             home (bool): Unknown
+            httpsRequired (bool): True if the resource requires https.
             lastSeenAt (datetime): Timestamp this resource last connected.
             name (str): Descriptive name of this resource.
+            natLoopbackSupported (bool): True if the resource supports NAT loopback.
             owned (bool): True if this resource is one of your own (you logged into it).
+            ownerId (int): ID of the user that owns this resource (shared resources only).
             platform (str): OS the resource is running (Linux, Windows, Chrome, etc.)
             platformVersion (str): Version of the platform.
             presence (bool): True if the resource is online
@@ -1324,10 +1408,13 @@ class MyPlexResource(PlexObject):
             productVersion (str): Version of the product.
             provides (str): List of services this resource provides (client, server,
                 player, pubsub-player, etc.)
+            publicAddressMatches (bool): True if the public IP address matches the client's public IP address.
+            relay (bool): True if this resource has the Plex Relay enabled.
+            sourceTitle (str): Username of the user that owns this resource (shared resources only).
             synced (bool): Unknown (possibly True if the resource has synced content?)
     """
-    TAG = 'Device'
-    key = 'https://plex.tv/api/resources?includeHttps=1&includeRelay=1'
+    TAG = 'resource'
+    key = 'https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1'
 
     # Default order to prioritize available resource connections
     DEFAULT_LOCATION_ORDER = ['local', 'remote', 'relay']
@@ -1335,27 +1422,29 @@ class MyPlexResource(PlexObject):
 
     def _loadData(self, data):
         self._data = data
-        self.name = data.attrib.get('name')
         self.accessToken = logfilter.add_secret(data.attrib.get('accessToken'))
-        self.product = data.attrib.get('product')
-        self.productVersion = data.attrib.get('productVersion')
+        self.clientIdentifier = data.attrib.get('clientIdentifier')
+        self.connections = self.findItems(data, ResourceConnection, rtag='connections')
+        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'), "%Y-%m-%dT%H:%M:%SZ")
+        self.device = data.attrib.get('device')
+        self.dnsRebindingProtection = utils.cast(bool, data.attrib.get('dnsRebindingProtection'))
+        self.home = utils.cast(bool, data.attrib.get('home'))
+        self.httpsRequired = utils.cast(bool, data.attrib.get('httpsRequired'))
+        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'), "%Y-%m-%dT%H:%M:%SZ")
+        self.name = data.attrib.get('name')
+        self.natLoopbackSupported = utils.cast(bool, data.attrib.get('natLoopbackSupported'))
+        self.owned = utils.cast(bool, data.attrib.get('owned'))
+        self.ownerId = utils.cast(int, data.attrib.get('ownerId', 0))
         self.platform = data.attrib.get('platform')
         self.platformVersion = data.attrib.get('platformVersion')
-        self.device = data.attrib.get('device')
-        self.clientIdentifier = data.attrib.get('clientIdentifier')
-        self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
-        self.lastSeenAt = utils.toDatetime(data.attrib.get('lastSeenAt'))
-        self.provides = data.attrib.get('provides')
-        self.owned = utils.cast(bool, data.attrib.get('owned'))
-        self.home = utils.cast(bool, data.attrib.get('home'))
-        self.synced = utils.cast(bool, data.attrib.get('synced'))
         self.presence = utils.cast(bool, data.attrib.get('presence'))
-        self.connections = self.findItems(data, ResourceConnection)
+        self.product = data.attrib.get('product')
+        self.productVersion = data.attrib.get('productVersion')
+        self.provides = data.attrib.get('provides')
         self.publicAddressMatches = utils.cast(bool, data.attrib.get('publicAddressMatches'))
-        # This seems to only be available if its not your device (say are shared server)
-        self.httpsRequired = utils.cast(bool, data.attrib.get('httpsRequired'))
-        self.ownerid = utils.cast(int, data.attrib.get('ownerId', 0))
-        self.sourceTitle = data.attrib.get('sourceTitle')  # owners plex username.
+        self.relay = utils.cast(bool, data.attrib.get('relay'))
+        self.sourceTitle = data.attrib.get('sourceTitle')
+        self.synced = utils.cast(bool, data.attrib.get('synced'))
 
     def preferred_connections(
         self,
@@ -1438,24 +1527,27 @@ class ResourceConnection(PlexObject):
 
         Attributes:
             TAG (str): 'Connection'
-            address (str): Local IP address
-            httpuri (str): Full local address
-            local (bool): True if local
-            port (int): 32400
+            address (str): The connection IP address
+            httpuri (str): Full HTTP URL
+            ipv6 (bool): True if the address is IPv6
+            local (bool): True if the address is local
+            port (int): The connection port
             protocol (str): HTTP or HTTPS
-            uri (str): External address
+            relay (bool): True if the address uses the Plex Relay
+            uri (str): Full connetion URL
     """
-    TAG = 'Connection'
+    TAG = 'connection'
 
     def _loadData(self, data):
         self._data = data
-        self.protocol = data.attrib.get('protocol')
         self.address = data.attrib.get('address')
-        self.port = utils.cast(int, data.attrib.get('port'))
-        self.uri = data.attrib.get('uri')
+        self.ipv6 = utils.cast(bool, data.attrib.get('IPv6'))
         self.local = utils.cast(bool, data.attrib.get('local'))
-        self.httpuri = f'http://{self.address}:{self.port}'
+        self.port = utils.cast(int, data.attrib.get('port'))
+        self.protocol = data.attrib.get('protocol')
         self.relay = utils.cast(bool, data.attrib.get('relay'))
+        self.uri = data.attrib.get('uri')
+        self.httpuri = f'http://{self.address}:{self.port}'
 
 
 class MyPlexDevice(PlexObject):
@@ -1702,7 +1794,7 @@ class MyPlexPinLogin:
             params = None
 
         response = self._query(url, self._session.post, params=params)
-        if not response:
+        if response is None:
             return None
 
         self._id = response.attrib.get('id')
@@ -1719,7 +1811,7 @@ class MyPlexPinLogin:
 
         url = self.CHECKPINS.format(pinid=self._id)
         response = self._query(url)
-        if not response:
+        if response is None:
             return False
 
         token = response.attrib.get('authToken')
@@ -1856,7 +1948,7 @@ class AccountOptOut(PlexObject):
 
     def optOutManaged(self):
         """ Sets the Online Media Source to "Disabled for Managed Users".
-        
+
             Raises:
                 :exc:`~plexapi.exceptions.BadRequest`: When trying to opt out music.
         """
@@ -1893,3 +1985,42 @@ class UserState(PlexObject):
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.viewState = data.attrib.get('viewState') == 'complete'
         self.watchlistedAt = utils.toDatetime(data.attrib.get('watchlistedAt'))
+
+
+class GeoLocation(PlexObject):
+    """ Represents a signle IP address geolocation
+
+        Attributes:
+            TAG (str): location
+            city (str): City name
+            code (str): Country code
+            continentCode (str): Continent code
+            coordinates (Tuple<float>): Latitude and longitude
+            country (str): Country name
+            europeanUnionMember (bool): True if the country is a member of the European Union
+            inPrivacyRestrictedCountry (bool): True if the country is privacy restricted
+            postalCode (str): Postal code
+            subdivisions (str): Subdivision name
+            timezone (str): Timezone
+    """
+    TAG = 'location'
+
+    def _loadData(self, data):
+        self._data = data
+        self.city = data.attrib.get('city')
+        self.code = data.attrib.get('code')
+        self.continentCode = data.attrib.get('continent_code')
+        self.coordinates = tuple(
+            utils.cast(float, coord) for coord in (data.attrib.get('coordinates') or ',').split(','))
+        self.country = data.attrib.get('country')
+        self.postalCode = data.attrib.get('postal_code')
+        self.subdivisions = data.attrib.get('subdivisions')
+        self.timezone = data.attrib.get('time_zone')
+
+        europeanUnionMember = data.attrib.get('european_union_member')
+        self.europeanUnionMember = (
+            False if europeanUnionMember == 'Unknown' else utils.cast(bool, europeanUnionMember))
+
+        inPrivacyRestrictedCountry = data.attrib.get('in_privacy_restricted_country')
+        self.inPrivacyRestrictedCountry = (
+            False if inPrivacyRestrictedCountry == 'Unknown' else utils.cast(bool, inPrivacyRestrictedCountry))

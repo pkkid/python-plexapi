@@ -12,7 +12,7 @@ on:
 
 env:
   CACHE_VERSION: 1
-  DEFAULT_PYTHON: 3.7
+  DEFAULT_PYTHON: 3.8
 
 jobs:
   lint-flake8:
@@ -28,17 +28,18 @@ jobs:
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
-    - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
+    - name: Restore Python ${{ steps.python.outputs.python-version }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3
       with:
         path: venv
         key: >-
           ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
           steps.python.outputs.python-version }}-${{
           hashFiles('requirements_dev.txt') }}
-        restore-keys: |
-          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
+        restore-keys: >-
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
+          steps.python.outputs.python-version }}-
 
     - name: Create Python virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -53,13 +54,17 @@ jobs:
       run: |
         . venv/bin/activate
         # stop the build if there are Python syntax errors or undefined names
-        flake8 plexapi --count --select=E9,F63,F7,F82 --show-source --statistics
+        echo "::group::flake8 pass 1"
+        flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+        echo "::endgroup::"
         # The GitHub editor is 127 chars wide
-        flake8 plexapi --count --max-complexity=12 --max-line-length=127 --statistics
+        echo "::group::flake8 pass 2"
+        flake8 --count --max-complexity=12 --max-line-length=127 --statistics
+        echo "::endgroup::"
 
 
   pytest:
-    name: pytest ${{ matrix.python-version }} (${{ matrix.plex }})
+    name: pytest (${{ matrix.plex }})
     needs: lint-flake8
     runs-on: ubuntu-latest
     env:
@@ -70,7 +75,6 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        python-version: [3.7]
         plex: ['unclaimed', 'claimed']
         is-master:
           - ${{ github.ref == 'refs/heads/master' }}
@@ -81,23 +85,24 @@ jobs:
     - name: Check out code from Github
       uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python ${{ env.DEFAULT_PYTHON }}
       id: python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ env.DEFAULT_PYTHON }}
 
-    - name: Restore Python ${{ matrix.python-version }} virtual environment
+    - name: Restore Python ${{ steps.python.outputs.python-version }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3
       with:
         path: venv
         key: >-
           ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
           steps.python.outputs.python-version }}-${{
           hashFiles('requirements_dev.txt') }}
-        restore-keys: |
-          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
+        restore-keys: >-
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
+          steps.python.outputs.python-version }}-
 
     - name: Create Python virtual environment
       if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -129,7 +134,7 @@ jobs:
 
     - name: Cache PMS Docker image
       id: docker-cache
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3
       with:
         path: ~/.cache/docker/plexinc
         key: ${{ runner.os }}-docker-pms-${{ steps.docker-digest.outputs.digest }}
@@ -184,7 +189,7 @@ jobs:
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v3
       with:
-        name: coverage-${{ matrix.plex }}-${{ matrix.python-version }}
+        name: coverage-${{ matrix.plex }}-${{ steps.python.outputs.python-version }}
         path: .coverage
 
 
@@ -211,23 +216,19 @@ jobs:
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
-    - name: Restore Python ${{ env.DEFAULT_PYTHON }} virtual environment
+    - name: Restore Python ${{ steps.python.outputs.python-version }} virtual environment
       id: cache-venv
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v3
       with:
         path: venv
         key: >-
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
           steps.python.outputs.python-version }}-${{
           hashFiles('requirements_dev.txt') }}
-        restore-keys: |
-          ${{ env.CACHE_VERSION}}-${{ runner.os }}-venv-${{ steps.python.outputs.python-version }}-
-
-    - name: Fail job if Python cache restore failed
-      if: steps.cache-venv.outputs.cache-hit != 'true'
-      run: |
-        echo "Failed to restore Python virtual environment from cache"
-        exit 1
+        restore-keys: >-
+          ${{ env.CACHE_VERSION }}-${{ runner.os }}-venv-${{
+          steps.python.outputs.python-version }}-
+        fail-on-cache-miss: true
 
     - name: Download all coverage artifacts
       uses: actions/download-artifact@v3
@@ -240,6 +241,6 @@ jobs:
         coverage xml
 
     - name: Upload ${{ matrix.plex }} coverage to Codecov
-      uses: codecov/codecov-action@v3.1.4
+      uses: codecov/codecov-action@v3
       with:
         flags: ${{ matrix.plex }}

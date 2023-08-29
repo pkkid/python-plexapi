@@ -55,6 +55,9 @@ def test_library_sectionByID_with_attrs(plex, movies):
 
 def test_library_section_get_movie(movies):
     assert movies.get("Sita Sings the Blues")
+    assert movies.get(None, filters={"title": "Big Buck Bunny", "year": 2008})
+    with pytest.raises(NotFound):
+        movies.get("invalid title")
 
 
 def test_library_MovieSection_getGuid(movies, movie):
@@ -429,13 +432,12 @@ def test_library_MusicSection_recentlyAdded(music, artist):
 
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
     title = photoalbum.title
-    albums = photos.searchAlbums(title)
-    assert len(albums)
+    assert len(photos.searchAlbums(title=title))
 
 
 def test_library_PhotoSection_searchPhotos(photos, photoalbum):
     title = photoalbum.photos()[0].title
-    assert len(photos.searchPhotos(title))
+    assert len(photos.searchPhotos(title=title))
 
 
 def test_library_PhotoSection_recentlyAdded(photos, photoalbum):
@@ -609,7 +611,7 @@ def test_library_MusicSection_search(music, artist):
     album.removeMood("test_search", locked=False)
     album.removeCollection("test_search", locked=False)
     album.removeLabel("test_search", locked=False)
-    
+
     track = album.track(track=1)
     track.addMood("test_search")
     _test_library_search(music, track)
@@ -775,7 +777,7 @@ def test_library_search_exceptions(movies):
         movies.search(sort="titleSort:bad")
 
 
-def _test_library_search(library, obj):
+def _test_library_search(library, obj):  # noqa: C901
     # Create & operator
     AndOperator = namedtuple("AndOperator", ["key", "title"])
     andOp = AndOperator("&=", "and")
@@ -845,3 +847,69 @@ def _do_test_library_search(library, obj, field, operator, searchValue):
         assert obj not in results
     else:
         assert obj in results
+
+
+def test_library_common(movies):
+    items = movies.all()
+    common = movies.common(items)
+    assert common.commonType == "movie"
+    assert common.ratingKeys == [m.ratingKey for m in items]
+    assert common.items() == items
+
+
+def test_library_multiedit(movies, tvshows):
+    movie1, movie2 = movies.all()[:2]
+    show1, show2 = tvshows.all()[:2]
+
+    movie1_title = movie1.title
+    movie2_title = movie2.title
+    show1_title = show1.title
+
+    # Edit multiple titles
+    title = "Test Title"
+    movies.multiEdit([movie1, movie2], **{"title.value": title})
+    assert movie1.reload().title == title
+    assert movie2.reload().title == title
+
+    # Reset titles
+    movie1.editTitle(movie1_title, locked=False).reload()
+    movie2.editTitle(movie2_title, locked=False).reload()
+    assert movie1.title == movie1_title
+    assert movie2.title == movie2_title
+
+    # Test batch multi-editing
+    genre = "Test Genre"
+    tvshows.batchMultiEdits([show1, show2]).addGenre(genre).saveMultiEdits()
+    assert genre in [g.tag for g in show1.reload().genres]
+    assert genre in [g.tag for g in show2.reload().genres]
+
+    # Reset genres
+    tvshows.batchMultiEdits([show1, show2]).removeGenre(genre, locked=False).saveMultiEdits()
+    assert genre not in [g.tag for g in show1.reload().genres]
+    assert genre not in [g.tag for g in show2.reload().genres]
+
+    # Test multi-editing with a single item
+    tvshows.batchMultiEdits(show1).editTitle(title).saveMultiEdits()
+    assert show1.reload().title == title
+
+    # Reset title
+    show1.editTitle(show1_title, locked=False).reload()
+    assert show1.title == show1_title
+
+
+def test_library_multiedit_exceptions(music, artist, album, photos):
+    with pytest.raises(BadRequest):
+        music.multiEdit([])
+    with pytest.raises(BadRequest):
+        music.multiEdit([artist, album])
+    with pytest.raises(BadRequest):
+        photos.batchMultiEdits(artist)
+    with pytest.raises(BadRequest):
+        photos.saveMultiEdits()
+
+    with pytest.raises(AttributeError):
+        photos.editTitle("test")
+    with pytest.raises(AttributeError):
+        music.batchMultiEdits(artist).editEdition("test")
+    with pytest.raises(AttributeError):
+        music.batchMultiEdits(album).addCountry("test")

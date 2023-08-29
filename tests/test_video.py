@@ -106,7 +106,6 @@ def test_video_Movie_attrs(movies):
     assert movie.userRating is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
-    assert movie.viewedAt is None
     assert movie.year == 2009
     # Audio
     audio = movie.media[0].parts[0].audioStreams()[0]
@@ -384,7 +383,7 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_videoStreams(movie):
     assert movie.videoStreams()
 
-    
+
 def test_video_Movie_audioStreams(movie):
     assert movie.audioStreams()
 
@@ -406,7 +405,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
     subname = subtitle.name.rsplit(".", 1)[0]
     assert subname in subtitles
 
-    movie.subtitleStreams()[0].setDefault()
+    movie.subtitleStreams()[0].setSelected()
     movie.reload()
 
     subtitleSelection = movie.subtitleStreams()[0]
@@ -419,7 +418,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
     try:
         os.remove(filepath)
-    except:
+    except OSError:
         pass
 
 
@@ -587,7 +586,7 @@ def test_video_Movie_editions(movie):
 
 
 @pytest.mark.authenticated
-def test_video_Movie_extras(movies):
+def test_video_Movie_extras(account_plexpass, movies):
     movie = movies.get("Sita Sings The Blues")
     extras = movie.extras()
     assert extras
@@ -633,7 +632,7 @@ def test_video_Movie_batchEdits(movie):
     assert movie.tagline == tagline
     assert movie.studio == studio
     assert not movie.fields
-    
+
     with pytest.raises(BadRequest):
         movie.saveEdits()
 
@@ -668,12 +667,17 @@ def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_summary(movie)
     test_mixins.edit_tagline(movie)
     test_mixins.edit_title(movie)
+    test_mixins.edit_user_rating(movie)
+
+
+@pytest.mark.anonymously
+def test_video_Movie_mixins_fields_edition(movie):
     with pytest.raises(BadRequest):
         test_mixins.edit_edition_title(movie)
 
 
 @pytest.mark.authenticated
-def test_video_Movie_mixins_fields(movie):
+def test_video_Movie_mixins_fields_edition_authenticated(account_plexpass, movie):
     test_mixins.edit_edition_title(movie)
 
 
@@ -926,6 +930,7 @@ def test_video_Show_mixins_fields(show):
     test_mixins.edit_summary(show)
     test_mixins.edit_tagline(show)
     test_mixins.edit_title(show)
+    test_mixins.edit_user_rating(show)
 
 
 def test_video_Show_mixins_tags(show):
@@ -1075,6 +1080,7 @@ def test_video_Season_mixins_fields(show):
     test_mixins.edit_added_at(season)
     test_mixins.edit_summary(season)
     test_mixins.edit_title(season)
+    test_mixins.edit_user_rating(season)
 
 
 def test_video_Season_mixins_tags(show):
@@ -1286,6 +1292,7 @@ def test_video_Episode_mixins_fields(episode):
     test_mixins.edit_sort_title(episode)
     test_mixins.edit_summary(episode)
     test_mixins.edit_title(episode)
+    test_mixins.edit_user_rating(episode)
 
 
 def test_video_Episode_mixins_tags(episode):
@@ -1452,3 +1459,15 @@ def test_video_optimize(plex, movie, tvshows, show):
         movie.optimize()
     with pytest.raises(BadRequest):
         movie.optimize(target="mobile", locationID=-100)
+
+
+def test_video_Movie_matadataDirectory(movie):
+    assert os.path.exists(os.path.join(utils.BOOTSTRAP_DATA_PATH, movie.metadataDirectory))
+
+    for poster in movie.posters():
+        if not poster.ratingKey.startswith('http'):
+            assert os.path.exists(os.path.join(utils.BOOTSTRAP_DATA_PATH, poster.resourceFilepath))
+
+    for art in movie.arts():
+        if not art.ratingKey.startswith('http'):
+            assert os.path.exists(os.path.join(utils.BOOTSTRAP_DATA_PATH, art.resourceFilepath))

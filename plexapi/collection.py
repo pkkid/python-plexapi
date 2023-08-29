@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
@@ -8,8 +9,7 @@ from plexapi.library import LibrarySection, ManagedHub
 from plexapi.mixins import (
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    LabelMixin
+    CollectionEditMixins
 )
 from plexapi.utils import deprecated
 
@@ -19,8 +19,7 @@ class Collection(
     PlexPartialObject,
     AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeMixin,
-    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin,
-    LabelMixin
+    CollectionEditMixins
 ):
     """ Represents a single Collection.
 
@@ -401,7 +400,7 @@ class Collection(
     @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):
         """ Edit the collection.
-        
+
             Parameters:
                 title (str, optional): The title of the collection.
                 titleSort (str, optional): The sort title of the collection.
@@ -562,3 +561,9 @@ class Collection(
             raise Unsupported('Unsupported collection content')
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
+
+    @property
+    def metadataDirectory(self):
+        """ Returns the Plex Media Server data directory where the metadata is stored. """
+        guid_hash = utils.sha1hash(self.guid)
+        return str(Path('Metadata') / 'Collections' / guid_hash[0] / f'{guid_hash[1:]}.bundle')

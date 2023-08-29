@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
@@ -17,7 +18,7 @@ from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
-from plexapi.utils import cached_property, deprecated
+from plexapi.utils import deprecated
 from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
@@ -188,6 +189,11 @@ class PlexServer(PlexObject):
         data = self.query(Settings.key)
         return Settings(self, data)
 
+    def identity(self):
+        """ Returns the Plex server identity. """
+        data = self.query('/identity')
+        return Identity(self, data)
+
     def account(self):
         """ Returns the :class:`~plexapi.server.Account` object this server belongs to. """
         data = self.query(Account.key)
@@ -196,7 +202,7 @@ class PlexServer(PlexObject):
     def claim(self, account):
         """ Claim the Plex server using a :class:`~plexapi.myplex.MyPlexAccount`.
             This will only work with an unclaimed server on localhost or the same subnet.
-        
+
             Parameters:
                 account (:class:`~plexapi.myplex.MyPlexAccount`): The account used to
                     claim the server.
@@ -239,7 +245,7 @@ class PlexServer(PlexObject):
     def switchUser(self, user, session=None, timeout=None):
         """ Returns a new :class:`~plexapi.server.PlexServer` object logged in as the given username.
             Note: Only the admin account can switch to other users.
-        
+
             Parameters:
                 user (:class:`~plexapi.myplex.MyPlexUser` or str): `MyPlexUser` object, username,
                     email, or user id of the user to log in to the server.
@@ -584,7 +590,7 @@ class PlexServer(PlexObject):
     def runButlerTask(self, task):
         """ Manually run a butler task immediately instead of waiting for the scheduled task to run.
             Note: The butler task is run asynchronously. Check Plex Web to monitor activity.
-        
+
             Parameters:
                 task (str): The name of the task to run. (e.g. 'BackupDatabase')
 
@@ -596,7 +602,7 @@ class PlexServer(PlexObject):
                     print("Available butler tasks:", availableTasks)
 
         """
-        validTasks = [task.name for task in self.butlerTasks()]
+        validTasks = [_task.name for _task in self.butlerTasks()]
         if task not in validTasks:
             raise BadRequest(
                 f'Invalid butler task: {task}. Available tasks are: {validTasks}'
@@ -660,7 +666,7 @@ class PlexServer(PlexObject):
             args['librarySectionID'] = librarySectionID
         if mindate:
             args['viewedAt>'] = int(mindate.timestamp())
-        
+
         key = f'/status/sessions/history/all{utils.joinArgs(args)}'
         return self.fetchItems(key, maxresults=maxresults)
 
@@ -797,7 +803,7 @@ class PlexServer(PlexObject):
 
     def continueWatching(self):
         """ Return a list of all items in the Continue Watching hub. """
-        return self.fetchItems('/hubs/home/continueWatching')
+        return self.fetchItems('/hubs/continueWatching/items')
 
     def sessions(self):
         """ Returns a list of all active session (currently playing) media objects. """
@@ -1252,7 +1258,7 @@ class StatisticsResources(PlexObject):
 @utils.registerPlexObject
 class ButlerTask(PlexObject):
     """ Represents a single scheduled butler task.
-    
+
         Attributes:
             TAG (str): 'ButlerTask'
             description (str): The description of the task.
@@ -1272,3 +1278,22 @@ class ButlerTask(PlexObject):
         self.name = data.attrib.get('name')
         self.scheduleRandomized = utils.cast(bool, data.attrib.get('scheduleRandomized'))
         self.title = data.attrib.get('title')
+
+
+class Identity(PlexObject):
+    """ Represents a server identity.
+
+        Attributes:
+            claimed (bool): True or False if the server is claimed.
+            machineIdentifier (str): The Plex server machine identifier.
+            version (str): The Plex server version.
+    """
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}:{self.machineIdentifier}>"
+
+    def _loadData(self, data):
+        self._data = data
+        self.claimed = utils.cast(bool, data.attrib.get('claimed'))
+        self.machineIdentifier = data.attrib.get('machineIdentifier')
+        self.version = data.attrib.get('version')

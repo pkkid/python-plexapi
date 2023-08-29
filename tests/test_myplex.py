@@ -13,12 +13,10 @@ def test_myplex_accounts(account, plex):
     print(f"username: {account.username}")
     print(f"email: {account.email}")
     print(f"home: {account.home}")
-    print(f"queueEmail: {account.queueEmail}")
     assert account.username, "Account has no username"
     assert account.authenticationToken, "Account has no authenticationToken"
     assert account.email, "Account has no email"
     assert account.home is not None, "Account has no home"
-    assert account.queueEmail, "Account has no queueEmail"
     account = plex.account()
     print("Local PlexServer.account():")
     print(f"username: {account.username}")
@@ -37,7 +35,7 @@ def test_myplex_resources(account):
         connections = [c.uri for c in resource.connections]
         connections = ", ".join(connections) if connections else "None"
         print(f"{name} ({resource.product}): {connections}")
-    assert resources, f"No resources found for account: {account.name}"
+    assert resources, f"No resources found for account: {account.username}"
 
 
 def test_myplex_connect_to_resource(plex, account):
@@ -78,6 +76,11 @@ def test_myplex_users(account):
     user = account.user(users[0].title)
     print(f"Found user: {user}")
     assert user, f"Could not find user {users[0].title}"
+
+    try:
+        users[0].servers[0]
+    except IndexError:
+        return pytest.skip(f"{users[0].title} shared user does not have access to any servers")
 
     assert (
         len(users[0].servers[0].sections()) > 0
@@ -354,3 +357,7 @@ def test_myplex_pin(account, plex):
         account.removeManagedUserPin(homeuser)
     finally:
         account.removeHomeUser(homeuser)
+
+
+def test_myplex_geoip(account):
+    assert account.geoip(account.publicIP())

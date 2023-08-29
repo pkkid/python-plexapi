@@ -39,7 +39,7 @@ class AdvancedSettingsMixin:
                 pref = preferences[settingID]
             except KeyError:
                 raise NotFound(f'{value} not found in {list(preferences.keys())}')
-            
+
             enumValues = pref.enumValues
             if enumValues.get(value, enumValues.get(str(value))):
                 data[settingID] = value
@@ -69,7 +69,7 @@ class SmartFilterMixin:
         filters = {}
         filterOp = 'and'
         filterGroups = [[]]
-        
+
         for key, value in parse_qsl(content.query):
             # Move = sign to key when operator is ==
             if value.startswith('='):
@@ -96,11 +96,11 @@ class SmartFilterMixin:
                 filterGroups.pop()
             else:
                 filterGroups[-1].append({key: value})
-        
+
         if filterGroups:
             filters['filters'] = self._formatFilterGroups(filterGroups.pop())
         return filters
-    
+
     def _formatFilterGroups(self, groups):
         """ Formats the filter groups into the advanced search rules. """
         if len(groups) == 1 and isinstance(groups[0], list):
@@ -131,14 +131,14 @@ class SplitMergeMixin:
 
     def merge(self, ratingKeys):
         """ Merge other Plex objects into the current object.
-        
+
             Parameters:
                 ratingKeys (list): A list of rating keys to merge.
         """
         if not isinstance(ratingKeys, list):
             ratingKeys = str(ratingKeys).split(',')
 
-        key = f"{self.key}/merge?ids={','.join([str(r) for r in ratingKeys])}"
+        key = f"{self.key}/merge?ids={','.join(str(r) for r in ratingKeys)}"
         self._server.query(key, method=self._server._session.put)
         return self
 
@@ -320,7 +320,7 @@ class RatingMixin:
 
 class ArtUrlMixin:
     """ Mixin for Plex objects that can have a background artwork url. """
-    
+
     @property
     def artUrl(self):
         """ Return the art url for the Plex object. """
@@ -328,7 +328,19 @@ class ArtUrlMixin:
         return self._server.url(art, includeToken=True) if art else None
 
 
-class ArtMixin(ArtUrlMixin):
+class ArtLockMixin:
+    """ Mixin for Plex objects that can have a locked background artwork. """
+
+    def lockArt(self):
+        """ Lock the background artwork for a Plex object. """
+        return self._edit(**{'art.locked': 1})
+
+    def unlockArt(self):
+        """ Unlock the background artwork for a Plex object. """
+        return self._edit(**{'art.locked': 0})
+
+
+class ArtMixin(ArtUrlMixin, ArtLockMixin):
     """ Mixin for Plex objects that can have background artwork. """
 
     def arts(self):
@@ -337,7 +349,7 @@ class ArtMixin(ArtUrlMixin):
 
     def uploadArt(self, url=None, filepath=None):
         """ Upload a background artwork from a url or filepath.
-        
+
             Parameters:
                 url (str): The full URL to the image to upload.
                 filepath (str): The full file path the the image to upload or file-like object.
@@ -353,71 +365,12 @@ class ArtMixin(ArtUrlMixin):
 
     def setArt(self, art):
         """ Set the background artwork for a Plex object.
-        
+
             Parameters:
                 art (:class:`~plexapi.media.Art`): The art object to select.
         """
         art.select()
         return self
-
-    def lockArt(self):
-        """ Lock the background artwork for a Plex object. """
-        return self._edit(**{'art.locked': 1})
-
-    def unlockArt(self):
-        """ Unlock the background artwork for a Plex object. """
-        return self._edit(**{'art.locked': 0})
-
-
-class BannerUrlMixin:
-    """ Mixin for Plex objects that can have a banner url. """
-
-    @property
-    def bannerUrl(self):
-        """ Return the banner url for the Plex object. """
-        banner = self.firstAttr('banner')
-        return self._server.url(banner, includeToken=True) if banner else None
-
-
-class BannerMixin(BannerUrlMixin):
-    """ Mixin for Plex objects that can have banners. """
-
-    def banners(self):
-        """ Returns list of available :class:`~plexapi.media.Banner` objects. """
-        return self.fetchItems(f'/library/metadata/{self.ratingKey}/banners', cls=media.Banner)
-
-    def uploadBanner(self, url=None, filepath=None):
-        """ Upload a banner from a url or filepath.
-        
-            Parameters:
-                url (str): The full URL to the image to upload.
-                filepath (str): The full file path the the image to upload or file-like object.
-        """
-        if url:
-            key = f'/library/metadata/{self.ratingKey}/banners?url={quote_plus(url)}'
-            self._server.query(key, method=self._server._session.post)
-        elif filepath:
-            key = f'/library/metadata/{self.ratingKey}/banners'
-            data = openOrRead(filepath)
-            self._server.query(key, method=self._server._session.post, data=data)
-        return self
-
-    def setBanner(self, banner):
-        """ Set the banner for a Plex object.
-        
-            Parameters:
-                banner (:class:`~plexapi.media.Banner`): The banner object to select.
-        """
-        banner.select()
-        return self
-
-    def lockBanner(self):
-        """ Lock the banner for a Plex object. """
-        return self._edit(**{'banner.locked': 1})
-
-    def unlockBanner(self):
-        """ Unlock the banner for a Plex object. """
-        return self._edit(**{'banner.locked': 0})
 
 
 class PosterUrlMixin:
@@ -435,7 +388,19 @@ class PosterUrlMixin:
         return self.thumbUrl
 
 
-class PosterMixin(PosterUrlMixin):
+class PosterLockMixin:
+    """ Mixin for Plex objects that can have a locked poster. """
+
+    def lockPoster(self):
+        """ Lock the poster for a Plex object. """
+        return self._edit(**{'thumb.locked': 1})
+
+    def unlockPoster(self):
+        """ Unlock the poster for a Plex object. """
+        return self._edit(**{'thumb.locked': 0})
+
+
+class PosterMixin(PosterUrlMixin, PosterLockMixin):
     """ Mixin for Plex objects that can have posters. """
 
     def posters(self):
@@ -460,20 +425,12 @@ class PosterMixin(PosterUrlMixin):
 
     def setPoster(self, poster):
         """ Set the poster for a Plex object.
-        
+
             Parameters:
                 poster (:class:`~plexapi.media.Poster`): The poster object to select.
         """
         poster.select()
         return self
-
-    def lockPoster(self):
-        """ Lock the poster for a Plex object. """
-        return self._edit(**{'thumb.locked': 1})
-
-    def unlockPoster(self):
-        """ Unlock the poster for a Plex object. """
-        return self._edit(**{'thumb.locked': 0})
 
 
 class ThemeUrlMixin:
@@ -486,7 +443,19 @@ class ThemeUrlMixin:
         return self._server.url(theme, includeToken=True) if theme else None
 
 
-class ThemeMixin(ThemeUrlMixin):
+class ThemeLockMixin:
+    """ Mixin for Plex objects that can have a locked theme. """
+
+    def lockTheme(self):
+        """ Lock the theme for a Plex object. """
+        return self._edit(**{'theme.locked': 1})
+
+    def unlockTheme(self):
+        """ Unlock the theme for a Plex object. """
+        return self._edit(**{'theme.locked': 0})
+
+
+class ThemeMixin(ThemeUrlMixin, ThemeLockMixin):
     """ Mixin for Plex objects that can have themes. """
 
     def themes(self):
@@ -519,22 +488,14 @@ class ThemeMixin(ThemeUrlMixin):
             'Re-upload the theme using "uploadTheme" to set it.'
         )
 
-    def lockTheme(self):
-        """ Lock the theme for a Plex object. """
-        return self._edit(**{'theme.locked': 1})
-
-    def unlockTheme(self):
-        """ Unlock the theme for a Plex object. """
-        return self._edit(**{'theme.locked': 0})
-
 
 class EditFieldMixin:
     """ Mixin for editing Plex object fields. """
-    
+
     def editField(self, field, value, locked=True, **kwargs):
         """ Edit the field of a Plex object. All field editing methods can be chained together.
             Also see :func:`~plexapi.base.PlexPartialObject.batchEdits` for batch editing fields.
-        
+
             Parameters:
                 field (str): The name of the field to edit.
                 value (str): The value to edit the field to.
@@ -751,6 +712,19 @@ class PhotoCapturedTimeMixin(EditFieldMixin):
         return self.editField('originallyAvailableAt', capturedTime, locked=locked)
 
 
+class UserRatingMixin(EditFieldMixin):
+    """ Mixin for Plex objects that can have a user rating. """
+
+    def editUserRating(self, userRating, locked=True):
+        """ Edit the user rating.
+
+            Parameters:
+                userRating (int): The new value.
+                locked (bool): True (default) to lock the field, False to unlock the field.
+        """
+        return self.editField('userRating', userRating, locked=locked)
+
+
 class EditTagsMixin:
     """ Mixin for editing Plex object tags. """
 
@@ -780,7 +754,7 @@ class EditTagsMixin:
             items = [items]
 
         if not remove:
-            tags = getattr(self, self._tagPlural(tag))
+            tags = getattr(self, self._tagPlural(tag), [])
             items = tags + items
 
         edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
@@ -821,7 +795,7 @@ class EditTagsMixin:
 
         if remove:
             tagname = f'{tag}[].tag.tag-'
-            data[tagname] = ','.join([quote(str(t)) for t in items])
+            data[tagname] = ','.join(quote(str(t)) for t in items)
         else:
             for i, item in enumerate(items):
                 tagname = f'{str(tag)}[{i}].tag.tag'
@@ -1134,3 +1108,84 @@ class WatchlistMixin:
         ratingKey = self.guid.rsplit('/', 1)[-1]
         data = account.query(f"{account.METADATA}/library/metadata/{ratingKey}/availabilities")
         return self.findItems(data)
+
+
+class MovieEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, ContentRatingMixin, EditionTitleMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin,
+    StudioMixin, SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, CountryMixin, DirectorMixin, GenreMixin, LabelMixin, ProducerMixin, WriterMixin
+):
+    pass
+
+
+class ShowEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, OriginalTitleMixin, SortTitleMixin, StudioMixin,
+    SummaryMixin, TaglineMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, GenreMixin, LabelMixin,
+):
+    pass
+
+
+class SeasonEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, LabelMixin
+):
+    pass
+
+
+class EpisodeEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, ContentRatingMixin, OriginallyAvailableMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, DirectorMixin, LabelMixin, WriterMixin
+):
+    pass
+
+
+class ArtistEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, CountryMixin, GenreMixin, LabelMixin, MoodMixin, SimilarArtistMixin, StyleMixin
+):
+    pass
+
+
+class AlbumEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, OriginallyAvailableMixin, SortTitleMixin, StudioMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    CollectionMixin, GenreMixin, LabelMixin, MoodMixin, StyleMixin
+):
+    pass
+
+
+class TrackEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, TitleMixin, TrackArtistMixin, TrackNumberMixin, TrackDiscNumberMixin, UserRatingMixin,
+    CollectionMixin, LabelMixin, MoodMixin
+):
+    pass
+
+
+class PhotoalbumEditMixins(
+    ArtLockMixin, PosterLockMixin,
+    AddedAtMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin
+):
+    pass
+
+
+class PhotoEditMixins(
+    ArtLockMixin, PosterLockMixin,
+    AddedAtMixin, PhotoCapturedTimeMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    TagMixin
+):
+    pass
+
+
+class CollectionEditMixins(
+    ArtLockMixin, PosterLockMixin, ThemeLockMixin,
+    AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
+    LabelMixin
+):
+    pass
