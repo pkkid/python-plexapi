@@ -611,7 +611,7 @@ def test_library_MusicSection_search(music, artist):
     album.removeMood("test_search", locked=False)
     album.removeCollection("test_search", locked=False)
     album.removeLabel("test_search", locked=False)
-    
+
     track = album.track(track=1)
     track.addMood("test_search")
     _test_library_search(music, track)
@@ -777,7 +777,7 @@ def test_library_search_exceptions(movies):
         movies.search(sort="titleSort:bad")
 
 
-def _test_library_search(library, obj):
+def _test_library_search(library, obj):  # noqa: C901
     # Create & operator
     AndOperator = namedtuple("AndOperator", ["key", "title"])
     andOp = AndOperator("&=", "and")

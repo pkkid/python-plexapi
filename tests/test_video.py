@@ -383,7 +383,7 @@ def test_video_Movie_download(monkeydownload, tmpdir, movie):
 def test_video_Movie_videoStreams(movie):
     assert movie.videoStreams()
 
-    
+
 def test_video_Movie_audioStreams(movie):
     assert movie.audioStreams()
 
@@ -418,7 +418,7 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
     try:
         os.remove(filepath)
-    except:
+    except OSError:
         pass
 
 
@@ -632,7 +632,7 @@ def test_video_Movie_batchEdits(movie):
     assert movie.tagline == tagline
     assert movie.studio == studio
     assert not movie.fields
-    
+
     with pytest.raises(BadRequest):
         movie.saveEdits()
 

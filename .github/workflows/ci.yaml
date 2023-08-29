@@ -54,9 +54,13 @@ jobs:
       run: |
         . venv/bin/activate
         # stop the build if there are Python syntax errors or undefined names
-        flake8 plexapi --count --select=E9,F63,F7,F82 --show-source --statistics
+        echo "::group::flake8 pass 1"
+        flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+        echo "::endgroup::"
         # The GitHub editor is 127 chars wide
-        flake8 plexapi --count --max-complexity=12 --max-line-length=127 --statistics
+        echo "::group::flake8 pass 2"
+        flake8 --count --max-complexity=12 --max-line-length=127 --statistics
+        echo "::endgroup::"
 
 
   pytest:

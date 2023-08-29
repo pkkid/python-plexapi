@@ -400,7 +400,7 @@ class Collection(
     @deprecated('use editTitle, editSortTitle, editContentRating, and editSummary instead')
     def edit(self, title=None, titleSort=None, contentRating=None, summary=None, **kwargs):
         """ Edit the collection.
-        
+
             Parameters:
                 title (str, optional): The title of the collection.
                 titleSort (str, optional): The sort title of the collection.

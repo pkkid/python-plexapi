@@ -3,8 +3,9 @@
 """
 Backup and restore the watched status of Plex libraries to a json file.
 """
-import argparse, json
+import argparse
 from collections import defaultdict
+import json
 from plexapi import utils
 
 SECTIONS = ('movie', 'show')
@@ -32,7 +33,7 @@ def _item_key(item):
 
 def _iter_sections(plex, opts):
     libraries = opts.libraries.split(',') if opts.libraries else []
-    libraries = [l.strip().lower() for l in libraries]
+    libraries = [lib.strip().lower() for lib in libraries]
     for section in plex.library.sections():
         title = section.title.lower()
         if section.type in SECTIONS and (not libraries or title in libraries):
@@ -76,11 +77,11 @@ def restore_watched(plex, opts):
         skey = section.title.lower()
         for item in _iter_items(section):
             ikey = _item_key(item)
-            sval = source.get(skey,{}).get(ikey)
+            sval = source.get(skey, {}).get(ikey)
             if sval is None:
                 raise SystemExit('%s not found' % ikey)
             if (sval is not None and item.isWatched != sval) and (not opts.watchedonly or sval):
-                differences[skey][ikey] = {'isWatched':sval, 'item':item}
+                differences[skey][ikey] = {'isWatched': sval, 'item': item}
     print('Applying %s differences to destination' % len(differences))
     import pprint; pprint.pprint(differences)
 
@@ -93,7 +94,8 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--username', default=CONFIG.get('auth.myplex_username'), help='Plex username')
     parser.add_argument('-p', '--password', default=CONFIG.get('auth.myplex_password'), help='Plex password')
     parser.add_argument('-s', '--servername', help='Plex server name')
-    parser.add_argument('-w', '--watchedonly', default=False, action='store_true', help='Only backup or restore watched items.')
+    parser.add_argument('-w', '--watchedonly', default=False, action='store_true',
+                        help='Only backup or restore watched items.')
     parser.add_argument('-l', '--libraries', help='Only backup or restore the specified libraries (comma separated).')
     opts = parser.parse_args()
     account = utils.getMyPlexAccount(opts)

@@ -919,7 +919,7 @@ class PlexSession(object):
 
     def stop(self, reason=''):
         """ Stop playback for the session.
-        
+
             Parameters:
                 reason (str): Message displayed to the user for stopping playback.
         """

@@ -5,12 +5,14 @@
 # E701: multiple statements on one line (colon)
 # E702: multiple statements on one line (semicolon)
 # E731: do not assign a lambda expression, use a def
-# W293: blank line contains whitespace
 # W503: line break before binary operator
 # W605: invalid escape sequence
 [flake8]
-ignore=E128,E701,E702,E731,W293,W503,W605
-exclude=compat.py
+ignore=E128,E701,E702,E731,W503,W605
+exclude=compat.py,venv
+per-file-ignores =
+  tests/payloads.py:E501
 max-complexity = -1
-max-line-length = 125
+# The GitHub editor is 127 chars wide
+max-line-length = 127
 show-source = True

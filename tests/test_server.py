@@ -436,7 +436,7 @@ def test_server_system_devices(plex):
     assert len(device.name) or device.name == ""
     assert len(device.platform) or device.platform == ""
     assert plex.systemDevice(device.id) == device
-    
+
 
 @pytest.mark.authenticated
 def test_server_dashboard_bandwidth(account_plexpass, plex):

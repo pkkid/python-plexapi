@@ -41,17 +41,17 @@ def _iter_items(search):
 
 if __name__ == '__main__':
     datestr = lambda: datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # noqa
-    print('{datestr} Starting plex-markwatched script..'.format(datestr=datestr()))
+    print(f'{datestr()} Starting plex-markwatched script..')
     plex = PlexServer()
     for section in plex.library.sections():
-        print('{datestr} Checking {section.title} for unwatched items..'.format(datestr=datestr()))
+        print(f'{datestr()} Checking {section.title} for unwatched items..')
         for item in _iter_items(section.search(collection='markwatched')):
             if not item.isWatched:
-                print('{datestr}  Marking {_get_title(item)} watched.'.format(datestr=datestr()))
+                print(f'{datestr()}  Marking {_get_title(item)} watched.')
                 item.markWatched()
     # Check all OnDeck items
-    print('{datestr} Checking OnDeck for unwatched items..'.format(datestr=datestr()))
+    print(f'{datestr()} Checking OnDeck for unwatched items.')
     for item in plex.library.onDeck():
         if not item.isWatched and _has_markwatched_tag(item):
-            print('{datestr}  Marking {_get_title(item)} watched.'.format(datestr=datestr()))
+            print(f'{datestr()}  Marking {_get_title(item)} watched.')
             item.markWatched()

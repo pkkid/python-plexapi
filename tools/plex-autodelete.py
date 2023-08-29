@@ -17,7 +17,7 @@ import os
 from datetime import datetime
 from plexapi.server import PlexServer
 
-TAGS = {'keep5':5, 'keep10':10, 'keep15':15, 'keepSeason':'season'}
+TAGS = {'keep5': 5, 'keep10': 10, 'keep15': 15, 'keepSeason': 'season'}
 datestr = lambda: datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
@@ -40,7 +40,7 @@ def keep_episodes(show, keep):
     """ Delete all but last count episodes in show. """
     deleted = 0
     print('%s Cleaning %s to %s episodes.' % (datestr(), show.title, keep))
-    sort = lambda x:x.originallyAvailableAt or x.addedAt
+    sort = lambda x: x.originallyAvailableAt or x.addedAt
     items = sorted(show.episodes(), key=sort, reverse=True)
     for episode in items[keep:]:
         delete_episode(episode)
