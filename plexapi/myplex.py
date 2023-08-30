@@ -117,6 +117,7 @@ class MyPlexAccount(PlexObject):
     def __init__(self, username=None, password=None, token=None, session=None, timeout=None, code=None, remember=True):
         self._token = logfilter.add_secret(token or CONFIG.get('auth.server_token'))
         self._session = session or requests.Session()
+        self._timeout = timeout or TIMEOUT
         self._sonos_cache = []
         self._sonos_cache_timestamp = 0
         data, initpath = self._signin(username, password, code, remember, timeout)
@@ -223,7 +224,7 @@ class MyPlexAccount(PlexObject):
 
     def query(self, url, method=None, headers=None, timeout=None, **kwargs):
         method = method or self._session.get
-        timeout = timeout or TIMEOUT
+        timeout = timeout or self._timeout
         log.debug('%s %s %s', method.__name__.upper(), url, kwargs.get('json', ''))
         headers = self._headers(**headers or {})
         response = method(url, headers=headers, timeout=timeout, **kwargs)
