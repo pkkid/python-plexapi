@@ -886,7 +886,7 @@ class MyPlexAccount(PlexObject):
         data = self.query(f'{self.MUSIC}/hubs')
         return self.findItems(data)
 
-    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, **kwargs):
+    def watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, lang=None, **kwargs):
         """ Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` items in the user's watchlist.
             Note: The objects returned are from Plex's online metadata. To get the matching item on a Plex server,
             search for the media using the guid.
@@ -916,7 +916,8 @@ class MyPlexAccount(PlexObject):
         """
         params = {
             'includeCollections': 1,
-            'includeExternalMedia': 1
+            'includeExternalMedia': 1,
+            'X-Plex-Language': lang
         }
 
         if not filter:
@@ -1034,7 +1035,7 @@ class MyPlexAccount(PlexObject):
         self.query(key, params=params)
         return self
 
-    def searchDiscover(self, query, limit=30, libtype=None):
+    def searchDiscover(self, query, limit=30, libtype=None, lang=None):
         """ Search for movies and TV shows in Discover.
             Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
 
@@ -1053,7 +1054,8 @@ class MyPlexAccount(PlexObject):
             'query': query,
             'limit': limit,
             'searchTypes': libtype,
-            'includeMetadata': 1
+            'includeMetadata': 1,
+            'X-Plex-Language': lang
         }
 
         data = self.query(f'{self.METADATA}/library/search', headers=headers, params=params)
