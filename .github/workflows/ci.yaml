@@ -157,15 +157,26 @@ jobs:
         echo "PLEXAPI_AUTH_SERVER_TOKEN=${{ secrets.PLEXAPI_AUTH_SERVER_TOKEN }}" >> $GITHUB_ENV
 
     - name: Bootstrap ${{ matrix.plex }} Plex server
-      run: |
-        . venv/bin/activate
-        python \
-          -u tools/plex-bootstraptest.py \
-          --destination plex \
-          --advertise-ip 127.0.0.1 \
-          --bootstrap-timeout 540 \
-          --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
-          --${{ matrix.plex }}
+      uses: nick-fields/retry@v2.8.3
+      with:
+        max_attempts: 3
+        timeout_minutes: 2
+        command: |
+          . venv/bin/activate
+          python \
+            -u tools/plex-bootstraptest.py \
+            --destination plex \
+            --advertise-ip 127.0.0.1 \
+            --bootstrap-timeout 540 \
+            --docker-tag ${{ env.PLEX_CONTAINER_TAG }} \
+            --${{ matrix.plex }}
+        on_retry_command: |
+          if ["${{ matrix.plex }}" == "claimed"]; then
+            python -u tools/plex-teardowntest.py
+          fi
+
+          # remove docker container
+          docker rm -f $(docker ps --latest)
 
     - name: Main tests with ${{ matrix.plex }} server
       env:
