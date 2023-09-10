@@ -130,6 +130,10 @@ Section [header] Options
     Header value used for X_PLEX_IDENTIFIER to all Plex server and Plex client requests. This is generally
     a UUID, serial number, or other number unique id for the device (default: `result of hex(uuid.getnode())`).
 
+**language**
+    Header value used for X_PLEX_LANGUAGE to all Plex server and Plex client requests. This is an ISO 639-1
+    language code (default: en).
+
 **platform**
     Header value used for X_PLEX_PLATFORM to all Plex server and Plex client requests. Example platforms
     include: iOS, MacOSX, Android, LG (default: `result of platform.uname()[0]`).
