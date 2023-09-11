@@ -255,6 +255,7 @@ class PlexObject:
             data = self._server.query(ekey, headers=headers)
             subresults = self.findItems(data, cls, ekey, **kwargs)
             total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
+            results.total_size = total_size
 
             if not subresults:
                 if offset > total_size:
