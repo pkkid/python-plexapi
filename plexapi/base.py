@@ -245,7 +245,6 @@ class PlexObject:
             container_size = min(container_size, maxresults)
 
         results = []
-        subresults = []
         headers = {}
 
         while True:
