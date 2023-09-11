@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import weakref
+from collections import UserList
 from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
@@ -244,7 +245,7 @@ class PlexObject:
         if maxresults is not None:
             container_size = min(container_size, maxresults)
 
-        results = []
+        results = UserList()
         headers = {}
 
         while True:
