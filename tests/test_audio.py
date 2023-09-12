@@ -211,7 +211,7 @@ def test_audio_Album_get(album):
 
 def test_audio_Album_artist(album):
     artist = album.artist()
-    artist.title == "Broke For Free"
+    assert artist.title == "Broke For Free"
 
 
 @pytest.mark.xfail(reason="Changing images fails randomly")
