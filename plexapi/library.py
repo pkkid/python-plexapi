@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+from collections import UserList
 from datetime import datetime
 from functools import cached_property
 from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
@@ -1687,7 +1688,7 @@ class LibrarySection(PlexObject):
         if items is None or items == []:
             raise BadRequest('No items specified.')
 
-        if not isinstance(items, list):
+        if not isinstance(items, (list, UserList)):
             items = [items]
 
         itemType = items[0].type
