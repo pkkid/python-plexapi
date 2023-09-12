@@ -3,6 +3,7 @@ import copy
 import html
 import threading
 import time
+from collections import UserList
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
 
@@ -951,7 +952,7 @@ class MyPlexAccount(PlexObject):
                 :exc:`~plexapi.exceptions.BadRequest`: When trying to add invalid or existing
                     media to the watchlist.
         """
-        if not isinstance(items, list):
+        if not isinstance(items, (list, UserList)):
             items = [items]
 
         for item in items:
@@ -972,7 +973,7 @@ class MyPlexAccount(PlexObject):
                 :exc:`~plexapi.exceptions.BadRequest`: When trying to remove invalid or non-existing
                     media to the watchlist.
         """
-        if not isinstance(items, list):
+        if not isinstance(items, (list, UserList)):
             items = [items]
 
         for item in items:
