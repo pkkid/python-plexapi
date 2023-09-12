@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import UserList
 from urllib.parse import quote_plus
 
 from plexapi import utils
@@ -169,7 +170,7 @@ class PlayQueue(PlexObject):
             "continuous": continuous,
         }
 
-        if isinstance(items, list):
+        if isinstance(items, (list, UserList)):
             item_keys = ",".join(str(x.ratingKey) for x in items)
             uri_args = quote_plus(f"/library/metadata/{item_keys}")
             args["uri"] = f"library:///directory/{uri_args}"
