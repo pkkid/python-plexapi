@@ -10,6 +10,7 @@ Original contribution by lad1337.
 import argparse
 import os
 import re
+from collections import UserList
 from urllib.parse import unquote
 
 from plexapi import utils
@@ -27,7 +28,7 @@ def search_for_item(url=None):
     items = [i for i in server.search(query) if i.__class__ in VALID_TYPES]
     items = utils.choose('Choose result', items, lambda x: '(%s) %s' % (x.type.title(), x.title[0:60]))
 
-    if not isinstance(items, list):
+    if not isinstance(items, (list, UserList)):
         items = [items]
 
     for i in items:
