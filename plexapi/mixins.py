@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import UserList
 from datetime import datetime
 from urllib.parse import parse_qsl, quote, quote_plus, unquote, urlencode, urlsplit
 
@@ -750,7 +751,7 @@ class EditTagsMixin:
                     Show.addCollection('New Collection').removeGenre('Action').addLabel('Favorite').reload()
 
         """
-        if not isinstance(items, list):
+        if not isinstance(items, (list, UserList)):
             items = [items]
 
         if not remove:
@@ -786,7 +787,7 @@ class EditTagsMixin:
     @staticmethod
     def _tagHelper(tag, items, locked=True, remove=False):
         """ Return a dict of the query parameters for editing a tag. """
-        if not isinstance(items, list):
+        if not isinstance(items, (list, UserList)):
             items = [items]
 
         data = {
