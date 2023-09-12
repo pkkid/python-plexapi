@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import UserList
 from urllib.parse import quote_plus
 
 import pytest
@@ -50,7 +51,7 @@ def test_audio_Artist_get(artist):
 
 def test_audio_Artist_history(artist):
     history = artist.history()
-    assert isinstance(history, list)
+    assert isinstance(history, (list, UserList))
 
 
 def test_audio_Artist_track(artist):
@@ -180,12 +181,12 @@ def test_audio_Album_attrs(album):
 
 def test_audio_Album_history(album):
     history = album.history()
-    assert isinstance(history, list)
+    assert isinstance(history, (list, UserList))
 
 
 def test_audio_Track_history(track):
     history = track.history()
-    assert isinstance(history, list)
+    assert isinstance(history, (list, UserList))
 
 
 def test_audio_Album_tracks(album):
