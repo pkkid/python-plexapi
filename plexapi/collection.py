@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import UserList
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -305,7 +306,7 @@ class Collection(
         if self.smart:
             raise BadRequest('Cannot add items to a smart collection.')
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         ratingKeys = []
@@ -335,7 +336,7 @@ class Collection(
         if self.smart:
             raise BadRequest('Cannot remove items from a smart collection.')
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         for item in items:
@@ -437,7 +438,7 @@ class Collection(
         if not isinstance(section, LibrarySection):
             section = server.library.section(section)
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         itemType = items[0].type

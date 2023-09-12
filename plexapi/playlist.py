@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+from collections import UserList
 from pathlib import Path
 from urllib.parse import quote_plus, unquote
 
@@ -206,7 +207,7 @@ class Playlist(
         if self.smart:
             raise BadRequest('Cannot add items to a smart playlist.')
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         ratingKeys = []
@@ -242,7 +243,7 @@ class Playlist(
         if self.smart:
             raise BadRequest('Cannot remove items from a smart playlist.')
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         for item in items:
@@ -336,7 +337,7 @@ class Playlist(
         if not items:
             raise BadRequest('Must include items to add when creating new playlist.')
 
-        if items and not isinstance(items, (list, tuple)):
+        if items and not isinstance(items, (list, tuple, UserList)):
             items = [items]
 
         listType = items[0].listType
