@@ -227,7 +227,7 @@ class PlexObject:
 
                     fetchItem(ekey, viewCount__gte=0)
                     fetchItem(ekey, Media__container__in=["mp4", "mkv"])
-                    fetchItem(ekey, guid__iregex=r"(imdb:\/\/|themoviedb:\/\/)")
+                    fetchItem(ekey, guid__iregex=r"(imdb:\\/\\/|themoviedb:\\/\\/)")
                     fetchItem(ekey, Media__Part__file__startswith="D:\\Movies")
 
         """
