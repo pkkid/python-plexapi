@@ -1257,6 +1257,12 @@ class LibrarySection(PlexObject):
         """
         return self._server.search(query, mediatype, limit, sectionId=self.key)
 
+    def totalViewSize(self):
+        """
+        
+        """
+        ...
+
     def search(self, title=None, sort=None, maxresults=None, libtype=None,
                container_start=None, container_size=None, limit=None, filters=None, **kwargs):
         """ Search the library. The http requests will be batched in container_size. If you are only looking for the
