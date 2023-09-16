@@ -631,8 +631,7 @@ class PlexServer(PlexObject):
     def isLatest(self):
         """ Check if the installed version of PMS is the latest. """
         release = self.query('/updater/status')
-        canInstall = int(release.get('canInstall'))
-        return canInstall == 0
+        return utils.cast(bool, release.get('canInstall'))
 
     def installUpdate(self):
         """ Install the newest version of Plex Media Server. """
