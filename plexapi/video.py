@@ -886,7 +886,6 @@ class Episode(
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
-        self._seasonNumber = None  # cached season number
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
         self.chapters = self.findItems(data, media.Chapter)
@@ -989,12 +988,10 @@ class Episode(
         """ Returns the episode number. """
         return self.index
 
-    @property
+    @cached_property
     def seasonNumber(self):
         """ Returns the episode's season number. """
-        if self._seasonNumber is None:
-            self._seasonNumber = self.parentIndex if isinstance(self.parentIndex, int) else self.season().seasonNumber
-        return utils.cast(int, self._seasonNumber)
+        return self.parentIndex if isinstance(self.parentIndex, int) else self._season.seasonNumber
 
     @property
     def seasonEpisode(self):
