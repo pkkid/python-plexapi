@@ -188,7 +188,9 @@ class MyPlexAccount(PlexObject):
         self.subscriptionPaymentService = subscription.attrib.get('paymentService')
         self.subscriptionPlan = subscription.attrib.get('plan')
         self.subscriptionStatus = subscription.attrib.get('status')
-        self.subscriptionSubscribedAt = utils.toDatetime(subscription.attrib.get('subscribedAt'), '%Y-%m-%d %H:%M:%S %Z')
+        self.subscriptionSubscribedAt = utils.toDatetime(
+            subscription.attrib.get('subscribedAt') or None, '%Y-%m-%d %H:%M:%S %Z'
+        )
 
         profile = data.find('profile')
         self.profileAutoSelectAudio = utils.cast(bool, profile.attrib.get('autoSelectAudio'))
