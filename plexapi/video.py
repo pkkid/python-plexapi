@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from functools import cached_property
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -676,7 +677,7 @@ class Season(
     ArtMixin, PosterMixin, ThemeUrlMixin,
     SeasonEditMixins
 ):
-    """ Represents a single Show Season (including all episodes).
+    """ Represents a single Season.
 
         Attributes:
             TAG (str): 'Directory'
@@ -835,7 +836,7 @@ class Episode(
     ArtMixin, PosterMixin, ThemeUrlMixin,
     EpisodeEditMixins
 ):
-    """ Represents a single Shows Episode.
+    """ Represents a single Episode.
 
         Attributes:
             TAG (str): 'Video'
@@ -864,7 +865,7 @@ class Episode(
             parentGuid (str): Plex GUID for the season (plex://season/5d9c09e42df347001e3c2a72).
             parentIndex (int): Season number of episode.
             parentKey (str): API URL of the season (/library/metadata/<parentRatingKey>).
-            parentRatingKey (int): Unique key  identifying the season.
+            parentRatingKey (int): Unique key identifying the season.
             parentThumb (str): URL to season thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the season for the episode.
             parentYear (int): Year the season was released.
@@ -885,7 +886,6 @@ class Episode(
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
-        self._seasonNumber = None  # cached season number
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
         self.audienceRatingImage = data.attrib.get('audienceRatingImage')
         self.chapters = self.findItems(data, media.Chapter)
@@ -909,9 +909,6 @@ class Episode(
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
-        self.parentKey = data.attrib.get('parentKey')
-        self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
-        self.parentThumb = data.attrib.get('parentThumb')
         self.parentTitle = data.attrib.get('parentTitle')
         self.parentYear = utils.cast(int, data.attrib.get('parentYear'))
         self.producers = self.findItems(data, media.Producer)
@@ -925,15 +922,38 @@ class Episode(
 
         # If seasons are hidden, parentKey and parentRatingKey are missing from the XML response.
         # https://forums.plex.tv/t/parentratingkey-not-in-episode-xml-when-seasons-are-hidden/300553
-        if self.skipParent and data.attrib.get('parentRatingKey') is None:
-            # Parse the parentRatingKey from the parentThumb
-            if self.parentThumb and self.parentThumb.startswith('/library/metadata/'):
-                self.parentRatingKey = utils.cast(int, self.parentThumb.split('/')[3])
-            # Get the parentRatingKey from the season's ratingKey
-            if not self.parentRatingKey and self.grandparentRatingKey:
-                self.parentRatingKey = self.show().season(season=self.parentIndex).ratingKey
-            if self.parentRatingKey:
-                self.parentKey = f'/library/metadata/{self.parentRatingKey}'
+        # Use cached properties below to return the correct values if they are missing to avoid auto-reloading.
+        self._parentKey = data.attrib.get('parentKey')
+        self._parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
+        self._parentThumb = data.attrib.get('parentThumb')
+
+    @cached_property
+    def parentKey(self):
+        """ Returns the parentKey. Refer to the Episode attributes. """
+        return self._parentKey or f'/library/metadata/{self.parentRatingKey}'
+
+    @cached_property
+    def parentRatingKey(self):
+        """ Returns the parentRatingKey. Refer to the Episode attributes. """
+        if self._parentRatingKey is not None:
+            return self._parentRatingKey
+        # Parse the parentRatingKey from the parentThumb
+        if self._parentThumb and self._parentThumb.startswith('/library/metadata/'):
+            return utils.cast(int, self._parentThumb.split('/')[3])
+        # Get the parentRatingKey from the season's ratingKey
+        return self._season.ratingKey
+
+    @cached_property
+    def parentThumb(self):
+        """ Returns the parentThumb. Refer to the Episode attributes. """
+        return self._parentThumb or self._season.thumb
+
+    @cached_property
+    def _season(self):
+        """ Returns the :class:`~plexapi.video.Season` object by querying for the show's children. """
+        return self.fetchItem(
+            f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}'
+        )
 
     def __repr__(self):
         return '<{}>'.format(
@@ -968,12 +988,10 @@ class Episode(
         """ Returns the episode number. """
         return self.index
 
-    @property
+    @cached_property
     def seasonNumber(self):
         """ Returns the episode's season number. """
-        if self._seasonNumber is None:
-            self._seasonNumber = self.parentIndex if isinstance(self.parentIndex, int) else self.season().seasonNumber
-        return utils.cast(int, self._seasonNumber)
+        return self.parentIndex if isinstance(self.parentIndex, int) else self._season.seasonNumber
 
     @property
     def seasonEpisode(self):
