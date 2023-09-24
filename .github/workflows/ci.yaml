@@ -69,6 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PLEXAPI_AUTH_SERVER_BASEURL: http://127.0.0.1:32400
+      PLEXAPI_PLEXAPI_TIMEOUT: "60"
       PLEX_CONTAINER: plexinc/pms-docker
       PLEX_CONTAINER_TAG: latest
     strategy:
