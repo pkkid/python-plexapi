@@ -946,11 +946,17 @@ class Episode(
     @cached_property
     def parentThumb(self):
         """ Returns the parentThumb. Refer to the Episode attributes. """
-        return self._parentThumb or self._season.thumb
+        if self._parentThumb:
+            return self._parentThumb
+        if self._season:
+            return self._season.thumb
+        return None
 
     @cached_property
     def _season(self):
         """ Returns the :class:`~plexapi.video.Season` object by querying for the show's children. """
+        if not self.grandparentKey:
+            return None
         return self.fetchItem(
             f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}'
         )
