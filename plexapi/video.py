@@ -930,7 +930,11 @@ class Episode(
     @cached_property
     def parentKey(self):
         """ Returns the parentKey. Refer to the Episode attributes. """
-        return self._parentKey or f'/library/metadata/{self.parentRatingKey}'
+        if self._parentKey:
+            return self._parentKey
+        if self.parentRatingKey:
+            return f'/library/metadata/{self.parentRatingKey}'
+        return None
 
     @cached_property
     def parentRatingKey(self):
@@ -940,8 +944,10 @@ class Episode(
         # Parse the parentRatingKey from the parentThumb
         if self._parentThumb and self._parentThumb.startswith('/library/metadata/'):
             return utils.cast(int, self._parentThumb.split('/')[3])
-        # Get the parentRatingKey from the season's ratingKey
-        return self._season.ratingKey
+        # Get the parentRatingKey from the season's ratingKey if available
+        if self._season:
+            return self._season.ratingKey
+        return None
 
     @cached_property
     def parentThumb(self):
