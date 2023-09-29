@@ -930,7 +930,11 @@ class Episode(
     @cached_property
     def parentKey(self):
         """ Returns the parentKey. Refer to the Episode attributes. """
-        return self._parentKey or f'/library/metadata/{self.parentRatingKey}'
+        if self._parentKey:
+            return self._parentKey
+        if self.parentRatingKey:
+            return f'/library/metadata/{self.parentRatingKey}'
+        return None
 
     @cached_property
     def parentRatingKey(self):
@@ -940,17 +944,25 @@ class Episode(
         # Parse the parentRatingKey from the parentThumb
         if self._parentThumb and self._parentThumb.startswith('/library/metadata/'):
             return utils.cast(int, self._parentThumb.split('/')[3])
-        # Get the parentRatingKey from the season's ratingKey
-        return self._season.ratingKey
+        # Get the parentRatingKey from the season's ratingKey if available
+        if self._season:
+            return self._season.ratingKey
+        return None
 
     @cached_property
     def parentThumb(self):
         """ Returns the parentThumb. Refer to the Episode attributes. """
-        return self._parentThumb or self._season.thumb
+        if self._parentThumb:
+            return self._parentThumb
+        if self._season:
+            return self._season.thumb
+        return None
 
     @cached_property
     def _season(self):
         """ Returns the :class:`~plexapi.video.Season` object by querying for the show's children. """
+        if not self.grandparentKey:
+            return None
         return self.fetchItem(
             f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}'
         )
