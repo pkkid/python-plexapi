@@ -323,7 +323,7 @@ def toDatetime(value, format=None):
                 return None
         else:
             try:
-                return datetime.utcfromtimestamp(0) + timedelta(seconds=int(value))
+                return datetime(1970, 1, 1) + timedelta(seconds=int(value))
             except ValueError:
                 log.info('Failed to parse "%s" to datetime as timestamp, defaulting to None', value)
                 return None
