@@ -615,7 +615,8 @@ class PlexServer(PlexObject):
         return self.checkForUpdate(force=force, download=download)
 
     def checkForUpdate(self, force=True, download=False):
-        """ Returns a :class:`~plexapi.base.Release` object containing release info.
+        """ Returns a :class:`~plexapi.server.Release` object containing release info
+            if an update is available or None if no update is available.
 
             Parameters:
                 force (bool): Force server to check for new releases
@@ -629,12 +630,19 @@ class PlexServer(PlexObject):
             return releases[0]
 
     def isLatest(self):
-        """ Check if the installed version of PMS is the latest. """
+        """ Returns True if the installed version of Plex Media Server is the latest. """
+        release = self.checkForUpdate(force=True)
+        return release is None
+
+    def canInstallUpdate(self):
+        """ Returns True if the newest version of Plex Media Server can be installed automatically.
+            (e.g. Windows and Mac can install updates automatically, but Docker and NAS devices cannot.)
+        """
         release = self.query('/updater/status')
         return utils.cast(bool, release.get('canInstall'))
 
     def installUpdate(self):
-        """ Install the newest version of Plex Media Server. """
+        """ Automatically install the newest version of Plex Media Server. """
         # We can add this but dunno how useful this is since it sometimes
         # requires user action using a gui.
         part = '/updater/apply'
