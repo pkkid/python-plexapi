@@ -323,13 +323,18 @@ def toDatetime(value, format=None):
                 return None
         else:
             try:
-                return datetime.utcfromtimestamp(0) + timedelta(seconds=int(value))
+                value = int(value)
             except ValueError:
                 log.info('Failed to parse "%s" to datetime as timestamp, defaulting to None', value)
                 return None
-            except OverflowError:
-                log.info('Failed to parse "%s" to datetime as timestamp (out-of-bounds), defaulting to None', value)
-                return None
+            try:
+                return datetime.fromtimestamp(value)
+            except (OSError, OverflowError):
+                try:
+                    return datetime.fromtimestamp(0) + timedelta(seconds=value)
+                except OverflowError:
+                    log.info('Failed to parse "%s" to datetime as timestamp (out-of-bounds), defaulting to None', value)
+                    return None
     return value
 
 
