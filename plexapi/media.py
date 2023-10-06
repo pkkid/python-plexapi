@@ -216,7 +216,7 @@ class MediaPart(PlexObject):
         else:
             params['subtitleStreamID'] = stream
 
-        self._server.query(key, method=self._server._session.put)
+        self._server.query(key, method=self._server._session.put, params=params)
         return self
 
     def resetSelectedSubtitleStream(self):
