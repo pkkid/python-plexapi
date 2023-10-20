@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+from collections import deque
 from datetime import datetime
+from typing import Tuple
 from urllib.parse import parse_qsl, quote, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
@@ -61,63 +63,68 @@ class AdvancedSettingsMixin:
 
 
 class SmartFilterMixin:
-    """ Mixing for Plex objects that can have smart filters. """
+    """Mixin for Plex objects that can have smart filters."""
+
+    def _parse_filter_groups(self, feed: "deque[Tuple[str, str]]") -> dict:
+        """parse filter groups from input lines between push and pop"""
+        current_filters_stack: list[dict] = []
+        operator_for_stack = None
+
+        allowed_logical_operators = ["and", "or"]
+        while feed:
+            key, value = feed.popleft()  # consume the first item
+            if key == "push":
+                # recurse and add the result to the current stack
+                current_filters_stack.append(self._parse_filter_groups(feed))
+            elif key == "pop":
+                # stop iterating and return the current stack
+                break
+
+            elif key in allowed_logical_operators:
+                # set the operator
+                if operator_for_stack and not operator_for_stack == key:
+                    raise ValueError(
+                        "cannot have different logical operators for the same"
+                        " filter group"
+                    )
+                operator_for_stack = key
+
+            else:
+                # add the key value pair to the current filter
+                current_filters_stack.append({key: value})
+
+        if not operator_for_stack and len(current_filters_stack) > 1:
+            raise ValueError("no logical operator found for multiple filters")
+
+        if operator_for_stack:
+            return {operator_for_stack: current_filters_stack}
+        return current_filters_stack.pop()
+
+    def _parse_query_feed(self, feed: "deque[Tuple[str, str]]") -> dict:
+        """parse the query string into a dict"""
+        filters_dict = {}
+        while feed:
+            key, value = feed.popleft()
+            if key == "includeGuids":
+                filters_dict["includeGuids"] = int(value)
+            elif key == "type":
+                filters_dict["libtype"] = utils.reverseSearchType(value)
+            elif key == "sort":
+                filters_dict["sort"] = value.split(",")
+            elif key == "limit":
+                filters_dict["limit"] = int(value)
+            else:
+                if "filters" in filters_dict:
+                    raise ValueError("cannot have multiple filters")
+                filters_dict["filters"] = self._parse_filter_groups(feed)
+
+        return filters_dict
 
     def _parseFilters(self, content):
-        """ Parse the content string and returns the filter dict. """
+        """Parse the content string and returns the filter dict."""
         content = urlsplit(unquote(content))
-        filters = {}
-        filterOp = 'and'
-        filterGroups = [[]]
-
-        for key, value in parse_qsl(content.query):
-            # Move = sign to key when operator is ==
-            if value.startswith('='):
-                key += '='
-                value = value[1:]
-
-            if key == 'includeGuids':
-                filters['includeGuids'] = int(value)
-            elif key == 'type':
-                filters['libtype'] = utils.reverseSearchType(value)
-            elif key == 'sort':
-                filters['sort'] = value.split(',')
-            elif key == 'limit':
-                filters['limit'] = int(value)
-            elif key == 'push':
-                filterGroups[-1].append([])
-                filterGroups.append(filterGroups[-1][-1])
-            elif key == 'and':
-                filterOp = 'and'
-            elif key == 'or':
-                filterOp = 'or'
-            elif key == 'pop':
-                filterGroups[-1].insert(0, filterOp)
-                filterGroups.pop()
-            else:
-                filterGroups[-1].append({key: value})
-
-        if filterGroups:
-            filters['filters'] = self._formatFilterGroups(filterGroups.pop())
-        return filters
-
-    def _formatFilterGroups(self, groups):
-        """ Formats the filter groups into the advanced search rules. """
-        if len(groups) == 1 and isinstance(groups[0], list):
-            groups = groups.pop()
-
-        filterOp = 'and'
-        rules = []
-
-        for g in groups:
-            if isinstance(g, list):
-                rules.append(self._formatFilterGroups(g))
-            elif isinstance(g, dict):
-                rules.append(g)
-            elif g in {'and', 'or'}:
-                filterOp = g
-
-        return {filterOp: rules}
+        feed = deque(parse_qsl(content.query))
+        return self._parse_query_feed(feed)
 
 
 class SplitMergeMixin:
