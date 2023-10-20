@@ -65,66 +65,66 @@ class AdvancedSettingsMixin:
 class SmartFilterMixin:
     """Mixin for Plex objects that can have smart filters."""
 
-    def _parse_filter_groups(self, feed: "deque[Tuple[str, str]]") -> dict:
+    def _parseFilterGroups(self, feed: "deque[Tuple[str, str]]") -> dict:
         """parse filter groups from input lines between push and pop"""
-        current_filters_stack: list[dict] = []
-        operator_for_stack = None
+        currentFiltersStack: list[dict] = []
+        operatorForStack = None
 
-        allowed_logical_operators = ["and", "or"]
+        allowedLogicalOperators = ["and", "or"]
         while feed:
             key, value = feed.popleft()  # consume the first item
             if key == "push":
                 # recurse and add the result to the current stack
-                current_filters_stack.append(self._parse_filter_groups(feed))
+                currentFiltersStack.append(self._parseFilterGroups(feed))
             elif key == "pop":
                 # stop iterating and return the current stack
                 break
 
-            elif key in allowed_logical_operators:
+            elif key in allowedLogicalOperators:
                 # set the operator
-                if operator_for_stack and not operator_for_stack == key:
+                if operatorForStack and not operatorForStack == key:
                     raise ValueError(
                         "cannot have different logical operators for the same"
                         " filter group"
                     )
-                operator_for_stack = key
+                operatorForStack = key
 
             else:
                 # add the key value pair to the current filter
-                current_filters_stack.append({key: value})
+                currentFiltersStack.append({key: value})
 
-        if not operator_for_stack and len(current_filters_stack) > 1:
+        if not operatorForStack and len(currentFiltersStack) > 1:
             raise ValueError("no logical operator found for multiple filters")
 
-        if operator_for_stack:
-            return {operator_for_stack: current_filters_stack}
-        return current_filters_stack.pop()
+        if operatorForStack:
+            return {operatorForStack: currentFiltersStack}
+        return currentFiltersStack.pop()
 
-    def _parse_query_feed(self, feed: "deque[Tuple[str, str]]") -> dict:
+    def _parseQueryFeed(self, feed: "deque[Tuple[str, str]]") -> dict:
         """parse the query string into a dict"""
-        filters_dict = {}
+        filtersDict = {}
         while feed:
             key, value = feed.popleft()
             if key == "includeGuids":
-                filters_dict["includeGuids"] = int(value)
+                filtersDict["includeGuids"] = int(value)
             elif key == "type":
-                filters_dict["libtype"] = utils.reverseSearchType(value)
+                filtersDict["libtype"] = utils.reverseSearchType(value)
             elif key == "sort":
-                filters_dict["sort"] = value.split(",")
+                filtersDict["sort"] = value.split(",")
             elif key == "limit":
-                filters_dict["limit"] = int(value)
+                filtersDict["limit"] = int(value)
             else:
-                if "filters" in filters_dict:
+                if "filters" in filtersDict:
                     raise ValueError("cannot have multiple filters")
-                filters_dict["filters"] = self._parse_filter_groups(feed)
+                filtersDict["filters"] = self._parseFilterGroups(feed)
 
-        return filters_dict
+        return filtersDict
 
     def _parseFilters(self, content):
         """Parse the content string and returns the filter dict."""
         content = urlsplit(unquote(content))
         feed = deque(parse_qsl(content.query))
-        return self._parse_query_feed(feed)
+        return self._parseQueryFeed(feed)
 
 
 class SplitMergeMixin:
