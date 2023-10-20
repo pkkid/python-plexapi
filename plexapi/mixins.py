@@ -61,7 +61,7 @@ class AdvancedSettingsMixin:
 
 
 class SmartFilterMixin:
-    """ Mixing for Plex objects that can have smart filters. """
+    """ Mixin for Plex objects that can have smart filters. """
 
     def _parseFilters(self, content):
         """ Parse the content string and returns the filter dict. """
