@@ -63,7 +63,7 @@ class AdvancedSettingsMixin:
 
 
 class SmartFilterMixin:
-    """Mixin for Plex objects that can have smart filters."""
+    """ Mixin for Plex objects that can have smart filters. """
 
     def _parseFilterGroups(self, feed: "deque[Tuple[str, str]]") -> dict:
         """parse filter groups from input lines between push and pop"""
@@ -88,6 +88,7 @@ class SmartFilterMixin:
                         " filter group"
                     )
                 operatorForStack = key
+
 
             else:
                 # add the key value pair to the current filter
