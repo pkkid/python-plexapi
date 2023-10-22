@@ -142,7 +142,15 @@ class SmartFilterMixin:
     def _parseFilters(self, content):
         """Parse the content string and returns the filter dict."""
         content = urlsplit(unquote(content))
-        feed = deque(parse_qsl(content.query))
+        feed = deque()
+
+        for key, value in parse_qsl(content.query):
+            # Move = sign to key when operator is ==
+            if value.startswith("="):
+                key, value = f"{key}=", value[1:]
+
+            feed.append((key, value))
+
         return self._parseQueryFeed(feed)
 
 
