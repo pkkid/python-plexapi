@@ -66,7 +66,7 @@ class SmartFilterMixin:
     """ Mixin for Plex objects that can have smart filters. """
 
     def _parseFilterGroups(
-        self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]" = None
+        self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]|None" = None
     ) -> dict:
         """parse filter groups from input lines between push and pop"""
         currentFiltersStack: list[dict] = []
