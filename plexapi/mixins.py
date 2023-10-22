@@ -65,19 +65,29 @@ class AdvancedSettingsMixin:
 class SmartFilterMixin:
     """ Mixin for Plex objects that can have smart filters. """
 
-    def _parseFilterGroups(self, feed: "deque[Tuple[str, str]]") -> dict:
+    def _parseFilterGroups(
+        self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]" = None
+    ) -> dict:
         """parse filter groups from input lines between push and pop"""
         currentFiltersStack: list[dict] = []
         operatorForStack = None
+        if returnOn is None:
+            returnOn = set("pop")
+        else:
+            returnOn.add("pop")
+        allowedLogicalOperators = ["and", "or"]  # first is the default
 
-        allowedLogicalOperators = ["and", "or"]
         while feed:
             key, value = feed.popleft()  # consume the first item
             if key == "push":
                 # recurse and add the result to the current stack
-                currentFiltersStack.append(self._parseFilterGroups(feed))
-            elif key == "pop":
+                currentFiltersStack.append(
+                    self._parseFilterGroups(feed, returnOn)
+                )
+            elif key in returnOn:
                 # stop iterating and return the current stack
+                if not key == "pop":
+                    feed.appendleft((key, value))  # put the item back
                 break
 
             elif key in allowedLogicalOperators:
@@ -89,13 +99,13 @@ class SmartFilterMixin:
                     )
                 operatorForStack = key
 
-
             else:
                 # add the key value pair to the current filter
                 currentFiltersStack.append({key: value})
 
         if not operatorForStack and len(currentFiltersStack) > 1:
-            raise ValueError("no logical operator found for multiple filters")
+            # consider 'and' as the default operator
+            operatorForStack = allowedLogicalOperators[0]
 
         if operatorForStack:
             return {operatorForStack: currentFiltersStack}
@@ -104,20 +114,23 @@ class SmartFilterMixin:
     def _parseQueryFeed(self, feed: "deque[Tuple[str, str]]") -> dict:
         """parse the query string into a dict"""
         filtersDict = {}
+        reserved_keys = {"includeGuids", "type", "sort", "limit"}
         while feed:
             key, value = feed.popleft()
-            if key == "includeGuids":
-                filtersDict["includeGuids"] = int(value)
+            if key in ["includeGuids", "limit"]:
+                filtersDict[key] = int(value)
             elif key == "type":
                 filtersDict["libtype"] = utils.reverseSearchType(value)
             elif key == "sort":
                 filtersDict["sort"] = value.split(",")
-            elif key == "limit":
-                filtersDict["limit"] = int(value)
             else:
                 if "filters" in filtersDict:
                     raise ValueError("cannot have multiple filters")
-                filtersDict["filters"] = self._parseFilterGroups(feed)
+
+                feed.appendleft((key, value))  # put the item back
+                filtersDict["filters"] = self._parseFilterGroups(
+                    feed, returnOn=reserved_keys
+                )
 
         return filtersDict
 
