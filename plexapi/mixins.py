@@ -114,23 +114,28 @@ class SmartFilterMixin:
     def _parseQueryFeed(self, feed: "deque[Tuple[str, str]]") -> dict:
         """parse the query string into a dict"""
         filtersDict = {}
-        reserved_keys = {"includeGuids", "type", "sort", "limit"}
+        special_keys = set(("type", "sort"))
+        integer_keys = set(("includeGuids", "limit"))
+        reserved_keys = special_keys | integer_keys
         while feed:
             key, value = feed.popleft()
-            if key in ["includeGuids", "limit"]:
+            if key in integer_keys:
                 filtersDict[key] = int(value)
             elif key == "type":
                 filtersDict["libtype"] = utils.reverseSearchType(value)
             elif key == "sort":
                 filtersDict["sort"] = value.split(",")
             else:
-                if "filters" in filtersDict:
-                    raise ValueError("cannot have multiple filters")
-
                 feed.appendleft((key, value))  # put the item back
-                filtersDict["filters"] = self._parseFilterGroups(
+                filter_group = self._parseFilterGroups(
                     feed, returnOn=reserved_keys
                 )
+                if "filters" in filtersDict:
+                    filtersDict["filters"] = {
+                        "and": [filtersDict["filters"], filter_group]
+                    }
+                else:
+                    filtersDict["filters"] = filter_group
 
         return filtersDict
 
