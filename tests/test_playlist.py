@@ -216,7 +216,7 @@ def test_Playlist_createSmart(plex, movies, movie):
 def test_Playlist_smartFilters(smartFilter, plex, tvshows):
     try:
         playlist = plex.createPlaylist(
-            title="smart_playlist_complex_filters",
+            title="smart_playlist_filters",
             smart=True,
             section=tvshows,
             limit=5,
