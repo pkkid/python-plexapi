@@ -202,6 +202,55 @@ def test_Playlist_smartFilters(plex, tvshows):
         playlist.delete()
 
 
+@pytest.mark.parametrize(
+    "complexfilter",
+    [
+        {
+            "and": [
+                {
+                    "or": [
+                        {
+                            "and": [
+                                {"show.title": "game"},
+                                {"show.title": "thrones"},
+                                {"or": [{"show.year>>": "1999"}, {"show.viewCount<<": "3"}]},
+                            ]
+                        },
+                        {"show.title": "100"},
+                    ]
+                },
+                {"or": [{"show.network": "293"}, {"show.country": "57"}]},
+                {"episode.hdr!": "1"},
+            ],
+        },
+    ],
+)
+def test_Playlist_complexFilters(complexfilter, plex, tvshows):
+    try:
+        playlist = plex.createPlaylist(
+            title="smart_playlist_complex_filters",
+            smart=True,
+            section=tvshows,
+            limit=5,
+            libtype="show",
+            sort=[
+                "season.index:nullsLast",
+                "episode.index:nullsLast",
+                "show.titleSort",
+            ],
+            filters=complexfilter,
+        )
+        filters = playlist.filters()
+        filters["libtype"] = (
+            tvshows.METADATA_TYPE
+        )  # Override libtype to check playlist items
+        assert filters["filters"] == complexfilter
+        assert tvshows.search(**filters) == playlist.items()
+
+    finally:
+        playlist.delete()
+
+
 def test_Playlist_section(plex, movies, movie):
     title = 'test_playlist_section'
     try:
