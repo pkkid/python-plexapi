@@ -252,55 +252,38 @@ def test_Collection_createSmart(plex, tvshows):
         collection.delete()
 
 
-def test_Collection_smartFilters(plex, movies):
+@pytest.mark.parametrize(
+    "advancedFilters",
+    [
+        {
+            "and": [
+                {"or": [{"title": "elephant"}, {"title=": "Big Buck Bunny"}]},
+                {"year>>": 1990},
+                {"unwatched": True},
+            ]
+        },
+        {
+            "or": [
+                {
+                    "and": [
+                        {"title": "elephant"},
+                        {"year>>": 1990},
+                        {"unwatched": True},
+                    ]
+                },
+                {
+                    "and": [
+                        {"title=": "Big Buck Bunny"},
+                        {"year>>": 1990},
+                        {"unwatched": True},
+                    ]
+                },
+            ]
+        },
+    ],
+)
+def test_Collection_smartFilters(advancedFilters, plex, movies):
     title = "test_Collection_smartFilters"
-    advancedFilters = {
-        'and': [
-            {
-                'or': [
-                    {'title': 'elephant'},
-                    {'title=': 'Big Buck Bunny'}
-                ]
-            },
-            {'year>>': 1990},
-            {'unwatched': True}
-        ]
-    }
-    try:
-        collection = plex.createCollection(
-            title=title,
-            section=movies,
-            smart=True,
-            limit=5,
-            sort="year",
-            filters=advancedFilters
-        )
-        filters = collection.filters()
-        assert movies.search(**filters) == collection.items()
-    finally:
-        collection.delete()
-
-
-def test_Collection_smartFilters2(plex, movies):
-    title = "test_Collection_smartFilters"
-    advancedFilters = {
-        "or": [
-            {
-                "and": [
-                    {"title": "elephant"},
-                    {"year>>": 1990},
-                    {"unwatched": True},
-                ]
-            },
-            {
-                "and": [
-                    {"title=": "Big Buck Bunny"},
-                    {"year>>": 1990},
-                    {"unwatched": True},
-                ]
-            },
-        ]
-    }
     try:
         collection = plex.createCollection(
             title=title,
