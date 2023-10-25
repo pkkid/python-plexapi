@@ -184,27 +184,10 @@ def test_Playlist_createSmart(plex, movies, movie):
         playlist.delete()
 
 
-def test_Playlist_smartFilters(plex, tvshows):
-    try:
-        playlist = plex.createPlaylist(
-            title="smart_playlist_filters",
-            smart=True,
-            section=tvshows,
-            limit=5,
-            libtype='show',
-            sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
-            filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
-        )
-        filters = playlist.filters()
-        filters['libtype'] = tvshows.METADATA_TYPE  # Override libtype to check playlist items
-        assert tvshows.search(**filters) == playlist.items()
-    finally:
-        playlist.delete()
-
-
 @pytest.mark.parametrize(
-    "complexfilter",
+    "smartFilter",
     [
+        {"or": [{"show.title": "game"}, {"show.title": "100"}]},
         {
             "and": [
                 {
@@ -213,7 +196,12 @@ def test_Playlist_smartFilters(plex, tvshows):
                             "and": [
                                 {"show.title": "game"},
                                 {"show.title": "thrones"},
-                                {"or": [{"show.year>>": "1999"}, {"show.viewCount<<": "3"}]},
+                                {
+                                    "or": [
+                                        {"show.year>>": "1999"},
+                                        {"show.viewCount<<": "3"},
+                                    ]
+                                },
                             ]
                         },
                         {"show.title": "100"},
@@ -221,11 +209,11 @@ def test_Playlist_smartFilters(plex, tvshows):
                 },
                 {"or": [{"show.network": "293"}, {"show.country": "57"}]},
                 {"episode.hdr!": "1"},
-            ],
+            ]
         },
     ],
 )
-def test_Playlist_complexFilters(complexfilter, plex, tvshows):
+def test_Playlist_smartFilters(smartFilter, plex, tvshows):
     try:
         playlist = plex.createPlaylist(
             title="smart_playlist_complex_filters",
@@ -238,13 +226,13 @@ def test_Playlist_complexFilters(complexfilter, plex, tvshows):
                 "episode.index:nullsLast",
                 "show.titleSort",
             ],
-            filters=complexfilter,
+            filters=smartFilter,
         )
         filters = playlist.filters()
         filters["libtype"] = (
             tvshows.METADATA_TYPE
         )  # Override libtype to check playlist items
-        assert filters["filters"] == complexfilter
+        assert filters["filters"] == smartFilter
         assert tvshows.search(**filters) == playlist.items()
 
     finally:
