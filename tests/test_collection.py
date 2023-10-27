@@ -258,8 +258,8 @@ def test_Collection_createSmart(plex, tvshows):
         {
             "and": [
                 {"or": [{"title": "elephant"}, {"title=": "Big Buck Bunny"}]},
-                {"year>>": 1990},
-                {"unwatched": True},
+                {"year>>": '1990'},
+                {"unwatched": '1'},
             ]
         },
         {
@@ -267,15 +267,15 @@ def test_Collection_createSmart(plex, tvshows):
                 {
                     "and": [
                         {"title": "elephant"},
-                        {"year>>": 1990},
-                        {"unwatched": True},
+                        {"year>>": '1990'},
+                        {"unwatched": '1'},
                     ]
                 },
                 {
                     "and": [
                         {"title=": "Big Buck Bunny"},
-                        {"year>>": 1990},
-                        {"unwatched": True},
+                        {"year>>": '1990'},
+                        {"unwatched": '1'},
                     ]
                 },
             ]
@@ -294,6 +294,7 @@ def test_Collection_smartFilters(advancedFilters, plex, movies):
             filters=advancedFilters,
         )
         filters = collection.filters()
+        assert filters["filters"] == advancedFilters
         assert movies.search(**filters) == collection.items()
     finally:
         collection.delete()
