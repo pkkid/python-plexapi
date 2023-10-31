@@ -337,6 +337,28 @@ def create_section(server, section, opts):  # noqa: C901
     notifier.stop()
 
 
+def wait_for_plex():
+    start = time.time()
+    runtime = 0
+    server = None
+    while not server and (runtime < opts.bootstrap_timeout):
+        try:
+            if account:
+                server = account.device(opts.server_name).connect()
+            else:
+                server = PlexServer("http://%s:32400" % opts.advertise_ip)
+
+        except KeyboardInterrupt:
+            break
+
+        except Exception as err:
+            print(err)
+            time.sleep(1)
+
+        runtime = time.time() - start
+    return server, runtime
+
+
 if __name__ == "__main__":  # noqa: C901
     default_ip = get_default_ip()
     parser = argparse.ArgumentParser(description=__doc__)
@@ -469,24 +491,7 @@ if __name__ == "__main__":  # noqa: C901
 
     # Wait for the Plex container to start
     print("Waiting for the Plex to start..")
-    start = time.time()
-    runtime = 0
-    server = None
-    while not server and (runtime < opts.bootstrap_timeout):
-        try:
-            if account:
-                server = account.device(opts.server_name).connect()
-            else:
-                server = PlexServer("http://%s:32400" % opts.advertise_ip)
-
-        except KeyboardInterrupt:
-            break
-
-        except Exception as err:
-            print(err)
-            time.sleep(1)
-
-        runtime = time.time() - start
+    server, runtime = wait_for_plex()
 
     if not server:
         raise SystemExit(
@@ -510,9 +515,9 @@ if __name__ == "__main__":  # noqa: C901
 
     sections = []
 
-    # Lets add a check here do somebody don't mess up
-    # there normal server if they run manual tests.
-    # Like i did....
+    # Let's add a check here so somebody doesn't mess up
+    # their normal server if they run manual tests.
+    # Like I did...
     if len(server.library.sections()) and opts.no_docker is True:
         ans = input(
             "The server has %s sections, do you wish to remove it?\n> "
@@ -599,6 +604,11 @@ if __name__ == "__main__":  # noqa: C901
     # Create the Plex library in our instance
     if sections:
         print("Creating the Plex libraries on %s" % server.friendlyName)
+
+        temp_server, runtime = wait_for_plex()
+        print("Plex ready to create sections after %ss" % int(runtime))
+        time.sleep(60)  # todo - remove this
+
         for section in sections:
             create_section(server, section, opts)
 
