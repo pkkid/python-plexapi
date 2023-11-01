@@ -207,7 +207,7 @@ def test_Playlist_createSmart(plex, movies, movie):
                         {"show.title": "100"},
                     ]
                 },
-                {"or": [{"show.network": "293"}, {"show.country": "57"}]},
+                {"or": [{"show.contentRating": "TV-14"}, {"show.addedAt>>": "-10y"}]},
                 {"episode.hdr!": "1"},
             ]
         },
