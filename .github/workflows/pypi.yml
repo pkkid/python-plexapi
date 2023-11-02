@@ -28,8 +28,13 @@ jobs:
       run: |
         pip install -U pip
         pip install -r requirements.txt
-        pip install setuptools wheel
+        pip install setuptools twine wheel
         python setup.py sdist bdist_wheel
+
+    - name: Verify README
+      # https://packaging.python.org/guides/making-a-pypi-friendly-readme/#validating-restructuredtext-markup
+      run: |
+        python -m twine check dist/*
 
     - name: Upload builds
       uses: actions/upload-artifact@v3
