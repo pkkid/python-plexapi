@@ -108,6 +108,7 @@ class MyPlexAccount(PlexObject):
     OPTOUTS = 'https://plex.tv/api/v2/user/{userUUID}/settings/opt_outs'                        # get
     LINK = 'https://plex.tv/api/v2/pins/link'                                                   # put
     VIEWSTATESYNC = 'https://plex.tv/api/v2/user/view_state_sync'                               # put
+    PING = 'https://plex.tv/api/v2/ping'
     # Hub sections
     VOD = 'https://vod.provider.plex.tv'                                                        # get
     MUSIC = 'https://music.provider.plex.tv'                                                    # get
@@ -249,6 +250,15 @@ class MyPlexAccount(PlexObject):
             return response.text.strip()
         data = response.text.encode('utf8')
         return ElementTree.fromstring(data) if data.strip() else None
+
+    def ping(self):
+        """ Ping the Plex.tv API.
+            This will refresh the authentication token to prevent it from expiring.
+        """
+        pong = self.query(self.PING)
+        if pong is not None:
+            return utils.cast(bool, pong.text)
+        return False
 
     def device(self, name=None, clientId=None):
         """ Returns the :class:`~plexapi.myplex.MyPlexDevice` that matches the name specified.
