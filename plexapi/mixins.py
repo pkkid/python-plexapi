@@ -68,7 +68,7 @@ class SmartFilterMixin:
     def _parseFilterGroups(
         self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]|None" = None
     ) -> dict:
-        """parse filter groups from input lines between push and pop"""
+        """ Parse filter groups from input lines between push and pop. """
         currentFiltersStack: list[dict] = []
         operatorForStack = None
         if returnOn is None:
@@ -112,10 +112,10 @@ class SmartFilterMixin:
         return currentFiltersStack.pop()
 
     def _parseQueryFeed(self, feed: "deque[Tuple[str, str]]") -> dict:
-        """parse the query string into a dict"""
+        """ Parse the query string into a dict. """
         filtersDict = {}
-        special_keys = set(("type", "sort"))
-        integer_keys = set(("includeGuids", "limit"))
+        special_keys = {"type", "sort"}
+        integer_keys = {"includeGuids", "limit"}
         reserved_keys = special_keys | integer_keys
         while feed:
             key, value = feed.popleft()
@@ -140,7 +140,7 @@ class SmartFilterMixin:
         return filtersDict
 
     def _parseFilters(self, content):
-        """Parse the content string and returns the filter dict."""
+        """ Parse the content string and returns the filter dict. """
         content = urlsplit(unquote(content))
         feed = deque()
 
