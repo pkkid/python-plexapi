@@ -252,20 +252,38 @@ def test_Collection_createSmart(plex, tvshows):
         collection.delete()
 
 
-def test_Collection_smartFilters(plex, movies):
+@pytest.mark.parametrize(
+    "advancedFilters",
+    [
+        {
+            "and": [
+                {"or": [{"title": "elephant"}, {"title=": "Big Buck Bunny"}]},
+                {"year>>": '1990'},
+                {"unwatched": '1'},
+            ]
+        },
+        {
+            "or": [
+                {
+                    "and": [
+                        {"title": "elephant"},
+                        {"year>>": '1990'},
+                        {"unwatched": '1'},
+                    ]
+                },
+                {
+                    "and": [
+                        {"title=": "Big Buck Bunny"},
+                        {"year>>": '1990'},
+                        {"unwatched": '1'},
+                    ]
+                },
+            ]
+        },
+    ],
+)
+def test_Collection_smartFilters(advancedFilters, plex, movies):
     title = "test_Collection_smartFilters"
-    advancedFilters = {
-        'and': [
-            {
-                'or': [
-                    {'title': 'elephant'},
-                    {'title=': 'Big Buck Bunny'}
-                ]
-            },
-            {'year>>': 1990},
-            {'unwatched': True}
-        ]
-    }
     try:
         collection = plex.createCollection(
             title=title,
@@ -273,9 +291,10 @@ def test_Collection_smartFilters(plex, movies):
             smart=True,
             limit=5,
             sort="year",
-            filters=advancedFilters
+            filters=advancedFilters,
         )
         filters = collection.filters()
+        assert filters["filters"] == advancedFilters
         assert movies.search(**filters) == collection.items()
     finally:
         collection.delete()

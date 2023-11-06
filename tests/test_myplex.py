@@ -361,3 +361,7 @@ def test_myplex_pin(account, plex):
 
 def test_myplex_geoip(account):
     assert account.geoip(account.publicIP())
+
+
+def test_myplex_ping(account):
+    assert account.ping()
