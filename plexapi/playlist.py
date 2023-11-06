@@ -43,6 +43,7 @@ class Playlist(
             smart (bool): True if the playlist is a smart playlist.
             summary (str): Summary of the playlist.
             title (str): Name of the playlist.
+            titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'playlist'
             updatedAt (datetime): Datetime the playlist was updated.
     """
@@ -72,6 +73,7 @@ class Playlist(
         self.smart = utils.cast(bool, data.attrib.get('smart'))
         self.summary = data.attrib.get('summary')
         self.title = data.attrib.get('title')
+        self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self._items = None  # cache for self.items
