@@ -227,7 +227,7 @@ class Playlist(
         self._server.query(key, method=self._server._session.put)
         return self
 
-    @deprecated('use "removeItems" instead', stacklevel=3)
+    @deprecated('use "removeItems" instead')
     def removeItem(self, item):
         self.removeItems(item)
 
@@ -319,7 +319,7 @@ class Playlist(
         self._server.query(key, method=self._server._session.put)
         return self
 
-    @deprecated('use "editTitle" and "editSummary" instead', stacklevel=3)
+    @deprecated('use "editTitle" and "editSummary" instead')
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
 
