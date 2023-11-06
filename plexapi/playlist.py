@@ -392,7 +392,7 @@ class Playlist(
         key = f"/playlists/upload{utils.joinArgs(args)}"
         server.query(key, method=server._session.post)
         try:
-            return server.playlists(sectionId=section.key, guid__endswith=m3ufilepath)[0].edit(title=title).reload()
+            return server.playlists(sectionId=section.key, guid__endswith=m3ufilepath)[0].editTitle(title).reload()
         except IndexError:
             raise BadRequest('Failed to create playlist from m3u file.') from None
 
