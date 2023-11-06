@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from typing_extensions import Self
+from typing import TypeVar
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
@@ -14,6 +14,9 @@ from plexapi.mixins import (
     ArtistEditMixins, AlbumEditMixins, TrackEditMixins
 )
 from plexapi.playlist import Playlist
+
+
+Self = TypeVar("Self", bound="Audio")
 
 
 class Audio(PlexPartialObject, PlayedUnplayedMixin):
@@ -130,7 +133,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         return myplex.sync(sync_item, client=client, clientId=clientId)
 
     def sonicallySimilar(
-        self,
+        self: Self,
         limit: int = 30,
         maxDistance: float = 0.25,
         **kwargs,
@@ -141,7 +144,6 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
             limit (int): maximum count of items to return, unlimited if `None`.
             maxDistance (float): maximum distance between tracks, 0.0 - 1.0.
             **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.fetchItems`.
-
 
         Returns:
             List[:class:`~plexapi.audio.Audio`]: list of sonically similar audio items.
