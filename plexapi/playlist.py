@@ -7,7 +7,7 @@ from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
-from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
+from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin, PlaylistEditMixins
 from plexapi.utils import deprecated
 
 
@@ -15,7 +15,8 @@ from plexapi.utils import deprecated
 class Playlist(
     PlexPartialObject, Playable,
     SmartFilterMixin,
-    ArtMixin, PosterMixin
+    ArtMixin, PosterMixin,
+    PlaylistEditMixins
 ):
     """ Represents a single Playlist.
 
@@ -308,10 +309,15 @@ class Playlist(
 
     def _edit(self, **kwargs):
         """ Actually edit the playlist. """
+        if isinstance(self._edits, dict):
+            self._edits.update(kwargs)
+            return self
+
         key = f'{self.key}{utils.joinArgs(kwargs)}'
         self._server.query(key, method=self._server._session.put)
         return self
 
+    @deprecated('use "editTitle" and "editSummary" instead', stacklevel=3)
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
 

@@ -1223,3 +1223,10 @@ class CollectionEditMixins(
     LabelMixin
 ):
     pass
+
+
+class PlaylistEditMixins(
+    ArtLockMixin, PosterLockMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin
+):
+    pass
