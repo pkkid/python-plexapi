@@ -94,7 +94,7 @@ def test_Playlist_edit(plex, movie):
         playlist = plex.createPlaylist(title, items=movie)
         assert playlist.title == title
         assert playlist.summary == ''
-        playlist.edit(title=new_title, summary=new_summary)
+        playlist.editTitle(new_title).editSummary(new_summary)
         playlist.reload()
         assert playlist.title == new_title
         assert playlist.summary == new_summary
@@ -330,3 +330,9 @@ def test_Playlist_mixins_images(playlist):
     test_mixins.lock_poster(playlist)
     test_mixins.edit_art(playlist)
     test_mixins.edit_poster(playlist)
+
+
+def test_Playlist_mixins_fields(playlist):
+    test_mixins.edit_sort_title(playlist)
+    test_mixins.edit_summary(playlist)
+    test_mixins.edit_title(playlist)
