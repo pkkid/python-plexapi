@@ -184,20 +184,57 @@ def test_Playlist_createSmart(plex, movies, movie):
         playlist.delete()
 
 
-def test_Playlist_smartFilters(plex, tvshows):
+@pytest.mark.parametrize(
+    "smartFilter",
+    [
+        {"or": [{"show.title": "game"}, {"show.title": "100"}]},
+        {
+            "and": [
+                {
+                    "or": [
+                        {
+                            "and": [
+                                {"show.title": "game"},
+                                {"show.title": "thrones"},
+                                {
+                                    "or": [
+                                        {"show.year>>": "1999"},
+                                        {"show.viewCount<<": "3"},
+                                    ]
+                                },
+                            ]
+                        },
+                        {"show.title": "100"},
+                    ]
+                },
+                {"or": [{"show.contentRating": "TV-14"}, {"show.addedAt>>": "-10y"}]},
+                {"episode.hdr!": "1"},
+            ]
+        },
+    ],
+)
+def test_Playlist_smartFilters(smartFilter, plex, tvshows):
     try:
         playlist = plex.createPlaylist(
             title="smart_playlist_filters",
             smart=True,
             section=tvshows,
             limit=5,
-            libtype='show',
-            sort=["season.index:nullsLast", "episode.index:nullsLast", "show.titleSort"],
-            filters={"or": [{"show.title": "game"}, {'show.title': "100"}]}
+            libtype="show",
+            sort=[
+                "season.index:nullsLast",
+                "episode.index:nullsLast",
+                "show.titleSort",
+            ],
+            filters=smartFilter,
         )
         filters = playlist.filters()
-        filters['libtype'] = tvshows.METADATA_TYPE  # Override libtype to check playlist items
+        filters["libtype"] = (
+            tvshows.METADATA_TYPE
+        )  # Override libtype to check playlist items
+        assert filters["filters"] == smartFilter
         assert tvshows.search(**filters) == playlist.items()
+
     finally:
         playlist.delete()
 
