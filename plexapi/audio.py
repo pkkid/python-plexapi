@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
+from typing_extensions import Self
+
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
@@ -34,6 +36,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
             listType (str): Hardcoded as 'audio' (useful for search filters).
             moods (List<:class:`~plexapi.media.Mood`>): List of mood objects.
             musicAnalysisVersion (int): The Plex music analysis version for the item.
+            distance (float): Sonic Distance of the item from the seed item.
             ratingKey (int): Unique key identifying the item.
             summary (str): Summary of the artist, album, or track.
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
@@ -65,6 +68,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self.listType = 'audio'
         self.moods = self.findItems(data, media.Mood)
         self.musicAnalysisVersion = utils.cast(int, data.attrib.get('musicAnalysisVersion'))
+        self.distance = utils.cast(float, data.attrib.get('distance'))
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
@@ -124,6 +128,31 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         sync_item.mediaSettings = MediaSettings.createMusic(bitrate)
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
+
+    def sonicallySimilar(
+        self,
+        limit: int = 30,
+        maxDistance: float = 0.25,
+        **kwargs,
+    ) -> "list[Self]":
+        """ Find sonically similar audio items.
+
+        Parameters:
+            limit (int): maximum count of items to return, unlimited if `None`.
+            maxDistance (float): maximum distance between tracks, 0.0 - 1.0.
+            **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.fetchItems`.
+
+
+        Returns:
+            List[:class:`~plexapi.audio.Audio`]: list of sonically similar audio items.
+        """
+
+        key = f"/library/metadata/{self.ratingKey}/nearest?limit={limit}&maxDistance={maxDistance}"
+        return self.fetchItems(
+            key,
+            cls=self.__class__,
+            **kwargs,
+        )
 
 
 @utils.registerPlexObject
