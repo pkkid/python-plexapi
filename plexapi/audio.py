@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from typing import TypeVar
+from typing import List, Optional, TypeVar
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
@@ -134,22 +134,27 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
 
     def sonicallySimilar(
         self: TAudio,
-        limit: int = 30,
-        maxDistance: float = 0.25,
+        limit: Optional[int] = None,
+        maxDistance: Optional[float] = None,
         **kwargs,
     ) -> List[TAudio]:
         """Returns a list of sonically similar audio items.
 
         Parameters:
-            limit (int): maximum count of items to return, unlimited if `None`.
-            maxDistance (float): maximum distance between tracks, 0.0 - 1.0.
+            limit (int): Maximum count of items to return. Default 50 (server default)
+            maxDistance (float): Maximum distance between tracks, 0.0 - 1.0. Default 0.25 (server default).
             **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.fetchItems`.
 
         Returns:
             List[:class:`~plexapi.audio.Audio`]: list of sonically similar audio items.
         """
 
-        key = f"/library/metadata/{self.ratingKey}/nearest?limit={limit}&maxDistance={maxDistance}"
+        key = f"{self.key}/nearest"
+        params = {"maxDistance": maxDistance, "limit": limit}
+        key += utils.joinArgs(
+            {k: v for k, v in params.items() if v is not None}
+        )
+
         return self.fetchItems(
             key,
             cls=self.__class__,
