@@ -439,6 +439,13 @@ def test_audio_Audio_section(artist, album, track):
     assert track.section().key == album.section().key == artist.section().key
 
 
+def test_audio_Audio_sonicallySimilar(artist, album, track):
+    #  TODO: assert list of tracks/albums/artists
+    assert isinstance(artist.sonicallySimilar(limit=15), list)
+    assert isinstance(album.sonicallySimilar(maxDistance=0.1), list)
+    assert isinstance(track.sonicallySimilar(), list)
+
+
 def test_audio_Artist_download(monkeydownload, tmpdir, artist):
     total = len(artist.tracks())
     filepaths = artist.download(savepath=str(tmpdir))
