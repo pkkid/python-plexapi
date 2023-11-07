@@ -16,7 +16,7 @@ from plexapi.mixins import (
 from plexapi.playlist import Playlist
 
 
-Self = TypeVar("Self", bound="Audio")
+TAudio = TypeVar("TAudio", bound="Audio")
 
 
 class Audio(PlexPartialObject, PlayedUnplayedMixin):
@@ -27,6 +27,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
             addedAt (datetime): Datetime the item was added to the library.
             art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
+            distance (float): Sonic Distance of the item from the seed item.
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the artist, album, or track (plex://artist/5d07bcb0403c64029053ac4c).
             index (int): Plex index number (often the track number).
@@ -39,7 +40,6 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
             listType (str): Hardcoded as 'audio' (useful for search filters).
             moods (List<:class:`~plexapi.media.Mood`>): List of mood objects.
             musicAnalysisVersion (int): The Plex music analysis version for the item.
-            distance (float): Sonic Distance of the item from the seed item.
             ratingKey (int): Unique key identifying the item.
             summary (str): Summary of the artist, album, or track.
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).
@@ -133,12 +133,12 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         return myplex.sync(sync_item, client=client, clientId=clientId)
 
     def sonicallySimilar(
-        self: Self,
+        self: TAudio,
         limit: int = 30,
         maxDistance: float = 0.25,
         **kwargs,
-    ) -> "list[Self]":
-        """ Find sonically similar audio items.
+    ) -> List[TAudio]:
+        """Returns a list of sonically similar audio items.
 
         Parameters:
             limit (int): maximum count of items to return, unlimited if `None`.
