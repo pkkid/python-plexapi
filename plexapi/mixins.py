@@ -67,7 +67,7 @@ class SmartFilterMixin:
 
     def _parseFilterGroups(self, feed: Deque[Tuple[str, str]], returnOn: Union[Set[str], None] = None) -> dict:
         """ Parse filter groups from input lines between push and pop. """
-        currentFiltersStack = []  # list of dictionaries
+        currentFiltersStack: list[dict] = []
         operatorForStack = None
         if returnOn is None:
             returnOn = set("pop")
