@@ -438,6 +438,7 @@ def test_audio_Audio_section(artist, album, track):
     assert track.section()
     assert track.section().key == album.section().key == artist.section().key
 
+
 @pytest.mark.authenticated
 def test_audio_Audio_sonicallySimilar(artist):
     similar_audio = artist.sonicallySimilar()
