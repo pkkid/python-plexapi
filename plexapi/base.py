@@ -565,6 +565,14 @@ class PlexPartialObject(PlexObject):
         """ Returns True if this is not a full object. """
         return not self.isFullObject()
 
+    def isLocked(self, field: str):
+        """ Returns True if the specified field is locked, otherwise False.
+
+            Parameters:
+                field (str): The name of the field.
+        """
+        return next((f.locked for f in self.fields if f.name == field), False)
+
     def _edit(self, **kwargs):
         """ Actually edit an object. """
         if isinstance(self._edits, dict):
