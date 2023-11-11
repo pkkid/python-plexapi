@@ -444,6 +444,12 @@ def test_audio_Audio_sonicallySimilar(artist):
     assert isinstance(similar_audio, list)
     assert all(isinstance(i, type(artist)) for i in similar_audio)
 
+    similar_audio = artist.sonicallySimilar(limit=1)
+    assert len(similar_audio) <= 1
+
+    similar_audio = artist.sonicallySimilar(maxDistance=0.1)
+    assert all(i.distance <= 0.1 for i in similar_audio)
+
 
 def test_audio_Artist_download(monkeydownload, tmpdir, artist):
     total = len(artist.tracks())

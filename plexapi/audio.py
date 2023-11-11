@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
-from typing import List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
@@ -59,6 +59,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
+        self.distance = utils.cast(float, data.attrib.get('distance'))
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
@@ -71,7 +72,6 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self.listType = 'audio'
         self.moods = self.findItems(data, media.Mood)
         self.musicAnalysisVersion = utils.cast(int, data.attrib.get('musicAnalysisVersion'))
-        self.distance = utils.cast(float, data.attrib.get('distance'))
         self.ratingKey = utils.cast(int, data.attrib.get('ratingKey'))
         self.summary = data.attrib.get('summary')
         self.thumb = data.attrib.get('thumb')
@@ -150,10 +150,12 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         """
 
         key = f"{self.key}/nearest"
-        params = {"maxDistance": maxDistance, "limit": limit}
-        key += utils.joinArgs(
-            {k: v for k, v in params.items() if v is not None}
-        )
+        params: Dict[str, Any] = {}
+        if limit is not None:
+            params['limit'] = limit
+        if maxDistance is not None:
+            params['maxDistance'] = maxDistance
+        key += utils.joinArgs(params)
 
         return self.fetchItems(
             key,
