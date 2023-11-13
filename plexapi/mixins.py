@@ -792,7 +792,8 @@ class EditTagsMixin:
 
         if not remove:
             tags = getattr(self, self._tagPlural(tag), [])
-            items = tags + items
+            if isinstance(tags, list):
+                items = tags + items
 
         edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
         edits.update(kwargs)
