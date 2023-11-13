@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import deque
 from datetime import datetime
-from typing import Tuple
+from typing import Deque, Set, Tuple, Union
 from urllib.parse import parse_qsl, quote, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
@@ -65,9 +65,7 @@ class AdvancedSettingsMixin:
 class SmartFilterMixin:
     """ Mixin for Plex objects that can have smart filters. """
 
-    def _parseFilterGroups(
-        self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]|None" = None
-    ) -> dict:
+    def _parseFilterGroups(self, feed: Deque[Tuple[str, str]], returnOn: Union[Set[str], None] = None) -> dict:
         """ Parse filter groups from input lines between push and pop. """
         currentFiltersStack: list[dict] = []
         operatorForStack = None
