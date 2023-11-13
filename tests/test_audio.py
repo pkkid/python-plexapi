@@ -444,7 +444,7 @@ def test_audio_Audio_section(artist, album, track):
 
 
 @pytest.mark.authenticated
-def test_audio_Audio_sonicallySimilar(artist):
+def test_audio_Audio_sonicallySimilar(account, artist):
     similar_audio = artist.sonicallySimilar()
     assert isinstance(similar_audio, list)
     assert all(isinstance(i, type(artist)) for i in similar_audio)
