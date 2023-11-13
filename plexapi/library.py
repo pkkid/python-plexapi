@@ -2727,7 +2727,9 @@ class FilteringType(PlexObject):
             ('id', 'integer', 'Rating Key'),
             ('index', 'integer', f'{self.type.capitalize()} Number'),
             ('lastRatedAt', 'date', f'{self.type.capitalize()} Last Rated'),
-            ('updatedAt', 'date', 'Date Updated')
+            ('updatedAt', 'date', 'Date Updated'),
+            ('group', 'string', 'SQL Group By Statement'),
+            ('having', 'string', 'SQL Having Clause')
         ]
 
         if self.type == 'movie':
@@ -2778,11 +2780,14 @@ class FilteringType(PlexObject):
 
         manualFields = []
         for field, fieldType, fieldTitle in additionalFields:
+            if field not in {'group', 'having'}:
+                field = f"{prefix}{field}"
             fieldXML = (
-                f'<Field key="{prefix}{field}" '
+                f'<Field key="{field}" '
                 f'title="{fieldTitle}" '
                 f'type="{fieldType}"/>'
             )
+
             manualFields.append(self._manuallyLoadXML(fieldXML, FilteringField))
 
         return manualFields

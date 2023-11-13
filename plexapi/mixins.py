@@ -116,11 +116,14 @@ class SmartFilterMixin:
         filtersDict = {}
         special_keys = {"type", "sort"}
         integer_keys = {"includeGuids", "limit"}
-        reserved_keys = special_keys | integer_keys
+        as_is_keys = {"group", "having"}
+        reserved_keys = special_keys | integer_keys | as_is_keys
         while feed:
             key, value = feed.popleft()
             if key in integer_keys:
                 filtersDict[key] = int(value)
+            elif key in as_is_keys:
+                filtersDict[key] = value
             elif key == "type":
                 filtersDict["libtype"] = utils.reverseSearchType(value)
             elif key == "sort":
