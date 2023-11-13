@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from urllib.parse import quote_plus
 
+from typing import Any, Dict, List, Optional, TypeVar
+
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
@@ -14,6 +16,9 @@ from plexapi.mixins import (
 from plexapi.playlist import Playlist
 
 
+TAudio = TypeVar("TAudio", bound="Audio")
+
+
 class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """ Base class for all audio objects including :class:`~plexapi.audio.Artist`,
         :class:`~plexapi.audio.Album`, and :class:`~plexapi.audio.Track`.
@@ -22,6 +27,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
             addedAt (datetime): Datetime the item was added to the library.
             art (str): URL to artwork image (/library/metadata/<ratingKey>/art/<artid>).
             artBlurHash (str): BlurHash string for artwork image.
+            distance (float): Sonic Distance of the item from the seed item.
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the artist, album, or track (plex://artist/5d07bcb0403c64029053ac4c).
             index (int): Plex index number (often the track number).
@@ -53,6 +59,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
         self.artBlurHash = data.attrib.get('artBlurHash')
+        self.distance = utils.cast(float, data.attrib.get('distance'))
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
         self.index = utils.cast(int, data.attrib.get('index'))
@@ -124,6 +131,37 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         sync_item.mediaSettings = MediaSettings.createMusic(bitrate)
 
         return myplex.sync(sync_item, client=client, clientId=clientId)
+
+    def sonicallySimilar(
+        self: TAudio,
+        limit: Optional[int] = None,
+        maxDistance: Optional[float] = None,
+        **kwargs,
+    ) -> List[TAudio]:
+        """Returns a list of sonically similar audio items.
+
+        Parameters:
+            limit (int): Maximum count of items to return. Default 50 (server default)
+            maxDistance (float): Maximum distance between tracks, 0.0 - 1.0. Default 0.25 (server default).
+            **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.fetchItems`.
+
+        Returns:
+            List[:class:`~plexapi.audio.Audio`]: list of sonically similar audio items.
+        """
+
+        key = f"{self.key}/nearest"
+        params: Dict[str, Any] = {}
+        if limit is not None:
+            params['limit'] = limit
+        if maxDistance is not None:
+            params['maxDistance'] = maxDistance
+        key += utils.joinArgs(params)
+
+        return self.fetchItems(
+            key,
+            cls=self.__class__,
+            **kwargs,
+        )
 
 
 @utils.registerPlexObject
