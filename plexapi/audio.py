@@ -136,7 +136,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self: TAudio,
         limit: Optional[int] = None,
         maxDistance: Optional[float] = None,
-        **kwargs,
+        **kwargs
     ) -> List[TAudio]:
         """Returns a list of sonically similar audio items.
 
