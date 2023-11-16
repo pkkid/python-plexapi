@@ -17,7 +17,6 @@ if typing.TYPE_CHECKING:
     from plexapi.media import Session
     from plexapi.server import PlexServer
 
-# FunctionCheck = Callable[..., bool]
 FunctionCheck = Callable[[Any, Any], bool]
 PlexObjectT = TypeVar('PlexObjectT', bound='PlexObject')
 
@@ -184,7 +183,12 @@ class PlexObject:
     ) -> Optional[PlexObject]:
         ...
 
-    def _buildItemOrNone(self, elem: Element, cls: Optional[Type[PlexObjectT]] = None, initpath: Optional[str] = None):
+    def _buildItemOrNone(
+        self,
+        elem: Element,
+        cls: Optional[Type[PlexObjectT]] = None,
+        initpath: Optional[str] = None,
+    ):
         """ Calls :func:`~plexapi.base.PlexObject._buildItem` but returns
             None if elem is an unknown type.
         """
@@ -539,7 +543,7 @@ class PlexObject:
         self._initpath = key
         data = self._server.query(key)
         if not data:
-            raise NotFound(f'Unable to find elem: key={key}')
+            raise NotFound(f'Unable to find elem: {key=}')
         self._overwriteNone = _overwriteNone
         self._loadData(data[0])
         self._overwriteNone = True
