@@ -168,7 +168,7 @@ def cast(
             func (func): Callback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
-    if not value:
+    if value is None:
         return value
     if func == bool:
         if value in (1, True, "1", "true"):
