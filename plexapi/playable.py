@@ -1,5 +1,4 @@
 import re
-from abc import ABC, abstractmethod
 from urllib.parse import urlencode
 
 from plexapi import media, utils
