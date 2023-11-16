@@ -150,7 +150,7 @@ class Photoalbum(
 
 @utils.registerPlexObject
 class Photo(
-    PlexPartialObject, Playable,
+    Playable,
     RatingMixin,
     ArtUrlMixin, PosterUrlMixin,
     PhotoEditMixins
