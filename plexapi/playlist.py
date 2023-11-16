@@ -4,16 +4,16 @@ from pathlib import Path
 from urllib.parse import quote_plus, unquote
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
 from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
+from plexapi.playable import Playable
 from plexapi.utils import deprecated
 
 
 @utils.registerPlexObject
 class Playlist(
-    PlexPartialObject, Playable,
+    Playable,
     SmartFilterMixin,
     ArtMixin, PosterMixin
 ):
