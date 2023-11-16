@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 from urllib.parse import quote_plus
+from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
@@ -47,7 +48,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """
     METADATA_TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -154,7 +155,7 @@ class Artist(
     TAG = 'Directory'
     TYPE = 'artist'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.albumSort = utils.cast(int, data.attrib.get('albumSort', '-1'))
@@ -285,7 +286,7 @@ class Album(
     TAG = 'Directory'
     TYPE = 'album'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.collections = self.findItems(data, media.Collection)
@@ -417,7 +418,7 @@ class Track(
     TAG = 'Track'
     TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
@@ -497,7 +498,7 @@ class TrackSession(PlexSession, Track):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -510,7 +511,7 @@ class TrackHistory(PlexHistory, Track):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexHistory._loadData(self, data)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import quote_plus
+from xml.etree.ElementTree import Element
 
 from plexapi import utils
 from plexapi.base import PlexObject
@@ -35,7 +36,7 @@ class PlayQueue(PlexObject):
     TAG = "PlayQueue"
     TYPE = "playqueue"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.identifier = data.attrib.get("identifier")
         self.mediaTagPrefix = data.attrib.get("mediaTagPrefix")

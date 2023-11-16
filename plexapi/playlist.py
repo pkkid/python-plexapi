@@ -2,6 +2,7 @@
 import re
 from pathlib import Path
 from urllib.parse import quote_plus, unquote
+from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
 from plexapi.base import Playable, PlexPartialObject
@@ -48,7 +49,7 @@ class Playlist(
     TAG = 'Playlist'
     TYPE = 'playlist'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))

@@ -3,6 +3,7 @@ import os
 from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import requests
 
@@ -116,7 +117,7 @@ class PlexServer(PlexObject):
         data = self.query(self.key, timeout=self._timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
@@ -1091,7 +1092,7 @@ class Account(PlexObject):
     """
     key = '/myplex/account'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')
@@ -1112,7 +1113,7 @@ class Activity(PlexObject):
     """A currently running activity on the PlexServer."""
     key = '/activities'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.cancellable = utils.cast(bool, data.attrib.get('cancellable'))
         self.progress = utils.cast(int, data.attrib.get('progress'))
@@ -1127,7 +1128,7 @@ class Release(PlexObject):
     TAG = 'Release'
     key = '/updater/status'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.download_key = data.attrib.get('key')
         self.version = data.attrib.get('version')
         self.added = data.attrib.get('added')
@@ -1152,7 +1153,7 @@ class SystemAccount(PlexObject):
     """
     TAG = 'Account'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.autoSelectAudio = utils.cast(bool, data.attrib.get('autoSelectAudio'))
         self.defaultAudioLanguage = data.attrib.get('defaultAudioLanguage')
@@ -1181,7 +1182,7 @@ class SystemDevice(PlexObject):
     """
     TAG = 'Device'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
@@ -1207,7 +1208,7 @@ class StatisticsBandwidth(PlexObject):
     """
     TAG = 'StatisticsBandwidth'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.accountID = utils.cast(int, data.attrib.get('accountID'))
         self.at = utils.toDatetime(data.attrib.get('at'))
@@ -1249,7 +1250,7 @@ class StatisticsResources(PlexObject):
     """
     TAG = 'StatisticsResources'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.at = utils.toDatetime(data.attrib.get('at'))
         self.hostCpuUtilization = utils.cast(float, data.attrib.get('hostCpuUtilization'))
@@ -1277,7 +1278,7 @@ class ButlerTask(PlexObject):
     """
     TAG = 'ButlerTask'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.description = data.attrib.get('description')
         self.enabled = utils.cast(bool, data.attrib.get('enabled'))
@@ -1299,7 +1300,7 @@ class Identity(PlexObject):
     def __repr__(self):
         return f"<{self.__class__.__name__}:{self.machineIdentifier}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.claimed = utils.cast(bool, data.attrib.get('claimed'))
         self.machineIdentifier = data.attrib.get('machineIdentifier')

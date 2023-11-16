@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from urllib.parse import quote_plus
+from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
 from plexapi.base import PlexPartialObject
@@ -64,7 +65,7 @@ class Collection(
     TAG = 'Directory'
     TYPE = 'collection'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')

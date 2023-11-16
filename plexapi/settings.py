@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 from urllib.parse import quote
+from xml.etree.ElementTree import Element
 
 from plexapi import log, utils
 from plexapi.base import PlexObject
@@ -111,7 +112,7 @@ class Setting(PlexObject):
         'text': {'type': str, 'cast': str, 'tostr': str},
     }
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self.type = data.attrib.get('type')
         self.advanced = utils.cast(bool, data.attrib.get('advanced'))

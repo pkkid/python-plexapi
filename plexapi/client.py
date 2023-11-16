@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import requests
 
@@ -119,7 +120,7 @@ class PlexClient(PlexObject):
         """ Alias to self.connect(). """
         return self.connect()
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.deviceClass = data.attrib.get('deviceClass')
@@ -602,7 +603,7 @@ class ClientTimeline(PlexObject):
 
     key = 'timeline/poll'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.address = data.attrib.get('address')
         self.audioStreamId = utils.cast(int, data.attrib.get('audioStreamId'))

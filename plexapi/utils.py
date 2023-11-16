@@ -7,8 +7,10 @@ import os
 import re
 import string
 import time
+from typing import Any, Optional, Type, Union, overload
 import unicodedata
 import warnings
+from xml.etree.ElementTree import Element
 import zipfile
 from collections import deque
 from datetime import datetime, timedelta
@@ -136,7 +138,29 @@ def registerPlexObject(cls):
     return cls
 
 
-def cast(func, value):
+@overload
+def cast(func: Type[bool], value: Any) -> bool:
+    ...
+
+
+@overload
+def cast(func: Type[int], value: Any) -> int:
+    ...
+
+
+@overload
+def cast(func: Type[float], value: Any) -> float:
+    ...
+
+
+@overload
+def cast(func: Type[str], value: Any) -> str:
+    ...
+
+
+def cast(
+    func: Type[Union[int, float, bool, str]], value: Any
+) -> Union[int, float, bool, str]:
     """ Cast the specified value to the specified type (returned by func). Currently this
         only support str, int, float, bool. Should be extended if needed.
 
@@ -144,22 +168,21 @@ def cast(func, value):
             func (func): Callback function to used cast to type (int, bool, float).
             value (any): value to be cast and returned.
     """
-    if value is not None:
-        if func == bool:
-            if value in (1, True, "1", "true"):
-                return True
-            elif value in (0, False, "0", "false"):
-                return False
-            else:
-                raise ValueError(value)
+    if not value:
+        return value
+    if func == bool:
+        if value in (1, True, "1", "true"):
+            return True
+        if value in (0, False, "0", "false"):
+            return False
+        raise ValueError(value)
 
-        elif func in (int, float):
-            try:
-                return func(value)
-            except ValueError:
-                return float('nan')
-        return func(value)
-    return value
+    if func in (int, float):
+        try:
+            return func(value)
+        except ValueError:
+            return float('nan')
+    return func(value)
 
 
 def joinArgs(args):
@@ -625,7 +648,7 @@ def deprecated(message, stacklevel=2):
     return decorator
 
 
-def iterXMLBFS(root, tag=None):
+def iterXMLBFS(root: Element, tag: Optional[str] = None):
     """ Iterate through an XML tree using a breadth-first search.
         If tag is specified, only return nodes with that tag.
     """

@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 from functools import cached_property
 from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
+from xml.etree.ElementTree import Element
 
 from plexapi import log, media, utils
 from plexapi.base import OPERATORS, PlexObject
@@ -29,7 +30,7 @@ class Library(PlexObject):
     """
     key = '/library'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.identifier = data.attrib.get('identifier')
         self.mediaTagVersion = data.attrib.get('mediaTagVersion')
@@ -401,7 +402,7 @@ class LibrarySection(PlexObject):
             uuid (str): Unique id for the section (32258d7c-3e6c-4ac5-98ad-bad7a3b78c63)
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.agent = data.attrib.get('agent')
         self.allowSync = utils.cast(bool, data.attrib.get('allowSync'))
@@ -2108,7 +2109,7 @@ class LibraryTimeline(PlexObject):
     """
     TAG = 'LibraryTimeline'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.size = utils.cast(int, data.attrib.get('size'))
@@ -2137,7 +2138,7 @@ class Location(PlexObject):
     """
     TAG = 'Location'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = utils.cast(int, data.attrib.get('id'))
@@ -2163,7 +2164,7 @@ class Hub(PlexObject):
     """
     TAG = 'Hub'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.context = data.attrib.get('context')
@@ -2222,7 +2223,7 @@ class LibraryMediaTag(PlexObject):
     """
     TAG = 'Directory'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.count = utils.cast(int, data.attrib.get('count'))
@@ -2612,7 +2613,7 @@ class FilteringType(PlexObject):
         _type = self._clean(self.firstAttr('type'))
         return f"<{':'.join([p for p in [self.__class__.__name__, _type] if p])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.active = utils.cast(bool, data.attrib.get('active', '0'))
         self.fields = self.findItems(data, FilteringField)
@@ -2801,7 +2802,7 @@ class FilteringFilter(PlexObject):
     """
     TAG = 'Filter'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.filter = data.attrib.get('filter')
         self.filterType = data.attrib.get('filterType')
@@ -2826,7 +2827,7 @@ class FilteringSort(PlexObject):
     """
     TAG = 'Sort'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.active = utils.cast(bool, data.attrib.get('active', '0'))
@@ -2851,7 +2852,7 @@ class FilteringField(PlexObject):
     """
     TAG = 'Field'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.key = data.attrib.get('key')
@@ -2874,7 +2875,7 @@ class FilteringFieldType(PlexObject):
         _type = self._clean(self.firstAttr('type'))
         return f"<{':'.join([p for p in [self.__class__.__name__, _type] if p])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.type = data.attrib.get('type')
@@ -2891,7 +2892,7 @@ class FilteringOperator(PlexObject):
     """
     TAG = 'Operator'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
@@ -2913,7 +2914,7 @@ class FilterChoice(PlexObject):
     """
     TAG = 'Directory'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.fastKey = data.attrib.get('fastKey')
@@ -2939,7 +2940,7 @@ class ManagedHub(PlexObject):
     """
     TAG = 'Hub'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.deletable = utils.cast(bool, data.attrib.get('deletable', True))
@@ -3063,7 +3064,7 @@ class Folder(PlexObject):
             title (str): Title of folder.
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self.key = data.attrib.get('key')
         self.title = data.attrib.get('title')
@@ -3103,7 +3104,7 @@ class FirstCharacter(PlexObject):
             title (str): Character (#, !, A, B, C, ...).
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.key = data.attrib.get('key')
@@ -3125,7 +3126,7 @@ class Path(PlexObject):
     """
     TAG = 'Path'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.home = utils.cast(bool, data.attrib.get('home'))
         self.key = data.attrib.get('key')
         self.network = utils.cast(bool, data.attrib.get('network'))
@@ -3154,7 +3155,7 @@ class File(PlexObject):
     """
     TAG = 'File'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.key = data.attrib.get('key')
         self.path = data.attrib.get('path')
         self.title = data.attrib.get('title')
@@ -3202,7 +3203,7 @@ class Common(PlexObject):
     """
     TAG = 'Common'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.collections = self.findItems(data, media.Collection)
         self.contentRating = data.attrib.get('contentRating')

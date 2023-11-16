@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 from urllib.parse import quote_plus
+from xml.etree.ElementTree import Element
 
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject, PlexSession
@@ -50,7 +51,7 @@ class Photoalbum(
     TYPE = 'photo'
     _searchType = 'photoalbum'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')
@@ -194,7 +195,7 @@ class Photo(
     TYPE = 'photo'
     METADATA_TYPE = 'photo'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -311,7 +312,7 @@ class PhotoSession(PlexSession, Photo):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Photo._loadData(self, data)
         PlexSession._loadData(self, data)

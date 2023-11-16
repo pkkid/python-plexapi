@@ -5,6 +5,7 @@ import threading
 import time
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import requests
 
@@ -142,7 +143,7 @@ class MyPlexAccount(PlexObject):
         """ Sign out of the Plex account. Invalidates the authentication token. """
         return self.query(self.SIGNOUT, method=self._session.delete)
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self._token = logfilter.add_secret(data.attrib.get('authToken'))
@@ -1198,7 +1199,7 @@ class MyPlexUser(PlexObject):
     TAG = 'User'
     key = 'https://plex.tv/api/users/'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.friend = self._initpath == self.key
@@ -1275,7 +1276,7 @@ class MyPlexInvite(PlexObject):
     REQUESTS = 'https://plex.tv/api/invites/requests'
     REQUESTED = 'https://plex.tv/api/invites/requested'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
@@ -1307,7 +1308,7 @@ class Section(PlexObject):
     """
     TAG = 'Section'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.id = utils.cast(int, data.attrib.get('id'))
         self.key = utils.cast(int, data.attrib.get('key'))
@@ -1345,7 +1346,7 @@ class MyPlexServerShare(PlexObject):
     """
     TAG = 'Server'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = utils.cast(int, data.attrib.get('id'))
@@ -1430,7 +1431,7 @@ class MyPlexResource(PlexObject):
     DEFAULT_LOCATION_ORDER = ['local', 'remote', 'relay']
     DEFAULT_SCHEME_ORDER = ['https', 'http']
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.accessToken = logfilter.add_secret(data.attrib.get('accessToken'))
         self.clientIdentifier = data.attrib.get('clientIdentifier')
@@ -1548,7 +1549,7 @@ class ResourceConnection(PlexObject):
     """
     TAG = 'connection'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.address = data.attrib.get('address')
         self.ipv6 = utils.cast(bool, data.attrib.get('IPv6'))
@@ -1591,7 +1592,7 @@ class MyPlexDevice(PlexObject):
     TAG = 'Device'
     key = 'https://plex.tv/devices.xml'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.name = data.attrib.get('name')
         self.publicAddress = data.attrib.get('publicAddress')
@@ -1928,7 +1929,7 @@ class AccountOptOut(PlexObject):
     TAG = 'optOut'
     CHOICES = {'opt_in', 'opt_out', 'opt_out_managed'}
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.key = data.attrib.get('key')
         self.value = data.attrib.get('value')
 
@@ -1986,7 +1987,7 @@ class UserState(PlexObject):
     def __repr__(self):
         return f'<{self.__class__.__name__}:{self.ratingKey}>'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
         self.ratingKey = data.attrib.get('ratingKey')
         self.type = data.attrib.get('type')
@@ -2015,7 +2016,7 @@ class GeoLocation(PlexObject):
     """
     TAG = 'location'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.city = data.attrib.get('city')
         self.code = data.attrib.get('code')
