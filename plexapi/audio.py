@@ -6,13 +6,14 @@ from urllib.parse import quote_plus
 from typing import Any, Dict, List, Optional, TypeVar
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.base import PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
     ArtistEditMixins, AlbumEditMixins, TrackEditMixins
 )
+from plexapi.playable import Playable
 from plexapi.playlist import Playlist
 
 
@@ -472,7 +473,6 @@ class Track(
         self.grandparentTitle = data.attrib.get('grandparentTitle')
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
-        self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))

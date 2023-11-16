@@ -4,13 +4,14 @@ from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils, video
-from plexapi.base import Playable, PlexPartialObject, PlexSession
+from plexapi.base import PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
     PhotoalbumEditMixins, PhotoEditMixins
 )
+from plexapi.playable import Playable
 
 
 @utils.registerPlexObject
@@ -149,7 +150,7 @@ class Photoalbum(
 
 @utils.registerPlexObject
 class Photo(
-    PlexPartialObject, Playable,
+    Playable,
     RatingMixin,
     ArtUrlMixin, PosterUrlMixin,
     PhotoEditMixins
@@ -209,7 +210,6 @@ class Photo(
         self.librarySectionKey = data.attrib.get('librarySectionKey')
         self.librarySectionTitle = data.attrib.get('librarySectionTitle')
         self.listType = 'photo'
-        self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))

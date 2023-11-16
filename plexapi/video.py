@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.base import PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
@@ -13,6 +13,7 @@ from plexapi.mixins import (
     MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
+from plexapi.playable import Playable
 
 
 class Video(PlexPartialObject, PlayedUnplayedMixin):
@@ -378,7 +379,6 @@ class Movie(
         self.labels = self.findItems(data, media.Label)
         self.languageOverride = data.attrib.get('languageOverride')
         self.markers = self.findItems(data, media.Marker)
-        self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.originalTitle = data.attrib.get('originalTitle')
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
@@ -905,7 +905,6 @@ class Episode(
         self.index = utils.cast(int, data.attrib.get('index'))
         self.labels = self.findItems(data, media.Label)
         self.markers = self.findItems(data, media.Marker)
-        self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.parentGuid = data.attrib.get('parentGuid')
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
@@ -1090,7 +1089,6 @@ class Clip(
         self.duration = utils.cast(int, data.attrib.get('duration'))
         self.extraType = utils.cast(int, data.attrib.get('extraType'))
         self.index = utils.cast(int, data.attrib.get('index'))
-        self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(
             data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
         self.skipDetails = utils.cast(int, data.attrib.get('skipDetails'))
