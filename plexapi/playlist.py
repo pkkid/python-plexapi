@@ -5,7 +5,7 @@ from urllib.parse import quote_plus, unquote
 from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
 from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
@@ -14,7 +14,7 @@ from plexapi.utils import deprecated
 
 @utils.registerPlexObject
 class Playlist(
-    PlexPartialObject, Playable,
+    Playable,
     SmartFilterMixin,
     ArtMixin, PosterMixin
 ):
