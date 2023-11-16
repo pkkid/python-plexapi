@@ -1003,7 +1003,8 @@ class BaseResource(PlexObject):
         Attributes:
             TAG (str): 'Photo' or 'Track'
             key (str): API URL (/library/metadata/<ratingkey>).
-            provider (str): The source of the art or poster, None for Theme objects.
+            provider (str): The source of the resource. 'local' for local files (e.g. theme.mp3),
+                None if uploaded or agent-/plugin-supplied.
             ratingKey (str): Unique key identifying the resource.
             selected (bool): True if the resource is currently selected.
             thumb (str): The URL to retrieve the resource thumbnail.

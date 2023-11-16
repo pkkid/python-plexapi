@@ -9,6 +9,10 @@ from . import test_media, test_mixins
 
 
 def test_audio_Artist_attr(artist):
+    artist_guids = [
+        "mbid://069a1c1f-14eb-4d36-b0a0-77dffbd67713",
+        "plex://artist/5d07bdaf403c64029060f8c4",
+    ]
     artist.reload()
     assert utils.is_datetime(artist.addedAt)
     assert artist.albumSort == -1
@@ -17,8 +21,8 @@ def test_audio_Artist_attr(artist):
     if artist.countries:
         assert "United States of America" in [i.tag for i in artist.countries]
     # assert "Electronic" in [i.tag for i in artist.genres]
-    assert artist.guid == "plex://artist/5d07bdaf403c64029060f8c4"
-    assert "mbid://069a1c1f-14eb-4d36-b0a0-77dffbd67713" in [i.id for i in artist.guids]
+    assert artist.guid in artist_guids
+    assert artist_guids[0] in [i.id for i in artist.guids]
     assert artist.index == 1
     assert utils.is_metadata(artist._initpath)
     assert utils.is_metadata(artist.key)
@@ -437,6 +441,19 @@ def test_audio_Audio_section(artist, album, track):
     assert album.section()
     assert track.section()
     assert track.section().key == album.section().key == artist.section().key
+
+
+@pytest.mark.authenticated
+def test_audio_Audio_sonicallySimilar(account_plexpass, artist):
+    similar_audio = artist.sonicallySimilar()
+    assert isinstance(similar_audio, list)
+    assert all(isinstance(i, type(artist)) for i in similar_audio)
+
+    similar_audio = artist.sonicallySimilar(limit=1)
+    assert len(similar_audio) <= 1
+
+    similar_audio = artist.sonicallySimilar(maxDistance=0.1)
+    assert all(i.distance <= 0.1 for i in similar_audio)
 
 
 def test_audio_Artist_download(monkeydownload, tmpdir, artist):
