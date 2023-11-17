@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
+from datetime import datetime
 
 import re
 from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, cast, overload
@@ -16,6 +17,7 @@ from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 if typing.TYPE_CHECKING:
     from plexapi.media import Session
     from plexapi.server import PlexServer
+    from plexapi.library import LibrarySection
 
 FunctionCheck = Callable[[Any, Any], bool]
 PlexObjectT = TypeVar('PlexObjectT', bound='PlexObject')
@@ -95,7 +97,7 @@ class PlexObject:
         # Automatically reload the object when accessing a missing attribute
         self._autoReload = CONFIG.get('plexapi.autoreload', True, bool)
         # Attribute to save batch edits for a single API call
-        self._edits = None
+        self._edits: Optional[Dict[str, Any]] = None
 
         if data is not None:
             self._loadData(data)
@@ -709,7 +711,7 @@ class PlexPartialObject(PlexObject):
         self.section()._edit(items=self, **kwargs)
         return self
 
-    def edit(self, **kwargs):
+    def edit(self, **kwargs: Any):
         """ Edit an object.
             Note: This is a low level method and you need to know all the field/tag keys.
             See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin`
@@ -737,7 +739,7 @@ class PlexPartialObject(PlexObject):
         """
         return self._edit(**kwargs)
 
-    def batchEdits(self):
+    def batchEdits(self) -> PlexPartialObject:
         """ Enable batch editing mode to save API calls.
             Must call :func:`~plexapi.base.PlexPartialObject.saveEdits` at the end to save all the edits.
             See :class:`~plexapi.mixins.EditFieldMixin` and :class:`~plexapi.mixins.EditTagsMixin`
@@ -788,8 +790,10 @@ class PlexPartialObject(PlexObject):
         key = f'{self.key}/refresh'
         self._server.query(key, method=self._server._session.put)
 
-    def section(self):
+    def section(self) -> LibrarySection:
         """ Returns the :class:`~plexapi.library.LibrarySection` this item belongs to. """
+        # TODO: consider moving this to MediaContainer as `librarySectionByID` is not available
+        #       or bring in the attr to this class
         return self._server.library.sectionByID(self.librarySectionID)
 
     def delete(self):
@@ -801,7 +805,7 @@ class PlexPartialObject(PlexObject):
                 'have not allowed items to be deleted', self.key)
             raise
 
-    def history(self, maxresults=None, mindate=None):
+    def history(self, maxresults: Optional[int] = None, mindate: Optional[datetime] = None):
         """ Get Play History for a media item.
 
             Parameters:

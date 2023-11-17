@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import os
 from functools import cached_property
+from typing import Optional, Union
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -651,7 +653,14 @@ class PlexServer(PlexObject):
             # figure out what method this is..
             return self.query(part, method=self._session.put)
 
-    def history(self, maxresults=None, mindate=None, ratingKey=None, accountID=None, librarySectionID=None):
+    def history(
+        self,
+        maxresults: Optional[int] = None,
+        mindate: Optional[datetime] = None,
+        ratingKey: Optional[Union[int, str]] = None,
+        accountID: Optional[Union[int, str]] = None,
+        librarySectionID: Optional[Union[int, str]] = None,
+    ):
         """ Returns a list of media items from watched history. If there are many results, they will
             be fetched from the server in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only
             looking for the first <num> results, it would be wise to set the maxresults option to that
