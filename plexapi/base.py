@@ -472,7 +472,14 @@ class PlexObject:
                     items.append(item)
         return items
 
-    def findItem(self, data, cls=None, initpath=None, rtag=None, **kwargs):
+    def findItem(
+        self,
+        data: Element,
+        cls: Optional[Type[PlexObjectT]] = None,
+        initpath: Optional[str] = None,
+        rtag: Optional[str] = None,
+        **kwargs: Any,
+    ):
         """ Load the specified data to find and build the first items with the specified tag
             and attrs. See :func:`~plexapi.base.PlexObject.fetchItem` for more details
             on how this is used.
@@ -482,26 +489,26 @@ class PlexObject:
         except IndexError:
             return None
 
-    def firstAttr(self, *attrs):
+    def firstAttr(self, *attrs: str):
         """ Return the first attribute in attrs that is not None. """
         for attr in attrs:
             value = getattr(self, attr, None)
             if value is not None:
                 return value
 
-    def listAttrs(self, data, attr, rtag=None, **kwargs):
+    def listAttrs(self, data: Element, attr: str, rtag: Optional[str] = None, **kwargs: Any):
         """ Return a list of values from matching attribute. """
         results = []
         # rtag to iter on a specific root tag using breadth-first search
         if rtag:
-            data = next(utils.iterXMLBFS(data, rtag), [])
+            data = next(utils.iterXMLBFS(data, rtag), Element('empty'))
         for elem in data:
             kwargs[f'{attr}__exists'] = True
             if self._checkAttrs(elem, **kwargs):
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key=None, **kwargs):
+    def reload(self, key: Optional[str] = None, **kwargs: Any):
         """ Reload the data for this object from self.key.
 
             Parameters:
@@ -534,7 +541,7 @@ class PlexObject:
         """
         return self._reload(key=key, **kwargs)
 
-    def _reload(self, key=None, _overwriteNone=True, **kwargs):
+    def _reload(self, key: Optional[str] = None, _overwriteNone: bool = True, **kwargs: Any):
         """ Perform the actual reload. """
         details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
         key = key or details_key or self.key
@@ -575,14 +582,14 @@ class PlexObject:
         # default to exact match
         return attr, 'exact', OPERATORS['exact']
 
-    def _getAttrValue(self, elem, attrstr, results=None):
+    def _getAttrValue(self, elem: Element, attrstr: str, results: Optional[List[str]] = None) -> List[str]:
         # log.debug('Fetching %s in %s', attrstr, elem.tag)
         parts = attrstr.split('__', 1)
         attr = parts[0]
-        attrstr = parts[1] if len(parts) == 2 else None
+        attrstr = parts[1] if len(parts) == 2 else ""
         if attrstr:
             results = [] if results is None else results
-            for child in [c for c in elem if c.tag.lower() == attr.lower()]:
+            for child in filter(lambda c: c.tag.lower() == attr.lower(), elem):
                 results += self._getAttrValue(child, attrstr, results)
             return [r for r in results if r is not None]
         # check were looking for the tag
@@ -594,7 +601,7 @@ class PlexObject:
                 return [value]
         return []
 
-    def _castAttrValue(self, op: str, query, value: str):
+    def _castAttrValue(self, op: str, query: Any, value: str) -> Any:
         if op == 'exists':
             return value
         if isinstance(query, bool):
@@ -622,7 +629,7 @@ class PlexPartialObject(PlexObject):
         automatically and update itself.
     """
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, PlexPartialObject):
             return self.key == other.key
         return NotImplemented
@@ -633,17 +640,20 @@ class PlexPartialObject(PlexObject):
     def __iter__(self):
         yield self
 
-    def __getattribute__(self, attr):
+    def __getattribute__(self, attr: str):
         # Dragons inside.. :-/
-        value = super(PlexPartialObject, self).__getattribute__(attr)
+        value = super().__getattribute__(attr)
         # Check a few cases where we don't want to reload
-        if attr in _DONT_RELOAD_FOR_KEYS: return value
-        if attr in USER_DONT_RELOAD_FOR_KEYS: return value
-        if attr.startswith('_'): return value
-        if value not in (None, []): return value
-        if self.isFullObject(): return value
-        if isinstance(self, (PlexSession, PlexHistory)): return value
-        if self._autoReload is False: return value
+        if (
+            attr in _DONT_RELOAD_FOR_KEYS | USER_DONT_RELOAD_FOR_KEYS
+            or attr.startswith("_")
+            or value not in (None, [])
+            or self.isFullObject()
+            or isinstance(self, (PlexSession, PlexHistory))
+            or self._autoReload is False
+        ):
+            return value
+
         # Log the reload.
         clsname = self.__class__.__name__
         title = self.__dict__.get('title', self.__dict__.get('name'))
