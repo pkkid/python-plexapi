@@ -394,6 +394,10 @@ def test_audio_Track_artist(album, artist):
     assert tracks[0].artist() == artist
 
 
+def test_audio_Track_lyricStreams(track):
+    assert not track.lyricStreams()
+
+
 def test_audio_Track_mixins_images(track):
     test_mixins.attr_artUrl(track)
     test_mixins.attr_posterUrl(track)
