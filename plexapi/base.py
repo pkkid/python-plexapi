@@ -773,51 +773,27 @@ class Playable:
 
     def videoStreams(self):
         """ Returns a list of :class:`~plexapi.media.videoStream` objects for all MediaParts. """
-        streams = []
-
         if self.isPartialObject():
             self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.videoStreams()
-        return streams
+        return sum((part.videoStreams() for part in self.iterParts()), [])
 
     def audioStreams(self):
         """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
-        streams = []
-
         if self.isPartialObject():
             self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.audioStreams()
-        return streams
+        return sum((part.audioStreams() for part in self.iterParts()), [])
 
     def subtitleStreams(self):
         """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
-        streams = []
-
         if self.isPartialObject():
             self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.subtitleStreams()
-        return streams
+        return sum((part.subtitleStreams() for part in self.iterParts()), [])
 
     def lyricStreams(self):
         """ Returns a list of :class:`~plexapi.media.LyricStream` objects for all MediaParts. """
-        streams = []
-
         if self.isPartialObject():
             self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.lyricStreams()
-        return streams
+        return sum((part.lyricStreams() for part in self.iterParts()), [])
 
     def play(self, client):
         """ Start playback on the specified client.
