@@ -807,6 +807,18 @@ class Playable:
             streams += part.subtitleStreams()
         return streams
 
+    def lyricStreams(self):
+        """ Returns a list of :class:`~plexapi.media.LyricStream` objects for all MediaParts. """
+        streams = []
+
+        if self.isPartialObject():
+            self.reload()
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.lyricStreams()
+        return streams
+
     def play(self, client):
         """ Start playback on the specified client.
 
