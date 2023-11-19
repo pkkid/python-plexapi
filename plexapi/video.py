@@ -97,42 +97,6 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         """ Returns str, default title for a new syncItem. """
         return self.title
 
-    def videoStreams(self):
-        """ Returns a list of :class:`~plexapi.media.videoStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.videoStreams()
-        return streams
-
-    def audioStreams(self):
-        """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.audioStreams()
-        return streams
-
-    def subtitleStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.subtitleStreams()
-        return streams
-
     def uploadSubtitles(self, filepath):
         """ Upload Subtitle file for video. """
         url = f'{self.key}/subtitles'

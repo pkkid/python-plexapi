@@ -771,6 +771,42 @@ class Playable:
             for part in item.parts:
                 yield part
 
+    def videoStreams(self):
+        """ Returns a list of :class:`~plexapi.media.videoStream` objects for all MediaParts. """
+        streams = []
+
+        if self.isPartialObject():
+            self.reload()
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.videoStreams()
+        return streams
+
+    def audioStreams(self):
+        """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
+        streams = []
+
+        if self.isPartialObject():
+            self.reload()
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.audioStreams()
+        return streams
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        streams = []
+
+        if self.isPartialObject():
+            self.reload()
+
+        parts = self.iterParts()
+        for part in parts:
+            streams += part.subtitleStreams()
+        return streams
+
     def play(self, client):
         """ Start playback on the specified client.
 
