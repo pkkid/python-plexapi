@@ -397,7 +397,6 @@ def test_video_Episode_subtitleStreams(episode):
 
 
 def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
-
     filepath = os.path.realpath(subtitle.name)
 
     movie.uploadSubtitles(filepath)
@@ -407,7 +406,6 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
 
     movie.subtitleStreams()[0].setSelected()
     movie.reload()
-
     subtitleSelection = movie.subtitleStreams()[0]
     assert subtitleSelection.selected
 
@@ -420,6 +418,22 @@ def test_video_Movie_upload_select_remove_subtitle(movie, subtitle):
         os.remove(filepath)
     except OSError:
         pass
+
+
+def test_video_Movie_on_demand_subtitles(movie, account):
+    movie_subtitles = movie.subtitleStreams()
+    subtitles = movie.searchSubtitles()
+    assert subtitles != []
+
+    subtitle = subtitles[0]
+
+    movie.downloadSubtitles(subtitle)
+    utils.wait_until(lambda: len(movie.reload().subtitleStreams()) > len(movie_subtitles))
+    subtitle_sourceKeys = {stream.sourceKey: stream for stream in movie.subtitleStreams()}
+    assert subtitle.sourceKey in subtitle_sourceKeys
+
+    movie.removeSubtitles(subtitleStream=subtitle_sourceKeys[subtitle.sourceKey]).reload()
+    assert subtitle.sourceKey not in [stream.sourceKey for stream in movie.subtitleStreams()]
 
 
 def test_video_Movie_match(movies):
