@@ -146,6 +146,48 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
         return self
 
+    def searchSubtitles(self, language='en', hearingImpaired=0, forced=0):
+        """ Search for on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
+
+            Parameters:
+                language (str, optional): Language code (ISO 639-1) of the subtitles to search for.
+                    Default 'en'.
+                hearingImpaired (int, optional): Search option for SDH subtitles.
+                    Default 0.
+                    (0 = Prefer non-SDH subtitles, 1 = Prefer SDH subtitles,
+                    2 = Only show SDH subtitles, 3 = Only show non-SDH subtitles)
+                forced (int, optional): Search option for forced subtitles.
+                    Default 0.
+                    (0 = Prefer non-forced subtitles, 1 = Prefer forced subtitles,
+                    2 = Only show forced subtitles, 3 = Only show non-forced subtitles)
+
+            Returns:
+                List<:class:`~plexapi.media.SubtitleStream`>: List of SubtitleStream objects.
+        """
+        params = {
+            'language': language,
+            'hearingImpaired': hearingImpaired,
+            'forced': forced,
+        }
+        key = f'{self.key}/subtitles{utils.joinArgs(params)}'
+        return self.fetchItems(key)
+
+    def downloadSubtitles(self, subtitleStream):
+        """ Download on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
+
+            Note: This method is asynchronous and returns immediately before subtitles are fully downloaded.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`):
+                    Subtitle object returned from :func:`~plexapi.video.Video.searchSubtitles`.
+        """
+        key = f'{self.key}/subtitles'
+        params = {'key': subtitleStream.key}
+        self._server.query(key, self._server._session.put, params=params)
+        return self
+
     def removeSubtitles(self, streamID=None, streamTitle=None):
         """ Remove Subtitle from movie's subtitles listing.
 
