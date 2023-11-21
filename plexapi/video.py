@@ -134,15 +134,20 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         return streams
 
     def uploadSubtitles(self, filepath):
-        """ Upload Subtitle file for video. """
+        """ Upload a subtitle file for the video.
+
+            Parameters:
+                filepath (str): Path to subtitle file.
+        """
         url = f'{self.key}/subtitles'
         filename = os.path.basename(filepath)
         subFormat = os.path.splitext(filepath)[1][1:]
+        params = {
+            'title': filename,
+            'format': subFormat,
+        }
+        headers = {'Accept': 'text/plain, */*'}
         with open(filepath, 'rb') as subfile:
-            params = {'title': filename,
-                      'format': subFormat
-                      }
-            headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
         return self
 
@@ -188,15 +193,28 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         self._server.query(key, self._server._session.put, params=params)
         return self
 
-    def removeSubtitles(self, streamID=None, streamTitle=None):
-        """ Remove Subtitle from movie's subtitles listing.
+    def removeSubtitles(self, subtitleStream=None, streamID=None, streamTitle=None):
+        """ Remove an upload or downloaded subtitle from the video.
 
-            Note: If subtitle file is located inside video directory it will bbe deleted.
-            Files outside of video directory are not effected.
+            Note: If the subtitle file is located inside video directory it will be deleted.
+            Files outside of video directory are not affected.
+            Embedded subtitles cannot be removed.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`, optional): Subtitle object to remove.
+                streamID (int, optional): ID of the subtitle stream to remove.
+                streamTitle (str, optional): Title of the subtitle stream to remove.
         """
-        for stream in self.subtitleStreams():
-            if streamID == stream.id or streamTitle == stream.title:
-                self._server.query(stream.key, self._server._session.delete)
+        if subtitleStream is None:
+            try:
+                subtitleStream = next(
+                    stream for stream in self.subtitleStreams()
+                    if streamID == stream.id or streamTitle == stream.title
+                )
+            except StopIteration:
+                raise BadRequest(f"Subtitle stream with ID '{streamID}' or title '{streamTitle}' not found.") from None
+
+        self._server.query(subtitleStream.key, self._server._session.delete)
         return self
 
     def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
