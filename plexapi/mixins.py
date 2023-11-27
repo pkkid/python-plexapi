@@ -316,19 +316,16 @@ class PlayedUnplayedMixin:
         return self
 
     @property
-    @deprecated('use "isPlayed" instead', stacklevel=3)
     def isWatched(self):
-        """ Returns True if the show is watched. """
+        """ Alias to self.isPlayed. """
         return self.isPlayed
 
-    @deprecated('use "markPlayed" instead')
     def markWatched(self):
-        """ Mark the video as played. """
+        """ Alias to :func:`~plexapi.mixins.PlayedUnplayedMixin.markPlayed`. """
         self.markPlayed()
 
-    @deprecated('use "markUnplayed" instead')
     def markUnwatched(self):
-        """ Mark the video as unplayed. """
+        """ Alias to :func:`~plexapi.mixins.PlayedUnplayedMixin.markUnplayed`. """
         self.markUnplayed()
 
 
