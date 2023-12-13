@@ -447,7 +447,7 @@ class SubtitleStream(MediaPartStream):
             hearingImpaired (bool): True if this is a hearing impaired (SDH) subtitle.
             perfectMatch (bool): True if the on-demand subtitle is a perfect match.
             providerTitle (str): The provider title where the on-demand subtitle is downloaded from.
-            score (int): The match score of the on-demand subtitle.
+            score (int): The match score (download count) of the on-demand subtitle.
             sourceKey (str): The source key of the on-demand subtitle.
             transient (str): Unknown.
             userID (int): The user id of the user that downloaded the on-demand subtitle.
