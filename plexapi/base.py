@@ -3,8 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, cast, overload
-import typing
+from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, cast, overload, TYPE_CHECKING
 import weakref
 from functools import cached_property
 from urllib.parse import urlencode
@@ -14,7 +13,7 @@ from xml.etree.ElementTree import Element
 from plexapi import CONFIG, X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from plexapi.media import Session
     from plexapi.server import PlexServer
     from plexapi.library import LibrarySection
@@ -365,7 +364,6 @@ class PlexObject:
 
             data = self._server.query(ekey, headers=headers)
             if not data:
-                # raise NotFound(f'Unable to find elem: key={ekey}')
                 return []
             subresults = self.findItems(data, cls, ekey, **kwargs)  # type: ignore # mypy not able to infer cls & ekey type
             total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
