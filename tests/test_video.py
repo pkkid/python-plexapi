@@ -351,6 +351,13 @@ def test_video_movie_watched(movie):
     movie.reload()
     assert movie.viewCount == 0
 
+    movie.markWatched()
+    movie.reload()
+    assert movie.viewCount == 1
+    movie.markUnwatched()
+    movie.reload()
+    assert movie.viewCount == 0
+
 
 def test_video_Movie_isPartialObject(movie):
     assert movie.isPartialObject()
@@ -873,12 +880,14 @@ def test_video_Show_markPlayed(show):
     show.markPlayed()
     show.reload()
     assert show.isPlayed
+    assert show.isWatched
 
 
 def test_video_Show_markUnplayed(show):
     show.markUnplayed()
     show.reload()
     assert not show.isPlayed
+    assert not show.isWatched
 
 
 def test_video_Show_refresh(show):
