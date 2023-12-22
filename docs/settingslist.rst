@@ -42,9 +42,6 @@
 **butlerTaskDeepMediaAnalysis (bool)**
   Perform extensive media analysis during maintenance. (default: True)
 
-**butlerTaskGenerateAutoTags (bool)**
-  Analyze and tag photos. (default: True)
-
 **butlerTaskOptimizeDatabase (bool)**
   Optimize database every week. (default: True)
 
@@ -267,6 +264,7 @@
 * **aBRKeepOldTranscodes (bool)**
 * **allowHighOutputBitrates (bool)**
 * **backgroundQueueIdlePaused (bool)**
+* **butlerTaskGarbageCollectBlobs (bool)**
 * **butlerTaskGenerateMediaIndexFiles (bool)**
 * **certificateVersion (int)**: default: 2
 * **dvrShowUnsupportedDevices (bool)**
