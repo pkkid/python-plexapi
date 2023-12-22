@@ -444,8 +444,10 @@ class SubtitleStream(MediaPartStream):
             forced (bool): True if this is a forced subtitle.
             format (str): The format of the subtitle stream (ex: srt).
             headerCompression (str): The header compression of the subtitle stream.
+            hearingImpaired (bool): True if this is a hearing impaired (SDH) subtitle.
+            perfectMatch (bool): True if the on-demand subtitle is a perfect match.
             providerTitle (str): The provider title where the on-demand subtitle is downloaded from.
-            score (int): The match score of the on-demand subtitle.
+            score (int): The match score (download count) of the on-demand subtitle.
             sourceKey (str): The source key of the on-demand subtitle.
             transient (str): Unknown.
             userID (int): The user id of the user that downloaded the on-demand subtitle.
@@ -460,6 +462,8 @@ class SubtitleStream(MediaPartStream):
         self.forced = utils.cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.headerCompression = data.attrib.get('headerCompression')
+        self.hearingImpaired = utils.cast(bool, data.attrib.get('hearingImpaired', '0'))
+        self.perfectMatch = utils.cast(bool, data.attrib.get('perfectMatch'))
         self.providerTitle = data.attrib.get('providerTitle')
         self.score = utils.cast(int, data.attrib.get('score'))
         self.sourceKey = data.attrib.get('sourceKey')

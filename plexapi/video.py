@@ -98,27 +98,87 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         return self.title
 
     def uploadSubtitles(self, filepath):
-        """ Upload Subtitle file for video. """
+        """ Upload a subtitle file for the video.
+
+            Parameters:
+                filepath (str): Path to subtitle file.
+        """
         url = f'{self.key}/subtitles'
         filename = os.path.basename(filepath)
         subFormat = os.path.splitext(filepath)[1][1:]
+        params = {
+            'title': filename,
+            'format': subFormat,
+        }
+        headers = {'Accept': 'text/plain, */*'}
         with open(filepath, 'rb') as subfile:
-            params = {'title': filename,
-                      'format': subFormat
-                      }
-            headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
         return self
 
-    def removeSubtitles(self, streamID=None, streamTitle=None):
-        """ Remove Subtitle from movie's subtitles listing.
+    def searchSubtitles(self, language='en', hearingImpaired=0, forced=0):
+        """ Search for on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
 
-            Note: If subtitle file is located inside video directory it will bbe deleted.
-            Files outside of video directory are not effected.
+            Parameters:
+                language (str, optional): Language code (ISO 639-1) of the subtitles to search for.
+                    Default 'en'.
+                hearingImpaired (int, optional): Search option for SDH subtitles.
+                    Default 0.
+                    (0 = Prefer non-SDH subtitles, 1 = Prefer SDH subtitles,
+                    2 = Only show SDH subtitles, 3 = Only show non-SDH subtitles)
+                forced (int, optional): Search option for forced subtitles.
+                    Default 0.
+                    (0 = Prefer non-forced subtitles, 1 = Prefer forced subtitles,
+                    2 = Only show forced subtitles, 3 = Only show non-forced subtitles)
+
+            Returns:
+                List<:class:`~plexapi.media.SubtitleStream`>: List of SubtitleStream objects.
         """
-        for stream in self.subtitleStreams():
-            if streamID == stream.id or streamTitle == stream.title:
-                self._server.query(stream.key, self._server._session.delete)
+        params = {
+            'language': language,
+            'hearingImpaired': hearingImpaired,
+            'forced': forced,
+        }
+        key = f'{self.key}/subtitles{utils.joinArgs(params)}'
+        return self.fetchItems(key)
+
+    def downloadSubtitles(self, subtitleStream):
+        """ Download on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
+
+            Note: This method is asynchronous and returns immediately before subtitles are fully downloaded.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`):
+                    Subtitle object returned from :func:`~plexapi.video.Video.searchSubtitles`.
+        """
+        key = f'{self.key}/subtitles'
+        params = {'key': subtitleStream.key}
+        self._server.query(key, self._server._session.put, params=params)
+        return self
+
+    def removeSubtitles(self, subtitleStream=None, streamID=None, streamTitle=None):
+        """ Remove an upload or downloaded subtitle from the video.
+
+            Note: If the subtitle file is located inside video directory it will be deleted.
+            Files outside of video directory are not affected.
+            Embedded subtitles cannot be removed.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`, optional): Subtitle object to remove.
+                streamID (int, optional): ID of the subtitle stream to remove.
+                streamTitle (str, optional): Title of the subtitle stream to remove.
+        """
+        if subtitleStream is None:
+            try:
+                subtitleStream = next(
+                    stream for stream in self.subtitleStreams()
+                    if streamID == stream.id or streamTitle == stream.title
+                )
+            except StopIteration:
+                raise BadRequest(f"Subtitle stream with ID '{streamID}' or title '{streamTitle}' not found.") from None
+
+        self._server.query(subtitleStream.key, self._server._session.delete)
         return self
 
     def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
