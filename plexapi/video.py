@@ -925,11 +925,9 @@ class Episode(
     @cached_property
     def _season(self):
         """ Returns the :class:`~plexapi.video.Season` object by querying for the show's children. """
-        if not self.grandparentKey:
-            return None
-        return self.fetchItem(
-            f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}'
-        )
+        if self.grandparentKey and self.parentIndex is not None:
+            return self.fetchItem(f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}')
+        return None
 
     def __repr__(self):
         return '<{}>'.format(
@@ -967,7 +965,11 @@ class Episode(
     @cached_property
     def seasonNumber(self):
         """ Returns the episode's season number. """
-        return self.parentIndex if isinstance(self.parentIndex, int) else self._season.seasonNumber
+        if isinstance(self.parentIndex, int):
+            return self.parentIndex
+        elif self._season:
+            return self._season.index
+        return None
 
     @property
     def seasonEpisode(self):
