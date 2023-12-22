@@ -92,6 +92,7 @@ def test_video_Movie_attrs(movies):
         assert utils.is_metadata(movie.primaryExtraKey)
     assert movie.ratingKey >= 1
     assert movie._server._baseurl == utils.SERVER_BASEURL
+    assert movie.slug == "sita-sings-the-blues"
     assert movie.studio == "Nina Paley"
     assert utils.is_string(movie.summary, gte=100)
     assert movie.tagline == "The Greatest Break-Up Story Ever Told."
@@ -771,6 +772,7 @@ def test_video_Show_attrs(show):
     assert show._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(show.seasonCount)
     assert show.showOrdering in (None, 'aired')
+    assert show.slug == "game-of-thrones"
     assert show.studio == "Revolution Sun Studios"
     assert utils.is_string(show.summary, gte=100)
     assert show.subtitleLanguage == ''
@@ -987,6 +989,7 @@ def test_video_Season_attrs(show):
     assert season.parentIndex == 1
     assert utils.is_metadata(season.parentKey)
     assert utils.is_int(season.parentRatingKey)
+    assert season.parentSlug == "game-of-thrones"
     assert season.parentStudio == "Revolution Sun Studios"
     assert utils.is_metadata(season.parentTheme)
     if season.parentThumb:
@@ -1163,6 +1166,7 @@ def test_video_Episode_attrs(episode):
     assert episode.grandparentGuid == "plex://show/5d9c086c46115600200aa2fe"
     assert utils.is_metadata(episode.grandparentKey)
     assert utils.is_int(episode.grandparentRatingKey)
+    assert episode.grandparentSlug == "game-of-thrones"
     assert utils.is_metadata(episode.grandparentTheme)
     if episode.grandparentThumb:
         assert utils.is_thumb(episode.grandparentThumb)
