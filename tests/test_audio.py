@@ -278,6 +278,7 @@ def test_audio_Track_attrs(album):
         assert utils.is_art(track.art)
     assert track.chapterSource is None
     assert utils.is_int(track.duration)
+    assert track.genres == []
     if track.grandparentArt:
         assert utils.is_art(track.grandparentArt)
     assert utils.is_metadata(track.grandparentKey)
