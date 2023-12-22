@@ -3,10 +3,11 @@
 """
 Plex-GetToken is a simple method to retrieve a Plex account token.
 """
+from getpass import getpass
 from plexapi.myplex import MyPlexAccount
 
 username = input("Plex username: ")
-password = input("Plex password: ")
+password = getpass("Plex password: ")
 
 account = MyPlexAccount(username, password)
 print(account.authenticationToken)
