@@ -11,6 +11,7 @@ python plex-bootraptest.py --no-docker --server-name name_of_server --account He
 
 """
 import argparse
+from datetime import datetime
 import os
 import shutil
 import socket
@@ -506,6 +507,31 @@ if __name__ == "__main__":  # noqa: C901
     server.settings.get("GenerateBIFBehavior").set("never")
     server.settings.get("GenerateChapterThumbBehavior").set("never")
     server.settings.get("LoudnessAnalysisBehavior").set("never")
+
+    # disable butler tasks
+    current_hour = datetime.now().hour
+    new_hour12 = current_hour + 12
+    new_hour15 = current_hour + 15
+    if new_hour12 >= 24:
+        new_hour12 -= 24
+    if new_hour15 >= 24:
+        new_hour15 -= 24
+    server.settings.get("ButlerStartHour").set(new_hour12)
+    server.settings.get("ButlerEndHour").set(new_hour15)
+
+    # find all butler settings
+    butler_settings = []
+    for setting in server.settings.all():
+        if setting.id.lower().startswith("butler") and isinstance(setting.value, bool):
+            butler_settings.append(setting.id)
+    for setting in butler_settings:
+        try:
+            server.settings.get(setting).set(False)
+            print("Disabled setting '{}'".format(setting))
+        except NotFound:
+            print("Setting '{}' not found".format(setting))
+
+    # save settings
     server.settings.save()
 
     sections = []
