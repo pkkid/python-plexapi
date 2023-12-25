@@ -510,26 +510,19 @@ if __name__ == "__main__":  # noqa: C901
 
     # disable butler tasks
     current_hour = datetime.now().hour
-    new_hour12 = current_hour + 12
-    new_hour15 = current_hour + 15
-    if new_hour12 >= 24:
-        new_hour12 -= 24
-    if new_hour15 >= 24:
-        new_hour15 -= 24
-    server.settings.get("ButlerStartHour").set(new_hour12)
-    server.settings.get("ButlerEndHour").set(new_hour15)
+    start_hour = (current_hour + 12) % 24
+    end_hour = (current_hour + 15) % 24
+    server.settings.get("ButlerStartHour").set(start_hour)
+    server.settings.get("ButlerEndHour").set(end_hour)
 
     # find all butler settings
-    butler_settings = []
     for setting in server.settings.all():
         if setting.id.lower().startswith("butler") and isinstance(setting.value, bool):
-            butler_settings.append(setting.id)
-    for setting in butler_settings:
-        try:
-            server.settings.get(setting).set(False)
-            print("Disabled setting '{}'".format(setting))
-        except NotFound:
-            print("Setting '{}' not found".format(setting))
+            try:
+                setting.set(False)
+                print("Disabled setting '{}'".format(setting))
+            except NotFound:
+                print("Setting '{}' not found".format(setting))
 
     # save settings
     server.settings.save()
