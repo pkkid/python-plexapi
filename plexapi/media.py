@@ -158,11 +158,8 @@ class MediaPart(PlexObject):
         self.videoProfile = data.attrib.get('videoProfile')
 
     def _buildStreams(self, data):
-        streams = []
-        for cls in (VideoStream, AudioStream, SubtitleStream, LyricStream):
-            items = self.findItems(data, cls, streamType=cls.STREAMTYPE)
-            streams.extend(items)
-        return streams
+        """ Returns a list of :class:`~plexapi.media.MediaPartStream` objects in this MediaPart. """
+        return self.findItems(data)
 
     @property
     def hasPreviewThumbnails(self):
