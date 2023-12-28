@@ -419,6 +419,7 @@ def test_audio_Track_mixins_fields(track):
 
 def test_audio_Track_mixins_tags(track):
     test_mixins.edit_collection(track)
+    test_mixins.edit_genre(track)
     test_mixins.edit_label(track)
     test_mixins.edit_mood(track)
 
