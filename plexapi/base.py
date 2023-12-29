@@ -98,7 +98,7 @@ class PlexObject:
         ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
         # log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
-            return ecls(self._server, elem, initpath)
+            return ecls(self._server, elem, initpath, parent=self)
         raise UnknownType(f"Unknown library type <{elem.tag} type='{etype}'../>")
 
     def _buildItemOrNone(self, elem, cls=None, initpath=None):
