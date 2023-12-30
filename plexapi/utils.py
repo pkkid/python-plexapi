@@ -329,7 +329,7 @@ def toDatetime(value, format=None):
                 return None
             try:
                 return datetime.fromtimestamp(value)
-            except (OSError, OverflowError):
+            except (OSError, OverflowError, ValueError):
                 try:
                     return datetime.fromtimestamp(0) + timedelta(seconds=value)
                 except OverflowError:
