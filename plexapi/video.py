@@ -413,7 +413,7 @@ class Movie(
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
         self.similar = self.findItems(data, media.Similar)
-        self.source = data.attrib.get('source') # remote playlist item
+        self.source = data.attrib.get('source')  # remote playlist item
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
@@ -943,7 +943,7 @@ class Episode(
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
         self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
-        self.source = data.attrib.get('source') # remote playlist item
+        self.source = data.attrib.get('source')  # remote playlist item
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
