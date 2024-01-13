@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 from collections import defaultdict
+from typing import TYPE_CHECKING
 from urllib.parse import quote
-from xml.etree.ElementTree import Element
 
 from plexapi import log, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class Settings(PlexObject):

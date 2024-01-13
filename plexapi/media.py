@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import xml
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
-from xml.etree.ElementTree import Element
 
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import deprecated
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
 
 
 @utils.registerPlexObject

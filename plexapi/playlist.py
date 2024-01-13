@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus, unquote
-from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
 from plexapi.base import Playable
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
-from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin
+from plexapi.mixins import ArtMixin, PosterMixin, SmartFilterMixin
 from plexapi.utils import deprecated
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 @utils.registerPlexObject

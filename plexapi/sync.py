@@ -23,12 +23,18 @@ you can set items to be synced to your app) you need to init some variables.
 You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
 to explicitly specify that your app supports `sync-target`.
 """
-from xml.etree.ElementTree import Element
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import requests
 
 import plexapi
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class SyncItem(PlexObject):

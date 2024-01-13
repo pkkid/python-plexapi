@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
-from xml.etree.ElementTree import Element
 
 from plexapi import utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class PlayQueue(PlexObject):

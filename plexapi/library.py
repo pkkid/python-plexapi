@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import re
 from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
-from xml.etree.ElementTree import Element
 
 from plexapi import log, media, utils
 from plexapi.base import OPERATORS, PlexObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import (
-    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
-    ArtistEditMixins, AlbumEditMixins, TrackEditMixins, PhotoalbumEditMixins, PhotoEditMixins
-)
+from plexapi.mixins import (AlbumEditMixins, ArtistEditMixins,
+                            EpisodeEditMixins, MovieEditMixins,
+                            PhotoalbumEditMixins, PhotoEditMixins,
+                            SeasonEditMixins, ShowEditMixins, TrackEditMixins)
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class Library(PlexObject):

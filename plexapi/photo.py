@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
-from xml.etree.ElementTree import Element
 
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import (
-    RatingMixin,
-    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
-    PhotoalbumEditMixins, PhotoEditMixins
-)
+from plexapi.mixins import (ArtMixin, ArtUrlMixin, PhotoalbumEditMixins,
+                            PhotoEditMixins, PosterMixin, PosterUrlMixin,
+                            RatingMixin)
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 @utils.registerPlexObject

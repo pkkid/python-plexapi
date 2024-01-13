@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
-from xml.etree.ElementTree import Element
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.base import Playable, PlexHistory, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import (
-    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
-    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
-    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
-    WatchlistMixin
-)
+from plexapi.mixins import (AdvancedSettingsMixin, ArtMixin, ArtUrlMixin,
+                            EpisodeEditMixins, ExtrasMixin, HubsMixin,
+                            MovieEditMixins, PlayedUnplayedMixin, PosterMixin,
+                            PosterUrlMixin, RatingMixin, SeasonEditMixins,
+                            ShowEditMixins, SplitMergeMixin, ThemeMixin,
+                            ThemeUrlMixin, UnmatchMatchMixin, WatchlistMixin)
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class Video(PlexPartialObject, PlayedUnplayedMixin):

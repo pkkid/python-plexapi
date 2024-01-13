@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
-from datetime import datetime
 
 import re
-from typing import Any, Callable, Dict, List, Optional, Set, Type, TypeVar, Union, cast, overload, TYPE_CHECKING
 import weakref
 from functools import cached_property
+from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set,
+                    Type, TypeVar, Union, cast, overload)
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -14,9 +14,11 @@ from plexapi import CONFIG, X_PLEX_CONTAINER_SIZE, log, utils
 from plexapi.exceptions import BadRequest, NotFound, UnknownType, Unsupported
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
+    from plexapi.library import LibrarySection
     from plexapi.media import Session
     from plexapi.server import PlexServer
-    from plexapi.library import LibrarySection
 
 FunctionCheck = Callable[[Any, Any], bool]
 PlexObjectT = TypeVar('PlexObjectT', bound='PlexObject')

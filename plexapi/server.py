@@ -1,36 +1,40 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from __future__ import annotations
+
 import os
+from datetime import datetime
 from functools import cached_property
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 from urllib.parse import urlencode
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 import requests
+from requests.status_codes import _codes as codes
 
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter
+# Need these imports to populate utils.PLEXOBJECTS
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import audio as _audio  # noqa: F401
+from plexapi import collection as _collection  # noqa: F401
+from plexapi import log, logfilter
+from plexapi import media as _media  # noqa: F401
+from plexapi import photo as _photo  # noqa: F401
+from plexapi import playlist as _playlist  # noqa: F401
 from plexapi import utils
+from plexapi import video as _video  # noqa: F401
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Hub, Library, Path, File
+from plexapi.library import File, Hub, Library, Path
 from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
 from plexapi.utils import deprecated
-from requests.status_codes import _codes as codes
 
-# Need these imports to populate utils.PLEXOBJECTS
-from plexapi import audio as _audio  # noqa: F401
-from plexapi import collection as _collection  # noqa: F401
-from plexapi import media as _media  # noqa: F401
-from plexapi import photo as _photo  # noqa: F401
-from plexapi import playlist as _playlist  # noqa: F401
-from plexapi import video as _video  # noqa: F401
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class PlexServer(PlexObject):

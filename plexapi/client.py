@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import time
+from typing import TYPE_CHECKING
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 import requests
+from requests.status_codes import _codes as codes
 
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
-from requests.status_codes import _codes as codes
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
 
 DEFAULT_MTYPE = 'video'
 

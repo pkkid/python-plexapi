@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import copy
 import html
 import threading
 import time
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 import requests
+from requests.status_codes import _codes as codes
 
-from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER,
-                     log, logfilter, utils)
+from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT,
+                     X_PLEX_IDENTIFIER, log, logfilter, utils)
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
@@ -18,7 +21,9 @@ from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
-from requests.status_codes import _codes as codes
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class MyPlexAccount(PlexObject):

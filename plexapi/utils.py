@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import base64
 import functools
 import json
@@ -7,22 +9,24 @@ import os
 import re
 import string
 import time
-from typing import Any, Optional, Type, Union, overload
 import unicodedata
 import warnings
-from xml.etree.ElementTree import Element
 import zipfile
 from collections import deque
 from datetime import datetime, timedelta
 from getpass import getpass
 from hashlib import sha1
 from threading import Event, Thread
+from typing import TYPE_CHECKING, Any, Optional, Type, Union, overload
 from urllib.parse import quote
 
 import requests
 from requests.status_codes import _codes as codes
 
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 try:
     from tqdm import tqdm
