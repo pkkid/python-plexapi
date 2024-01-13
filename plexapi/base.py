@@ -54,8 +54,8 @@ class PlexObject:
             initpath (str): Relative path requested when retrieving specified `data` (optional).
             parent (:class:`~plexapi.base.PlexObject`): The parent object that this object is built from (optional).
     """
-    TAG: Optional[str] = None      # xml element tag
-    TYPE: Optional[str] = None     # xml element type
+    TAG: Optional[str] = None  # xml element tag
+    TYPE: Optional[str] = None  # xml element type
     key: Optional[str] = None  # plex relative url
     _INCLUDES = {
         'checkFiles': 1,
