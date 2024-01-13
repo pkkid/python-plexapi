@@ -157,6 +157,9 @@ def cast(func: Type[float], value: Any) -> float:
 def cast(func: Type[str], value: Any) -> str:
     ...
 
+# multiple overloads needed as these are primitive types and also classes
+# generic type hints do not work here for that reason
+
 
 def cast(
     func: Type[Union[int, float, bool, str]], value: Any
