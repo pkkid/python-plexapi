@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import xml
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from plexapi import log, settings, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
 from plexapi.utils import deprecated
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 @utils.registerPlexObject
@@ -48,7 +54,7 @@ class Media(PlexObject):
     """
     TAG = 'Media'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.aspectRatio = utils.cast(float, data.attrib.get('aspectRatio'))
@@ -130,7 +136,7 @@ class MediaPart(PlexObject):
     """
     TAG = 'Part'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.accessible = utils.cast(bool, data.attrib.get('accessible'))
@@ -263,7 +269,7 @@ class MediaPartStream(PlexObject):
             type (int): Alias for streamType.
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.bitrate = utils.cast(int, data.attrib.get('bitrate'))
@@ -330,7 +336,7 @@ class VideoStream(MediaPartStream):
     TAG = 'Stream'
     STREAMTYPE = 1
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         super(VideoStream, self)._loadData(data)
         self.anamorphic = data.attrib.get('anamorphic')
@@ -399,7 +405,7 @@ class AudioStream(MediaPartStream):
     TAG = 'Stream'
     STREAMTYPE = 2
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         super(AudioStream, self)._loadData(data)
         self.audioChannelLayout = data.attrib.get('audioChannelLayout')
@@ -455,7 +461,7 @@ class SubtitleStream(MediaPartStream):
     TAG = 'Stream'
     STREAMTYPE = 3
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         super(SubtitleStream, self)._loadData(data)
         self.container = data.attrib.get('container')
@@ -495,7 +501,7 @@ class LyricStream(MediaPartStream):
     TAG = 'Stream'
     STREAMTYPE = 4
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         super(LyricStream, self)._loadData(data)
         self.format = data.attrib.get('format')
@@ -516,7 +522,7 @@ class Session(PlexObject):
     """
     TAG = 'Session'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.id = data.attrib.get('id')
         self.bandwidth = utils.cast(int, data.attrib.get('bandwidth'))
         self.location = data.attrib.get('location')
@@ -561,7 +567,7 @@ class TranscodeSession(PlexObject):
     """
     TAG = 'TranscodeSession'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.audioChannels = utils.cast(int, data.attrib.get('audioChannels'))
@@ -603,7 +609,7 @@ class TranscodeJob(PlexObject):
         Active or paused optimization items. Usually one item as a time."""
     TAG = 'TranscodeJob'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.generatorID = data.attrib.get('generatorID')
         self.key = data.attrib.get('key')
@@ -622,7 +628,7 @@ class Optimized(PlexObject):
         Optimized items are optimized and queued conversions items."""
     TAG = 'Item'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.id = data.attrib.get('id')
         self.composite = data.attrib.get('composite')
@@ -660,7 +666,7 @@ class Conversion(PlexObject):
         Conversions are items queued for optimization or being actively optimized."""
     TAG = 'Video'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.addedAt = data.attrib.get('addedAt')
         self.art = data.attrib.get('art')
@@ -735,7 +741,7 @@ class MediaTag(PlexObject):
         """ Returns the tag name. """
         return self.tag
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.filter = data.attrib.get('filter')
@@ -946,7 +952,7 @@ class Guid(PlexObject):
     """
     TAG = 'Guid'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.id = data.attrib.get('id')
@@ -966,7 +972,7 @@ class Rating(PlexObject):
     """
     TAG = 'Rating'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.image = data.attrib.get('image')
@@ -990,7 +996,7 @@ class Review(PlexObject):
     """
     TAG = 'Review'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.filter = data.attrib.get('filter')
         self.id = utils.cast(int, data.attrib.get('id', 0))
@@ -1014,7 +1020,7 @@ class BaseResource(PlexObject):
             thumb (str): The URL to retrieve the resource thumbnail.
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.key = data.attrib.get('key')
         self.provider = data.attrib.get('provider')
@@ -1084,7 +1090,7 @@ class Chapter(PlexObject):
         offsets = f'{start}-{end}'
         return f"<{':'.join([self.__class__.__name__, name, offsets])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
         self.filter = data.attrib.get('filter')
@@ -1118,7 +1124,7 @@ class Marker(PlexObject):
         offsets = f'{start}-{end}'
         return f"<{':'.join([self.__class__.__name__, name, offsets])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.end = utils.cast(int, data.attrib.get('endTimeOffset'))
         self.final = utils.cast(bool, data.attrib.get('final'))
@@ -1152,7 +1158,7 @@ class Field(PlexObject):
     """
     TAG = 'Field'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.locked = utils.cast(bool, data.attrib.get('locked'))
         self.name = data.attrib.get('name')
@@ -1172,7 +1178,7 @@ class SearchResult(PlexObject):
         score = self._clean(self.firstAttr('score'))
         return f"<{':'.join([p for p in [self.__class__.__name__, name, score] if p])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.guid = data.attrib.get('guid')
         self.lifespanEnded = data.attrib.get('lifespanEnded')
@@ -1194,7 +1200,7 @@ class Agent(PlexObject):
         uid = self._clean(self.firstAttr('shortIdentifier'))
         return f"<{':'.join([p for p in [self.__class__.__name__, uid] if p])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.hasAttribution = data.attrib.get('hasAttribution')
         self.hasPrefs = data.attrib.get('hasPrefs')
@@ -1237,7 +1243,7 @@ class AgentMediaType(Agent):
         uid = self._clean(self.firstAttr('name'))
         return f"<{':'.join([p for p in [self.__class__.__name__, uid] if p])}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.languageCodes = self.listAttrs(data, 'code', etag='Language')
         self.mediaType = utils.cast(int, data.attrib.get('mediaType'))
         self.name = data.attrib.get('name')
@@ -1271,7 +1277,7 @@ class Availability(PlexObject):
     def __repr__(self):
         return f'<{self.__class__.__name__}:{self.platform}:{self.offerType}>'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.country = data.attrib.get('country')
         self.offerType = data.attrib.get('offerType')

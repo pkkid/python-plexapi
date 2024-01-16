@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 from urllib.parse import quote_plus
 
 from typing import Any, Dict, List, Optional, TypeVar
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
-from plexapi.exceptions import BadRequest
+from plexapi.base import Playable, PlexHistory, PlexPartialObject, PlexSession
+from plexapi.exceptions import BadRequest, PlexApiException
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
     ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeMixin, ThemeUrlMixin,
@@ -15,6 +18,11 @@ from plexapi.mixins import (
 )
 from plexapi.playlist import Playlist
 
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
+    from plexapi.myplex import MyPlexDevice
+    from plexapi.sync import SyncItem
 
 TAudio = TypeVar("TAudio", bound="Audio")
 
@@ -53,7 +61,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """
     METADATA_TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -83,20 +91,27 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self.userRating = utils.cast(float, data.attrib.get('userRating'))
         self.viewCount = utils.cast(int, data.attrib.get('viewCount', 0))
 
-    def url(self, part):
+    def url(self, part: str) -> Optional[str]:
         """ Returns the full URL for the audio item. Typically used for getting a specific track. """
         return self._server.url(part, includeToken=True) if part else None
 
-    def _defaultSyncTitle(self):
+    def _defaultSyncTitle(self) -> str:
         """ Returns str, default title for a new syncItem. """
-        return self.title
+        return self.title or ""
 
     @property
-    def hasSonicAnalysis(self):
+    def hasSonicAnalysis(self) -> bool:
         """ Returns True if the audio has been sonically analyzed. """
         return self.musicAnalysisVersion == 1
 
-    def sync(self, bitrate, client=None, clientId=None, limit=None, title=None):
+    def sync(
+        self,
+        bitrate: int,
+        client: Optional[MyPlexDevice],
+        clientId: Optional[str] = None,
+        limit: Optional[int] = None,
+        title: Optional[str] = None,
+    ) -> SyncItem:
         """ Add current audio (artist, album or track) as sync item for specified device.
             See :func:`~plexapi.myplex.MyPlexAccount.sync` for possible exceptions.
 
@@ -126,7 +141,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
 
         section = self._server.library.sectionByID(self.librarySectionID)
 
-        sync_item.location = f'library://{section.uuid}/item/{quote_plus(self.key)}'
+        sync_item.location = f'library://{section.uuid}/item/{quote_plus(self.key or "")}'
         sync_item.policy = Policy.create(limit)
         sync_item.mediaSettings = MediaSettings.createMusic(bitrate)
 
@@ -136,7 +151,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
         self: TAudio,
         limit: Optional[int] = None,
         maxDistance: Optional[float] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> List[TAudio]:
         """Returns a list of sonically similar audio items.
 
@@ -192,7 +207,7 @@ class Artist(
     TAG = 'Directory'
     TYPE = 'artist'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.albumSort = utils.cast(int, data.attrib.get('albumSort', '-1'))
@@ -200,7 +215,7 @@ class Artist(
         self.countries = self.findItems(data, media.Country)
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
-        self.key = self.key.replace('/children', '')  # FIX_BUG_50
+        self.key = self.key and self.key.replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
         self.locations = self.listAttrs(data, 'path', etag='Location')
         self.similar = self.findItems(data, media.Similar)
@@ -211,7 +226,7 @@ class Artist(
         for album in self.albums():
             yield album
 
-    def album(self, title):
+    def album(self, title: str) -> Album:
         """ Returns the :class:`~plexapi.audio.Album` that matches the specified title.
 
             Parameters:
@@ -223,7 +238,7 @@ class Artist(
             filters={'artist.id': self.ratingKey}
         )
 
-    def albums(self, **kwargs):
+    def albums(self, **kwargs: Any) -> List[Album]:
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
         return self.section().search(
             libtype='album',
@@ -231,7 +246,12 @@ class Artist(
             **kwargs
         )
 
-    def track(self, title=None, album=None, track=None):
+    def track(
+        self,
+        title: Optional[str] = None,
+        album: Optional[str] = None,
+        track: Optional[int] = None,
+    ) -> Track:
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
@@ -245,20 +265,31 @@ class Artist(
         key = f'{self.key}/allLeaves'
         if title is not None:
             return self.fetchItem(key, Track, title__iexact=title)
-        elif album is not None and track is not None:
+        if album is not None and track is not None:
             return self.fetchItem(key, Track, parentTitle__iexact=album, index=track)
         raise BadRequest('Missing argument: title or album and track are required')
 
-    def tracks(self, **kwargs):
+    def tracks(self, **kwargs: Any) -> List[Track]:
         """ Returns a list of :class:`~plexapi.audio.Track` objects by the artist. """
         key = f'{self.key}/allLeaves'
         return self.fetchItems(key, Track, **kwargs)
 
-    def get(self, title=None, album=None, track=None):
+    def get(
+        self,
+        title: Optional[str] = None,
+        album: Optional[str] = None,
+        track: Optional[int] = None,
+    ) -> Track:
         """ Alias of :func:`~plexapi.audio.Artist.track`. """
         return self.track(title, album, track)
 
-    def download(self, savepath=None, keep_original_name=False, subfolders=False, **kwargs):
+    def download(
+        self,
+        savepath: str,
+        keep_original_name: bool = False,
+        subfolders: bool = False,
+        **kwargs: Any,
+    ) -> List[str]:
         """ Download all tracks from the artist. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
@@ -268,19 +299,21 @@ class Artist(
                 subfolders (bool): True to separate tracks in to album folders.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
-        filepaths = []
+        filepaths: List[str] = []
         for track in self.tracks():
+            if track.parentTitle is None:
+                raise PlexApiException(f'No parentTitle found for {track.key=} {track.title=}')
             _savepath = os.path.join(savepath, track.parentTitle) if subfolders else savepath
             filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
-    def station(self):
+    def station(self) -> Optional[Playlist]:
         """ Returns a :class:`~plexapi.playlist.Playlist` artist radio station or `None`. """
         key = f'{self.key}?includeStations=1'
         return next(iter(self.fetchItems(key, cls=Playlist, rtag="Stations")), None)
 
     @property
-    def metadataDirectory(self):
+    def metadataDirectory(self) -> str:
         """ Returns the Plex Media Server data directory where the metadata is stored. """
         guid_hash = utils.sha1hash(self.guid)
         return str(Path('Metadata') / 'Artists' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
@@ -323,14 +356,14 @@ class Album(
     TAG = 'Directory'
     TYPE = 'album'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.collections = self.findItems(data, media.Collection)
         self.formats = self.findItems(data, media.Format)
         self.genres = self.findItems(data, media.Genre)
         self.guids = self.findItems(data, media.Guid)
-        self.key = self.key.replace('/children', '')  # FIX_BUG_50
+        self.key = self.key and self.key.replace('/children', '')  # FIX_BUG_50
         self.labels = self.findItems(data, media.Label)
         self.leafCount = utils.cast(int, data.attrib.get('leafCount'))
         self.loudnessAnalysisVersion = utils.cast(int, data.attrib.get('loudnessAnalysisVersion'))
@@ -352,7 +385,7 @@ class Album(
         for track in self.tracks():
             yield track
 
-    def track(self, title=None, track=None):
+    def track(self, title: Optional[str] = None, track: Optional[int] = None) -> Track:
         """ Returns the :class:`~plexapi.audio.Track` that matches the specified title.
 
             Parameters:
@@ -365,7 +398,7 @@ class Album(
         key = f'{self.key}/children'
         if title is not None and not isinstance(title, int):
             return self.fetchItem(key, Track, title__iexact=title)
-        elif track is not None or isinstance(title, int):
+        if track is not None or isinstance(title, int):
             if isinstance(title, int):
                 index = title
             else:
@@ -373,20 +406,25 @@ class Album(
             return self.fetchItem(key, Track, parentTitle__iexact=self.title, index=index)
         raise BadRequest('Missing argument: title or track is required')
 
-    def tracks(self, **kwargs):
+    def tracks(self, **kwargs: Any) -> List[Track]:
         """ Returns a list of :class:`~plexapi.audio.Track` objects in the album. """
         key = f'{self.key}/children'
         return self.fetchItems(key, Track, **kwargs)
 
-    def get(self, title=None, track=None):
+    def get(self, title: Optional[str] = None, track: Optional[int] = None) -> Track:
         """ Alias of :func:`~plexapi.audio.Album.track`. """
         return self.track(title, track)
 
-    def artist(self):
+    def artist(self) -> Optional[Artist]:
         """ Return the album's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItem(self.parentKey)
+        return cast(Artist, self.fetchItem(self.parentKey)) if self.parentKey is not None else None
 
-    def download(self, savepath=None, keep_original_name=False, **kwargs):
+    def download(
+        self,
+        savepath: str,
+        keep_original_name: bool = False,
+        **kwargs: Any,
+    ) -> List[str]:
         """ Download all tracks from the album. See :func:`~plexapi.base.Playable.download` for details.
 
             Parameters:
@@ -395,17 +433,17 @@ class Album(
                     a friendlier filename is generated.
                 **kwargs: Additional options passed into :func:`~plexapi.base.PlexObject.getStreamURL`.
         """
-        filepaths = []
+        filepaths: List[str] = []
         for track in self.tracks():
             filepaths += track.download(savepath, keep_original_name, **kwargs)
         return filepaths
 
-    def _defaultSyncTitle(self):
+    def _defaultSyncTitle(self) -> str:
         """ Returns str, default title for a new syncItem. """
         return f'{self.parentTitle} - {self.title}'
 
     @property
-    def metadataDirectory(self):
+    def metadataDirectory(self) -> str:
         """ Returns the Plex Media Server data directory where the metadata is stored. """
         guid_hash = utils.sha1hash(self.guid)
         return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
@@ -455,7 +493,7 @@ class Track(
     TAG = 'Track'
     TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
@@ -487,7 +525,7 @@ class Track(
         self.year = utils.cast(int, data.attrib.get('year'))
 
     @property
-    def locations(self):
+    def locations(self) -> List[str]:
         """ This does not exist in plex xml response but is added to have a common
             interface to get the locations of the track.
 
@@ -497,32 +535,32 @@ class Track(
         return [part.file for part in self.iterParts() if part]
 
     @property
-    def trackNumber(self):
+    def trackNumber(self) -> int:
         """ Returns the track number. """
         return self.index
 
-    def _prettyfilename(self):
+    def _prettyfilename(self) -> str:
         """ Returns a filename for use in download. """
         return f'{self.grandparentTitle} - {self.parentTitle} - {str(self.trackNumber).zfill(2)} - {self.title}'
 
-    def album(self):
+    def album(self) -> Optional[Album]:
         """ Return the track's :class:`~plexapi.audio.Album`. """
-        return self.fetchItem(self.parentKey)
+        return cast(Album, self.fetchItem(self.parentKey)) if self.parentKey is not None else None
 
-    def artist(self):
+    def artist(self) -> Optional[Artist]:
         """ Return the track's :class:`~plexapi.audio.Artist`. """
-        return self.fetchItem(self.grandparentKey)
+        return cast(Artist, self.fetchItem(self.grandparentKey)) if self.grandparentKey is not None else None
 
-    def _defaultSyncTitle(self):
+    def _defaultSyncTitle(self) -> str:
         """ Returns str, default title for a new syncItem. """
         return f'{self.grandparentTitle} - {self.parentTitle} - {self.title}'
 
-    def _getWebURL(self, base=None):
+    def _getWebURL(self, base: Optional[str] = None) -> str:
         """ Get the Plex Web URL with the correct parameters. """
         return self._server._buildWebURL(base=base, endpoint='details', key=self.parentKey)
 
     @property
-    def metadataDirectory(self):
+    def metadataDirectory(self) -> str:
         """ Returns the Plex Media Server data directory where the metadata is stored. """
         guid_hash = utils.sha1hash(self.parentGuid)
         return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
@@ -535,7 +573,7 @@ class TrackSession(PlexSession, Track):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -548,7 +586,7 @@ class TrackHistory(PlexHistory, Track):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element) -> None:
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexHistory._loadData(self, data)

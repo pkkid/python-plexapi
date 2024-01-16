@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
@@ -12,6 +15,9 @@ from plexapi.mixins import (
     CollectionEditMixins
 )
 from plexapi.utils import deprecated
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 @utils.registerPlexObject
@@ -64,7 +70,7 @@ class Collection(
     TAG = 'Directory'
     TYPE = 'collection'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
         self.art = data.attrib.get('art')

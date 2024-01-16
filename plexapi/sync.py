@@ -23,11 +23,18 @@ you can set items to be synced to your app) you need to init some variables.
 You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
 to explicitly specify that your app supports `sync-target`.
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import requests
 
 import plexapi
 from plexapi.base import PlexObject
-from plexapi.exceptions import NotFound, BadRequest
+from plexapi.exceptions import BadRequest, NotFound
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class SyncItem(PlexObject):
@@ -62,7 +69,7 @@ class SyncItem(PlexObject):
         super(SyncItem, self).__init__(server, data, initpath)
         self.clientIdentifier = clientIdentifier
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.id = plexapi.utils.cast(int, data.attrib.get('id'))
         self.version = plexapi.utils.cast(int, data.attrib.get('version'))
@@ -117,7 +124,7 @@ class SyncList(PlexObject):
     key = 'https://plex.tv/devices/{clientId}/sync_items'
     TAG = 'SyncList'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.clientId = data.attrib.get('clientIdentifier')
         self.items = []
