@@ -3,6 +3,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 from platform import uname
+from typing import cast
 from uuid import getnode
 
 from plexapi.config import PlexConfig, reset_base_headers
@@ -18,7 +19,7 @@ CONFIG = PlexConfig(CONFIG_PATH)
 PROJECT = 'PlexAPI'
 VERSION = __version__ = const.__version__
 TIMEOUT = CONFIG.get('plexapi.timeout', 30, int)
-X_PLEX_CONTAINER_SIZE = CONFIG.get('plexapi.container_size', 100, int)
+X_PLEX_CONTAINER_SIZE = cast(int, CONFIG.get('plexapi.container_size', 100, int))
 X_PLEX_ENABLE_FAST_CONNECT = CONFIG.get('plexapi.enable_fast_connect', False, bool)
 
 # Plex Header Configuration

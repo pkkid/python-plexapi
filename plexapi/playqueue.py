@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from plexapi import utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class PlayQueue(PlexObject):
@@ -35,7 +41,7 @@ class PlayQueue(PlexObject):
     TAG = "PlayQueue"
     TYPE = "playqueue"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.identifier = data.attrib.get("identifier")
         self.mediaTagPrefix = data.attrib.get("mediaTagPrefix")
