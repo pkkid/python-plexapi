@@ -609,11 +609,11 @@ class PlexObject:
             return float(value)
         return value
 
-    def _loadData(self, data: Element):
+    def _loadData(self, data: Element) -> None:
         raise NotImplementedError('Abstract method not implemented.')
 
     @property
-    def _searchType(self):
+    def _searchType(self) -> Optional[str]:
         return self.TYPE
 
 
