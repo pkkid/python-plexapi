@@ -1,25 +1,30 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
+from datetime import datetime
 from functools import cached_property
+from typing import TYPE_CHECKING, Optional, Union
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
 import requests
+from requests.status_codes import _codes as codes
 
-from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter
+from plexapi import BASE_HEADERS, CONFIG, TIMEOUT
+from plexapi import log, logfilter
 from plexapi import utils
 from plexapi.alert import AlertListener
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
 from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import Hub, Library, Path, File
+from plexapi.library import File, Hub, Library, Path
 from plexapi.media import Conversion, Optimized
 from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
 from plexapi.utils import deprecated
-from requests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
 from plexapi import audio as _audio  # noqa: F401
@@ -28,6 +33,9 @@ from plexapi import media as _media  # noqa: F401
 from plexapi import photo as _photo  # noqa: F401
 from plexapi import playlist as _playlist  # noqa: F401
 from plexapi import video as _video  # noqa: F401
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class PlexServer(PlexObject):
@@ -116,7 +124,7 @@ class PlexServer(PlexObject):
         data = self.query(self.key, timeout=self._timeout)
         super(PlexServer, self).__init__(self, data, self.key)
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.allowCameraUpload = utils.cast(bool, data.attrib.get('allowCameraUpload'))
@@ -650,7 +658,14 @@ class PlexServer(PlexObject):
             # figure out what method this is..
             return self.query(part, method=self._session.put)
 
-    def history(self, maxresults=None, mindate=None, ratingKey=None, accountID=None, librarySectionID=None):
+    def history(
+        self,
+        maxresults: Optional[int] = None,
+        mindate: Optional[datetime] = None,
+        ratingKey: Optional[Union[int, str]] = None,
+        accountID: Optional[Union[int, str]] = None,
+        librarySectionID: Optional[Union[int, str]] = None,
+    ):
         """ Returns a list of media items from watched history. If there are many results, they will
             be fetched from the server in batches of X_PLEX_CONTAINER_SIZE amounts. If you're only
             looking for the first <num> results, it would be wise to set the maxresults option to that
@@ -1091,7 +1106,7 @@ class Account(PlexObject):
     """
     key = '/myplex/account'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.authToken = data.attrib.get('authToken')
         self.username = data.attrib.get('username')
@@ -1112,7 +1127,7 @@ class Activity(PlexObject):
     """A currently running activity on the PlexServer."""
     key = '/activities'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.cancellable = utils.cast(bool, data.attrib.get('cancellable'))
         self.progress = utils.cast(int, data.attrib.get('progress'))
@@ -1127,7 +1142,7 @@ class Release(PlexObject):
     TAG = 'Release'
     key = '/updater/status'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self.download_key = data.attrib.get('key')
         self.version = data.attrib.get('version')
         self.added = data.attrib.get('added')
@@ -1152,7 +1167,7 @@ class SystemAccount(PlexObject):
     """
     TAG = 'Account'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.autoSelectAudio = utils.cast(bool, data.attrib.get('autoSelectAudio'))
         self.defaultAudioLanguage = data.attrib.get('defaultAudioLanguage')
@@ -1181,7 +1196,7 @@ class SystemDevice(PlexObject):
     """
     TAG = 'Device'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.clientIdentifier = data.attrib.get('clientIdentifier')
         self.createdAt = utils.toDatetime(data.attrib.get('createdAt'))
@@ -1207,7 +1222,7 @@ class StatisticsBandwidth(PlexObject):
     """
     TAG = 'StatisticsBandwidth'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.accountID = utils.cast(int, data.attrib.get('accountID'))
         self.at = utils.toDatetime(data.attrib.get('at'))
@@ -1249,7 +1264,7 @@ class StatisticsResources(PlexObject):
     """
     TAG = 'StatisticsResources'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.at = utils.toDatetime(data.attrib.get('at'))
         self.hostCpuUtilization = utils.cast(float, data.attrib.get('hostCpuUtilization'))
@@ -1277,7 +1292,7 @@ class ButlerTask(PlexObject):
     """
     TAG = 'ButlerTask'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.description = data.attrib.get('description')
         self.enabled = utils.cast(bool, data.attrib.get('enabled'))
@@ -1299,7 +1314,7 @@ class Identity(PlexObject):
     def __repr__(self):
         return f"<{self.__class__.__name__}:{self.machineIdentifier}>"
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.claimed = utils.cast(bool, data.attrib.get('claimed'))
         self.machineIdentifier = data.attrib.get('machineIdentifier')

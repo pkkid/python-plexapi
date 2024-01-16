@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import base64
 import functools
 import json
@@ -15,12 +17,16 @@ from datetime import datetime, timedelta
 from getpass import getpass
 from hashlib import sha1
 from threading import Event, Thread
+from typing import TYPE_CHECKING, Any, Optional, Type, Union, overload
 from urllib.parse import quote
 
 import requests
 from requests.status_codes import _codes as codes
 
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 try:
     from tqdm import tqdm
@@ -136,7 +142,32 @@ def registerPlexObject(cls):
     return cls
 
 
-def cast(func, value):
+@overload
+def cast(func: Type[bool], value: Any) -> bool:
+    ...
+
+
+@overload
+def cast(func: Type[int], value: Any) -> int:
+    ...
+
+
+@overload
+def cast(func: Type[float], value: Any) -> float:
+    ...
+
+
+@overload
+def cast(func: Type[str], value: Any) -> str:
+    ...
+
+# multiple overloads needed as these are primitive types and also classes
+# generic type hints do not work here for that reason
+
+
+def cast(
+    func: Type[Union[int, float, bool, str]], value: Any
+) -> Union[int, float, bool, str]:
     """ Cast the specified value to the specified type (returned by func). Currently this
         only support str, int, float, bool. Should be extended if needed.
 
@@ -625,7 +656,7 @@ def deprecated(message, stacklevel=2):
     return decorator
 
 
-def iterXMLBFS(root, tag=None):
+def iterXMLBFS(root: Element, tag: Optional[str] = None):
     """ Iterate through an XML tree using a breadth-first search.
         If tag is specified, only return nodes with that tag.
     """

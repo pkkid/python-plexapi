@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from functools import cached_property
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.base import Playable, PlexHistory, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
@@ -13,6 +16,9 @@ from plexapi.mixins import (
     MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class Video(PlexPartialObject, PlayedUnplayedMixin):
@@ -45,7 +51,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
             viewCount (int): Count of times the item was played.
     """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -227,7 +233,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
 
         """
         from plexapi.library import Location
-        from plexapi.sync import Policy, MediaSettings
+        from plexapi.sync import MediaSettings, Policy
 
         backgroundProcessing = self.fetchItem('/playlists?type=42')
         key = f'{backgroundProcessing.key}/items'
@@ -309,7 +315,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
                 :class:`~plexapi.sync.SyncItem`: an instance of created syncItem.
         """
 
-        from plexapi.sync import SyncItem, Policy, MediaSettings
+        from plexapi.sync import MediaSettings, Policy, SyncItem
 
         myplex = self._server.myPlexAccount()
         sync_item = SyncItem(self._server, None)
@@ -382,7 +388,7 @@ class Movie(
     TYPE = 'movie'
     METADATA_TYPE = 'movie'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -546,7 +552,7 @@ class Show(
     TYPE = 'show'
     METADATA_TYPE = 'episode'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         self.audienceRating = utils.cast(float, data.attrib.get('audienceRating'))
@@ -732,7 +738,7 @@ class Season(
     TYPE = 'season'
     METADATA_TYPE = 'episode'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         self.audioLanguage = data.attrib.get('audioLanguage', '')
@@ -906,7 +912,7 @@ class Episode(
     TYPE = 'episode'
     METADATA_TYPE = 'episode'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -1107,7 +1113,7 @@ class Clip(
     TYPE = 'clip'
     METADATA_TYPE = 'clip'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Video._loadData(self, data)
         Playable._loadData(self, data)
@@ -1149,7 +1155,7 @@ class Clip(
 class Extra(Clip):
     """ Represents a single Extra (trailer, behindTheScenes, etc). """
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         super(Extra, self)._loadData(data)
         parent = self._parent()
@@ -1169,7 +1175,7 @@ class MovieSession(PlexSession, Movie):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Movie._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -1182,7 +1188,7 @@ class EpisodeSession(PlexSession, Episode):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Episode._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -1195,7 +1201,7 @@ class ClipSession(PlexSession, Clip):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Clip._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -1208,7 +1214,7 @@ class MovieHistory(PlexHistory, Movie):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Movie._loadData(self, data)
         PlexHistory._loadData(self, data)
@@ -1221,7 +1227,7 @@ class EpisodeHistory(PlexHistory, Episode):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Episode._loadData(self, data)
         PlexHistory._loadData(self, data)
@@ -1234,7 +1240,7 @@ class ClipHistory(PlexHistory, Clip):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Clip._loadData(self, data)
         PlexHistory._loadData(self, data)

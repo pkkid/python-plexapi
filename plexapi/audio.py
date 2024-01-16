@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus
 
 from typing import Any, Dict, List, Optional, TypeVar
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
+from plexapi.base import Playable, PlexHistory, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
@@ -14,6 +17,9 @@ from plexapi.mixins import (
     ArtistEditMixins, AlbumEditMixins, TrackEditMixins
 )
 from plexapi.playlist import Playlist
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 TAudio = TypeVar("TAudio", bound="Audio")
@@ -53,7 +59,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
     """
     METADATA_TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))
@@ -192,7 +198,7 @@ class Artist(
     TAG = 'Directory'
     TYPE = 'artist'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.albumSort = utils.cast(int, data.attrib.get('albumSort', '-1'))
@@ -323,7 +329,7 @@ class Album(
     TAG = 'Directory'
     TYPE = 'album'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         self.collections = self.findItems(data, media.Collection)
@@ -455,7 +461,7 @@ class Track(
     TAG = 'Track'
     TYPE = 'track'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Audio._loadData(self, data)
         Playable._loadData(self, data)
@@ -535,7 +541,7 @@ class TrackSession(PlexSession, Track):
     """
     _SESSIONTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexSession._loadData(self, data)
@@ -548,7 +554,7 @@ class TrackHistory(PlexHistory, Track):
     """
     _HISTORYTYPE = True
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Track._loadData(self, data)
         PlexHistory._loadData(self, data)
