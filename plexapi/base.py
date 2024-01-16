@@ -502,7 +502,7 @@ class PlexObject:
                 results.append(elem.attrib.get(attr))
         return results
 
-    def reload(self, key: Optional[str] = None, **kwargs: Any):
+    def reload(self: PlexObjectT, key: Optional[str] = None, **kwargs: Any) -> PlexObjectT:
         """ Reload the data for this object from self.key.
 
             Parameters:
@@ -535,7 +535,7 @@ class PlexObject:
         """
         return self._reload(key=key, **kwargs)
 
-    def _reload(self, key: Optional[str] = None, _overwriteNone: bool = True, **kwargs: Any):
+    def _reload(self: PlexObjectT, key: Optional[str] = None, _overwriteNone: bool = True, **kwargs: Any) -> PlexObjectT:
         """ Perform the actual reload. """
         details_key = self._buildDetailsKey(**kwargs) if kwargs else self._details_key
         key = key or details_key or self.key
