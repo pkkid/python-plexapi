@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote_plus, unquote
 
 from plexapi import media, utils
-from plexapi.base import Playable, PlexPartialObject
+from plexapi.base import Playable
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
 from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin, PlaylistEditMixins
 from plexapi.utils import deprecated
 
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
 
 @utils.registerPlexObject
 class Playlist(
-    PlexPartialObject, Playable,
+    Playable,
     SmartFilterMixin,
     ArtMixin, PosterMixin,
     PlaylistEditMixins
@@ -50,7 +56,7 @@ class Playlist(
     TAG = 'Playlist'
     TYPE = 'playlist'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         Playable._loadData(self, data)
         self.addedAt = utils.toDatetime(data.attrib.get('addedAt'))

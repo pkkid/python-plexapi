@@ -1,14 +1,21 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import time
+from typing import TYPE_CHECKING
 from xml.etree import ElementTree
 
 import requests
+from requests.status_codes import _codes as codes
 
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized, Unsupported
 from plexapi.playqueue import PlayQueue
-from requests.status_codes import _codes as codes
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+
 
 DEFAULT_MTYPE = 'video'
 
@@ -119,7 +126,7 @@ class PlexClient(PlexObject):
         """ Alias to self.connect(). """
         return self.connect()
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self._data = data
         self.deviceClass = data.attrib.get('deviceClass')
@@ -602,7 +609,7 @@ class ClientTimeline(PlexObject):
 
     key = 'timeline/poll'
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         self._data = data
         self.address = data.attrib.get('address')
         self.audioStreamId = utils.cast(int, data.attrib.get('audioStreamId'))

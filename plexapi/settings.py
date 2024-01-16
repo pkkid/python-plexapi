@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 from collections import defaultdict
+from typing import TYPE_CHECKING
 from urllib.parse import quote
 
 from plexapi import log, utils
 from plexapi.base import PlexObject
 from plexapi.exceptions import BadRequest, NotFound
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
 
 
 class Settings(PlexObject):
@@ -111,7 +117,7 @@ class Setting(PlexObject):
         'text': {'type': str, 'cast': str, 'tostr': str},
     }
 
-    def _loadData(self, data):
+    def _loadData(self, data: Element):
         """ Load attribute values from Plex XML response. """
         self.type = data.attrib.get('type')
         self.advanced = utils.cast(bool, data.attrib.get('advanced'))
