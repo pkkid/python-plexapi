@@ -413,7 +413,30 @@ class PlexObject:
 
         return results
 
-    def fetchItem(self, ekey: Union[str, int], cls: Optional[Type[PlexObjectT]] = None, **kwargs: Any):
+    @overload
+    def fetchItem(
+        self,
+        ekey: Union[str, int],
+        cls: None,
+        **kwargs: Any,
+    ) -> PlexObject:
+        ...
+
+    @overload
+    def fetchItem(
+        self,
+        ekey: Union[str, int],
+        cls: Type[PlexObjectT],
+        **kwargs: Any,
+    ) -> PlexObjectT:
+        ...
+
+    def fetchItem(
+        self,
+        ekey: Union[str, int],
+        cls: Optional[Type[PlexObjectT]] = None,
+        **kwargs: Any,
+    ) -> Union[PlexObjectT, PlexObject]:
         """ Load the specified key to find and build the first item with the
             specified tag and attrs. If no tag or attrs are specified then
             the first item in the result set is returned.
