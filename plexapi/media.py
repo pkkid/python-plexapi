@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 
 
-
 @utils.registerPlexObject
 class Media(PlexObject):
     """ Container object for all MediaPart objects. Provides useful data about the

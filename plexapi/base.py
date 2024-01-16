@@ -4,8 +4,20 @@ from __future__ import annotations
 import re
 import weakref
 from functools import cached_property
-from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set,
-                    Type, TypeVar, Union, cast, overload)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -33,7 +45,7 @@ OPERATORS: Dict[str, FunctionCheck] = {
     'icontains': lambda v, q: q.lower() in v.lower(),
     'ne': lambda v, q: v != q,
     'in': lambda v, q: v in q,
-    'gt': lambda v, q: v > q,  # ? Should this be `int(v) > int(q)`?
+    'gt': lambda v, q: v > q,
     'gte': lambda v, q: v >= q,
     'lt': lambda v, q: v < q,
     'lte': lambda v, q: v <= q,
@@ -59,27 +71,7 @@ class PlexObject:
     TAG: Optional[str] = None  # xml element tag
     TYPE: Optional[str] = None  # xml element type
     key: Optional[str] = None  # plex relative url
-    _INCLUDES = {
-        'checkFiles': 1,
-        'includeAllConcerts': 1,
-        'includeBandwidths': 1,
-        'includeChapters': 1,
-        'includeChildren': 1,
-        'includeConcerts': 1,
-        'includeExternalMedia': 1,
-        'includeExtras': 1,
-        'includeFields': 'thumbBlurHash,artBlurHash',
-        'includeGeolocation': 1,
-        'includeLoudnessRamps': 1,
-        'includeMarkers': 1,
-        'includeOnDeck': 1,
-        'includePopularLeaves': 1,
-        'includePreferences': 1,
-        'includeRelated': 1,
-        'includeRelatedCount': 1,
-        'includeReviews': 1,
-        'includeStations': 1
-    }
+    _INCLUDES: Dict[str, Any] = {}
 
     def __init__(
         self,
@@ -191,7 +183,7 @@ class PlexObject:
         elem: Element,
         cls: Optional[Type[PlexObjectT]] = None,
         initpath: Optional[str] = None,
-    ):
+    ) -> Optional[Union[PlexObjectT, PlexObject]]:
         """ Calls :func:`~plexapi.base.PlexObject._buildItem` but returns
             None if elem is an unknown type.
         """
@@ -200,12 +192,12 @@ class PlexObject:
         except UnknownType:
             return None
 
-    def _buildDetailsKey(self, **kwargs: Any):
+    def _buildDetailsKey(self, **kwargs: Any) -> Optional[str]:
         """ Builds the details key with the XML include parameters.
             All parameters are included by default with the option to override each parameter
             or disable each parameter individually by setting it to False or 0.
         """
-        details_key = str(self.key)
+        details_key = self.key
         if details_key and hasattr(self, '_INCLUDES'):
             includes = {}
             for k, v in self._INCLUDES.items():
@@ -247,7 +239,7 @@ class PlexObject:
     ) -> PlexObject:
         ...
 
-    def _manuallyLoadXML(self, xml: str, cls: Optional[Type[PlexObjectT]] = None):
+    def _manuallyLoadXML(self, xml: str, cls: Optional[Type[PlexObjectT]] = None) -> Optional[Union[PlexObjectT, PlexObject]]:
         """ Manually load an XML string as a :class:`~plexapi.base.PlexObject`.
 
             Parameters:
@@ -551,7 +543,7 @@ class PlexObject:
             raise Unsupported('Cannot reload an object not built from a URL.')
         self._initpath = key
         data = self._server.query(key)
-        if not data:
+        if data is None:
             raise NotFound(f'Unable to find elem: {key=}')
         self._overwriteNone = _overwriteNone
         self._loadData(data[0])
@@ -591,7 +583,7 @@ class PlexObject:
         attrstr = parts[1] if len(parts) == 2 else ""
         if attrstr:
             results = [] if results is None else results
-            for child in filter(lambda c: c.tag.lower() == attr.lower(), elem):
+            for child in [c for c in elem if c.tag.lower() == attr.lower()]:
                 results += self._getAttrValue(child, attrstr, results)
             return [r for r in results if r is not None]
         # check were looking for the tag
@@ -630,6 +622,27 @@ class PlexPartialObject(PlexObject):
         and if the specified value you request is None it will fetch the full object
         automatically and update itself.
     """
+    _INCLUDES = {
+        'checkFiles': 1,
+        'includeAllConcerts': 1,
+        'includeBandwidths': 1,
+        'includeChapters': 1,
+        'includeChildren': 1,
+        'includeConcerts': 1,
+        'includeExternalMedia': 1,
+        'includeExtras': 1,
+        'includeFields': 'thumbBlurHash,artBlurHash',
+        'includeGeolocation': 1,
+        'includeLoudnessRamps': 1,
+        'includeMarkers': 1,
+        'includeOnDeck': 1,
+        'includePopularLeaves': 1,
+        'includePreferences': 1,
+        'includeRelated': 1,
+        'includeRelatedCount': 1,
+        'includeReviews': 1,
+        'includeStations': 1
+    }
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, PlexPartialObject):
@@ -1054,7 +1067,7 @@ class PlexSession(PlexObject):
 
     def source(self):
         """ Return the source media object for the session. """
-        return self.fetchItem(self._details_key)
+        return self._details_key and self.fetchItem(self._details_key)
 
     def stop(self, reason=''):
         """ Stop playback for the session.
