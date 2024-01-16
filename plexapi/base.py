@@ -712,6 +712,14 @@ class PlexPartialObject(PlexObject):
         """ Returns True if this is not a full object. """
         return not self.isFullObject()
 
+    def isLocked(self, field: str):
+        """ Returns True if the specified field is locked, otherwise False.
+
+            Parameters:
+                field (str): The name of the field.
+        """
+        return next((f.locked for f in self.fields if f.name == field), False)
+
     def _edit(self, **kwargs):
         """ Actually edit an object. """
         if isinstance(self._edits, dict):
@@ -911,6 +919,30 @@ class Playable(PlexPartialObject):
         for item in self.media:
             for part in item.parts:
                 yield part
+
+    def videoStreams(self):
+        """ Returns a list of :class:`~plexapi.media.videoStream` objects for all MediaParts. """
+        if self.isPartialObject():
+            self.reload()
+        return sum((part.videoStreams() for part in self.iterParts()), [])
+
+    def audioStreams(self):
+        """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
+        if self.isPartialObject():
+            self.reload()
+        return sum((part.audioStreams() for part in self.iterParts()), [])
+
+    def subtitleStreams(self):
+        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
+        if self.isPartialObject():
+            self.reload()
+        return sum((part.subtitleStreams() for part in self.iterParts()), [])
+
+    def lyricStreams(self):
+        """ Returns a list of :class:`~plexapi.media.LyricStream` objects for all MediaParts. """
+        if self.isPartialObject():
+            self.reload()
+        return sum((part.lyricStreams() for part in self.iterParts()), [])
 
     def play(self, client):
         """ Start playback on the specified client.

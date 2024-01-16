@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.DEFAULT_PYTHON }}
 
@@ -37,7 +37,7 @@ jobs:
         python -m twine check dist/*
 
     - name: Upload builds
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist
@@ -53,7 +53,7 @@ jobs:
       id-token: write
     steps:
     - name: Download builds
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1

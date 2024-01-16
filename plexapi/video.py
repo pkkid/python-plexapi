@@ -103,64 +103,88 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         """ Returns str, default title for a new syncItem. """
         return self.title
 
-    def videoStreams(self):
-        """ Returns a list of :class:`~plexapi.media.videoStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.videoStreams()
-        return streams
-
-    def audioStreams(self):
-        """ Returns a list of :class:`~plexapi.media.AudioStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.audioStreams()
-        return streams
-
-    def subtitleStreams(self):
-        """ Returns a list of :class:`~plexapi.media.SubtitleStream` objects for all MediaParts. """
-        streams = []
-
-        if self.isPartialObject():
-            self.reload()
-
-        parts = self.iterParts()
-        for part in parts:
-            streams += part.subtitleStreams()
-        return streams
-
     def uploadSubtitles(self, filepath):
-        """ Upload Subtitle file for video. """
+        """ Upload a subtitle file for the video.
+
+            Parameters:
+                filepath (str): Path to subtitle file.
+        """
         url = f'{self.key}/subtitles'
         filename = os.path.basename(filepath)
         subFormat = os.path.splitext(filepath)[1][1:]
+        params = {
+            'title': filename,
+            'format': subFormat,
+        }
+        headers = {'Accept': 'text/plain, */*'}
         with open(filepath, 'rb') as subfile:
-            params = {'title': filename,
-                      'format': subFormat
-                      }
-            headers = {'Accept': 'text/plain, */*'}
             self._server.query(url, self._server._session.post, data=subfile, params=params, headers=headers)
         return self
 
-    def removeSubtitles(self, streamID=None, streamTitle=None):
-        """ Remove Subtitle from movie's subtitles listing.
+    def searchSubtitles(self, language='en', hearingImpaired=0, forced=0):
+        """ Search for on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
 
-            Note: If subtitle file is located inside video directory it will bbe deleted.
-            Files outside of video directory are not effected.
+            Parameters:
+                language (str, optional): Language code (ISO 639-1) of the subtitles to search for.
+                    Default 'en'.
+                hearingImpaired (int, optional): Search option for SDH subtitles.
+                    Default 0.
+                    (0 = Prefer non-SDH subtitles, 1 = Prefer SDH subtitles,
+                    2 = Only show SDH subtitles, 3 = Only show non-SDH subtitles)
+                forced (int, optional): Search option for forced subtitles.
+                    Default 0.
+                    (0 = Prefer non-forced subtitles, 1 = Prefer forced subtitles,
+                    2 = Only show forced subtitles, 3 = Only show non-forced subtitles)
+
+            Returns:
+                List<:class:`~plexapi.media.SubtitleStream`>: List of SubtitleStream objects.
         """
-        for stream in self.subtitleStreams():
-            if streamID == stream.id or streamTitle == stream.title:
-                self._server.query(stream.key, self._server._session.delete)
+        params = {
+            'language': language,
+            'hearingImpaired': hearingImpaired,
+            'forced': forced,
+        }
+        key = f'{self.key}/subtitles{utils.joinArgs(params)}'
+        return self.fetchItems(key)
+
+    def downloadSubtitles(self, subtitleStream):
+        """ Download on-demand subtitles for the video.
+            See https://support.plex.tv/articles/subtitle-search/.
+
+            Note: This method is asynchronous and returns immediately before subtitles are fully downloaded.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`):
+                    Subtitle object returned from :func:`~plexapi.video.Video.searchSubtitles`.
+        """
+        key = f'{self.key}/subtitles'
+        params = {'key': subtitleStream.key}
+        self._server.query(key, self._server._session.put, params=params)
+        return self
+
+    def removeSubtitles(self, subtitleStream=None, streamID=None, streamTitle=None):
+        """ Remove an upload or downloaded subtitle from the video.
+
+            Note: If the subtitle file is located inside video directory it will be deleted.
+            Files outside of video directory are not affected.
+            Embedded subtitles cannot be removed.
+
+            Parameters:
+                subtitleStream (:class:`~plexapi.media.SubtitleStream`, optional): Subtitle object to remove.
+                streamID (int, optional): ID of the subtitle stream to remove.
+                streamTitle (str, optional): Title of the subtitle stream to remove.
+        """
+        if subtitleStream is None:
+            try:
+                subtitleStream = next(
+                    stream for stream in self.subtitleStreams()
+                    if streamID == stream.id or streamTitle == stream.title
+                )
+            except StopIteration:
+                raise BadRequest(f"Subtitle stream with ID '{streamID}' or title '{streamTitle}' not found.") from None
+
+        self._server.query(subtitleStream.key, self._server._session.delete)
         return self
 
     def optimize(self, title='', target='', deviceProfile='', videoQuality=None,
@@ -563,7 +587,7 @@ class Show(
         self.showOrdering = data.attrib.get('showOrdering')
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
-        self.subtitleLanguage = data.attrib.get('audioLanguage', '')
+        self.subtitleLanguage = data.attrib.get('subtitleLanguage', '')
         self.subtitleMode = utils.cast(int, data.attrib.get('subtitleMode', '-1'))
         self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
@@ -733,7 +757,7 @@ class Season(
         self.parentThumb = data.attrib.get('parentThumb')
         self.parentTitle = data.attrib.get('parentTitle')
         self.ratings = self.findItems(data, media.Rating)
-        self.subtitleLanguage = data.attrib.get('audioLanguage', '')
+        self.subtitleLanguage = data.attrib.get('subtitleLanguage', '')
         self.subtitleMode = utils.cast(int, data.attrib.get('subtitleMode', '-1'))
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
@@ -967,11 +991,9 @@ class Episode(
     @cached_property
     def _season(self):
         """ Returns the :class:`~plexapi.video.Season` object by querying for the show's children. """
-        if not self.grandparentKey:
-            return None
-        return self.fetchItem(
-            f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}'
-        )
+        if self.grandparentKey and self.parentIndex is not None:
+            return self.fetchItem(f'{self.grandparentKey}/children?excludeAllLeaves=1&index={self.parentIndex}')
+        return None
 
     def __repr__(self):
         return '<{}>'.format(
@@ -1009,7 +1031,11 @@ class Episode(
     @cached_property
     def seasonNumber(self):
         """ Returns the episode's season number. """
-        return self.parentIndex if isinstance(self.parentIndex, int) else self._season.seasonNumber
+        if isinstance(self.parentIndex, int):
+            return self.parentIndex
+        elif self._season:
+            return self._season.index
+        return None
 
     @property
     def seasonEpisode(self):

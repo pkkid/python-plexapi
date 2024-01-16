@@ -10,7 +10,7 @@ from plexapi import media, utils
 from plexapi.base import Playable
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, MusicSection
-from plexapi.mixins import ArtMixin, PosterMixin, SmartFilterMixin
+from plexapi.mixins import SmartFilterMixin, ArtMixin, PosterMixin, PlaylistEditMixins
 from plexapi.utils import deprecated
 
 if TYPE_CHECKING:
@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 class Playlist(
     Playable,
     SmartFilterMixin,
-    ArtMixin, PosterMixin
+    ArtMixin, PosterMixin,
+    PlaylistEditMixins
 ):
     """ Represents a single Playlist.
 
@@ -48,6 +49,7 @@ class Playlist(
             smart (bool): True if the playlist is a smart playlist.
             summary (str): Summary of the playlist.
             title (str): Name of the playlist.
+            titleSort (str): Title to use when sorting (defaults to title).
             type (str): 'playlist'
             updatedAt (datetime): Datetime the playlist was updated.
     """
@@ -77,6 +79,7 @@ class Playlist(
         self.smart = utils.cast(bool, data.attrib.get('smart'))
         self.summary = data.attrib.get('summary')
         self.title = data.attrib.get('title')
+        self.titleSort = data.attrib.get('titleSort', self.title)
         self.type = data.attrib.get('type')
         self.updatedAt = utils.toDatetime(data.attrib.get('updatedAt'))
         self._items = None  # cache for self.items
@@ -230,7 +233,7 @@ class Playlist(
         self._server.query(key, method=self._server._session.put)
         return self
 
-    @deprecated('use "removeItems" instead', stacklevel=3)
+    @deprecated('use "removeItems" instead')
     def removeItem(self, item):
         self.removeItems(item)
 
@@ -314,10 +317,15 @@ class Playlist(
 
     def _edit(self, **kwargs):
         """ Actually edit the playlist. """
+        if isinstance(self._edits, dict):
+            self._edits.update(kwargs)
+            return self
+
         key = f'{self.key}{utils.joinArgs(kwargs)}'
         self._server.query(key, method=self._server._session.put)
         return self
 
+    @deprecated('use "editTitle" and "editSummary" instead')
     def edit(self, title=None, summary=None):
         """ Edit the playlist.
 
@@ -390,7 +398,7 @@ class Playlist(
         key = f"/playlists/upload{utils.joinArgs(args)}"
         server.query(key, method=server._session.post)
         try:
-            return server.playlists(sectionId=section.key, guid__endswith=m3ufilepath)[0].edit(title=title).reload()
+            return server.playlists(sectionId=section.key, guid__endswith=m3ufilepath)[0].editTitle(title).reload()
         except IndexError:
             raise BadRequest('Failed to create playlist from m3u file.') from None
 

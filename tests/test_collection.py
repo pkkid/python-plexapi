@@ -190,6 +190,8 @@ def test_Collection_edit(collection, movies):
     assert collection.summary == newSummary
     lockedFields = [f.locked for f in collection.fields if f.name in fields]
     assert all(lockedFields)
+    for f in fields:
+        assert collection.isLocked(field=f)
 
     collection.edit(
         title=title,
@@ -210,6 +212,8 @@ def test_Collection_edit(collection, movies):
     assert collection.summary == summary
     lockedFields = [f.locked for f in collection.fields if f.name in fields]
     assert not any(lockedFields)
+    for f in fields:
+        assert not collection.isLocked(field=f)
 
 
 def test_Collection_create(plex, tvshows):

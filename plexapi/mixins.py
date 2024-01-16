@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import deque
 from datetime import datetime
-from typing import Tuple
+from typing import Deque, Set, Tuple, Union
 from urllib.parse import parse_qsl, quote, quote_plus, unquote, urlencode, urlsplit
 
 from plexapi import media, settings, utils
@@ -65,9 +65,7 @@ class AdvancedSettingsMixin:
 class SmartFilterMixin:
     """ Mixin for Plex objects that can have smart filters. """
 
-    def _parseFilterGroups(
-        self, feed: "deque[Tuple[str, str]]", returnOn: "set[str]|None" = None
-    ) -> dict:
+    def _parseFilterGroups(self, feed: Deque[Tuple[str, str]], returnOn: Union[Set[str], None] = None) -> dict:
         """ Parse filter groups from input lines between push and pop. """
         currentFiltersStack: list[dict] = []
         operatorForStack = None
@@ -116,11 +114,14 @@ class SmartFilterMixin:
         filtersDict = {}
         special_keys = {"type", "sort"}
         integer_keys = {"includeGuids", "limit"}
-        reserved_keys = special_keys | integer_keys
+        as_is_keys = {"group", "having"}
+        reserved_keys = special_keys | integer_keys | as_is_keys
         while feed:
             key, value = feed.popleft()
             if key in integer_keys:
                 filtersDict[key] = int(value)
+            elif key in as_is_keys:
+                filtersDict[key] = value
             elif key == "type":
                 filtersDict["libtype"] = utils.reverseSearchType(value)
             elif key == "sort":
@@ -315,19 +316,16 @@ class PlayedUnplayedMixin:
         return self
 
     @property
-    @deprecated('use "isPlayed" instead', stacklevel=3)
     def isWatched(self):
-        """ Returns True if the show is watched. """
+        """ Alias to self.isPlayed. """
         return self.isPlayed
 
-    @deprecated('use "markPlayed" instead')
     def markWatched(self):
-        """ Mark the video as played. """
+        """ Alias to :func:`~plexapi.mixins.PlayedUnplayedMixin.markPlayed`. """
         self.markPlayed()
 
-    @deprecated('use "markUnplayed" instead')
     def markUnwatched(self):
-        """ Mark the video as unplayed. """
+        """ Alias to :func:`~plexapi.mixins.PlayedUnplayedMixin.markUnplayed`. """
         self.markUnplayed()
 
 
@@ -789,7 +787,8 @@ class EditTagsMixin:
 
         if not remove:
             tags = getattr(self, self._tagPlural(tag), [])
-            items = tags + items
+            if isinstance(tags, list):
+                items = tags + items
 
         edits = self._tagHelper(self._tagSingular(tag), items, locked, remove)
         edits.update(kwargs)
@@ -1221,5 +1220,12 @@ class CollectionEditMixins(
     ArtLockMixin, PosterLockMixin, ThemeLockMixin,
     AddedAtMixin, ContentRatingMixin, SortTitleMixin, SummaryMixin, TitleMixin, UserRatingMixin,
     LabelMixin
+):
+    pass
+
+
+class PlaylistEditMixins(
+    ArtLockMixin, PosterLockMixin,
+    SortTitleMixin, SummaryMixin, TitleMixin
 ):
     pass

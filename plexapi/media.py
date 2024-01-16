@@ -450,8 +450,10 @@ class SubtitleStream(MediaPartStream):
             forced (bool): True if this is a forced subtitle.
             format (str): The format of the subtitle stream (ex: srt).
             headerCompression (str): The header compression of the subtitle stream.
+            hearingImpaired (bool): True if this is a hearing impaired (SDH) subtitle.
+            perfectMatch (bool): True if the on-demand subtitle is a perfect match.
             providerTitle (str): The provider title where the on-demand subtitle is downloaded from.
-            score (int): The match score of the on-demand subtitle.
+            score (int): The match score (download count) of the on-demand subtitle.
             sourceKey (str): The source key of the on-demand subtitle.
             transient (str): Unknown.
             userID (int): The user id of the user that downloaded the on-demand subtitle.
@@ -466,6 +468,8 @@ class SubtitleStream(MediaPartStream):
         self.forced = utils.cast(bool, data.attrib.get('forced', '0'))
         self.format = data.attrib.get('format')
         self.headerCompression = data.attrib.get('headerCompression')
+        self.hearingImpaired = utils.cast(bool, data.attrib.get('hearingImpaired', '0'))
+        self.perfectMatch = utils.cast(bool, data.attrib.get('perfectMatch'))
         self.providerTitle = data.attrib.get('providerTitle')
         self.score = utils.cast(int, data.attrib.get('score'))
         self.sourceKey = data.attrib.get('sourceKey')
@@ -1009,7 +1013,8 @@ class BaseResource(PlexObject):
         Attributes:
             TAG (str): 'Photo' or 'Track'
             key (str): API URL (/library/metadata/<ratingkey>).
-            provider (str): The source of the art or poster, None for Theme objects.
+            provider (str): The source of the resource. 'local' for local files (e.g. theme.mp3),
+                None if uploaded or agent-/plugin-supplied.
             ratingKey (str): Unique key identifying the resource.
             selected (bool): True if the resource is currently selected.
             thumb (str): The URL to retrieve the resource thumbnail.
