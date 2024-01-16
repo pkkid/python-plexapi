@@ -12,6 +12,7 @@ from typing import (
     List,
     Optional,
     Set,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -568,7 +569,7 @@ class PlexObject:
         # log.debug('Checking %s for %s found: %s', elem.tag, kwargs, attrsFound)
         return all(attrsFound.values())
 
-    def _getAttrOperator(self, attr: str):
+    def _getAttrOperator(self, attr: str) -> Tuple[str, str, FunctionCheck]:
         for op, operator in OPERATORS.items():
             if attr.endswith(f'__{op}'):
                 attr = attr.rsplit('__', 1)[0]
