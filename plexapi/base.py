@@ -108,14 +108,23 @@ class PlexObject:
         if value is not None or attr.startswith('_') or attr not in self.__dict__ or overwriteNone:
             self.__dict__[attr] = value
 
-    def _clean(self, value: Optional[str] = None):
+    @overload
+    def _clean(self, value: str) -> str:
+        ...
+
+    @overload
+    def _clean(self, value: None) -> None:
+        ...
+
+    def _clean(self, value: Optional[str] = None) -> Optional[str]:
         """ Clean attr value for display in __repr__. """
-        if value:
-            value = str(value).replace('/library/metadata/', '')
-            value = value.replace('/children', '')
-            value = value.replace('/accounts/', '')
-            value = value.replace('/devices/', '')
-            return value.replace(' ', '-')[:20]
+        if value is None:
+            return None
+        value = str(value).replace('/library/metadata/', '')
+        value = value.replace('/children', '')
+        value = value.replace('/accounts/', '')
+        value = value.replace('/devices/', '')
+        return value.replace(' ', '-')[:20]
 
     @overload
     def _buildItem(
