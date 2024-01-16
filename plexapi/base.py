@@ -252,6 +252,30 @@ class PlexObject:
         elem = ElementTree.fromstring(xml)
         return self._buildItemOrNone(elem, cls)
 
+    @overload
+    def fetchItems(
+        self,
+        ekey: Union[str, List[int]],
+        cls: None,
+        container_start: Optional[int] = None,
+        container_size: Optional[int] = None,
+        maxresults: Optional[int] = None,
+        **kwargs: Any,
+    ) -> List[PlexObject]:
+        ...
+
+    @overload
+    def fetchItems(
+        self,
+        ekey: Union[str, List[int]],
+        cls: Type[PlexObjectT],
+        container_start: Optional[int] = None,
+        container_size: Optional[int] = None,
+        maxresults: Optional[int] = None,
+        **kwargs: Any,
+    ) -> List[PlexObjectT]:
+        ...
+
     def fetchItems(
         self,
         ekey: Union[str, List[int]],
@@ -260,7 +284,7 @@ class PlexObject:
         container_size: Optional[int] = None,
         maxresults: Optional[int] = None,
         **kwargs: Any,
-    ):
+    ) -> Union[List[PlexObjectT], List[PlexObject]]:
         """ Load the specified key to find and build all items with the specified tag
             and attrs.
 
@@ -341,6 +365,7 @@ class PlexObject:
         if isinstance(ekey, list) and all(isinstance(key, int) for key in ekey):  # type: ignore # unnecessary isinstance
             ekey = f'/library/metadata/{",".join(str(key) for key in ekey)}'
 
+        ekey = cast(str, ekey)  # TODO: Remove this cast when ekey is no longer a list
         container_start = container_start or 0
         container_size = container_size or X_PLEX_CONTAINER_SIZE
         offset = container_start
@@ -348,8 +373,8 @@ class PlexObject:
         if maxresults is not None:
             container_size = min(container_size, maxresults)
 
-        results = []
-        subresults = []
+        results: List[PlexObject] = []
+        subresults: List[PlexObject] = []
         headers = {}
 
         while True:
@@ -359,7 +384,7 @@ class PlexObject:
             data = self._server.query(ekey, headers=headers)
             if not data:
                 return []
-            subresults = self.findItems(data, cls, ekey, **kwargs)  # type: ignore # mypy not able to infer cls & ekey type
+            subresults = self.findItems(data, cls, ekey, **kwargs)
             total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
 
             if not subresults:
