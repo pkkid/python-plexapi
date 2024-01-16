@@ -102,7 +102,7 @@ class PlexObject:
         name = self._clean(self.firstAttr('title', 'name', 'username', 'product', 'tag', 'value'))
         return f"<{':'.join([p for p in [self.__class__.__name__, uid, name] if p])}>"
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any) -> None:
         overwriteNone = self.__dict__.get('_overwriteNone')
         # Don't overwrite an attr with None unless it's a private variable or overwrite None is True
         if value is not None or attr.startswith('_') or attr not in self.__dict__ or overwriteNone:
