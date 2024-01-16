@@ -10,10 +10,10 @@ from urllib.parse import parse_qs, quote_plus, urlencode, urlparse
 from plexapi import log, media, utils
 from plexapi.base import OPERATORS, PlexObject
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.mixins import (AlbumEditMixins, ArtistEditMixins,
-                            EpisodeEditMixins, MovieEditMixins,
-                            PhotoalbumEditMixins, PhotoEditMixins,
-                            SeasonEditMixins, ShowEditMixins, TrackEditMixins)
+from plexapi.mixins import (
+    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
+    ArtistEditMixins, AlbumEditMixins, TrackEditMixins, PhotoalbumEditMixins, PhotoEditMixins
+)
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
 

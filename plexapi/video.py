@@ -10,12 +10,12 @@ from urllib.parse import quote_plus
 from plexapi import media, utils
 from plexapi.base import Playable, PlexHistory, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import (AdvancedSettingsMixin, ArtMixin, ArtUrlMixin,
-                            EpisodeEditMixins, ExtrasMixin, HubsMixin,
-                            MovieEditMixins, PlayedUnplayedMixin, PosterMixin,
-                            PosterUrlMixin, RatingMixin, SeasonEditMixins,
-                            ShowEditMixins, SplitMergeMixin, ThemeMixin,
-                            ThemeUrlMixin, UnmatchMatchMixin, WatchlistMixin)
+from plexapi.mixins import (
+    AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
+    MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
+    WatchlistMixin
+)
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element

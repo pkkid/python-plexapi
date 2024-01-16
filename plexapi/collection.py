@@ -9,9 +9,11 @@ from plexapi import media, utils
 from plexapi.base import PlexPartialObject
 from plexapi.exceptions import BadRequest, NotFound, Unsupported
 from plexapi.library import LibrarySection, ManagedHub
-from plexapi.mixins import (AdvancedSettingsMixin, ArtMixin,
-                            CollectionEditMixins, HubsMixin, PosterMixin,
-                            RatingMixin, SmartFilterMixin, ThemeMixin)
+from plexapi.mixins import (
+    AdvancedSettingsMixin, SmartFilterMixin, HubsMixin, RatingMixin,
+    ArtMixin, PosterMixin, ThemeMixin,
+    CollectionEditMixins
+)
 from plexapi.utils import deprecated
 
 if TYPE_CHECKING:

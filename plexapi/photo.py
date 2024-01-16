@@ -9,9 +9,11 @@ from urllib.parse import quote_plus
 from plexapi import media, utils, video
 from plexapi.base import Playable, PlexPartialObject, PlexSession
 from plexapi.exceptions import BadRequest
-from plexapi.mixins import (ArtMixin, ArtUrlMixin, PhotoalbumEditMixins,
-                            PhotoEditMixins, PosterMixin, PosterUrlMixin,
-                            RatingMixin)
+from plexapi.mixins import (
+    RatingMixin,
+    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin,
+    PhotoalbumEditMixins, PhotoEditMixins
+)
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
