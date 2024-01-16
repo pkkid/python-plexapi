@@ -550,8 +550,8 @@ class PlexObject:
         self._overwriteNone = True
         return self
 
-    def _checkAttrs(self, elem: Element, **kwargs: Any):
-        attrsFound = {}
+    def _checkAttrs(self, elem: Element, **kwargs: Any) -> bool:
+        attrsFound: Dict[str, bool] = {}
         for attr, query in kwargs.items():
             attr, op, operator = self._getAttrOperator(attr)
             values = self._getAttrValue(elem, attr)
