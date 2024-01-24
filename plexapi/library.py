@@ -2927,6 +2927,10 @@ class FilterChoice(PlexObject):
         self.title = data.attrib.get('title')
         self.type = data.attrib.get('type')
 
+    def items(self):
+        """ Returns a list of items for this filter choice. """
+        return self.fetchItems(self.fastKey)
+
 
 class ManagedHub(PlexObject):
     """ Represents a Managed Hub (recommendation) inside a library.
