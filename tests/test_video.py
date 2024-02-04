@@ -135,8 +135,6 @@ def test_video_Movie_attrs(movies):
     assert audio._server._baseurl == utils.SERVER_BASEURL
     assert audio.title is None
     assert audio.type == 2
-    with pytest.raises(AttributeError):
-        assert audio.albumGain is None  # Check track only attributes are not available
     # Media
     media = movie.media[0]
     assert media.aspectRatio >= 1.3
@@ -160,8 +158,6 @@ def test_video_Movie_attrs(movies):
     assert media.videoProfile == "main"
     assert media.videoResolution in utils.RESOLUTIONS
     assert utils.is_int(media.width, gte=200)
-    with pytest.raises(AttributeError):
-        assert media.aperture is None  # Check photo only attributes are not available
     # Video
     video = movie.media[0].parts[0].videoStreams()[0]
     assert video.anamorphic is None

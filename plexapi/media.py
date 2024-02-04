@@ -37,7 +37,7 @@ class Media(PlexObject):
             videoResolution (str): The video resolution of the media (ex: sd).
             width (int): The width of the video in pixels (ex: 608).
 
-            <Photo_only_attributes>: The following attributes are only available for photos.
+            Photo_only_attributes: The following attributes are only available for photos.
 
                 * aperture (str): The aperture used to take the photo.
                 * exposure (str): The exposure used to take the photo.
@@ -74,13 +74,13 @@ class Media(PlexObject):
         self.width = utils.cast(int, data.attrib.get('width'))
         self.uuid = data.attrib.get('uuid')
 
-        if self._isChildOf(etag='Photo'):
-            self.aperture = data.attrib.get('aperture')
-            self.exposure = data.attrib.get('exposure')
-            self.iso = utils.cast(int, data.attrib.get('iso'))
-            self.lens = data.attrib.get('lens')
-            self.make = data.attrib.get('make')
-            self.model = data.attrib.get('model')
+        # Photo only attributes
+        self.aperture = data.attrib.get('aperture')
+        self.exposure = data.attrib.get('exposure')
+        self.iso = utils.cast(int, data.attrib.get('iso'))
+        self.lens = data.attrib.get('lens')
+        self.make = data.attrib.get('make')
+        self.model = data.attrib.get('model')
 
         parent = self._parent()
         self._parentKey = parent.key
@@ -158,11 +158,8 @@ class MediaPart(PlexObject):
         self.videoProfile = data.attrib.get('videoProfile')
 
     def _buildStreams(self, data):
-        streams = []
-        for cls in (VideoStream, AudioStream, SubtitleStream, LyricStream):
-            items = self.findItems(data, cls, streamType=cls.STREAMTYPE)
-            streams.extend(items)
-        return streams
+        """ Returns a list of :class:`~plexapi.media.MediaPartStream` objects in this MediaPart. """
+        return self.findItems(data)
 
     @property
     def hasPreviewThumbnails(self):
@@ -384,7 +381,7 @@ class AudioStream(MediaPartStream):
             samplingRate (int): The sampling rate of the audio stream (ex: xxx)
             streamIdentifier (int): The stream identifier of the audio stream.
 
-            <Track_only_attributes>: The following attributes are only available for tracks.
+            Track_only_attributes: The following attributes are only available for tracks.
 
                 * albumGain (float): The gain for the album.
                 * albumPeak (float): The peak for the album.
@@ -411,16 +408,16 @@ class AudioStream(MediaPartStream):
         self.samplingRate = utils.cast(int, data.attrib.get('samplingRate'))
         self.streamIdentifier = utils.cast(int, data.attrib.get('streamIdentifier'))
 
-        if self._isChildOf(etag='Track'):
-            self.albumGain = utils.cast(float, data.attrib.get('albumGain'))
-            self.albumPeak = utils.cast(float, data.attrib.get('albumPeak'))
-            self.albumRange = utils.cast(float, data.attrib.get('albumRange'))
-            self.endRamp = data.attrib.get('endRamp')
-            self.gain = utils.cast(float, data.attrib.get('gain'))
-            self.loudness = utils.cast(float, data.attrib.get('loudness'))
-            self.lra = utils.cast(float, data.attrib.get('lra'))
-            self.peak = utils.cast(float, data.attrib.get('peak'))
-            self.startRamp = data.attrib.get('startRamp')
+        # Track only attributes
+        self.albumGain = utils.cast(float, data.attrib.get('albumGain'))
+        self.albumPeak = utils.cast(float, data.attrib.get('albumPeak'))
+        self.albumRange = utils.cast(float, data.attrib.get('albumRange'))
+        self.endRamp = data.attrib.get('endRamp')
+        self.gain = utils.cast(float, data.attrib.get('gain'))
+        self.loudness = utils.cast(float, data.attrib.get('loudness'))
+        self.lra = utils.cast(float, data.attrib.get('lra'))
+        self.peak = utils.cast(float, data.attrib.get('peak'))
+        self.startRamp = data.attrib.get('startRamp')
 
     def setSelected(self):
         """ Sets this audio stream as the selected audio stream.
