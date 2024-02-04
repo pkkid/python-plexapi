@@ -407,7 +407,7 @@ def downloadSessionImages(server, filename=None, height=150, width=150,
     return info
 
 
-def download(url, token, filename=None, savepath=None, session=None, chunksize=4024,   # noqa: C901
+def download(url, token, filename=None, savepath=None, session=None, chunksize=4096,   # noqa: C901
              unpack=False, mocked=False, showstatus=False):
     """ Helper to download a thumb, videofile or other media item. Returns the local
         path to the downloaded file.
