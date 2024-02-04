@@ -78,7 +78,7 @@ def test_audio_Artist_album(artist):
 
 
 def test_audio_Artist_albums(artist):
-    albums = artist.albums()
+    albums = artist.albums(filters={})
     assert len(albums) == 1 and albums[0].title == "Layers"
 
 

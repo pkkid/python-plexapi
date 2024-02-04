@@ -227,7 +227,7 @@ class Artist(
         """ Returns a list of :class:`~plexapi.audio.Album` objects by the artist. """
         return self.section().search(
             libtype='album',
-            filters={'artist.id': self.ratingKey},
+            filters={**kwargs.pop('filters', {}), 'artist.id': self.ratingKey},
             **kwargs
         )
 
