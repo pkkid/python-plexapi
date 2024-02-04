@@ -289,7 +289,7 @@ class Artist(
 @utils.registerPlexObject
 class Album(
     Audio,
-    UnmatchMatchMixin, RatingMixin,
+    SplitMergeMixin, UnmatchMatchMixin, RatingMixin,
     ArtMixin, PosterMixin, ThemeUrlMixin,
     AlbumEditMixins
 ):
