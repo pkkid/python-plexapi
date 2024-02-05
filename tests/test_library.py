@@ -551,6 +551,9 @@ def test_library_MovieSection_search_FilterChoice(movies, collection):
     movie = collection.items()[0]
     assert movie in results
 
+    items = filterChoice.items()
+    assert movie in items
+
 
 def test_library_MovieSection_advancedSearch(movies, movie):
     advancedFilters = {
