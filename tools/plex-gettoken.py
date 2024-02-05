@@ -4,11 +4,16 @@
 Plex-GetToken is a simple method to retrieve a Plex account token.
 """
 from getpass import getpass
+from plexapi.exceptions import TwoFactorRequired
 from plexapi.myplex import MyPlexAccount
 
 username = input("Plex username: ")
 password = getpass("Plex password: ")
-code = input("Plex 2FA code (leave blank for none): ")
 
-account = MyPlexAccount(username, password, code=code)
+try:
+    account = MyPlexAccount(username, password)
+except TwoFactorRequired:
+    code = input("Plex 2FA code: ")
+    account = MyPlexAccount(username, password, code=code)
+
 print(account.authenticationToken)
