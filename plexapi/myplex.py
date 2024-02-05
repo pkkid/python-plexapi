@@ -12,7 +12,7 @@ from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT, 
                      log, logfilter, utils)
 from plexapi.base import PlexObject
 from plexapi.client import PlexClient
-from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized, TwoFactorRequired
 from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
@@ -237,6 +237,8 @@ class MyPlexAccount(PlexObject):
             errtext = response.text.replace('\n', ' ')
             message = f'({response.status_code}) {codename}; {response.url} {errtext}'
             if response.status_code == 401:
+                if "verification code" in response.text:
+                    raise TwoFactorRequired(message)
                 raise Unauthorized(message)
             elif response.status_code == 404:
                 raise NotFound(message)
