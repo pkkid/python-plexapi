@@ -439,7 +439,7 @@ class PlexObject:
         attrstr = parts[1] if len(parts) == 2 else None
         if attrstr:
             results = [] if results is None else results
-            for child in filter(lambda c: c.tag.lower() == attr.lower(), elem):
+            for child in (c for c in elem if c.tag.lower() == attr.lower()):
                 results += self._getAttrValue(child, attrstr, results)
             return [r for r in results if r is not None]
         # check were looking for the tag
