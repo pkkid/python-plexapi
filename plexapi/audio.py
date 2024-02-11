@@ -449,7 +449,7 @@ class Track(
             primaryExtraKey (str) API URL for the primary extra for the track.
             ratingCount (int): Number of listeners who have scrobbled this track, as reported by Last.fm.
             skipCount (int): Number of times the track has been skipped.
-            sourceURI (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library) (remote playlist item only)
             viewOffset (int): View offset in milliseconds.
             year (int): Year the track was released.
     """
