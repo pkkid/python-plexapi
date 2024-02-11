@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, List, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 import warnings
 from collections import defaultdict
 from datetime import datetime
@@ -2059,6 +2059,7 @@ class MusicSection(LibrarySection, ArtistEditMixins, AlbumEditMixins, TrackEditM
         """
         key = f"/library/sections/{self.key}/computePath?startID={startID}&endID={endID}"
         return self.fetchItems(key, **kwargs)
+
 
 class PhotoSection(LibrarySection, PhotoalbumEditMixins, PhotoEditMixins):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
