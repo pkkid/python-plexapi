@@ -900,7 +900,7 @@ class Episode(
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             skipParent (bool): True if the show's seasons are set to hidden.
-            sourceURI (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library) (remote playlist item only)
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year the episode was released.
