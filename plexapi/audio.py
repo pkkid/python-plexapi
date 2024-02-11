@@ -449,7 +449,7 @@ class Track(
             primaryExtraKey (str) API URL for the primary extra for the track.
             ratingCount (int): Number of listeners who have scrobbled this track, as reported by Last.fm.
             skipCount (int): Number of times the track has been skipped.
-            source (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
             viewOffset (int): View offset in milliseconds.
             year (int): Year the track was released.
     """
@@ -484,7 +484,7 @@ class Track(
         self.primaryExtraKey = data.attrib.get('primaryExtraKey')
         self.ratingCount = utils.cast(int, data.attrib.get('ratingCount'))
         self.skipCount = utils.cast(int, data.attrib.get('skipCount'))
-        self.source = data.attrib.get('source')  # remote playlist item
+        self.sourceURI = data.attrib.get('source')  # remote playlist item
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.year = utils.cast(int, data.attrib.get('year'))
 

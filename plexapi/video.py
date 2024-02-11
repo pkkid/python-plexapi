@@ -369,7 +369,7 @@ class Movie(
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
-            source (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
@@ -413,7 +413,7 @@ class Movie(
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
         self.similar = self.findItems(data, media.Similar)
-        self.source = data.attrib.get('source')  # remote playlist item
+        self.sourceURI = data.attrib.get('source')  # remote playlist item
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
@@ -900,7 +900,7 @@ class Episode(
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             skipParent (bool): True if the show's seasons are set to hidden.
-            source (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URL (server://<server_id>/com.plexapp.plugins.library) (remote playlist item only)
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year the episode was released.
@@ -943,7 +943,7 @@ class Episode(
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
         self.skipParent = utils.cast(bool, data.attrib.get('skipParent', '0'))
-        self.source = data.attrib.get('source')  # remote playlist item
+        self.sourceURI = data.attrib.get('source')  # remote playlist item
         self.viewOffset = utils.cast(int, data.attrib.get('viewOffset', 0))
         self.writers = self.findItems(data, media.Writer)
         self.year = utils.cast(int, data.attrib.get('year'))
