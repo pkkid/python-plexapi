@@ -180,7 +180,8 @@ class Photo(
             parentThumb (str): URL to photo album thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
             parentTitle (str): Name of the photo album for the photo.
             ratingKey (int): Unique key identifying the photo.
-            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library)
+                (remote playlist item only).
             summary (str): Summary of the photo.
             tags (List<:class:`~plexapi.media.Tag`>): List of tag objects.
             thumb (str): URL to thumbnail image (/library/metadata/<ratingKey>/thumb/<thumbid>).

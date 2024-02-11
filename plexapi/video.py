@@ -369,7 +369,8 @@ class Movie(
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
-            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library)
+                (remote playlist item only).
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
@@ -900,7 +901,8 @@ class Episode(
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
             skipParent (bool): True if the show's seasons are set to hidden.
-            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library) (remote playlist item only)
+            sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library)
+                (remote playlist item only).
             viewOffset (int): View offset in milliseconds.
             writers (List<:class:`~plexapi.media.Writer`>): List of writers objects.
             year (int): Year the episode was released.
