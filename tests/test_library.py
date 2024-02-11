@@ -430,6 +430,13 @@ def test_library_MusicSection_recentlyAdded(music, artist):
     assert track in music.recentlyAddedTracks()
 
 
+def test_library_MusicSection_sonicAdventure(music):
+    tracks = music.searchTracks()
+    adventure = music.sonicAdventure(tracks[0].ratingKey, tracks[-1].ratingKey)
+    assert len(adventure)
+    assert all(isinstance(t, plexapi.audio.Track) for t in adventure)
+
+
 def test_library_PhotoSection_searchAlbums(photos, photoalbum):
     title = photoalbum.title
     assert len(photos.searchAlbums(title=title))

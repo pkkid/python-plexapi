@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import re
+from typing import Any, List, Optional, TYPE_CHECKING
 import warnings
 from collections import defaultdict
 from datetime import datetime
@@ -15,6 +18,10 @@ from plexapi.mixins import (
 )
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
+
+
+if TYPE_CHECKING:
+    from plexapi.audio import Track
 
 
 class Library(PlexObject):
@@ -2033,6 +2040,25 @@ class MusicSection(LibrarySection, ArtistEditMixins, AlbumEditMixins, TrackEditM
         kwargs['policy'] = Policy.create(limit)
         return super(MusicSection, self).sync(**kwargs)
 
+    def sonicAdventure(
+            self,
+            startID: int,
+            endID: int,
+            **kwargs: Any,
+    ) -> list[Track]:
+        """ Returns a list of tracks from this library section that are part of a sonic adventure.
+        ID's should be of a track, other ID's will return an empty list or items itself or an error.
+
+                Parameters:
+                    startID (int): The ratingKey of the first track in the sonic adventure.
+                    endID (int): The ratingKey of the last track in the sonic adventure.
+
+                Returns:
+                    List[:class:`~plexapi.audio.Track`]: a list of tracks from this library section
+                    that are part of a sonic adventure.
+        """
+        key = f"/library/sections/{self.key}/computePath?startID={startID}&endID={endID}"
+        return self.fetchItems(key, **kwargs)
 
 class PhotoSection(LibrarySection, PhotoalbumEditMixins, PhotoEditMixins):
     """ Represents a :class:`~plexapi.library.LibrarySection` section containing photos.
