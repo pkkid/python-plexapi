@@ -2042,21 +2042,26 @@ class MusicSection(LibrarySection, ArtistEditMixins, AlbumEditMixins, TrackEditM
 
     def sonicAdventure(
             self,
-            startID: int,
-            endID: int,
+            start: Track | int,
+            end: Track | int,
             **kwargs: Any,
     ) -> list[Track]:
         """ Returns a list of tracks from this library section that are part of a sonic adventure.
         ID's should be of a track, other ID's will return an empty list or items itself or an error.
 
                 Parameters:
-                    startID (int): The ratingKey of the first track in the sonic adventure.
-                    endID (int): The ratingKey of the last track in the sonic adventure.
+                    start (Track | int): The :class:`~plexapi.audio.Track` or ID of the first track in the sonic adventure.
+                    end (Track | int): The :class:`~plexapi.audio.Track` or ID of the last track in the sonic adventure.
+                    kwargs: Additional parameters to pass to :func:`~plexapi.base.PlexObject.fetchItems`.
 
                 Returns:
                     List[:class:`~plexapi.audio.Track`]: a list of tracks from this library section
                     that are part of a sonic adventure.
         """
+        # can not use Track due to circular import
+        startID = start if isinstance(start, int) else start.ratingKey
+        endID = end if isinstance(end, int) else end.ratingKey
+
         key = f"/library/sections/{self.key}/computePath?startID={startID}&endID={endID}"
         return self.fetchItems(key, **kwargs)
 
