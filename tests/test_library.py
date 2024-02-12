@@ -432,7 +432,7 @@ def test_library_MusicSection_recentlyAdded(music, artist):
 
 def test_library_MusicSection_sonicAdventure(music):
     tracks = music.searchTracks()
-    adventure = music.sonicAdventure(tracks[0].ratingKey, tracks[-1].ratingKey)
+    adventure = music.sonicAdventure(tracks[0], tracks[-1].ratingKey)
     assert len(adventure)
     assert all(isinstance(t, plexapi.audio.Track) for t in adventure)
 
