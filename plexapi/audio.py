@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 from pathlib import Path
 from urllib.parse import quote_plus
@@ -526,6 +528,22 @@ class Track(
         """ Returns the Plex Media Server data directory where the metadata is stored. """
         guid_hash = utils.sha1hash(self.parentGuid)
         return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
+
+    def sonicAdventure(
+        self: TAudio,
+        to: TAudio,
+        **kwargs: Any,
+    ) -> list[TAudio]:
+        """Returns a sonic adventure from the current track to the specified track.
+
+        Parameters:
+            to: The target track for the sonic adventure.
+            **kwargs: Additional options passed into :func:`~plexapi.library.MusicSection.sonicAdventure`.
+
+        Returns:
+            List[:class:`~plexapi.audio.Track`]: list of tracks in the sonic adventure.
+        """
+        return self.section().sonicAdventure(self, to, **kwargs)
 
 
 @utils.registerPlexObject
