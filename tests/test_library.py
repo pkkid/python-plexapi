@@ -429,6 +429,7 @@ def test_library_MusicSection_recentlyAdded(music, artist):
     assert album in music.recentlyAddedAlbums()
     assert track in music.recentlyAddedTracks()
 
+
 @pytest.mark.authenticated
 def test_library_MusicSection_sonicAdventure(music):
     tracks = music.searchTracks()
