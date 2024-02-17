@@ -159,7 +159,7 @@ class Audio(PlexPartialObject, PlayedUnplayedMixin):
 
         return self.fetchItems(
             key,
-            cls=self.__class__,
+            cls=type(self),
             **kwargs,
         )
 
