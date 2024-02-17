@@ -427,6 +427,7 @@ class Track(
             chapterSource (str): Unknown
             collections (List<:class:`~plexapi.media.Collection`>): List of collection objects.
             duration (int): Length of the track in milliseconds.
+            genres (List<:class:`~plexapi.media.Genre`>): List of genre objects.
             grandparentArt (str): URL to album artist artwork (/library/metadata/<grandparentRatingKey>/art/<artid>).
             grandparentGuid (str): Plex GUID for the album artist (plex://artist/5d07bcb0403c64029053ac4c).
             grandparentKey (str): API URL of the album artist (/library/metadata/<grandparentRatingKey>).
@@ -463,6 +464,7 @@ class Track(
         self.chapterSource = data.attrib.get('chapterSource')
         self.collections = self.findItems(data, media.Collection)
         self.duration = utils.cast(int, data.attrib.get('duration'))
+        self.genres = self.findItems(data, media.Genre)
         self.grandparentArt = data.attrib.get('grandparentArt')
         self.grandparentGuid = data.attrib.get('grandparentGuid')
         self.grandparentKey = data.attrib.get('grandparentKey')
