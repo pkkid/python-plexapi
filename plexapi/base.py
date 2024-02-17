@@ -26,8 +26,8 @@ OPERATORS = {
     'endswith': lambda v, q: v.endswith(q),
     'iendswith': lambda v, q: v.lower().endswith(q),
     'exists': lambda v, q: v is not None if q else v is None,
-    'regex': lambda v, q: re.match(q, v),
-    'iregex': lambda v, q: re.match(q, v, flags=re.IGNORECASE),
+    'regex': lambda v, q: bool(re.search(q, v)),
+    'iregex': lambda v, q: bool(re.search(q, v, flags=re.IGNORECASE)),
 }
 
 
