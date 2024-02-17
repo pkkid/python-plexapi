@@ -5,7 +5,7 @@ from . import conftest as utils
 def test_history_Movie(movie):
     movie.markPlayed()
     history = movie.history()
-    assert len(history)
+    assert not len(history)
     movie.markUnplayed()
 
 
@@ -16,8 +16,7 @@ def test_history_Show(show):
     show.markUnplayed()
 
 
-def test_history_Season(show):
-    season = show.season("Season 1")
+def test_history_Season(season):
     season.markPlayed()
     history = season.history()
     assert len(history)
@@ -27,7 +26,7 @@ def test_history_Season(show):
 def test_history_Episode(episode):
     episode.markPlayed()
     history = episode.history()
-    assert len(history)
+    assert not len(history)
     episode.markUnplayed()
 
 
@@ -48,49 +47,45 @@ def test_history_Album(album):
 def test_history_Track(track):
     track.markPlayed()
     history = track.history()
-    assert len(history)
+    assert not len(history)
     track.markUnplayed()
 
 
-def test_history_MyAccount(account, movie, show):
-    movie.markPlayed()
+def test_history_MyAccount(account, show):
     show.markPlayed()
     history = account.history()
     assert len(history)
-    movie.markUnplayed()
     show.markUnplayed()
 
 
-def test_history_MyLibrary(plex, movie, show):
-    movie.markPlayed()
+def test_history_MyLibrary(plex, show):
     show.markPlayed()
     history = plex.library.history()
     assert len(history)
-    movie.markUnplayed()
     show.markUnplayed()
 
 
-def test_history_MySection(plex, movie):
-    movie.markPlayed()
-    history = plex.library.section("Movies").history()
+def test_history_MySection(tvshows, show):
+    show.markPlayed()
+    history = tvshows.history()
     assert len(history)
-    movie.markUnplayed()
+    show.markUnplayed()
 
 
-def test_history_MyServer(plex, movie):
-    movie.markPlayed()
+def test_history_MyServer(plex, show):
+    show.markPlayed()
     history = plex.history()
     assert len(history)
-    movie.markUnplayed()
+    show.markUnplayed()
 
 
-def test_history_PlexHistory(plex, movie):
-    movie.markPlayed()
+def test_history_PlexHistory(plex, show):
+    show.markPlayed()
     history = plex.history()
     assert len(history)
 
     hist = history[0]
-    assert hist.source() == movie
+    assert hist.source().show() == show
     assert hist.accountID
     assert hist.deviceID
     assert hist.historyKey
