@@ -368,6 +368,7 @@ class Movie(
             ratingImage (str): Key to critic rating image (rottentomatoes://image.rating.rotten).
             ratings (List<:class:`~plexapi.media.Rating`>): List of rating objects.
             roles (List<:class:`~plexapi.media.Role`>): List of role objects.
+            slug (str): The clean watch.plex.tv URL identifier for the movie.
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
@@ -411,6 +412,7 @@ class Movie(
         self.ratingImage = data.attrib.get('ratingImage')
         self.ratings = self.findItems(data, media.Rating)
         self.roles = self.findItems(data, media.Role)
+        self.slug = data.attrib.get('slug')
         self.similar = self.findItems(data, media.Similar)
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
@@ -531,6 +533,7 @@ class Show(
                 (None = Library default, tmdbAiring = The Movie Database (Aired),
                 aired = TheTVDB (Aired), dvd = TheTVDB (DVD), absolute = TheTVDB (Absolute)).
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
+            slug (str): The clean watch.plex.tv URL identifier for the show.
             studio (str): Studio that created show (Di Bonaventura Pictures; 21 Laps Entertainment).
             subtitleLanguage (str): Setting that indicates the preferred subtitle language.
             subtitleMode (int): Setting that indicates the auto-select subtitle mode.
@@ -580,6 +583,7 @@ class Show(
         self.seasonCount = utils.cast(int, data.attrib.get('seasonCount', self.childCount))
         self.showOrdering = data.attrib.get('showOrdering')
         self.similar = self.findItems(data, media.Similar)
+        self.slug = data.attrib.get('slug')
         self.studio = data.attrib.get('studio')
         self.subtitleLanguage = data.attrib.get('subtitleLanguage', '')
         self.subtitleMode = utils.cast(int, data.attrib.get('subtitleMode', '-1'))
@@ -717,6 +721,7 @@ class Season(
             parentIndex (int): Plex index number for the show.
             parentKey (str): API URL of the show (/library/metadata/<parentRatingKey>).
             parentRatingKey (int): Unique key identifying the show.
+            parentSlug (str): The clean watch.plex.tv URL identifier for the show.
             parentStudio (str): Studio that created show.
             parentTheme (str): URL to show theme resource (/library/metadata/<parentRatingkey>/theme/<themeid>).
             parentThumb (str): URL to show thumbnail image (/library/metadata/<parentRatingKey>/thumb/<thumbid>).
@@ -746,6 +751,7 @@ class Season(
         self.parentIndex = utils.cast(int, data.attrib.get('parentIndex'))
         self.parentKey = data.attrib.get('parentKey')
         self.parentRatingKey = utils.cast(int, data.attrib.get('parentRatingKey'))
+        self.parentSlug = data.attrib.get('parentSlug')
         self.parentStudio = data.attrib.get('parentStudio')
         self.parentTheme = data.attrib.get('parentTheme')
         self.parentThumb = data.attrib.get('parentThumb')
@@ -877,6 +883,7 @@ class Episode(
             grandparentGuid (str): Plex GUID for the show (plex://show/5d9c086fe9d5a1001f4d9fe6).
             grandparentKey (str): API URL of the show (/library/metadata/<grandparentRatingKey>).
             grandparentRatingKey (int): Unique key identifying the show.
+            grandparentSlug (str): The clean watch.plex.tv URL identifier for the show.
             grandparentTheme (str): URL to show theme resource (/library/metadata/<grandparentRatingkey>/theme/<themeid>).
             grandparentThumb (str): URL to show thumbnail image (/library/metadata/<grandparentRatingKey>/thumb/<thumbid>).
             grandparentTitle (str): Name of the show for the episode.
@@ -922,6 +929,7 @@ class Episode(
         self.grandparentGuid = data.attrib.get('grandparentGuid')
         self.grandparentKey = data.attrib.get('grandparentKey')
         self.grandparentRatingKey = utils.cast(int, data.attrib.get('grandparentRatingKey'))
+        self.grandparentSlug = data.attrib.get('grandparentSlug')
         self.grandparentTheme = data.attrib.get('grandparentTheme')
         self.grandparentThumb = data.attrib.get('grandparentThumb')
         self.grandparentTitle = data.attrib.get('grandparentTitle')
