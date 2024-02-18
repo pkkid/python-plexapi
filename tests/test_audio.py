@@ -400,7 +400,7 @@ def test_audio_Track_lyricStreams(track):
 
 
 @pytest.mark.authenticated
-def test_audio_Track_sonicAdventure(music):
+def test_audio_Track_sonicAdventure(account_plexpass, music):
     tracks = music.searchTracks()
     adventure = tracks[0].sonicAdventure(tracks[-1])
     assert len(adventure)
