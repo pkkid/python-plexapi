@@ -19,6 +19,7 @@ from plexapi.playlist import Playlist
 
 
 TAudio = TypeVar("TAudio", bound="Audio")
+TTrack = TypeVar("TTrack", bound="Track")
 
 
 class Audio(PlexPartialObject, PlayedUnplayedMixin):
@@ -530,14 +531,14 @@ class Track(
         return str(Path('Metadata') / 'Albums' / guid_hash[0] / f'{guid_hash[1:]}.bundle')
 
     def sonicAdventure(
-        self: TAudio,
-        to: TAudio,
+        self: TTrack,
+        to: TTrack,
         **kwargs: Any,
-    ) -> list[TAudio]:
+    ) -> list[TTrack]:
         """Returns a sonic adventure from the current track to the specified track.
 
         Parameters:
-            to: The target track for the sonic adventure.
+            to (:class:`~plexapi.audio.Track`): The target track for the sonic adventure.
             **kwargs: Additional options passed into :func:`~plexapi.library.MusicSection.sonicAdventure`.
 
         Returns:
