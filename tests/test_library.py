@@ -431,7 +431,7 @@ def test_library_MusicSection_recentlyAdded(music, artist):
 
 
 @pytest.mark.authenticated
-def test_library_MusicSection_sonicAdventure(music):
+def test_library_MusicSection_sonicAdventure(account_plexpass, music):
     tracks = music.searchTracks()
     adventure = music.sonicAdventure(tracks[0], tracks[-1].ratingKey)
     assert len(adventure)
