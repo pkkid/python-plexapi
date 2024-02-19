@@ -95,7 +95,7 @@ class PlexObject:
             ehash = f"{ehash}.session"
         elif initpath.startswith('/status/sessions/history'):
             ehash = f"{ehash}.history"
-        ecls = utils.PLEXOBJECTS.get(ehash, utils.PLEXOBJECTS.get(elem.tag))
+        ecls = utils.getPlexObject(ehash, default=elem.tag)
         # log.debug('Building %s as %s', elem.tag, ecls.__name__)
         if ecls is not None:
             return ecls(self._server, elem, initpath, parent=self)
