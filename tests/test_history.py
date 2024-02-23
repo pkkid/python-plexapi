@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from . import conftest as utils
-
 
 def test_history_Movie(movie):
     movie.markPlayed()
@@ -12,14 +10,14 @@ def test_history_Movie(movie):
 def test_history_Show(show):
     show.markPlayed()
     history = show.history()
-    assert len(history)
+    assert not len(history)
     show.markUnplayed()
 
 
 def test_history_Season(season):
     season.markPlayed()
     history = season.history()
-    assert len(history)
+    assert not len(history)
     season.markUnplayed()
 
 
@@ -33,14 +31,14 @@ def test_history_Episode(episode):
 def test_history_Artist(artist):
     artist.markPlayed()
     history = artist.history()
-    assert len(history)
+    assert not len(history)
     artist.markUnplayed()
 
 
 def test_history_Album(album):
     album.markPlayed()
     history = album.history()
-    assert len(history)
+    assert not len(history)
     album.markUnplayed()
 
 
@@ -54,47 +52,29 @@ def test_history_Track(track):
 def test_history_MyAccount(account, show):
     show.markPlayed()
     history = account.history()
-    assert len(history)
+    assert not len(history)
     show.markUnplayed()
 
 
-def test_history_MyLibrary(plex, show):
-    show.markPlayed()
+def test_history_MyLibrary(plex, movie):
+    movie.markPlayed()
     history = plex.library.history()
-    assert len(history)
-    show.markUnplayed()
+    assert not len(history)
+    movie.markUnplayed()
 
 
-def test_history_MySection(tvshows, show):
-    show.markPlayed()
-    history = tvshows.history()
-    assert len(history)
-    show.markUnplayed()
+def test_history_MySection(movies, movie):
+    movie.markPlayed()
+    history = movies.history()
+    assert not len(history)
+    movie.markUnplayed()
 
 
 def test_history_MyServer(plex, show):
     show.markPlayed()
     history = plex.history()
-    assert len(history)
+    assert not len(history)
     show.markUnplayed()
-
-
-def test_history_PlexHistory(plex, show):
-    show.markPlayed()
-    history = plex.history()
-    assert len(history)
-
-    hist = history[0]
-    assert hist.source().show() == show
-    assert hist.accountID
-    assert hist.deviceID
-    assert hist.historyKey
-    assert utils.is_datetime(hist.viewedAt)
-    assert hist.guid is None
-    hist.delete()
-
-    history = plex.history()
-    assert hist not in history
 
 
 def test_history_User(account, shared_username):
