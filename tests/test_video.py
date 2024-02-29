@@ -339,6 +339,14 @@ def test_video_Movie_isFullObject_and_reload(plex):
     assert len(movie_via_section_search.roles) >= 3
 
 
+def test_video_Movie_reload_kwargs(movie):
+    assert len(movie.media)
+    assert movie.summary is not None
+    movie.reload(includeFields=False, **movie._EXCLUDES)
+    assert movie.__dict__.get('media') == []
+    assert movie.__dict__.get('summary') is None
+
+
 def test_video_movie_watched(movie):
     movie.markUnplayed()
     movie.markPlayed()
