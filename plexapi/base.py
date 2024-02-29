@@ -116,14 +116,22 @@ class PlexObject:
             or disable each parameter individually by setting it to False or 0.
         """
         details_key = self.key
+        params = {}
+
         if details_key and hasattr(self, '_INCLUDES'):
-            includes = {}
             for k, v in self._INCLUDES.items():
-                value = kwargs.get(k, v)
+                value = kwargs.pop(k, v)
                 if value not in [False, 0, '0']:
-                    includes[k] = 1 if value is True else value
-            if includes:
-                details_key += '?' + urlencode(sorted(includes.items()))
+                    params[k] = 1 if value is True else value
+
+        if details_key and hasattr(self, '_EXCLUDES'):
+            for k, v in self._EXCLUDES.items():
+                value = kwargs.pop(k, None)
+                if value is not None:
+                    params[k] = 1 if value is True else value
+
+        if params:
+            details_key += '?' + urlencode(sorted(params.items()))
         return details_key
 
     def _isChildOf(self, **kwargs):
@@ -498,7 +506,14 @@ class PlexPartialObject(PlexObject):
         'includeRelated': 1,
         'includeRelatedCount': 1,
         'includeReviews': 1,
-        'includeStations': 1
+        'includeStations': 1,
+    }
+    _EXCLUDES = {
+        'excludeElements': (
+            'Media,Genre,Country,Guid,Rating,Collection,Director,Writer,Role,Producer,Similar,Style,Mood,Format'
+        ),
+        'excludeFields': 'summary,tagline',
+        'skipRefresh': 1,
     }
 
     def __eq__(self, other):
