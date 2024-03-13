@@ -311,7 +311,8 @@ class Library(PlexObject):
         part = '/library/sections?name=%s&type=%s&agent=%s&scanner=%s&language=%s&location=%s' % (
             quote_plus(name), type, agent, quote_plus(scanner), language, quote_plus(location))  # noqa E126
         if kwargs:
-            part += urlencode(kwargs)
+            prefs_params = {f'prefs[{k}]': v for k, v in kwargs.items()}
+            part += "&%s" %  (urlencode(prefs_params))
         return self._server.query(part, method=self._server._session.post)
 
     def history(self, maxresults=9999999, mindate=None):
