@@ -192,6 +192,7 @@ def test_library_add_edit_delete(plex, movies, photos):
     section.delete()
     assert section not in plex.library.sections()
 
+
 def test_library_add_advanced_settings(plex, movies):
     # Create Other Videos library = No external metadata scanning
     section_name = "plexapi_test_advanced_section"
@@ -213,6 +214,7 @@ def test_library_add_advanced_settings(plex, movies):
     assert section.title == section_name
     for setting in section.settings():
         assert advanced_settings.get(setting.id) == 0
+
 
 def test_library_Library_cleanBundle(plex):
     plex.library.cleanBundles()
