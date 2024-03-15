@@ -192,6 +192,27 @@ def test_library_add_edit_delete(plex, movies, photos):
     section.delete()
     assert section not in plex.library.sections()
 
+def test_library_add_advanced_settings(plex, movies):
+    # Create Other Videos library = No external metadata scanning
+    section_name = "plexapi_test_advanced_section"
+    movie_location = movies.locations[0]
+    advanced_settings = {"enableCinemaTrailers": 0,
+                         "enableBIFGeneration": 0,
+                         "augmentWithProviderContent": 0,
+                         "enableCreditsMarkerGeneration": 0}
+    plex.library.add(
+        name=section_name,
+        type="movie",
+        agent="com.plexapp.agents.none",
+        scanner="Plex Video Files Scanner",
+        language="xn",
+        location=[movie_location],
+        **advanced_settings
+    )
+    section = plex.library.section(section_name)
+    assert section.title == section_name
+    for setting in section.settings():
+        assert advanced_settings.get(setting.id) == 0
 
 def test_library_Library_cleanBundle(plex):
     plex.library.cleanBundles()
