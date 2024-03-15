@@ -216,6 +216,7 @@ def test_library_add_advanced_settings(plex, movies):
         if setting.value != setting.default:
             assert advanced_settings.get(setting.id) == setting.value
 
+
 def test_library_Library_cleanBundle(plex):
     plex.library.cleanBundles()
 
