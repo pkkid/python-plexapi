@@ -213,8 +213,8 @@ def test_library_add_advanced_settings(plex, movies):
     section = plex.library.section(section_name)
     assert section.title == section_name
     for setting in section.settings():
-        assert advanced_settings.get(setting.id) == 0
-
+        if setting.value != setting.default:
+            assert advanced_settings.get(setting.id) == setting.value
 
 def test_library_Library_cleanBundle(plex):
     plex.library.cleanBundles()
