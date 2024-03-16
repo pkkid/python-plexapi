@@ -1178,7 +1178,7 @@ def test_video_Episode_attrs(episode):
     assert episode.audienceRatingImage == "themoviedb://image.rating"
     assert episode.contentRating in utils.CONTENTRATINGS
     if episode.directors:
-        assert "Timothy Van Patten" in [i.tag for i in episode.directors]
+        assert "Tim Van Patten" in [i.tag for i in episode.directors]
     assert utils.is_int(episode.duration, gte=120000)
     if episode.grandparentArt:
         assert utils.is_art(episode.grandparentArt)
