@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import re
+from typing import Any, TYPE_CHECKING
 import warnings
 from collections import defaultdict
 from datetime import datetime
@@ -15,6 +18,10 @@ from plexapi.mixins import (
 )
 from plexapi.settings import Setting
 from plexapi.utils import deprecated
+
+
+if TYPE_CHECKING:
+    from plexapi.audio import Track
 
 
 class Library(PlexObject):
@@ -2032,6 +2039,31 @@ class MusicSection(LibrarySection, ArtistEditMixins, AlbumEditMixins, TrackEditM
         kwargs['mediaSettings'] = MediaSettings.createMusic(bitrate)
         kwargs['policy'] = Policy.create(limit)
         return super(MusicSection, self).sync(**kwargs)
+
+    def sonicAdventure(
+            self,
+            start: Track | int,
+            end: Track | int,
+            **kwargs: Any,
+    ) -> list[Track]:
+        """ Returns a list of tracks from this library section that are part of a sonic adventure.
+            ID's should be of a track, other ID's will return an empty list or items itself or an error.
+
+            Parameters:
+                start (Track | int): The :class:`~plexapi.audio.Track` or ID of the first track in the sonic adventure.
+                end (Track | int): The :class:`~plexapi.audio.Track` or ID of the last track in the sonic adventure.
+                kwargs: Additional parameters to pass to :func:`~plexapi.base.PlexObject.fetchItems`.
+
+            Returns:
+                List[:class:`~plexapi.audio.Track`]: a list of tracks from this library section
+                that are part of a sonic adventure.
+        """
+        # can not use Track due to circular import
+        startID = start if isinstance(start, int) else start.ratingKey
+        endID = end if isinstance(end, int) else end.ratingKey
+
+        key = f"/library/sections/{self.key}/computePath?startID={startID}&endID={endID}"
+        return self.fetchItems(key, **kwargs)
 
 
 class PhotoSection(LibrarySection, PhotoalbumEditMixins, PhotoEditMixins):

@@ -2,6 +2,7 @@
 from urllib.parse import quote_plus
 
 import pytest
+import plexapi
 from plexapi.exceptions import BadRequest
 
 from . import conftest as utils
@@ -397,6 +398,13 @@ def test_audio_Track_artist(album, artist):
 
 def test_audio_Track_lyricStreams(track):
     assert not track.lyricStreams()
+
+
+@pytest.mark.authenticated
+def test_audio_Track_sonicAdventure(account_plexpass, music):
+    tracks = music.searchTracks()
+    adventure = tracks[0].sonicAdventure(tracks[-1])
+    assert all(isinstance(t, plexapi.audio.Track) for t in adventure)
 
 
 def test_audio_Track_mixins_images(track):
