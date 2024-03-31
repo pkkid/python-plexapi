@@ -1069,6 +1069,22 @@ class MediaContainer(
                 self.offset if self.offset is not None else __iterable.offset
             )
 
+        # for all other attributes, overwrite with the new iterable's values if previously None
+        for key in (
+            "allowSync",
+            "augmentationKey",
+            "identifier",
+            "librarySectionID",
+            "librarySectionTitle",
+            "librarySectionUUID",
+            "mediaTagPrefix",
+            "mediaTagVersion",
+        ):
+            if (not hasattr(self, key)) or (getattr(self, key) is None):
+                if not hasattr(__iterable, key):
+                    continue
+                setattr(self, key, getattr(__iterable, key))
+
     def _loadData(self, data):
         self._data = data
         self.allowSync = utils.cast(int, data.attrib.get('allowSync'))
