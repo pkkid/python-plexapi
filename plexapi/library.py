@@ -383,7 +383,8 @@ class Library(PlexObject):
         part = (f'/library/sections?name={quote_plus(name)}&type={type}&agent={agent}'
                 f'&scanner={quote_plus(scanner)}&language={language}&{urlencode(locations, doseq=True)}')
         if kwargs:
-            part += urlencode(kwargs)
+            prefs_params = {f'prefs[{k}]': v for k, v in kwargs.items()}
+            part += f'&{urlencode(prefs_params)}'
         return self._server.query(part, method=self._server._session.post)
 
     def history(self, maxresults=None, mindate=None):
