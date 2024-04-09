@@ -127,12 +127,12 @@ def test_library_fetchItems_with_maxresults(plex):
     ids = [item.key for item in items1]
     # Reduce '/library/metadata/123' to '123'
     int_ids = [int(id.rsplit("/", 1)[-1]) for id in ids]
-    items2 = [item.key for item in plex.library.fetchItems(container_size=size, ekey=int_ids)]
-    items3 = [item.key for item in plex.library.fetchItems(
+    keys1 = [item.key for item in plex.library.fetchItems(container_size=size, ekey=int_ids)]
+    keys2 = [item.key for item in plex.library.fetchItems(
         container_size=size, ekey=int_ids, maxresults=len(int_ids)
     )]
-    assert len(items2) == len(set(items2))
-    assert len(items3) == len(set(items3))
+    assert len(keys1) == len(set(keys1))
+    assert len(keys2) == len(set(keys2))
 
 
 def test_library_onDeck(plex, movie):
