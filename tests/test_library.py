@@ -120,6 +120,21 @@ def test_library_fetchItem(plex, movie):
     assert item1 == item2 == movie
 
 
+def test_library_fetchItems_with_maxresults(plex):
+    items1 = plex.library.search(libtype="episode")
+    assert len(items1) > 5
+    size = len(items1) - 5
+    ids = [item.key for item in items1]
+    # Reduce '/library/metadata/123' to '123'
+    int_ids = [int(id.rsplit("/", 1)[-1]) for id in ids]
+    items2 = [item.key for item in plex.library.fetchItems(container_size=size, ekey=int_ids)]
+    items3 = [item.key for item in plex.library.fetchItems(
+        container_size=size, ekey=int_ids, maxresults=len(int_ids)
+    )]
+    assert len(items2) == len(set(items2))
+    assert len(items3) == len(set(items3))
+
+
 def test_library_onDeck(plex, movie):
     movie.updateProgress(movie.duration // 4)  # set progress to 25%
     assert movie in plex.library.onDeck()
