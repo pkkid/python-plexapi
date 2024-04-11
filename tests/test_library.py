@@ -120,19 +120,14 @@ def test_library_fetchItem(plex, movie):
     assert item1 == item2 == movie
 
 
-def test_library_fetchItems_with_maxresults(plex):
-    items1 = plex.library.search(libtype="episode")
-    assert len(items1) > 5
-    size = len(items1) - 5
-    ids = [item.key for item in items1]
-    # Reduce '/library/metadata/123' to '123'
-    int_ids = [int(id.rsplit("/", 1)[-1]) for id in ids]
-    keys1 = [item.key for item in plex.library.fetchItems(container_size=size, ekey=int_ids)]
-    keys2 = [item.key for item in plex.library.fetchItems(
-        container_size=size, ekey=int_ids, maxresults=len(int_ids)
-    )]
-    assert len(keys1) == len(set(keys1))
-    assert len(keys2) == len(set(keys2))
+def test_library_fetchItems_with_maxresults(plex, tvshows):
+    items = tvshows.searchEpisodes()
+    assert len(items) > 5
+    size = len(items) - 5
+    ratingKeys = [item.ratingKey for item in items]
+    items1 = plex.fetchItems(ekey=ratingKeys, container_size=size)
+    items2 = plex.fetchItems(ekey=ratingKeys, container_size=size, maxresults=len(items))
+    assert items1 == items2 == items
 
 
 def test_library_onDeck(plex, movie):
