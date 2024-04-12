@@ -170,7 +170,14 @@ class PlexObject:
         elem = ElementTree.fromstring(xml)
         return self._buildItemOrNone(elem, cls)
 
-    def fetchItems(self, ekey, cls=None, container_start=None, container_size=None, maxresults=None, **kwargs):
+    def fetchItems(self,
+                   ekey,
+                   cls=None,
+                   container_start=None,
+                   container_size=None,
+                   maxresults=None,
+                   params=None,
+                   **kwargs):
         """ Load the specified key to find and build all items with the specified tag
             and attrs.
 
@@ -186,6 +193,7 @@ class PlexObject:
                 container_start (None, int): offset to get a subset of the data
                 container_size (None, int): How many items in data
                 maxresults (int, optional): Only return the specified number of results.
+                params (dict, optional): Any additional params to add to the request.
                 **kwargs (dict): Optionally add XML attribute to filter the items.
                     See the details below for more info.
 
@@ -268,7 +276,7 @@ class PlexObject:
             headers['X-Plex-Container-Start'] = str(container_start)
             headers['X-Plex-Container-Size'] = str(container_size)
 
-            data = self._server.query(ekey, headers=headers)
+            data = self._server.query(ekey, headers=headers, params=params)
             subresults = self.findItems(data, cls, ekey, **kwargs)
             total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
 
