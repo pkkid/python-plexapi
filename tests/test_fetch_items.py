@@ -1,3 +1,5 @@
+from xml.etree.ElementTree import Element
+
 from plexapi.audio import Track
 from plexapi.base import MediaContainer
 
@@ -30,3 +32,10 @@ def test_fetch_items_with_media_container(show):
     assert some_episodes.size == 2
     assert some_episodes.offset == 0
     assert some_episodes.totalSize == len(all_episodes)
+
+
+def test_find_items_empty_data(plex):
+    result = plex.findItems(Element(""), rtag="foo")
+    assert len(result) == 0
+    result = plex.findItems(Element("MediaContainer"))
+    assert isinstance(result, MediaContainer)
