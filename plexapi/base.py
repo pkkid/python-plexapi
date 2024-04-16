@@ -170,14 +170,16 @@ class PlexObject:
         elem = ElementTree.fromstring(xml)
         return self._buildItemOrNone(elem, cls)
 
-    def fetchItems(self,
-                   ekey,
-                   cls=None,
-                   container_start=None,
-                   container_size=None,
-                   maxresults=None,
-                   params=None,
-                   **kwargs):
+    def fetchItems(
+        self,
+        ekey,
+        cls=None,
+        container_start=None,
+        container_size=None,
+        maxresults=None,
+        params=None,
+        **kwargs,
+    ):
         """ Load the specified key to find and build all items with the specified tag
             and attrs.
 
