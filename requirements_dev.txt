@@ -12,7 +12,7 @@ pytest-mock==3.14.0
 recommonmark==0.7.1
 requests==2.31.0
 requests-mock==1.12.1
-sphinx==7.1.2
+sphinx==7.3.6
 sphinx-rtd-theme==2.0.0
 tqdm==4.66.2
 websocket-client==1.7.0
