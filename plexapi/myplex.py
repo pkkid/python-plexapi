@@ -963,7 +963,9 @@ class MyPlexAccount(PlexObject):
                     objects to be added to the watchlist.
 
             Raises:
-                :exc:`~plexapi.exceptions.BadRequest`: When trying to add invalid or existing
+                :exc:`~plexapi.exceptions.BadRequest`: When trying to add existing
+                    media to the watchlist.
+                :exc:`~plexapi.exceptions.NotFound`: When trying to add invalid
                     media to the watchlist.
         """
         if not isinstance(items, list):
