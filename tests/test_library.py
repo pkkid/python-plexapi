@@ -561,7 +561,7 @@ def test_library_section_timeline(plex, movies):
     assert tl.title1 == "Movies"
     assert utils.is_int(tl.updateQueueSize, gte=0)
     assert tl.viewGroup == "secondary"
-    assert tl.viewMode == 65592
+    assert tl.viewMode is None
 
 
 def test_library_MovieSection_hubSearch(movies):
