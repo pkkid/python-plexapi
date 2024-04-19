@@ -347,7 +347,7 @@ class PlexObject:
             kwargs['type'] = cls.TYPE
         # rtag to iter on a specific root tag using breadth-first search
         if rtag:
-            data = next(utils.iterXMLBFS(data, rtag), [])
+            data = next(utils.iterXMLBFS(data, rtag), Element('Empty'))
         # loop through all data elements to find matches
         items = MediaContainer[cls](self._server, data, initpath=initpath) if data.tag == 'MediaContainer' else []
         for elem in data:
