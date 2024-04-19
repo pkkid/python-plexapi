@@ -283,17 +283,17 @@ class PlexObject:
 
             results.extend(subresults)
 
+            container_start += container_size
+
+            if container_start > total_size:
+                break
+
             wanted_number_of_items = total_size - offset
             if maxresults is not None:
                 wanted_number_of_items = min(maxresults, wanted_number_of_items)
                 container_size = min(container_size, wanted_number_of_items - len(results))
 
             if wanted_number_of_items <= len(results):
-                break
-
-            container_start += container_size
-
-            if container_start > total_size:
                 break
 
         return results

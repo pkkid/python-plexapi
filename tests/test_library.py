@@ -120,6 +120,16 @@ def test_library_fetchItem(plex, movie):
     assert item1 == item2 == movie
 
 
+def test_library_fetchItems_with_maxresults(plex, tvshows):
+    items = tvshows.searchEpisodes()
+    assert len(items) > 5
+    size = len(items) - 5
+    ratingKeys = [item.ratingKey for item in items]
+    items1 = plex.fetchItems(ekey=ratingKeys, container_size=size)
+    items2 = plex.fetchItems(ekey=ratingKeys, container_size=size, maxresults=len(items))
+    assert items1 == items2 == items
+
+
 def test_library_onDeck(plex, movie):
     movie.updateProgress(movie.duration // 4)  # set progress to 25%
     assert movie in plex.library.onDeck()
