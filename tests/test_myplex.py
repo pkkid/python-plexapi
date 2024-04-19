@@ -310,7 +310,7 @@ def test_myplex_watchlist(account, movie, show, artist):
         account.removeFromWatchlist(movie)
 
     # Test adding invalid item to watchlist
-    with pytest.raises(NotFound):
+    with pytest.raises(BadRequest):
         account.addToWatchlist(artist)
 
 
