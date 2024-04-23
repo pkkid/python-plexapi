@@ -440,7 +440,11 @@ def test_video_Movie_on_demand_subtitles(movie, account):
     subtitle = subtitles[0]
 
     movie.downloadSubtitles(subtitle)
-    utils.wait_until(lambda: len(movie.reload().subtitleStreams()) > len(movie_subtitles))
+    utils.wait_until(
+        lambda: len(movie.reload().subtitleStreams()) > len(movie_subtitles),
+        delay=0.5,
+        timeout=5,
+    )
     subtitle_sourceKeys = {stream.sourceKey: stream for stream in movie.subtitleStreams()}
     assert subtitle.sourceKey in subtitle_sourceKeys
 
