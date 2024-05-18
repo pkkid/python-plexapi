@@ -366,7 +366,9 @@ def test_Collection_mixins_rating(collection):
 
 def test_Collection_mixins_fields(collection):
     test_mixins.edit_added_at(collection)
+    test_mixins.edit_audience_rating(collection)
     test_mixins.edit_content_rating(collection)
+    test_mixins.edit_critic_rating(collection)
     test_mixins.edit_sort_title(collection)
     test_mixins.edit_summary(collection)
     test_mixins.edit_title(collection)
