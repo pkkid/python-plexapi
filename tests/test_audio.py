@@ -112,6 +112,8 @@ def test_audio_Artist_mixins_rating(artist):
 
 def test_audio_Artist_mixins_fields(artist):
     test_mixins.edit_added_at(artist)
+    test_mixins.edit_audience_rating(artist)
+    test_mixins.edit_critic_rating(artist)
     test_mixins.edit_sort_title(artist)
     test_mixins.edit_summary(artist)
     test_mixins.edit_title(artist)
@@ -239,6 +241,8 @@ def test_audio_Album_mixins_rating(album):
 
 def test_audio_Album_mixins_fields(album):
     test_mixins.edit_added_at(album)
+    test_mixins.edit_audience_rating(album)
+    test_mixins.edit_critic_rating(album)
     test_mixins.edit_originally_available(album)
     test_mixins.edit_sort_title(album)
     test_mixins.edit_studio(album)
@@ -422,6 +426,8 @@ def test_audio_Track_mixins_rating(track):
 
 def test_audio_Track_mixins_fields(track):
     test_mixins.edit_added_at(track)
+    test_mixins.edit_audience_rating(track)
+    test_mixins.edit_critic_rating(track)
     test_mixins.edit_title(track)
     test_mixins.edit_track_artist(track)
     test_mixins.edit_track_number(track)

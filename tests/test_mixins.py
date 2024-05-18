@@ -51,8 +51,16 @@ def edit_added_at(obj):
     _test_mixins_field(obj, "addedAt", "AddedAt")
 
 
+def edit_audience_rating(obj):
+    _test_mixins_field(obj, "audienceRating", "AudienceRating", default=None, value=7.7)
+
+
 def edit_content_rating(obj):
     _test_mixins_field(obj, "contentRating", "ContentRating")
+
+
+def edit_critic_rating(obj):
+    _test_mixins_field(obj, "rating", "CriticRating", default=None, value=8.8)
 
 
 def edit_edition_title(obj):
@@ -104,7 +112,7 @@ def edit_photo_captured_time(obj):
 
 
 def edit_user_rating(obj):
-    _test_mixins_field(obj, "userRating", "UserRating", default=None, value=10)
+    _test_mixins_field(obj, "userRating", "UserRating", default=None, value=10.0)
 
 
 def _test_mixins_tag(obj, attr, tag_method):
