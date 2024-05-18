@@ -612,6 +612,7 @@ if __name__ == "__main__":  # noqa: C901
                 location="/data/Photos" if opts.no_docker is False else photos_path,
                 agent="com.plexapp.agents.none",
                 scanner="Plex Photo Scanner",
+                language="en",
                 expected_media_count=has_photos,
             )
         )
