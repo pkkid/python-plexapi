@@ -1057,7 +1057,7 @@ class MyPlexAccount(PlexObject):
                 query (str): Search query.
                 limit (int, optional): Limit to the specified number of results. Default 30.
                 libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
-                searchprovider (str, optional): 'discover' for default behavior 
+                searchprovider (str, optional): 'discover' for default behavior
                     or 'discover,PLEXAVOD' to also include the Plex ad-suported video service
                     or 'discover,PLEXAVOD,PLEXTVOD' to also include the Plex video rental service
         """
