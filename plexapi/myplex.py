@@ -1049,7 +1049,7 @@ class MyPlexAccount(PlexObject):
         self.query(key, params=params)
         return self
 
-    def searchDiscover(self, query, limit=30, libtype=None, searchProviders='discover'):
+    def searchDiscover(self, query, limit=30, libtype=None, providers='discover'):
         """ Search for movies and TV shows in Discover.
             Returns a list of :class:`~plexapi.video.Movie` and :class:`~plexapi.video.Show` objects.
 
@@ -1057,7 +1057,7 @@ class MyPlexAccount(PlexObject):
                 query (str): Search query.
                 limit (int, optional): Limit to the specified number of results. Default 30.
                 libtype (str, optional): 'movie' or 'show' to only return movies or shows, otherwise return all items.
-                searchprovider (str, optional): 'discover' for default behavior
+                providers (str, optional): 'discover' for default behavior
                     or 'discover,PLEXAVOD' to also include the Plex ad-suported video service
                     or 'discover,PLEXAVOD,PLEXTVOD' to also include the Plex video rental service
         """
@@ -1071,7 +1071,7 @@ class MyPlexAccount(PlexObject):
             'query': query,
             'limit': limit,
             'searchTypes': libtype,
-            'searchProviders': searchProviders,
+            'searchProviders': providers,
             'includeMetadata': 1
         }
 
