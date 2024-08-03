@@ -106,12 +106,16 @@ class MediaPart(PlexObject):
         Attributes:
             TAG (str): 'Part'
             accessible (bool): True if the file is accessible.
+                Requires reloading the media with ``checkFiles=True``.
+                Refer to :func:`~plexapi.base.PlexObject.reload`.
             audioProfile (str): The audio profile of the file.
             container (str): The container type of the file (ex: avi).
             decision (str): Unknown.
             deepAnalysisVersion (int): The Plex deep analysis version for the file.
             duration (int): The duration of the file in milliseconds.
             exists (bool): True if the file exists.
+                Requires reloading the media with ``checkFiles=True``.
+                Refer to :func:`~plexapi.base.PlexObject.reload`.
             file (str): The path to this file on disk (ex: /media/Movies/Cars (2006)/Cars (2006).mkv)
             has64bitOffsets (bool): True if the file has 64 bit offsets.
             hasThumbnail (bool): True if the file (track) has an embedded thumbnail.
