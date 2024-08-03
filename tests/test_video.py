@@ -217,13 +217,13 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.width, gte=400)
     # Part
     part = media.parts[0]
-    assert part.accessible
+    assert part.accessible is None
     assert part.audioProfile == "lc"
     assert part.container in utils.CONTAINERS
     assert part.decision is None
     assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
     assert utils.is_int(part.duration, gte=160000)
-    assert part.exists
+    assert part.exists is None
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
     assert part.hasPreviewThumbnails is False
@@ -1287,8 +1287,8 @@ def test_video_Episode_attrs(episode):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=18184197)
-    assert part.exists
-    assert part.accessible
+    assert part.exists is None
+    assert part.accessible is None
 
 
 def test_video_Episode_watched(tvshows):
@@ -1436,13 +1436,13 @@ def test_that_reload_return_the_same_object(plex):
 def test_video_exists_accessible(movie, episode):
     assert movie.media[0].parts[0].exists is None
     assert movie.media[0].parts[0].accessible is None
-    movie.reload()
+    movie.reload(checkFiles=True)
     assert movie.media[0].parts[0].exists is True
     assert movie.media[0].parts[0].accessible is True
 
     assert episode.media[0].parts[0].exists is None
     assert episode.media[0].parts[0].accessible is None
-    episode.reload()
+    episode.reload(checkFiles=True)
     assert episode.media[0].parts[0].exists is True
     assert episode.media[0].parts[0].accessible is True
 
