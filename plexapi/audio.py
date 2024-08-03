@@ -193,6 +193,7 @@ class Artist(
             similar (List<:class:`~plexapi.media.Similar`>): List of similar objects.
             styles (List<:class:`~plexapi.media.Style`>): List of style objects.
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
+            ultraBlurColors (:class:`~plexapi.media.UltraBlurColors`): Ultra blur color object.
     """
     TAG = 'Directory'
     TYPE = 'artist'
@@ -213,6 +214,7 @@ class Artist(
         self.similar = self.findItems(data, media.Similar)
         self.styles = self.findItems(data, media.Style)
         self.theme = data.attrib.get('theme')
+        self.ultraBlurColors = self.findItem(data, media.UltraBlurColors)
 
     def __iter__(self):
         for album in self.albums():
@@ -325,6 +327,7 @@ class Album(
             studio (str): Studio that released the album.
             styles (List<:class:`~plexapi.media.Style`>): List of style objects.
             subformats (List<:class:`~plexapi.media.Subformat`>): List of subformat objects.
+            ultraBlurColors (:class:`~plexapi.media.UltraBlurColors`): Ultra blur color object.
             viewedLeafCount (int): Number of items marked as played in the album view.
             year (int): Year the album was released.
     """
@@ -354,6 +357,7 @@ class Album(
         self.studio = data.attrib.get('studio')
         self.styles = self.findItems(data, media.Style)
         self.subformats = self.findItems(data, media.Subformat)
+        self.ultraBlurColors = self.findItem(data, media.UltraBlurColors)
         self.viewedLeafCount = utils.cast(int, data.attrib.get('viewedLeafCount'))
         self.year = utils.cast(int, data.attrib.get('year'))
 

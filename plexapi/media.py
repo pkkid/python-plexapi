@@ -999,6 +999,28 @@ class Review(PlexObject):
         self.text = data.attrib.get('text')
 
 
+@utils.registerPlexObject
+class UltraBlurColors(PlexObject):
+    """ Represents a single UltraBlurColors media tag.
+
+        Attributes:
+            TAG (str): 'UltraBlurColors'
+            bottomLeft (str): The bottom left hex color.
+            bottomRight (str): The bottom right hex color.
+            topLeft (str): The top left hex color.
+            topRight (str): The top right hex color.
+    """
+    TAG = 'UltraBlurColors'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.bottomLeft = data.attrib.get('bottomLeft')
+        self.bottomRight = data.attrib.get('bottomRight')
+        self.topLeft = data.attrib.get('topLeft')
+        self.topRight = data.attrib.get('topRight')
+
+
 class BaseResource(PlexObject):
     """ Base class for all Art, Poster, and Theme objects.
 

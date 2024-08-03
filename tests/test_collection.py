@@ -40,6 +40,7 @@ def test_Collection_attrs(collection):
     assert collection.title == "Test Collection"
     assert collection.titleSort == collection.title
     assert collection.type == "collection"
+    assert collection.ultraBlurColors is not None
     assert utils.is_datetime(collection.updatedAt)
     assert collection.listType == "video"
     assert collection.metadataType == collection.subtype
