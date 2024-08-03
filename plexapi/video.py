@@ -456,8 +456,8 @@ class Movie(
 
     def reviews(self):
         """ Returns a list of :class:`~plexapi.media.Review` objects. """
-        data = self._server.query(self._details_key)
-        return self.findItems(data, media.Review, rtag='Video')
+        key = f'{self.key}?includeReviews=1'
+        return self.fetchItems(key, cls=media.Review, rtag='Video')
 
     def editions(self):
         """ Returns a list of :class:`~plexapi.video.Movie` objects
@@ -614,8 +614,8 @@ class Show(
         """ Returns show's On Deck :class:`~plexapi.video.Video` object or `None`.
             If show is unwatched, return will likely be the first episode.
         """
-        data = self._server.query(self._details_key)
-        return next(iter(self.findItems(data, rtag='OnDeck')), None)
+        key = f'{self.key}?includeOnDeck=1'
+        return next(iter(self.fetchItems(key, cls=Episode, rtag='OnDeck')), None)
 
     def season(self, title=None, season=None):
         """ Returns the season with the specified title or number.
@@ -796,8 +796,8 @@ class Season(
         """ Returns season's On Deck :class:`~plexapi.video.Video` object or `None`.
             Will only return a match if the show's On Deck episode is in this season.
         """
-        data = self._server.query(self._details_key)
-        return next(iter(self.findItems(data, rtag='OnDeck')), None)
+        key = f'{self.key}?includeOnDeck=1'
+        return next(iter(self.fetchItems(key, cls=Episode, rtag='OnDeck')), None)
 
     def episode(self, title=None, episode=None):
         """ Returns the episode with the given title or number.
