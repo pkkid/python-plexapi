@@ -323,9 +323,11 @@ def test_video_Movie_getStreamURL(movie, account):
 def test_video_Movie_isFullObject_and_reload(plex):
     movie = plex.library.section("Movies").get("Sita Sings the Blues")
     assert movie.isFullObject() is False
-    movie.reload(checkFiles=False)
+    movie.reload(includeChapters=False)
     assert movie.isFullObject() is False
     movie.reload()
+    assert movie.isFullObject() is True
+    movie.reload(includeExtras=True)
     assert movie.isFullObject() is True
     movie_via_search = plex.library.search(movie.title)[0]
     assert movie_via_search.isFullObject() is False
