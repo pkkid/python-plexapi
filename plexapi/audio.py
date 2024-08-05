@@ -281,6 +281,21 @@ class Artist(
             filepaths += track.download(_savepath, keep_original_name, **kwargs)
         return filepaths
 
+    def popularTracks(self):
+        """ Returns a list of :class:`~plexapi.audio.Track` popular tracks by the artist. """
+        filters = {
+            'album.subformat!': 'Compilation,Live',
+            'artist.id': self.ratingKey,
+            'group': 'title',
+            'ratingCount>>': 0,
+        }
+        return self.section().search(
+            libtype='track',
+            filters=filters,
+            sort='ratingCount:desc',
+            limit=100
+        )
+
     def station(self):
         """ Returns a :class:`~plexapi.playlist.Playlist` artist radio station or `None`. """
         key = f'{self.key}?includeStations=1'
