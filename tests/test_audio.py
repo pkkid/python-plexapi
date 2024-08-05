@@ -88,6 +88,11 @@ def test_audio_Artist_hubs(artist):
     assert isinstance(hubs, list)
 
 
+def test_audio_Artist_popularTracks(artist):
+    tracks = artist.popularTracks()
+    assert len(tracks)
+
+
 def test_audio_Artist_mixins_edit_advanced_settings(artist):
     test_mixins.edit_advanced_settings(artist)
 
