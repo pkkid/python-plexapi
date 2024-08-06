@@ -182,6 +182,7 @@ jobs:
     - name: Main tests with ${{ matrix.plex }} server
       env:
         TEST_ACCOUNT_ONCE: ${{ matrix.plex == 'unclaimed' }}
+      id: test
       run: |
         . venv/bin/activate
         pytest \
@@ -200,6 +201,7 @@ jobs:
         python -u tools/plex-teardowntest.py
 
     - name: Upload coverage artifact
+      if: always() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure')
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.plex }}-${{ steps.python.outputs.python-version }}
