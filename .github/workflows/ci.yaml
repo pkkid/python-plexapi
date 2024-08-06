@@ -189,6 +189,7 @@ jobs:
           --ignore=tests/test_sync.py \
           --tb=native \
           --verbose \
+          --color=yes \
           --cov=plexapi \
           tests 
 
