@@ -102,6 +102,7 @@ def test_video_Movie_attrs(movies):
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
     assert movie.type == "movie"
+    assert movie.ultraBlurColors is not None
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.useOriginalTitle == -1
     assert movie.userRating is None
@@ -669,6 +670,14 @@ def test_video_Movie_batchEdits(movie):
         movie.saveEdits()
 
 
+def test_video_Movie_ultraBlurColors(movie):
+    ultraBlurColors = movie.ultraBlurColors
+    assert ultraBlurColors.bottomLeft
+    assert ultraBlurColors.bottomRight
+    assert ultraBlurColors.topLeft
+    assert ultraBlurColors.topRight
+
+
 def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
@@ -817,6 +826,7 @@ def test_video_Show_attrs(show):
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
+    assert show.ultraBlurColors is not None
     assert show.useOriginalTitle == -1
     assert show.userRating is None
     assert utils.is_datetime(show.updatedAt)
@@ -1044,6 +1054,7 @@ def test_video_Season_attrs(show):
     assert season.title == "Season 1"
     assert season.titleSort == "Season 1"
     assert season.type == "season"
+    assert season.ultraBlurColors is not None
     assert utils.is_datetime(season.updatedAt)
     assert utils.is_int(season.viewCount, gte=0)
     assert utils.is_int(season.viewedLeafCount, gte=0)
@@ -1247,6 +1258,7 @@ def test_video_Episode_attrs(episode):
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
     assert episode.type == "episode"
+    assert episode.ultraBlurColors is not None
     assert utils.is_datetime(episode.updatedAt)
     assert episode.userRating is None
     assert utils.is_int(episode.viewCount, gte=0)

@@ -44,6 +44,7 @@ def test_audio_Artist_attr(artist):
     assert artist.title == "Broke For Free"
     assert artist.titleSort == "Broke For Free"
     assert artist.type == "artist"
+    assert artist.ultraBlurColors is None
     assert utils.is_datetime(artist.updatedAt)
     assert utils.is_int(artist.viewCount, gte=0)
 
@@ -185,6 +186,7 @@ def test_audio_Album_attrs(album):
     assert album.title == "Layers"
     assert album.titleSort == "Layers"
     assert album.type == "album"
+    assert album.ultraBlurColors is not None
     assert utils.is_datetime(album.updatedAt)
     assert utils.is_int(album.viewCount, gte=0)
     assert album.year in (2012,)
