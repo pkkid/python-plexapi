@@ -44,7 +44,7 @@ def test_audio_Artist_attr(artist):
     assert artist.title == "Broke For Free"
     assert artist.titleSort == "Broke For Free"
     assert artist.type == "artist"
-    assert artist.ultraBlurColors is not None
+    assert artist.ultraBlurColors is None
     assert utils.is_datetime(artist.updatedAt)
     assert utils.is_int(artist.viewCount, gte=0)
 
@@ -87,14 +87,6 @@ def test_audio_Artist_albums(artist):
 def test_audio_Artist_hubs(artist):
     hubs = artist.hubs()
     assert isinstance(hubs, list)
-
-
-def test_audio_Artist_ultraBlurColors(artist):
-    ultraBlurColors = artist.ultraBlurColors
-    assert ultraBlurColors.bottomLeft
-    assert ultraBlurColors.bottomRight
-    assert ultraBlurColors.topLeft
-    assert ultraBlurColors.topRight
 
 
 def test_audio_Artist_mixins_edit_advanced_settings(artist):

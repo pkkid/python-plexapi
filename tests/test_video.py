@@ -668,6 +668,14 @@ def test_video_Movie_batchEdits(movie):
         movie.saveEdits()
 
 
+def test_video_Movie_ultraBlurColors(movie):
+    ultraBlurColors = movie.ultraBlurColors
+    assert ultraBlurColors.bottomLeft
+    assert ultraBlurColors.bottomRight
+    assert ultraBlurColors.topLeft
+    assert ultraBlurColors.topRight
+
+
 def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
