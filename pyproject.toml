@@ -44,3 +44,11 @@ version = {attr = "plexapi.const.__version__"}
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+markers = [
+    "client: this is a client test.",
+    "req_client: require a client to run this test.",
+    "anonymously: test plexapi anonymously.",
+    "authenticated: test plexapi authenticated.",
+]
