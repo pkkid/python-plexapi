@@ -47,7 +47,8 @@ jobs:
         python -m venv venv
         . venv/bin/activate
         pip install -U pip
-        pip install -e .[dev]
+        pip install -r requirements_dev.txt
+        pip install -e .
 
     - name: Lint with flake8
       run: |
@@ -110,7 +111,8 @@ jobs:
         python -m venv venv
         . venv/bin/activate
         pip install -U pip
-        pip install -e .[dev]
+        pip install -r requirements_dev.txt
+        pip install -e .
 
     - name: Get PMS Docker image digest
       id: docker-digest
