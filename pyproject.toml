@@ -18,20 +18,6 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 alert = ["websocket-client>=1.3.3"]
-dev = [
-    "flake8",
-    "pillow",
-    "pytest",
-    "pytest-cache",
-    "pytest-cov",
-    "pytest-mock",
-    "recommonmark",
-    "requests-mock",
-    "sphinx",
-    "sphinx-rtd-theme",
-    "tqdm",
-    "websocket-client",
-]
 
 [project.urls]
 Homepage = "https://github.com/pkkid/python-plexapi"
