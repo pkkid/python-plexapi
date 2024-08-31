@@ -358,6 +358,7 @@ class Movie(
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
             languageOverride (str): Setting that indicates if a language is used to override metadata
                 (eg. en-CA, None = Library default).
+            librarySectionTitle (str): Library Section Title (local playlist item only).
             markers (List<:class:`~plexapi.media.Marker`>): List of marker objects.
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originallyAvailableAt (datetime): Datetime the movie was released.
@@ -372,7 +373,6 @@ class Movie(
             similar (List<:class:`~plexapi.media.Similar`>): List of Similar objects.
             sourceURI (str): Remote server URI (server://<machineIdentifier>/com.plexapp.plugins.library)
                 (remote playlist item only).
-            librarySectionTitle (str): Library Section Title (local playlist item only).
             studio (str): Studio that created movie (Di Bonaventura Pictures; 21 Laps Entertainment).
             tagline (str): Movie tag line (Back 2 Work; Who says men can't change?).
             theme (str): URL to theme resource (/library/metadata/<ratingkey>/theme/<themeid>).
@@ -406,6 +406,7 @@ class Movie(
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
         self.languageOverride = data.attrib.get('languageOverride')
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')  # local playlist item
         self.markers = self.findItems(data, media.Marker)
         self.media = self.findItems(data, media.Media)
         self.originallyAvailableAt = utils.toDatetime(data.attrib.get('originallyAvailableAt'), '%Y-%m-%d')
@@ -419,7 +420,6 @@ class Movie(
         self.slug = data.attrib.get('slug')
         self.similar = self.findItems(data, media.Similar)
         self.sourceURI = data.attrib.get('source')  # remote playlist item
-        self.librarySectionTitle = data.attrib.get('librarySectionTitle')  # local playlist item
         self.studio = data.attrib.get('studio')
         self.tagline = data.attrib.get('tagline')
         self.theme = data.attrib.get('theme')
