@@ -54,6 +54,8 @@ def test_video_Movie_attrs(movies):
     assert movie.audienceRatingImage == 'rottentomatoes://image.rating.upright'
     if movie.ratings:
         assert "imdb://image.rating" in [i.image for i in movie.ratings]
+    if movie.images:
+        assert any("coverPoster" in i.type for i in movie.images)
     movie.reload()  # RELOAD
     assert movie.chapterSource is None
     assert not movie.collections

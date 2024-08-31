@@ -24,6 +24,8 @@ def test_audio_Artist_attr(artist):
     # assert "Electronic" in [i.tag for i in artist.genres]
     assert artist.guid in artist_guids
     assert artist_guids[0] in [i.id for i in artist.guids]
+    if artist.images:
+        assert any("coverPoster" in i.type for i in artist.images)
     assert artist.index == 1
     assert utils.is_metadata(artist._initpath)
     assert utils.is_metadata(artist.key)
