@@ -468,6 +468,7 @@ class Track(
             grandparentTitle (str): Name of the album artist for the track.
             guids (List<:class:`~plexapi.media.Guid`>): List of guid objects.
             labels (List<:class:`~plexapi.media.Label`>): List of label objects.
+            librarySectionTitle (str): Library Section Title (local playlist item only).
             media (List<:class:`~plexapi.media.Media`>): List of media objects.
             originalTitle (str): The artist for the track.
             parentGuid (str): Plex GUID for the album (plex://album/5d07cd8e403c640290f180f9).
@@ -507,6 +508,7 @@ class Track(
         self.grandparentTitle = data.attrib.get('grandparentTitle')
         self.guids = self.findItems(data, media.Guid)
         self.labels = self.findItems(data, media.Label)
+        self.librarySectionTitle = data.attrib.get('librarySectionTitle')  # local playlist item
         self.media = self.findItems(data, media.Media)
         self.originalTitle = data.attrib.get('originalTitle')
         self.parentGuid = data.attrib.get('parentGuid')
