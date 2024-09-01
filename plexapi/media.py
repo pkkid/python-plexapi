@@ -1094,6 +1094,11 @@ class Art(BaseResource):
     TAG = 'Photo'
 
 
+class Logo(BaseResource):
+    """ Represents a single Logo object. """
+    TAG = 'Photo'
+
+
 class Poster(BaseResource):
     """ Represents a single Poster object. """
     TAG = 'Photo'

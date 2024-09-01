@@ -9,7 +9,7 @@ from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
-    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
+    ArtUrlMixin, ArtMixin, LogoMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
     MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
@@ -334,7 +334,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
 class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, PosterMixin, ThemeMixin,
+    ArtMixin, LogoMixin, PosterMixin, ThemeMixin,
     MovieEditMixins,
     WatchlistMixin
 ):
@@ -491,7 +491,7 @@ class Movie(
 class Show(
     Video,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, PosterMixin, ThemeMixin,
+    ArtMixin, LogoMixin, PosterMixin, ThemeMixin,
     ShowEditMixins,
     WatchlistMixin
 ):
