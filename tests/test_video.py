@@ -41,7 +41,7 @@ def test_video_Movie_merge(movie, patched_http_call):
     movie.merge(1337)
 
 
-def test_video_Movie_attrs(movies):
+def test_video_Movie_attrs(movies):  # noqa: C901
     movie = movies.get("Sita Sings the Blues")
     assert len(movie.locations) == 1
     assert len(movie.locations[0]) >= 10
