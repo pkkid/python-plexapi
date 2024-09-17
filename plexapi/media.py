@@ -26,6 +26,7 @@ class Media(PlexObject):
             height (int): The height of the media in pixels (ex: 256).
             id (int): The unique ID for this media on the server.
             has64bitOffsets (bool): True if video has 64 bit offsets.
+            hasVoiceActivity (bool): True if video has voice activity analyzed.
             optimizedForStreaming (bool): True if video is optimized for streaming.
             parts (List<:class:`~plexapi.media.MediaPart`>): List of media part objects.
             proxyType (int): Equals 42 for optimized versions.
@@ -61,6 +62,7 @@ class Media(PlexObject):
         self.height = utils.cast(int, data.attrib.get('height'))
         self.id = utils.cast(int, data.attrib.get('id'))
         self.has64bitOffsets = utils.cast(bool, data.attrib.get('has64bitOffsets'))
+        self.hasVoiceActivity = utils.cast(bool, data.attrib.get('hasVoiceActivity', '0'))
         self.optimizedForStreaming = utils.cast(bool, data.attrib.get('optimizedForStreaming'))
         self.parts = self.findItems(data, MediaPart)
         self.proxyType = utils.cast(int, data.attrib.get('proxyType'))
