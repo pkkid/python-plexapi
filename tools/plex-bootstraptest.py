@@ -504,6 +504,7 @@ if __name__ == "__main__":  # noqa: C901
     if not opts.unclaimed and account and account.subscriptionActive:
         server.settings.get("GenerateIntroMarkerBehavior").set("never")
         server.settings.get("GenerateCreditsMarkerBehavior").set("never")
+        server.settings.get("GenerateVADBehavior").set("never")
         server.settings.get("MusicAnalysisBehavior").set("never")
     server.settings.get("GenerateBIFBehavior").set("never")
     server.settings.get("GenerateChapterThumbBehavior").set("never")
