@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests
+import niquests as requests
 
 from plexapi import CONFIG, X_PLEX_IDENTIFIER
 from plexapi.client import PlexClient
