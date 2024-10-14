@@ -4,7 +4,7 @@ from functools import cached_property
 from urllib.parse import urlencode
 from xml.etree import ElementTree
 
-import requests
+import niquests as requests
 
 from plexapi import BASE_HEADERS, CONFIG, TIMEOUT, log, logfilter
 from plexapi import utils
@@ -19,7 +19,7 @@ from plexapi.playlist import Playlist
 from plexapi.playqueue import PlayQueue
 from plexapi.settings import Settings
 from plexapi.utils import deprecated
-from requests.status_codes import _codes as codes
+from niquests.status_codes import _codes as codes
 
 # Need these imports to populate utils.PLEXOBJECTS
 from plexapi import audio as _audio  # noqa: F401

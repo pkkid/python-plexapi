@@ -7,8 +7,9 @@ from functools import partial
 
 import plexapi
 import pytest
-import requests
+import niquests as requests
 from PIL import Image, ImageColor, ImageStat
+
 from plexapi.client import PlexClient
 from plexapi.exceptions import NotFound
 from plexapi.myplex import MyPlexAccount
@@ -115,6 +116,34 @@ def pytest_runtest_setup(item):
 #  Fixtures
 # ---------------------------------
 
+@pytest.fixture(scope='function')
+def patched_requests_mock():
+    """This is required because pytest load plugins at boot, way before conftest.
+    The only reliable way to make requests_mock use Niquests is to customize it after."""
+    import requests_mock  # noqa: E402
+
+    class _WrappedMocker(requests_mock.Mocker):
+        """Ensure requests_mock work with the drop-in replacement Niquests!"""
+
+        def __init__(self, session=None, **kwargs):
+            # we purposely skip invoking super() to avoid the strict typecheck on session.
+            self._mock_target = session or requests.Session
+            self.case_sensitive = kwargs.pop('case_sensitive', self.case_sensitive)
+            self._adapter = (
+                kwargs.pop('adapter', None)
+                or requests_mock.adapter.Adapter(case_sensitive=self.case_sensitive)
+            )
+
+            self._json_encoder = kwargs.pop('json_encoder', None)
+            self.real_http = kwargs.pop('real_http', False)
+            self._last_send = None
+
+            if kwargs:
+                raise TypeError('Unexpected Arguments: %s' % ', '.join(kwargs))
+
+    with _WrappedMocker() as m:
+        yield m
+
 
 @pytest.fixture(scope="session")
 def sess():
@@ -159,8 +188,8 @@ def account_synctarget(account_plexpass):
 
 
 @pytest.fixture()
-def mocked_account(requests_mock):
-    requests_mock.get("https://plex.tv/api/v2/user", text=ACCOUNT_XML)
+def mocked_account(patched_requests_mock):
+    patched_requests_mock.get("https://plex.tv/api/v2/user", text=ACCOUNT_XML)
     return MyPlexAccount(token="faketoken")
 
 

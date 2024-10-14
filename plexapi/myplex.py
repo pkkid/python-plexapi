@@ -6,7 +6,7 @@ import time
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from xml.etree import ElementTree
 
-import requests
+import niquests as requests
 
 from plexapi import (BASE_HEADERS, CONFIG, TIMEOUT, X_PLEX_ENABLE_FAST_CONNECT, X_PLEX_IDENTIFIER,
                      log, logfilter, utils)
@@ -17,7 +17,7 @@ from plexapi.library import LibrarySection
 from plexapi.server import PlexServer
 from plexapi.sonos import PlexSonosClient
 from plexapi.sync import SyncItem, SyncList
-from requests.status_codes import _codes as codes
+from niquests.status_codes import _codes as codes
 
 
 class MyPlexAccount(PlexObject):

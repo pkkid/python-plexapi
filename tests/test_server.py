@@ -9,7 +9,7 @@ from PIL import Image
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from plexapi.utils import download
-from requests import Session
+from niquests import Session
 
 from . import conftest as utils
 from .payloads import SERVER_RESOURCES, SERVER_TRANSCODE_SESSIONS
@@ -483,9 +483,9 @@ def test_server_dashboard_bandwidth_filters(account_plexpass, plex):
 
 
 @pytest.mark.authenticated
-def test_server_dashboard_resources(plex, requests_mock):
+def test_server_dashboard_resources(plex, patched_requests_mock):
     url = plex.url("/statistics/resources")
-    requests_mock.get(url, text=SERVER_RESOURCES)
+    patched_requests_mock.get(url, text=SERVER_RESOURCES)
     resourceData = plex.resources()
     assert len(resourceData)
     resource = resourceData[0]
@@ -497,9 +497,9 @@ def test_server_dashboard_resources(plex, requests_mock):
     assert resource.timespan == 6  # Default seconds timespan
 
 
-def test_server_transcode_sessions(plex, requests_mock):
+def test_server_transcode_sessions(plex, patched_requests_mock):
     url = plex.url("/transcode/sessions")
-    requests_mock.get(url, text=SERVER_TRANSCODE_SESSIONS)
+    patched_requests_mock.get(url, text=SERVER_TRANSCODE_SESSIONS)
     transcode_sessions = plex.transcodeSessions()
     assert len(transcode_sessions)
     session = transcode_sessions[0]

@@ -18,8 +18,8 @@ from hashlib import sha1
 from threading import Event, Thread
 from urllib.parse import quote
 
-import requests
-from requests.status_codes import _codes as codes
+import niquests as requests
+from niquests.status_codes import _codes as codes
 
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 

@@ -23,7 +23,7 @@ you can set items to be synced to your app) you need to init some variables.
 You have to fake platform/device/model because transcoding profiles are hardcoded in Plex, and you obviously have
 to explicitly specify that your app supports `sync-target`.
 """
-import requests
+import niquests as requests
 
 import plexapi
 from plexapi.base import PlexObject
