@@ -450,6 +450,11 @@ class Movie(
         return any(marker.type == 'credits' for marker in self.markers)
 
     @property
+    def hasVoiceActivity(self):
+        """ Returns True if any of the media has voice activity analyzed. """
+        return any(media.hasVoiceActivity for media in self.media)
+
+    @property
     def hasPreviewThumbnails(self):
         """ Returns True if any of the media parts has generated preview (BIF) thumbnails. """
         return any(part.hasPreviewThumbnails for media in self.media for part in media.parts)
@@ -1078,6 +1083,11 @@ class Episode(
     def hasCreditsMarker(self):
         """ Returns True if the episode has a credits marker. """
         return any(marker.type == 'credits' for marker in self.markers)
+
+    @property
+    def hasVoiceActivity(self):
+        """ Returns True if any of the media has voice activity analyzed. """
+        return any(media.hasVoiceActivity for media in self.media)
 
     @property
     def hasPreviewThumbnails(self):

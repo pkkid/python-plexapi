@@ -1,2 +1,2 @@
 include README.rst
-include requirements.txt
+recursive-exclude tests *

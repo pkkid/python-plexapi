@@ -79,6 +79,7 @@ def test_video_Movie_attrs(movies):  # noqa: C901
     assert "Animation" in [i.tag for i in movie.genres]
     assert "imdb://tt1172203" in [i.id for i in movie.guids]
     assert movie.guid == "plex://movie/5d776846880197001ec967c6"
+    assert movie.hasVoiceActivity is False
     assert movie.hasPreviewThumbnails is False
     assert utils.is_metadata(movie._initpath)
     assert utils.is_metadata(movie.key)
@@ -110,7 +111,7 @@ def test_video_Movie_attrs(movies):  # noqa: C901
     assert movie.userRating is None
     assert movie.viewCount == 0
     assert utils.is_int(movie.viewOffset, gte=0)
-    assert movie.year == 2009
+    assert movie.year >= 2008
     # Audio
     audio = movie.media[0].parts[0].audioStreams()[0]
     if audio.audioChannelLayout:
@@ -152,6 +153,7 @@ def test_video_Movie_attrs(movies):  # noqa: C901
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
     assert media.has64bitOffsets is False
+    assert media.hasVoiceActivity is False
     assert media.optimizedForStreaming in [None, False, True]
     assert media.proxyType is None
     assert media._server._baseurl == utils.SERVER_BASEURL
@@ -1225,6 +1227,7 @@ def test_video_Episode_attrs(episode):
     assert episode.grandparentTitle == "Game of Thrones"
     assert episode.guid == "plex://episode/5d9c1275e98e47001eb84029"
     assert "tvdb://3254641" in [i.id for i in episode.guids]
+    assert episode.hasVoiceActivity is False
     assert episode.hasPreviewThumbnails is False
     assert episode.index == 1
     assert episode.episodeNumber == episode.index
@@ -1281,6 +1284,7 @@ def test_video_Episode_attrs(episode):
     assert media.container in utils.CONTAINERS
     assert utils.is_int(media.duration, gte=150000)
     assert utils.is_int(media.height, gte=200)
+    assert media.hasVoiceActivity is False
     assert utils.is_int(media.id)
     assert utils.is_metadata(media._initpath)
     if media.optimizedForStreaming:

@@ -9,7 +9,7 @@ on:
     types: [published]
 
 env:
-  DEFAULT_PYTHON: 3.8
+  DEFAULT_PYTHON: 3.9
 
 jobs:
   build:
@@ -27,9 +27,8 @@ jobs:
     - name: Install dependencies and build
       run: |
         pip install -U pip
-        pip install -r requirements.txt
-        pip install setuptools twine wheel
-        python setup.py sdist bdist_wheel
+        pip install build twine
+        python -m build
 
     - name: Verify README
       # https://packaging.python.org/guides/making-a-pypi-friendly-readme/#validating-restructuredtext-markup

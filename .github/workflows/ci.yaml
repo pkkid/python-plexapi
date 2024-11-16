@@ -12,7 +12,7 @@ on:
 
 env:
   CACHE_VERSION: 1
-  DEFAULT_PYTHON: 3.8
+  DEFAULT_PYTHON: 3.9
 
 jobs:
   lint-flake8:
@@ -204,6 +204,7 @@ jobs:
       if: always() && (steps.test.outcome == 'success' || steps.test.outcome == 'failure')
       uses: actions/upload-artifact@v4
       with:
+        include-hidden-files: true
         name: coverage-${{ matrix.plex }}-${{ steps.python.outputs.python-version }}
         path: .coverage
 
@@ -256,7 +257,7 @@ jobs:
         coverage xml
 
     - name: Upload ${{ matrix.plex }} coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }} 
       with:
