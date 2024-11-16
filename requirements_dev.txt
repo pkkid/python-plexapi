@@ -12,6 +12,6 @@ recommonmark==0.7.1
 requests==2.32.3
 requests-mock==1.12.1
 sphinx==7.4.7
-sphinx-rtd-theme==2.0.0
+sphinx-rtd-theme==3.0.2
 tqdm==4.67.0
 websocket-client==1.8.0
