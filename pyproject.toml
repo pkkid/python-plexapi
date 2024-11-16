@@ -5,7 +5,7 @@ authors = [
 ]
 description = "Python bindings for the Plex API."
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["plex", "api"]
 license = {file = "LICENSE.txt"}
 classifiers = [
