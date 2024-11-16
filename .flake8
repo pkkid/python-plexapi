@@ -9,7 +9,7 @@
 # W605: invalid escape sequence
 [flake8]
 ignore=E128,E701,E702,E731,W503,W605
-exclude=compat.py,venv
+exclude=compat.py,venv,.venv
 per-file-ignores =
   tests/payloads.py:E501
 max-complexity = -1
