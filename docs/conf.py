@@ -141,7 +141,8 @@ html_static_path = ['_static']
 html_context = {'css_files': ['_static/custom.css']}
 html_theme_options = {
     'collapse_navigation': False,
-    'display_version': False,
+    'version_selector': False,
+    'language_selector': False,
     # 'navigation_depth': 3,
 }
 
