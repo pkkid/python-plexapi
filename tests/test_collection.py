@@ -47,6 +47,8 @@ def test_Collection_attrs(collection):
     assert collection.isVideo is True
     assert collection.isAudio is False
     assert collection.isPhoto is False
+    if collection.images:
+        assert any("coverPoster" in i.type for i in collection.images)
 
 
 def test_Collection_section(collection, movies):

@@ -959,6 +959,26 @@ class Guid(PlexObject):
 
 
 @utils.registerPlexObject
+class Image(PlexObject):
+    """ Represents a single Image media tag.
+
+        Attributes:
+            TAG (str): 'Image'
+            alt (str): The alt text for the image.
+            type (str): The type of image (e.g. coverPoster, background, snapshot).
+            url (str): The API URL (/library/metadata/<ratingKey>/thumb/<thumbid>).
+    """
+    TAG = 'Image'
+
+    def _loadData(self, data):
+        """ Load attribute values from Plex XML response. """
+        self._data = data
+        self.alt = data.attrib.get('alt')
+        self.type = data.attrib.get('type')
+        self.url = data.attrib.get('url')
+
+
+@utils.registerPlexObject
 class Rating(PlexObject):
     """ Represents a single Rating media tag.
 
@@ -1075,6 +1095,11 @@ class BaseResource(PlexObject):
 
 class Art(BaseResource):
     """ Represents a single Art object. """
+    TAG = 'Photo'
+
+
+class Logo(BaseResource):
+    """ Represents a single Logo object. """
     TAG = 'Photo'
 
 

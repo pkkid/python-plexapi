@@ -9,7 +9,7 @@ from plexapi.base import Playable, PlexPartialObject, PlexHistory, PlexSession
 from plexapi.exceptions import BadRequest
 from plexapi.mixins import (
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, PlayedUnplayedMixin, RatingMixin,
-    ArtUrlMixin, ArtMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
+    ArtUrlMixin, ArtMixin, LogoMixin, PosterUrlMixin, PosterMixin, ThemeUrlMixin, ThemeMixin,
     MovieEditMixins, ShowEditMixins, SeasonEditMixins, EpisodeEditMixins,
     WatchlistMixin
 )
@@ -26,6 +26,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
             artBlurHash (str): BlurHash string for artwork image.
             fields (List<:class:`~plexapi.media.Field`>): List of field objects.
             guid (str): Plex GUID for the movie, show, season, episode, or clip (plex://movie/5d776b59ad5437001f79c6f8).
+            images (List<:class:`~plexapi.media.Image`>): List of image objects.
             key (str): API URL (/library/metadata/<ratingkey>).
             lastRatedAt (datetime): Datetime the item was last rated.
             lastViewedAt (datetime): Datetime the item was last played.
@@ -53,6 +54,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
         self.artBlurHash = data.attrib.get('artBlurHash')
         self.fields = self.findItems(data, media.Field)
         self.guid = data.attrib.get('guid')
+        self.images = self.findItems(data, media.Image)
         self.key = data.attrib.get('key', '')
         self.lastRatedAt = utils.toDatetime(data.attrib.get('lastRatedAt'))
         self.lastViewedAt = utils.toDatetime(data.attrib.get('lastViewedAt'))
@@ -332,7 +334,7 @@ class Video(PlexPartialObject, PlayedUnplayedMixin):
 class Movie(
     Video, Playable,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, PosterMixin, ThemeMixin,
+    ArtMixin, LogoMixin, PosterMixin, ThemeMixin,
     MovieEditMixins,
     WatchlistMixin
 ):
@@ -494,7 +496,7 @@ class Movie(
 class Show(
     Video,
     AdvancedSettingsMixin, SplitMergeMixin, UnmatchMatchMixin, ExtrasMixin, HubsMixin, RatingMixin,
-    ArtMixin, PosterMixin, ThemeMixin,
+    ArtMixin, LogoMixin, PosterMixin, ThemeMixin,
     ShowEditMixins,
     WatchlistMixin
 ):
