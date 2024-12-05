@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 
-from plexapi import CONFIG, X_PLEX_IDENTIFIER
+from plexapi import CONFIG, X_PLEX_IDENTIFIER, TIMEOUT
 from plexapi.client import PlexClient
 from plexapi.exceptions import BadRequest
 from plexapi.playqueue import PlayQueue
@@ -66,6 +66,7 @@ class PlexSonosClient(PlexClient):
         self._last_call = 0
         self._proxyThroughServer = False
         self._showSecrets = CONFIG.get("log.show_secrets", "").lower() == "true"
+        self._timeout = TIMEOUT
 
     def playMedia(self, media, offset=0, **params):
 
