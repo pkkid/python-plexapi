@@ -1337,4 +1337,3 @@ class History(PlexObject):
     def delete(self):
         """ Delete history data point from Server. """
         return self._server.query(key=self.historyKey, method=self._server._session.delete)
-    
