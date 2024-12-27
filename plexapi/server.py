@@ -676,7 +676,7 @@ class PlexServer(PlexObject):
             args['viewedAt>'] = int(mindate.timestamp())
 
         key = f'/status/sessions/history/all{utils.joinArgs(args)}'
-        return self.fetchItems(key, maxresults=maxresults)
+        return self.fetchItems(key, maxresults=maxresults, cls=History)
 
     def playlists(self, playlistType=None, sectionId=None, title=None, sort=None, **kwargs):
         """ Returns a list of all :class:`~plexapi.playlist.Playlist` objects on the server.
@@ -1305,3 +1305,36 @@ class Identity(PlexObject):
         self.claimed = utils.cast(bool, data.attrib.get('claimed'))
         self.machineIdentifier = data.attrib.get('machineIdentifier')
         self.version = data.attrib.get('version')
+
+
+class History(PlexObject):
+    """ Represents a single history data point."""
+
+    def _loadData(self, data):
+        self._data = data
+        self.historyKey = data.attrib.get('historyKey')
+        self.key = data.attrib.get('key')
+        self.parentKey = data.attrib.get('parentKey')
+        self.ratingKey = data.attrib.get('ratingKey')
+        self.librarySectionID = data.attrib.get('librarySectionID')
+        self.grandparentKey = data.attrib.get('grandparentKey')
+        self.grandparentTitle = data.attrib.get('grandparentTitle')
+        self.title = data.attrib.get('title')
+        self.type = data.attrib.get('type')
+        self.thumb = data.attrib.get('thumb')
+        self.parentThumb = data.attrib.get('parentThumb')
+        self.grandparentThumb = data.attrib.get('grandparentThumb')
+        self.grandparentArt = data.attrib.get('grandparentArt')
+        self.index = data.attrib.get('index')
+        self.parentIndex = data.attrib.get('parentIndex')
+        self.viewedAt = utils.toDatetime(data.attrib.get('viewedAt'))
+        self.accountID = utils.cast(int, data.attrib.get('accountID'))
+        self.deviceID = utils.cast(int, data.attrib.get('deviceID'))
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}:{self.accountID}:{self.viewedAt}>"
+
+    def delete(self):
+        """ Delete history data point from Server. """
+        return self._server.query(key=self.historyKey, method=self._server._session.delete)
+    
