@@ -7,7 +7,7 @@ description = "Python bindings for the Plex API."
 readme = "README.rst"
 requires-python = ">=3.9"
 keywords = ["plex", "api"]
-license = {file = "LICENSE.txt"}
+license = {text = "BSD-3-Clause"}
 classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
