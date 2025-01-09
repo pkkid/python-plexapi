@@ -3,7 +3,7 @@
 # pip install -r requirements_dev.txt
 #---------------------------------------------------------
 flake8==7.1.1
-pillow==11.0.0
+pillow==11.1.0
 pytest==8.3.2
 pytest-cache==1.0
 pytest-cov==6.0.0
