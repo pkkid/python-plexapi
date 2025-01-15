@@ -386,6 +386,7 @@ class AudioStream(MediaPartStream):
             profile (str): The profile of the audio stream.
             samplingRate (int): The sampling rate of the audio stream (ex: xxx)
             streamIdentifier (int): The stream identifier of the audio stream.
+            visualImpaired (bool): True if this is a visually impaired (AD) audio stream.
 
             Track_only_attributes: The following attributes are only available for tracks.
 
@@ -413,6 +414,7 @@ class AudioStream(MediaPartStream):
         self.profile = data.attrib.get('profile')
         self.samplingRate = utils.cast(int, data.attrib.get('samplingRate'))
         self.streamIdentifier = utils.cast(int, data.attrib.get('streamIdentifier'))
+        self.visualImpaired = utils.cast(bool, data.attrib.get('visualImpaired', '0'))
 
         # Track only attributes
         self.albumGain = utils.cast(float, data.attrib.get('albumGain'))
