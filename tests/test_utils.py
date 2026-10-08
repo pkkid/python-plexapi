@@ -98,6 +98,14 @@ def test_utils_joinArgs():
     assert utils.joinArgs(test_dict) == "?genre=action&type=1337"
 
 
+def test_utils_cleanFilename():
+    assert utils.cleanFilename("Lovely/Bones - very*very.mp3") == "Lovely_Bones - very_very.mp3"
+    assert utils.cleanFilename("Am\u00e9lie (2001).mp4") == "Amelie (2001).mp4"
+    # Titles in other scripts keep their letters instead of collapsing to " (2001).mp4".
+    assert utils.cleanFilename("\u5343\u3068\u5343\u5c0b (2001).mp4") == "\u5343\u3068\u5343\u5c0b (2001).mp4"
+    assert utils.cleanFilename("\u041e\u043d\u043e (2001).mp4") == "\u041e\u043d\u043e (2001).mp4"
+
+
 def test_utils_cast():
     int_int = utils.cast(int, 1)
     int_str = utils.cast(int, "1")

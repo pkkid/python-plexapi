@@ -446,9 +446,16 @@ def toList(value, itemcast=None, delim=','):
 
 def cleanFilename(filename, replace='_'):
     whitelist = f"-_.()[] {string.ascii_letters}{string.digits}"
-    cleaned_filename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').decode()
-    cleaned_filename = ''.join(c if c in whitelist else replace for c in cleaned_filename)
-    return cleaned_filename
+    cleaned = []
+    for char in filename:
+        # Accented Latin letters are transliterated (e.g. é -> e); letters and digits of
+        # other scripts are kept, otherwise a title like '千と千尋' becomes an empty name.
+        ascii_char = unicodedata.normalize('NFKD', char).encode('ASCII', 'ignore').decode()
+        if ascii_char:
+            cleaned.append(''.join(c if c in whitelist else replace for c in ascii_char))
+        elif char.isalnum():
+            cleaned.append(char)
+    return ''.join(cleaned)
 
 
 def downloadSessionImages(server, filename=None, height=150, width=150,
