@@ -98,6 +98,18 @@ def test_utils_joinArgs():
     assert utils.joinArgs(test_dict) == "?genre=action&type=1337"
 
 
+def test_utils_cleanFilename():
+    assert utils.cleanFilename("Lovely/Bones - very*very.mp3") == "Lovely_Bones - very_very.mp3"
+    # Unicode is kept, in NFC form, instead of being transliterated or dropped.
+    assert utils.cleanFilename("Am\u00e9lie (2001).mp4") == "Am\u00e9lie (2001).mp4"
+    assert utils.cleanFilename("Ame\u0301lie (2001).mp4") == "Am\u00e9lie (2001).mp4"
+    assert utils.cleanFilename("\u5343\u3068\u5343\u5c0b (2001).mp4") == "\u5343\u3068\u5343\u5c0b (2001).mp4"
+    assert utils.cleanFilename("\u041e\u043d\u043e (2001).mp4") == "\u041e\u043d\u043e (2001).mp4"
+    assert utils.cleanFilename('a\\b?c%d:e|f"g<h>i\x00j\x7f.mp4') == "a_b_c_d_e_f_g_h_i_j_.mp4"
+    assert utils.cleanFilename(" .hidden. ") == "hidden"
+    assert utils.cleanFilename("???", replace="") == "untitled"
+
+
 def test_utils_cast():
     int_int = utils.cast(int, 1)
     int_str = utils.cast(int, "1")
