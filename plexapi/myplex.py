@@ -572,20 +572,16 @@ class MyPlexAccount(PlexObject):
         return self.query(url, self._session.post, params=params)
 
     def acceptInvite(self, user):
-        """ Accept a pending friend invite from the specified user.
+        """Accept a pending invite.
 
-            Parameters:
-                user (:class:`~plexapi.myplex.MyPlexInvite` or str): :class:`~plexapi.myplex.MyPlexInvite`,
-                    username, or email of the friend invite to accept.
+        Parameters:
+            user (:class:`~plexapi.myplex.MyPlexInvite` | str): Invite object, username, or email.
         """
         invite = user if isinstance(user, MyPlexInvite) else self.pendingInvite(user, includeSent=False)
-        params = {
-            'friend': int(invite.friend),
-            'home': int(invite.home),
-            'server': int(invite.server)
-        }
-        url = MyPlexInvite.REQUESTS + f'/{invite.id}' + utils.joinArgs(params)
-        return self.query(url, self._session.put)
+
+
+        url = MyPlexInvite.REQUESTS + f'/{invite.id}' + "/accept"
+        return self.query(url, self._session.post)
 
     def cancelInvite(self, user):
         """ Cancel a pending firend invite for the specified user.
@@ -1300,8 +1296,8 @@ class MyPlexInvite(PlexObject):
             username (str): User's username.
     """
     TAG = 'Invite'
-    REQUESTS = 'https://plex.tv/api/invites/requests'
-    REQUESTED = 'https://plex.tv/api/invites/requested'
+    REQUESTS = 'https://clients.plex.tv/api/v2/shared_servers/invites/received/pending'
+    REQUESTED = 'https://clients.plex.tv/api/v2/shared_servers/invites/owned/pending'
 
     def _loadData(self, data):
         """ Load attribute values from Plex XML response. """
