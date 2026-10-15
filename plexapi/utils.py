@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import re
-import string
 import sys
 import time
 import unicodedata
@@ -444,18 +443,17 @@ def toList(value, itemcast=None, delim=','):
     return [itemcast(item) for item in value.split(delim) if item != '']
 
 
-def cleanFilename(filename, replace='_'):
-    whitelist = f"-_.()[] {string.ascii_letters}{string.digits}"
-    cleaned = []
-    for char in filename:
-        # Accented Latin letters are transliterated (e.g. é -> e); letters and digits of
-        # other scripts are kept, otherwise a title like '千と千尋' becomes an empty name.
-        ascii_char = unicodedata.normalize('NFKD', char).encode('ASCII', 'ignore').decode()
-        if ascii_char:
-            cleaned.append(''.join(c if c in whitelist else replace for c in ascii_char))
-        elif char.isalnum():
-            cleaned.append(char)
-    return ''.join(cleaned)
+def cleanFilename(filename, replace='_', default='untitled'):
+    """ Returns a filename safe for use in the file system.
+
+        Parameters:
+            filename (str): Filename to make safe.
+            replace (str): Character to replace invalid characters with.
+            default (str): Filename to return if the cleaned filename is blank.
+    """
+    filename = unicodedata.normalize('NFC', filename)
+    cleaned = re.sub(r'[/\\?%*:|"<>\x7F\x00-\x1F]', replace, filename)
+    return cleaned.strip(' ._-') or default
 
 
 def downloadSessionImages(server, filename=None, height=150, width=150,
