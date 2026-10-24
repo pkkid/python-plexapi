@@ -2,7 +2,7 @@
 # PlexAPI requirements to run py.test.
 # pip install -r requirements_dev.txt
 #---------------------------------------------------------
-flake8==7.3.0
+flake8==7.4.1
 pillow==12.3.0
 pyjwt[crypto]==2.15.0
 pytest==9.1.1
