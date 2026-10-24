@@ -4,7 +4,7 @@
 #---------------------------------------------------------
 flake8==7.4.1
 pillow==12.3.0
-pyjwt[crypto]==2.15.0
+pyjwt[crypto]==2.15.1
 pytest==9.1.1
 pytest-cache==1.0
 pytest-cov==7.1.0
